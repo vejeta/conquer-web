@@ -2,7 +2,16 @@
 set -e
 
 # Load production environment configuration
+if [ ! -f config/production.env ]; then
+    echo "❌ Production environment file not found!"
+    echo "🔧 Run './setup-environment.sh' to create environment configuration"
+    exit 1
+fi
+
 source config/production.env
+
+# Export environment variables for docker-compose
+export TTYD_USERNAME TTYD_PASSWORD MAX_CLIENTS SESSION_TIMEOUT
 
 echo "🎮 Starting Conquer Web (Production)"
 echo "Domain: $DOMAIN"

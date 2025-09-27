@@ -2,7 +2,16 @@
 set -e
 
 # Load local environment configuration
+if [ ! -f config/local.env ]; then
+    echo "❌ Local environment file not found!"
+    echo "🔧 Run './setup-environment.sh' to create environment configuration"
+    exit 1
+fi
+
 source config/local.env
+
+# Export environment variables for docker-compose
+export TTYD_USERNAME TTYD_PASSWORD MAX_CLIENTS SESSION_TIMEOUT
 
 echo "🎮 Starting Conquer Web (Local Development)"
 echo "Domain: $DOMAIN"

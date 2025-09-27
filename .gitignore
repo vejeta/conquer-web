@@ -1,0 +1,46 @@
+# SSL Certificates and Private Keys (NEVER commit these!)
+**/*.pem
+**/*.key
+**/*.crt
+**/*.csr
+**/certs/live/
+**/certs/archive/
+**/certs/renewal/
+
+# Environment files with sensitive data
+.env
+*.env
+config/*.env
+
+# Docker volumes and data
+docker-data/
+volumes/
+
+# Logs
+**/*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Backup files
+*.backup
+*.bak
+*~
+
+# Game data backups (may contain sensitive info)
+backups/
+lib/.userlog
+lib/data
