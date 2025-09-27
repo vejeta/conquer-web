@@ -1,5 +1,10 @@
 # Conquer Web Setup
 
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
 A secure, web-based implementation of the classic Conquer strategy game using Docker containers, ttyd (terminal over HTTP), and Apache as a reverse proxy with SSL termination.
 
 ## 🎮 Overview
@@ -399,4 +404,50 @@ To switch between different worlds:
 
 ## 📝 License
 
-This setup is provided as-is for educational and gaming purposes. The Conquer game itself maintains its original license terms.
+This project is licensed under the **GNU General Public License v3.0 or later (GPL-3.0-or-later)**.
+
+### License Summary
+
+- ✅ **Free to use, modify, and distribute**
+- ✅ **Commercial use allowed**
+- ❗ **Source code must remain open**
+- ❗ **Derivatives must use compatible license**
+- ❗ **No warranty provided**
+
+### Full License Information
+
+- **License Text**: See [COPYING](COPYING) for the complete GPL v3.0 license
+- **License Summary**: See [LICENSE.md](LICENSE.md) for detailed information
+- **SPDX Identifier**: `GPL-3.0-or-later`
+
+### Copyright
+
+```
+Copyright (C) 2025 Juan Manuel Méndez Rey
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+```
+
+### Third-Party Components
+
+This project includes or depends on third-party software with compatible licenses:
+
+- **Conquer Game**: GPL-3.0-or-later (upstream project)
+- **ttyd**: MIT License (compatible)
+- **Apache HTTP Server**: Apache License 2.0 (compatible)
+- **Docker Images**: Various compatible licenses
+
+### REUSE Compliance
+
+This project follows the [REUSE](https://reuse.software/) specification for clear licensing:
+
+```bash
+# Check license compliance
+pip install reuse
+reuse lint
+```
+
+All source files contain proper SPDX license headers for automatic license detection and compliance verification.

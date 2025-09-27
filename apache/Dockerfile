@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 FROM httpd:2.4
 
 # Enable built-in modules for security and rate limiting

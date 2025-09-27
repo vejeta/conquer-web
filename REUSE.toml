@@ -1,0 +1,92 @@
+# REUSE.toml configuration for license compliance
+# See https://reuse.software/spec/
+
+version = 1
+
+# Default annotation for files without explicit SPDX headers
+[[annotations]]
+path = [
+    "*.sh",
+    "*.py",
+    "*.js",
+    "*.ts",
+    "*.md",
+    "*.yml",
+    "*.yaml",
+    "Dockerfile*",
+    "*.conf",
+    "*.env.template",
+    "README*",
+    "setup-environment.sh",
+    "generate-world.sh",
+    "backup-world.sh",
+    "restore-world.sh",
+    "reset-to-default-world.sh",
+    "health-check.sh",
+    "logs.sh",
+    "rebuild.sh",
+    "quick-rebuild.sh",
+    "start-local.sh",
+    "start-production.sh",
+    "stop.sh",
+    "setup-local-certs.sh",
+    "setup-production-certs.sh",
+    "renew-certs.sh"
+]
+SPDX-FileCopyrightText = "2025 Juan Manuel Méndez Rey"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# Configuration files
+[[annotations]]
+path = [
+    "config/*.env.template",
+    "apache/*.conf",
+    "docker-compose*.yml"
+]
+SPDX-FileCopyrightText = "2025 Juan Manuel Méndez Rey"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# Documentation
+[[annotations]]
+path = [
+    "README.md",
+    "LICENSE.md",
+    "*.md"
+]
+SPDX-FileCopyrightText = "2025 Juan Manuel Méndez Rey"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# Build and deployment files
+[[annotations]]
+path = [
+    "Dockerfile*",
+    "docker-compose*.yml",
+    ".gitignore"
+]
+SPDX-FileCopyrightText = "2025 Juan Manuel Méndez Rey"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# Exclude generated and third-party content
+[[annotations]]
+path = [
+    "conquer/lib/**",
+    "apache/certs/**",
+    "backups/**",
+    "*.tar.gz",
+    "*.log",
+    "v1/**",
+    "v2/**",
+    "old/**"
+]
+SPDX-FileCopyrightText = "NOASSERTION"
+SPDX-License-Identifier = "NOASSERTION"
+
+# License files themselves
+[[annotations]]
+path = [
+    "COPYING",
+    "LICENSE",
+    "LICENSES/**"
+]
+SPDX-FileCopyrightText = "Free Software Foundation, Inc."
+SPDX-License-Identifier = "GPL-3.0-or-later"

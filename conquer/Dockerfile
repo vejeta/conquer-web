@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 FROM debian:stable-slim
 
 # Security build arguments
