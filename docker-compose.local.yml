@@ -1,7 +1,13 @@
 services:
   conquer:
-    build: ./conquer
+    build:
+      context: ./conquer
     container_name: conquer-local
+    environment:
+      - TTYD_USERNAME=${TTYD_USERNAME:-dev}
+      - TTYD_PASSWORD=${TTYD_PASSWORD:-localdev}
+      - MAX_CLIENTS=${MAX_CLIENTS:-10}
+      - SESSION_TIMEOUT=${SESSION_TIMEOUT:-3600}
     restart: unless-stopped
     networks:
       - conquer-local
