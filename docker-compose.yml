@@ -1,0 +1,28 @@
+services:
+  conquer:
+    build: ./conquer
+    container_name: conquer
+    restart: unless-stopped
+
+  apache:
+    build: ./apache
+    container_name: apache
+    volumes:
+      # Solo montar en producción si quieres cert real de LetsEncrypt
+      - ./apache/certs/live:/usr/local/apache2/conf/certs/live:rw
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - conquer
+    restart: unless-stopped
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./apache/certs/live:/etc/letsencrypt
+      - ./apache/certs/live:/var/lib/letsencrypt
+    entrypoint: /bin/sh
+    stdin_open: true
+    tty: true
