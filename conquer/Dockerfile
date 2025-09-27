@@ -15,8 +15,7 @@ RUN cmake .. && make && make install
 # Clonar y compilar Conquer
 WORKDIR /root
 RUN git clone https://github.com/vejeta/conquer.git
-WORKDIR /root/conquer
-RUN git checkout linux-fixes
+WORKDIR /root/conquer/gpl-release
 RUN make
 #RUN make install
 
@@ -24,9 +23,12 @@ RUN make
 COPY lib/ ./lib/
 COPY lib/.userlog ./lib/.userlog
 
+# Create symlink for game data directory (game expects /usr/lib/conquer)
+RUN mkdir -p /usr/lib && ln -sf /root/conquer/gpl-release/lib /usr/lib/conquer
+
 # Create a startup script
 RUN echo '#!/bin/bash' > /start-conquer.sh && \
-    echo 'cd /root/conquer' >> /start-conquer.sh && \
+    echo 'cd /root/conquer/gpl-release' >> /start-conquer.sh && \
     echo 'echo "=== CONQUER GAME ==="' >> /start-conquer.sh && \
     echo 'echo "Waiting for terminal to be ready..."' >> /start-conquer.sh && \
     echo 'sleep 2' >> /start-conquer.sh && \
@@ -39,4 +41,4 @@ EXPOSE 7681
 
 # Lanzar conquer con ttyd usando el script
 
-CMD ["ttyd", "-p", "7681", "-W", "-t", "titleFixed=Conquer", "-t", "fontSize=16", "/start-conquer.sh"]
+CMD ["ttyd", "-p", "7681", "-W", "-m", "10", "-t", "titleFixed=Conquer", "-t", "fontSize=16", "/start-conquer.sh"]

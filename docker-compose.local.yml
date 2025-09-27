@@ -1,0 +1,28 @@
+services:
+  conquer:
+    build: ./conquer
+    container_name: conquer-local
+    restart: unless-stopped
+    networks:
+      - conquer-local
+
+  apache:
+    build: ./apache
+    container_name: apache-local
+    volumes:
+      # Local self-signed certificates
+      - ./apache/certs/live/conquer.local:/usr/local/apache2/conf/certs/live/conquer.local:ro
+      # Local Apache configuration
+      - ./apache/local.conf:/usr/local/apache2/conf/extra/httpd-proxy.conf:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - conquer
+    restart: unless-stopped
+    networks:
+      - conquer-local
+
+networks:
+  conquer-local:
+    driver: bridge

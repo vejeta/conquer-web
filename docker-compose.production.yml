@@ -1,0 +1,43 @@
+services:
+  conquer:
+    build: ./conquer
+    container_name: conquer-production
+    restart: unless-stopped
+    networks:
+      - conquer-production
+
+  apache:
+    build: ./apache
+    container_name: apache-production
+    volumes:
+      # Let's Encrypt certificates
+      - ./apache/certs/live/conquer.vejeta.com:/usr/local/apache2/conf/certs/live/conquer.vejeta.com:ro
+      # Production Apache configuration
+      - ./apache/production.conf:/usr/local/apache2/conf/extra/httpd-proxy.conf:ro
+      # Let's Encrypt webroot for certificate challenges
+      - ./apache/certs/webroot:/var/lib/letsencrypt:rw
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - conquer
+    restart: unless-stopped
+    networks:
+      - conquer-production
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot-production
+    volumes:
+      - ./apache/certs:/etc/letsencrypt:rw
+      - ./apache/certs:/var/lib/letsencrypt:rw
+      - ./apache/certs/webroot:/var/lib/letsencrypt:rw
+    entrypoint: /bin/sh
+    stdin_open: true
+    tty: true
+    networks:
+      - conquer-production
+
+networks:
+  conquer-production:
+    driver: bridge
