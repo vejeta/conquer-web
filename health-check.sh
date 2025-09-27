@@ -56,6 +56,65 @@ else
     echo "   ❌ Certificate file not found at $CERT_PATH/fullchain.pem"
 fi
 
+# Check world data status
+echo ""
+echo "🌍 World Data Status:"
+WORLD_LIB_DIR="$(pwd)/conquer/lib"
+
+if [ -d "$WORLD_LIB_DIR" ]; then
+    echo "   World directory: ✅ Found ($WORLD_LIB_DIR)"
+
+    # Check critical files
+    CRITICAL_FILES=("data" "nations" ".userlog")
+    MISSING_FILES=()
+
+    for file in "${CRITICAL_FILES[@]}"; do
+        if [ -f "$WORLD_LIB_DIR/$file" ]; then
+            if [ -s "$WORLD_LIB_DIR/$file" ]; then
+                echo "   $file: ✅ Present and non-empty"
+            else
+                echo "   $file: ⚠️  Present but empty"
+                MISSING_FILES+=("$file (empty)")
+            fi
+        else
+            echo "   $file: ❌ Missing"
+            MISSING_FILES+=("$file")
+        fi
+    done
+
+    # Check optional files
+    OPTIONAL_FILES=("help0" "mesg0" "news0" "rules" "exec0")
+    for file in "${OPTIONAL_FILES[@]}"; do
+        if [ -f "$WORLD_LIB_DIR/$file" ]; then
+            echo "   $file: ✅ Present"
+        else
+            echo "   $file: ⚠️  Optional file missing"
+        fi
+    done
+
+    # World summary
+    if [ -f "$WORLD_LIB_DIR/nations" ] && [ -s "$WORLD_LIB_DIR/nations" ]; then
+        NATION_COUNT=$(wc -l < "$WORLD_LIB_DIR/nations" 2>/dev/null || echo "unknown")
+        echo "   Nations count: $NATION_COUNT"
+    fi
+
+    if [ -f "$WORLD_LIB_DIR/data" ] && [ -s "$WORLD_LIB_DIR/data" ]; then
+        WORLD_SIZE=$(du -h "$WORLD_LIB_DIR/data" 2>/dev/null | cut -f1 || echo "unknown")
+        echo "   World data size: $WORLD_SIZE"
+    fi
+
+    # Overall world status
+    if [ ${#MISSING_FILES[@]} -eq 0 ]; then
+        echo "   Overall status: ✅ World data complete"
+    else
+        echo "   Overall status: ❌ Issues found: ${MISSING_FILES[*]}"
+        echo "   💡 Fix with: ./generate-world.sh or ./restore-world.sh"
+    fi
+else
+    echo "   World directory: ❌ Not found ($WORLD_LIB_DIR)"
+    echo "   💡 Generate world data with: ./generate-world.sh"
+fi
+
 # Check service connectivity
 echo ""
 echo "🔗 Service Connectivity:"

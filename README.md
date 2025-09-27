@@ -6,6 +6,8 @@ A secure, web-based implementation of the classic Conquer strategy game using Do
 
 This setup allows multiple players to access the same Conquer game instance through their web browsers, with proper authentication, rate limiting, and security features for safe public deployment.
 
+**Important**: Conquer requires pre-generated world data to run. See the [World Generation](#-world-generation) section below for setup instructions.
+
 ## 🚀 Quick Start
 
 ### Local Development
@@ -265,6 +267,135 @@ Shows:
 - Monitor access logs regularly
 - Implement IP allowlists for sensitive environments
 - Consider additional authentication layers for high-value deployments
+
+## 🌍 World Generation
+
+Conquer requires pre-generated world data files to run. The game world contains nations, geography, and initial game state.
+
+### Understanding World Data
+
+The game depends on several files in `conquer/lib/`:
+- **`data`** - Main world database (geography, nations, resources)
+- **`.userlog`** - Player session tracking
+- **`nations`** - Nation definitions and relationships
+- **`help*`**, **`mesg*`**, **`exec*`** - Game text and executable content
+- **`news0`**, **`rules`** - Game announcements and rule configurations
+
+### Option 1: Use Existing World Data
+
+This repository includes a pre-generated world that's ready to use:
+
+```bash
+# World data is already included in conquer/lib/
+./setup-environment.sh  # Configure authentication
+./start-local.sh        # Start with existing world
+```
+
+### Option 2: Generate New World Data
+
+For a fresh world or custom configuration:
+
+#### Manual Generation (Advanced Users)
+
+1. **Compile Conquer locally**:
+   ```bash
+   git clone https://github.com/vejeta/conquer.git
+   cd conquer/gpl-release
+   make
+   ```
+
+2. **Generate world data**:
+   ```bash
+   # Run world generation in maintenance mode
+   ./conqrun -m
+   # Follow prompts to create nations, set geography, etc.
+   # This creates the lib/ directory with world data
+   ```
+
+3. **Copy world data to Docker context**:
+   ```bash
+   # From your local conquer directory
+   cp -r lib/ /path/to/conquer-web/conquer/
+   cp lib/.userlog /path/to/conquer-web/conquer/lib/
+   ```
+
+4. **Rebuild containers**:
+   ```bash
+   cd /path/to/conquer-web
+   ./rebuild.sh --force
+   ```
+
+#### Automated Generation (Recommended)
+
+Use the provided automation script:
+
+```bash
+./generate-world.sh
+```
+
+This script will:
+- Clone and compile Conquer locally
+- Guide you through world generation
+- Automatically copy files to the correct location
+- Rebuild containers with new world data
+
+### World Management
+
+#### Backup Current World
+```bash
+./backup-world.sh
+# Creates timestamped backup in backups/
+```
+
+#### Restore World from Backup
+```bash
+./restore-world.sh backup-2025-09-27.tar.gz
+```
+
+#### Validate World Data
+```bash
+./health-check.sh
+# Includes world data validation
+```
+
+### Troubleshooting World Issues
+
+#### World Generation Fails
+- Ensure you have enough disk space (>100MB)
+- Check that build tools are installed: `build-essential`, `libncurses5-dev`
+- Verify conquer compiles successfully before running `conqrun -m`
+
+#### Game Won't Start
+- Check world data files exist: `ls -la conquer/lib/`
+- Validate `.userlog` file permissions
+- Run `./health-check.sh` for detailed diagnostics
+
+#### Corrupted World Data
+- Restore from backup: `./restore-world.sh`
+- Or regenerate: `./generate-world.sh`
+
+#### Multiple Worlds
+To switch between different worlds:
+```bash
+# Backup current world
+./backup-world.sh
+
+# Generate or restore different world
+./generate-world.sh
+# OR
+./restore-world.sh other-world-backup.tar.gz
+
+# Rebuild with new world
+./rebuild.sh
+```
+
+### World Configuration Tips
+
+- **Small worlds** (10-20 nations) are easier to manage
+- **Medium worlds** (50-100 nations) provide good gameplay
+- **Large worlds** (200+ nations) may impact performance
+- Consider **game balance** when setting nation resources
+- **Document your world settings** for future reference
 
 ## 📝 License
 
