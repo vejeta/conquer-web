@@ -1,0 +1,127 @@
+# SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Apache Virtual Host Configuration for Conquer Web on VPS
+# Place this file in /etc/apache2/sites-available/DOMAIN_NAME.conf
+
+# HTTP Virtual Host - Redirect to HTTPS and handle Let's Encrypt challenges
+<VirtualHost *:80>
+    ServerName DOMAIN_NAME
+    DocumentRoot /var/www/html
+
+    # Allow Let's Encrypt challenges
+    <Directory "/var/www/html/.well-known">
+        Require all granted
+        AllowOverride None
+        Options None
+    </Directory>
+
+    # Redirect everything else to HTTPS
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+    # Logging
+    ErrorLog ${APACHE_LOG_DIR}/conquer_error.log
+    CustomLog ${APACHE_LOG_DIR}/conquer_access.log combined
+</VirtualHost>
+
+# HTTPS Virtual Host - Main Conquer Web Application
+<VirtualHost *:443>
+    ServerName DOMAIN_NAME
+
+    # SSL Configuration
+    SSLEngine on
+    SSLCertificateFile /etc/letsencrypt/live/DOMAIN_NAME/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/DOMAIN_NAME/privkey.pem
+
+    # Modern SSL configuration
+    SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1
+    SSLCipherSuite ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384
+    SSLHonorCipherOrder off
+    SSLSessionTickets off
+
+    # Enhanced security headers
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    Header always set X-Frame-Options DENY
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' wss:; font-src 'self'"
+
+    # Hide server information
+    ServerSignature Off
+
+    # Enable rewrite engine for WebSocket upgrade
+    RewriteEngine on
+
+    # WebSocket upgrade handling
+    RewriteCond %{HTTP:Upgrade} websocket [NC]
+    RewriteCond %{HTTP:Connection} upgrade [NC]
+    RewriteRule ^/?(.*) "ws://127.0.0.1:7681/$1" [P,L]
+
+    # Regular HTTP proxy to Docker container
+    ProxyPreserveHost On
+    ProxyPass /ws ws://127.0.0.1:7681/ws
+    ProxyPassReverse /ws ws://127.0.0.1:7681/ws
+    ProxyPass / http://127.0.0.1:7681/
+    ProxyPassReverse / http://127.0.0.1:7681/
+
+    # WebSocket proxy settings
+    ProxyTimeout 3600
+    ProxyPassMatch ^/(.*) http://127.0.0.1:7681/$1
+
+    # Security: Block access to sensitive files
+    <Files ~ "^\.(htaccess|htpasswd|git|env|log)">
+        Require all denied
+    </Files>
+
+    # Block suspicious request patterns
+    <LocationMatch "/(\.git|\.env|config|admin|phpmyadmin)">
+        Require all denied
+    </LocationMatch>
+
+    # Rate limiting per IP for game access
+    <Location />
+        # Basic rate limiting - can be enhanced with mod_evasive
+        <RequireAll>
+            Require all granted
+        </RequireAll>
+    </Location>
+
+    # Logging
+    ErrorLog ${APACHE_LOG_DIR}/conquer_ssl_error.log
+    CustomLog ${APACHE_LOG_DIR}/conquer_ssl_access.log combined
+
+    # Log format for monitoring
+    LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" combined
+</VirtualHost>
+
+# Additional security configuration
+<Directory />
+    # Block known bad user agents and suspicious patterns
+    SetEnvIfNoCase User-Agent "^(libwww|wget|python|perl|curl|PHP)" bad_bot
+    SetEnvIfNoCase User-Agent "(bot|crawler|spider)" bad_bot
+
+    # Allow legitimate browsers and game clients
+    SetEnvIfNoCase User-Agent "(firefox|chrome|safari|edge|opera)" good_browser
+
+    # Block requests with no user agent
+    SetEnvIf User-Agent "^$" bad_bot
+
+    # Basic bot blocking
+    <RequireAll>
+        Require all granted
+        Require not env bad_bot
+    </RequireAll>
+</Directory>
+
+# Limit request size (prevent large uploads)
+LimitRequestBody 1048576
+
+# Timeout settings
+Timeout 60
+KeepAliveTimeout 5
+
+# Additional security headers for all responses
+Header always set X-Robots-Tag "noindex, nofollow"

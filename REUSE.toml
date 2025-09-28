@@ -25,13 +25,10 @@ path = [
     "health-check.sh",
     "logs.sh",
     "rebuild.sh",
-    "quick-rebuild.sh",
-    "start-local.sh",
-    "start-production.sh",
     "stop.sh",
-    "setup-local-certs.sh",
-    "setup-production-certs.sh",
-    "renew-certs.sh"
+    "deploy-to-vps.sh",
+    "setup-security.sh",
+    "check-security.sh"
 ]
 SPDX-FileCopyrightText = "2025 Juan Manuel Méndez Rey"
 SPDX-License-Identifier = "GPL-3.0-or-later"

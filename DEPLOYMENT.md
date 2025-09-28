@@ -297,3 +297,21 @@ sudo systemctl start conquer-web
 ```
 
 This deployment method leverages your existing Apache installation while running the game in a Docker container for easy management and isolation.
+
+## Enhanced Security (Recommended)
+
+After completing the basic deployment, enhance security with automated protection:
+
+```bash
+# Run the security enhancement script
+cd /home/conquer/conquer-web
+sudo ./setup-security.sh
+```
+
+This will configure:
+- **fail2ban** - Automatic IP banning for brute force attacks
+- **Enhanced rate limiting** - Protection against DoS attacks
+- **Advanced Apache security** - Additional security headers and request filtering
+- **Log monitoring** - Automated security monitoring
+
+See [SECURITY.md](SECURITY.md) for detailed security configuration and maintenance.

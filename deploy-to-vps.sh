@@ -339,8 +339,16 @@ show_summary() {
     echo "📚 Next Steps:"
     echo "   1. Test the game at https://$DOMAIN_NAME"
     echo "   2. Configure firewall if needed"
-    echo "   3. Set up monitoring/alerting"
-    echo "   4. Create regular backups with: cd $PROJECT_DIR && ./backup-world.sh"
+    echo "   3a. Set up basic security: cd $PROJECT_DIR && sudo ./setup-security-basic.sh"
+    echo "   3b. Set up enhanced security: cd $PROJECT_DIR && sudo ./setup-security.sh"
+    echo "   4. Set up monitoring/alerting"
+    echo "   5. Create regular backups with: cd $PROJECT_DIR && ./backup-world.sh"
+    echo ""
+    echo "🔒 Security Recommendations:"
+    echo "   - Start with: sudo ./setup-security-basic.sh (uses standard filters)"
+    echo "   - For advanced protection: sudo ./setup-security.sh (custom filters)"
+    echo "   - See SECURITY.md for detailed security hardening guide"
+    echo "   - Monitor logs regularly for suspicious activity"
 }
 
 # Main execution

@@ -115,7 +115,16 @@ conquer-web/
 ├── docker-compose.vps.yml     # VPS production setup
 ├── setup-environment.sh       # Interactive setup script
 ├── deploy-to-vps.sh          # VPS deployment script
-└── generate-world.sh         # World data generation
+├── generate-world.sh         # World data generation
+├── rebuild.sh                # Rebuild containers (--force, --quick options)
+├── logs.sh                   # View container logs
+├── stop.sh                   # Stop running containers
+├── setup-security.sh         # Security hardening (fail2ban, rate limiting)
+├── check-security.sh         # Security status monitoring
+├── backup-world.sh           # Backup world data
+├── restore-world.sh          # Restore world from backup
+├── reset-to-default-world.sh # Reset to default world
+└── health-check.sh           # Container health verification
 ```
 
 ## 🔍 Management
@@ -126,14 +135,23 @@ conquer-web/
 # Start services
 docker-compose up -d
 
+# View logs
+./logs.sh
+
+# Rebuild containers (with cache)
+./rebuild.sh
+
+# Rebuild containers (force, no cache)
+./rebuild.sh --force
+
+# Quick restart (config changes only)
+./rebuild.sh --quick
+
 # Check status
 docker-compose ps
 
-# View logs
-docker-compose logs -f
-
 # Stop services
-docker-compose down
+./stop.sh
 ```
 
 ### VPS Production
@@ -154,13 +172,28 @@ sudo systemctl stop conquer-web
 
 ## 🔒 Security Features
 
-- **Authentication**: Username/password protection
-- **Rate Limiting**: Configurable concurrent user limits
+- **Authentication**: Username/password protection with brute force protection
+- **Rate Limiting**: fail2ban and configurable concurrent user limits
 - **Session Management**: Automatic session timeouts
 - **SSL/TLS**: HTTPS encryption (Let's Encrypt for VPS)
 - **Container Isolation**: Game runs in isolated Docker container
-- **Security Headers**: HSTS, CSP, and other security headers
-- **Non-root Execution**: Containers run as non-privileged users
+- **Security Headers**: HSTS, CSP, and comprehensive security headers
+- **Attack Protection**: Bot blocking, request filtering, DoS protection
+- **Monitoring**: Comprehensive logging and security alerts
+
+### Enhanced Security (Optional)
+
+After basic deployment, enhance security with:
+
+```bash
+# Run security hardening script
+sudo ./setup-security.sh
+
+# Check security status
+./check-security.sh
+```
+
+See [SECURITY.md](SECURITY.md) for detailed security configuration.
 
 ## 🛠️ Development
 
@@ -183,6 +216,7 @@ sudo systemctl stop conquer-web
 ## 📚 Documentation
 
 - [VPS Deployment Guide](DEPLOYMENT.md) - Detailed VPS setup instructions
+- [Security Hardening Guide](SECURITY.md) - Advanced security configuration
 - [World Management](generate-world.sh) - World data generation and backup
 - [License Information](LICENSE.md) - GPL v3+ licensing details
 

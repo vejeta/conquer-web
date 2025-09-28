@@ -1,0 +1,45 @@
+# SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Systemd service file for Conquer Web on VPS
+# Place this file in /etc/systemd/system/conquer-web.service
+
+[Unit]
+Description=Conquer Web Game Server
+Documentation=https://github.com/vejeta/conquer-web
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=conquer
+Group=conquer
+WorkingDirectory=/home/conquer/conquer-web
+
+# Environment configuration
+Environment=COMPOSE_PROJECT_NAME=conquer-vps
+Environment=COMPOSE_FILE=docker-compose.vps.yml
+EnvironmentFile=/home/conquer/conquer-web/config/production.env
+
+# Service commands
+ExecStartPre=/bin/bash -c 'cd /home/conquer/conquer-web && /usr/bin/docker-compose -f docker-compose.vps.yml down || true'
+ExecStart=/bin/bash -c 'cd /home/conquer/conquer-web && /usr/bin/docker-compose -f docker-compose.vps.yml up -d'
+ExecStop=/bin/bash -c 'cd /home/conquer/conquer-web && /usr/bin/docker-compose -f docker-compose.vps.yml down'
+
+# Security settings
+NoNewPrivileges=false
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/home/conquer/conquer-web
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=conquer-web
+
+[Install]
+WantedBy=multi-user.target

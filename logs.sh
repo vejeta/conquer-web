@@ -6,14 +6,14 @@
 if docker ps --format "table {{.Names}}" | grep -q "conquer-local"; then
     COMPOSE_FILE="docker-compose.local.yml"
     echo "📋 Showing logs for LOCAL environment"
-elif docker ps --format "table {{.Names}}" | grep -q "conquer-production"; then
-    COMPOSE_FILE="docker-compose.production.yml"
-    echo "📋 Showing logs for PRODUCTION environment"
+elif docker ps --format "table {{.Names}}" | grep -q "conquer-vps"; then
+    COMPOSE_FILE="docker-compose.vps.yml"
+    echo "📋 Showing logs for VPS environment"
 else
     echo "❌ No Conquer Web containers are running"
     echo "   Start the application first with:"
-    echo "   ./start-local.sh     (for local development)"
-    echo "   ./start-production.sh (for production)"
+    echo "   Local: docker-compose up -d"
+    echo "   VPS: sudo systemctl start conquer-web"
     exit 1
 fi
 

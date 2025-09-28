@@ -6,25 +6,70 @@ set -e
 
 # Parse command line arguments
 FORCE_REBUILD=false
-if [ "$1" = "--force" ] || [ "$1" = "-f" ]; then
-    FORCE_REBUILD=true
-    echo "🔨 Force rebuilding Conquer Web containers (no cache)..."
-else
-    echo "🔨 Rebuilding Conquer Web containers (using cache)..."
-    echo "   💡 Use './rebuild.sh --force' to rebuild without cache"
+QUICK_RESTART=false
+
+case "${1:-}" in
+    "--force"|"-f")
+        FORCE_REBUILD=true
+        echo "🔨 Force rebuilding Conquer Web containers (no cache)..."
+        ;;
+    "--quick"|"-q")
+        QUICK_RESTART=true
+        echo "⚡ Quick restart (config changes only, no rebuild)..."
+        ;;
+    "--help"|"-h")
+        echo "Usage: $0 [OPTIONS]"
+        echo "Options:"
+        echo "  --force, -f    Force rebuild without cache"
+        echo "  --quick, -q    Quick restart without rebuild"
+        echo "  --help, -h     Show this help"
+        exit 0
+        ;;
+    "")
+        echo "🔨 Rebuilding Conquer Web containers (using cache)..."
+        echo "   💡 Options: --force (no cache), --quick (restart only)"
+        ;;
+    *)
+        echo "❌ Unknown option: $1"
+        echo "   Use --help for usage information"
+        exit 1
+        ;;
+esac
+
+# Check if any containers are running first
+RUNNING_LOCAL=$(docker ps --format "table {{.Names}}" | grep -c "conquer-local" || true)
+RUNNING_VPS=$(docker ps --format "table {{.Names}}" | grep -c "conquer-vps" || true)
+
+# Quick restart mode - just restart containers
+if [ "$QUICK_RESTART" = true ]; then
+    if [ "$RUNNING_LOCAL" -gt 0 ]; then
+        echo "   Restarting local containers..."
+        docker-compose -f docker-compose.local.yml restart
+        echo "✅ Local environment restarted!"
+    elif [ "$RUNNING_VPS" -gt 0 ]; then
+        echo "   Restarting VPS containers..."
+        docker-compose -f docker-compose.vps.yml restart
+        echo "✅ VPS environment restarted!"
+    else
+        echo "   No containers running, switching to full rebuild..."
+        QUICK_RESTART=false
+    fi
+
+    if [ "$QUICK_RESTART" = true ]; then
+        echo ""
+        echo "⚡ Quick restart completed - containers restarted without rebuilding"
+        exit 0
+    fi
 fi
 
-# Set build flags based on force rebuild option
+# Set build flags for full rebuild
 if [ "$FORCE_REBUILD" = true ]; then
     BUILD_FLAGS="--no-cache"
 else
     BUILD_FLAGS=""
 fi
 
-# Check if any containers are running first
-RUNNING_LOCAL=$(docker ps --format "table {{.Names}}" | grep -c "conquer-local" || true)
-RUNNING_PROD=$(docker ps --format "table {{.Names}}" | grep -c "conquer-production" || true)
-
+# Stop running containers for rebuild
 if [ "$RUNNING_LOCAL" -gt 0 ]; then
     echo "   Stopping local containers..."
     docker-compose -f docker-compose.local.yml down
