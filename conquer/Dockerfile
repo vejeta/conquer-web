@@ -3,7 +3,7 @@
 
 FROM debian:stable-slim
 
-# Security build arguments
+# Security build arguments (OVERRIDE THESE IN PRODUCTION!)
 ARG TTYD_USERNAME=conquer
 ARG TTYD_PASSWORD=changeme
 ARG MAX_CLIENTS=5

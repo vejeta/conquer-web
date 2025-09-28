@@ -22,10 +22,10 @@ if docker ps --format "table {{.Names}}" | grep -q "conquer-local"; then
     ENV="local"
     DOMAIN="conquer.local"
     source config/local.env 2>/dev/null || true
-elif docker ps --format "table {{.Names}}" | grep -q "conquer-production"; then
-    ENV="production"
-    DOMAIN="conquer.vejeta.com"
+elif docker ps --format "table {{.Names}}" | grep -q "conquer-vps"; then
+    ENV="vps"
     source config/production.env 2>/dev/null || true
+    DOMAIN="$DOMAIN" # Use domain from config file
 else
     echo ""
     echo "ℹ️  No Conquer Web environment is currently running"

@@ -1,0 +1,30 @@
+# SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# VPS-specific Docker Compose configuration
+# This runs only the Conquer game container, using host Apache as reverse proxy
+
+services:
+  conquer:
+    build:
+      context: ./conquer
+    container_name: conquer-vps
+    environment:
+      - TTYD_USERNAME=${TTYD_USERNAME:-user}
+      - TTYD_PASSWORD=${TTYD_PASSWORD:-changeme}
+      - MAX_CLIENTS=${MAX_CLIENTS:-5}
+      - SESSION_TIMEOUT=${SESSION_TIMEOUT:-1800}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:7681:7681"  # Only bind to localhost for security
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7681"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

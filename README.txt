@@ -1,10 +1,10 @@
   Start local development:
-  ./start-local.sh
-  # Opens at https://conquer.local (accept certificate warning)
+  docker-compose up -d
+  # Opens at https://localhost (accept certificate warning)
 
-  Deploy to production:
-  ./start-production.sh
-  # Opens at https://conquer.vejeta.com (real SSL)
+  Deploy to VPS:
+  ./deploy-to-vps.sh
+  # Opens at https://your-domain.com (real SSL)
 
   Monitor and maintain:
   ./logs.sh              # View real-time logs

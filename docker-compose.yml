@@ -1,14 +1,26 @@
+# SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Default configuration for local development
+# For VPS deployment, use: docker-compose -f docker-compose.vps.yml
+
 services:
   conquer:
-    build: ./conquer
-    container_name: conquer
+    build:
+      context: ./conquer
+    container_name: conquer-local
+    environment:
+      - TTYD_USERNAME=${TTYD_USERNAME:-user}
+      - TTYD_PASSWORD=${TTYD_PASSWORD:-changeme}
+      - MAX_CLIENTS=${MAX_CLIENTS:-5}
+      - SESSION_TIMEOUT=${SESSION_TIMEOUT:-1800}
     restart: unless-stopped
 
   apache:
-    build: ./apache
-    container_name: apache
+    build:
+      context: ./apache
+    container_name: apache-local
     volumes:
-      # Solo montar en producción si quieres cert real de LetsEncrypt
       - ./apache/certs/live:/usr/local/apache2/conf/certs/live:rw
     ports:
       - "80:80"
@@ -16,13 +28,3 @@ services:
     depends_on:
       - conquer
     restart: unless-stopped
-
-  certbot:
-    image: certbot/certbot
-    container_name: certbot
-    volumes:
-      - ./apache/certs/live:/etc/letsencrypt
-      - ./apache/certs/live:/var/lib/letsencrypt
-    entrypoint: /bin/sh
-    stdin_open: true
-    tty: true

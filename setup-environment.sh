@@ -16,7 +16,8 @@ generate_password() {
 # Function to validate domain
 validate_domain() {
     local domain=$1
-    if [[ $domain =~ ^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$ ]]; then
+    # Allow subdomains: conquer.vejeta.com, example.com, sub.example.co.uk
+    if [[ $domain =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$ ]]; then
         return 0
     else
         return 1
@@ -39,8 +40,10 @@ setup_local() {
     echo ""
 
     # Get username
-    read -p "Enter username for local development [dev]: " LOCAL_USER
-    LOCAL_USER=${LOCAL_USER:-dev}
+    read -p "Enter username for local development: " LOCAL_USER
+    while [ -z "$LOCAL_USER" ]; do
+        read -p "Username cannot be empty. Enter username: " LOCAL_USER
+    done
 
     # Get password or generate one
     read -p "Enter password for local development (or press Enter to generate): " LOCAL_PASS
@@ -87,7 +90,7 @@ EOF
 }
 
 # Setup production environment
-setup_production() {
+setup_vps_production() {
     echo "📋 Setting up PRODUCTION environment..."
     echo ""
 
@@ -112,11 +115,14 @@ setup_production() {
     done
 
     # Get username
-    read -p "Enter username for production access [conquer]: " PROD_USER
-    PROD_USER=${PROD_USER:-conquer}
+    read -p "Enter username for production access (avoid common names like 'admin'): " PROD_USER
+    while [ -z "$PROD_USER" ] || [ "$PROD_USER" = "admin" ] || [ "$PROD_USER" = "user" ] || [ "$PROD_USER" = "conquer" ]; do
+        echo "⚠️  Please choose a unique, non-default username"
+        read -p "Enter username for production access: " PROD_USER
+    done
 
     # Get password or generate one
-    read -p "Enter password for production (or press Enter to generate strong password): " PROD_PASS
+    read -p "Enter STRONG password for production (or press Enter to generate one): " PROD_PASS
     if [ -z "$PROD_PASS" ]; then
         PROD_PASS=$(generate_password)
         echo "Generated strong password: $PROD_PASS"
@@ -139,8 +145,8 @@ APACHE_HTTP_PORT=80
 APACHE_HTTPS_PORT=443
 CERT_TYPE=letsencrypt
 CERT_PATH=./apache/certs/live/$PROD_DOMAIN
-APACHE_CONFIG=apache/production.conf
-DOCKER_COMPOSE_FILE=docker-compose.production.yml
+APACHE_CONFIG=vps/virtualhost.conf.template
+DOCKER_COMPOSE_FILE=docker-compose.vps.yml
 
 # Let's Encrypt settings
 LETSENCRYPT_EMAIL=$PROD_EMAIL
@@ -165,26 +171,21 @@ EOF
 }
 
 # Main menu
-echo "Which environment would you like to setup?"
-echo "1) Local development only"
-echo "2) Production only"
-echo "3) Both environments"
+echo "🔧 Choose your deployment type:"
+echo "1) Local development (Docker Apache + Conquer containers)"
+echo "2) VPS production (Host Apache + Conquer container)"
 echo ""
-read -p "Choose option (1-3): " CHOICE
+read -p "Choose option (1-2): " CHOICE
 
 case $CHOICE in
     1)
         setup_local
         ;;
     2)
-        setup_production
-        ;;
-    3)
-        setup_local
-        setup_production
+        setup_vps_production
         ;;
     *)
-        echo "❌ Invalid choice"
+        echo "❌ Invalid choice. Please run the script again."
         exit 1
         ;;
 esac
