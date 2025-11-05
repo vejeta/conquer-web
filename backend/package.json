@@ -1,0 +1,26 @@
+{
+  "name": "conquer-web-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Conquer Web game",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "keywords": ["conquer", "game", "api"],
+  "author": "Juan Manuel Méndez Rey",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^9.2.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

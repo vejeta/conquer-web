@@ -2,6 +2,22 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 services:
+  backend:
+    build:
+      context: ./backend
+    container_name: conquer-backend
+    environment:
+      - PORT=3000
+      - NODE_ENV=development
+      - JWT_SECRET=${JWT_SECRET:-change-this-secret-key}
+      - MAX_CLIENTS=${MAX_CLIENTS:-10}
+    volumes:
+      - ./backend/db:/app/db
+      - ./frontend:/app/frontend:ro
+    restart: unless-stopped
+    networks:
+      - conquer-local
+
   conquer:
     build:
       context: ./conquer
@@ -27,6 +43,7 @@ services:
       - "80:80"
       - "443:443"
     depends_on:
+      - backend
       - conquer
     restart: unless-stopped
     networks:

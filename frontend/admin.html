@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Conquer Web</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="container admin-page">
+        <header class="admin-header">
+            <div class="header-left">
+                <h1 class="game-title-small">🔧 Admin Panel</h1>
+            </div>
+            <div class="header-right">
+                <a href="/dashboard.html" class="btn btn-secondary btn-small">← Dashboard</a>
+                <button class="btn btn-secondary btn-small" id="logout-btn">Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <main class="admin-main">
+            <!-- Server Status -->
+            <section class="admin-section">
+                <h2>📊 Estado del Servidor</h2>
+                <div class="admin-grid">
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h3>Servicios</h3>
+                            <button class="btn btn-small btn-secondary" id="refresh-services">🔄 Actualizar</button>
+                        </div>
+                        <div class="service-list" id="service-list">
+                            <div class="service-item">
+                                <span class="service-name">Backend API</span>
+                                <span class="service-status online">Online</span>
+                            </div>
+                            <div class="service-item">
+                                <span class="service-name">ttyd (Game Terminal)</span>
+                                <span class="service-status" id="ttyd-status">Cargando...</span>
+                            </div>
+                            <div class="service-item">
+                                <span class="service-name">Apache</span>
+                                <span class="service-status online">Online</span>
+                            </div>
+                            <div class="service-item">
+                                <span class="service-name">Base de Datos</span>
+                                <span class="service-status" id="db-status">Cargando...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-card">
+                        <h3>Recursos del Sistema</h3>
+                        <div class="resource-list">
+                            <div class="resource-item">
+                                <span class="resource-label">CPU</span>
+                                <div class="resource-bar">
+                                    <div class="resource-fill" id="cpu-usage" style="width: 0%"></div>
+                                </div>
+                                <span class="resource-value" id="cpu-value">0%</span>
+                            </div>
+                            <div class="resource-item">
+                                <span class="resource-label">Memoria</span>
+                                <div class="resource-bar">
+                                    <div class="resource-fill" id="memory-usage" style="width: 0%"></div>
+                                </div>
+                                <span class="resource-value" id="memory-value">0%</span>
+                            </div>
+                            <div class="resource-item">
+                                <span class="resource-label">Disco</span>
+                                <div class="resource-bar">
+                                    <div class="resource-fill" id="disk-usage" style="width: 0%"></div>
+                                </div>
+                                <span class="resource-value" id="disk-value">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- User Management -->
+            <section class="admin-section">
+                <h2>👥 Gestión de Usuarios</h2>
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3>Usuarios Registrados</h3>
+                        <div class="header-actions">
+                            <input type="search" placeholder="Buscar usuario..." id="user-search" class="search-input">
+                            <button class="btn btn-primary btn-small" id="add-user-btn">+ Nuevo Usuario</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Email</th>
+                                    <th>Rol</th>
+                                    <th>Estado</th>
+                                    <th>Última conexión</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table">
+                                <tr>
+                                    <td colspan="6" class="loading">Cargando usuarios...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Active Sessions -->
+            <section class="admin-section">
+                <h2>🔌 Sesiones Activas</h2>
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3>Jugadores Conectados</h3>
+                        <span class="badge" id="active-sessions-count">0</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>IP</th>
+                                    <th>Inicio de sesión</th>
+                                    <th>Actividad</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sessions-table">
+                                <tr>
+                                    <td colspan="5" class="loading">Cargando sesiones...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- World Management -->
+            <section class="admin-section">
+                <h2>🌍 Gestión del Mundo</h2>
+                <div class="admin-grid">
+                    <div class="admin-card">
+                        <h3>Información del Mundo</h3>
+                        <div class="world-info-list">
+                            <div class="info-row">
+                                <span class="info-label">Tamaño del mundo:</span>
+                                <span class="info-value" id="world-data-size">Cargando...</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Naciones:</span>
+                                <span class="info-value" id="world-nations-count">Cargando...</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Última modificación:</span>
+                                <span class="info-value" id="world-last-modified">Cargando...</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Backups disponibles:</span>
+                                <span class="info-value" id="backup-count">Cargando...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-card">
+                        <h3>Acciones del Mundo</h3>
+                        <div class="world-actions">
+                            <button class="btn btn-secondary btn-block" id="backup-world-btn">
+                                💾 Crear Backup
+                            </button>
+                            <button class="btn btn-secondary btn-block" id="restore-world-btn">
+                                ♻️ Restaurar desde Backup
+                            </button>
+                            <button class="btn btn-warning btn-block" id="reset-world-btn">
+                                🔄 Resetear Mundo
+                            </button>
+                            <button class="btn btn-primary btn-block" id="generate-world-btn">
+                                🌍 Generar Nuevo Mundo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Configuration -->
+            <section class="admin-section">
+                <h2>⚙️ Configuración</h2>
+                <div class="admin-card">
+                    <form id="config-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="max-clients">Máximo de clientes simultáneos</label>
+                                <input type="number" id="max-clients" min="1" max="100" value="5">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="session-timeout">Timeout de sesión (minutos)</label>
+                                <input type="number" id="session-timeout" min="5" max="120" value="30">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ttyd-font-size">Tamaño de fuente terminal</label>
+                                <input type="number" id="ttyd-font-size" min="10" max="24" value="16">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="maintenance-mode">
+                                    Modo mantenimiento
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="allow-registration">
+                                    Permitir nuevos registros
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="require-email-verification">
+                                    Requerir verificación de email
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                            <button type="button" class="btn btn-secondary" id="reset-config-btn">Restaurar Valores</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Logs -->
+            <section class="admin-section">
+                <h2>📜 Registros del Sistema</h2>
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3>Logs Recientes</h3>
+                        <div class="header-actions">
+                            <select id="log-type" class="form-select">
+                                <option value="all">Todos</option>
+                                <option value="error">Errores</option>
+                                <option value="warn">Advertencias</option>
+                                <option value="info">Info</option>
+                                <option value="access">Accesos</option>
+                            </select>
+                            <button class="btn btn-small btn-secondary" id="refresh-logs">🔄 Actualizar</button>
+                            <button class="btn btn-small btn-secondary" id="download-logs">⬇️ Descargar</button>
+                        </div>
+                    </div>
+                    <div class="logs-container" id="logs-container">
+                        <pre class="logs-output">Cargando logs...</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Statistics -->
+            <section class="admin-section">
+                <h2>📈 Estadísticas</h2>
+                <div class="stats-grid-admin">
+                    <div class="stat-card-admin">
+                        <h4>Total Usuarios</h4>
+                        <div class="stat-value-large" id="total-users">0</div>
+                    </div>
+                    <div class="stat-card-admin">
+                        <h4>Usuarios Activos (7 días)</h4>
+                        <div class="stat-value-large" id="active-users">0</div>
+                    </div>
+                    <div class="stat-card-admin">
+                        <h4>Partidas Totales</h4>
+                        <div class="stat-value-large" id="total-games">0</div>
+                    </div>
+                    <div class="stat-card-admin">
+                        <h4>Tiempo Promedio de Juego</h4>
+                        <div class="stat-value-large" id="avg-playtime">0h</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Conquer Web Admin Panel &copy; 2025</p>
+        </footer>
+    </div>
+
+    <!-- Modals -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content modal-warning">
+            <h2>Confirmar Acción</h2>
+            <p id="confirm-message">¿Estás seguro de que deseas continuar?</p>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="confirm-yes">Sí</button>
+                <button class="btn btn-secondary" id="confirm-no">No</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/admin.js"></script>
+</body>
+</html>

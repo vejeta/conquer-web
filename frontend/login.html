@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Conquer Web</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="container login-page">
+        <div class="login-wrapper">
+            <header class="login-header">
+                <h1 class="game-title-small">🎮 CONQUER</h1>
+                <p class="login-subtitle">Inicia sesión para jugar</p>
+            </header>
+
+            <div class="login-container">
+                <div class="tab-container">
+                    <button class="tab-btn active" data-tab="login">Iniciar Sesión</button>
+                    <button class="tab-btn" data-tab="register">Registrarse</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="login-form" class="auth-form active">
+                    <div class="form-group">
+                        <label for="login-username">
+                            <span class="icon">👤</span>
+                            Usuario
+                        </label>
+                        <input
+                            type="text"
+                            id="login-username"
+                            name="username"
+                            required
+                            autocomplete="username"
+                            placeholder="Tu nombre de usuario"
+                            minlength="3"
+                            maxlength="20"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="login-password">
+                            <span class="icon">🔒</span>
+                            Contraseña
+                        </label>
+                        <input
+                            type="password"
+                            id="login-password"
+                            name="password"
+                            required
+                            autocomplete="current-password"
+                            placeholder="Tu contraseña"
+                            minlength="6"
+                        >
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="remember-me" name="remember">
+                            Recordarme
+                        </label>
+                        <a href="#" class="link-secondary" id="forgot-password">¿Olvidaste tu contraseña?</a>
+                    </div>
+
+                    <div class="alert alert-error" id="login-error" style="display: none;"></div>
+                    <div class="alert alert-success" id="login-success" style="display: none;"></div>
+
+                    <button type="submit" class="btn btn-primary btn-block" id="login-btn">
+                        Iniciar Sesión
+                    </button>
+                </form>
+
+                <!-- Register Form -->
+                <form id="register-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="register-username">
+                            <span class="icon">👤</span>
+                            Usuario
+                        </label>
+                        <input
+                            type="text"
+                            id="register-username"
+                            name="username"
+                            required
+                            autocomplete="username"
+                            placeholder="Elige un nombre de usuario"
+                            minlength="3"
+                            maxlength="20"
+                            pattern="[a-zA-Z0-9_-]+"
+                            title="Solo letras, números, guiones y guiones bajos"
+                        >
+                        <small class="form-hint">3-20 caracteres. Solo letras, números, _ y -</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-email">
+                            <span class="icon">📧</span>
+                            Email
+                        </label>
+                        <input
+                            type="email"
+                            id="register-email"
+                            name="email"
+                            required
+                            autocomplete="email"
+                            placeholder="tu@email.com"
+                        >
+                        <small class="form-hint">Para recuperación de contraseña</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-password">
+                            <span class="icon">🔒</span>
+                            Contraseña
+                        </label>
+                        <input
+                            type="password"
+                            id="register-password"
+                            name="password"
+                            required
+                            autocomplete="new-password"
+                            placeholder="Elige una contraseña segura"
+                            minlength="8"
+                        >
+                        <small class="form-hint">Mínimo 8 caracteres</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-password-confirm">
+                            <span class="icon">🔒</span>
+                            Confirmar Contraseña
+                        </label>
+                        <input
+                            type="password"
+                            id="register-password-confirm"
+                            name="password-confirm"
+                            required
+                            autocomplete="new-password"
+                            placeholder="Repite tu contraseña"
+                            minlength="8"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="accept-terms" required>
+                            Acepto los <a href="#" class="link-secondary">términos y condiciones</a>
+                        </label>
+                    </div>
+
+                    <div class="alert alert-error" id="register-error" style="display: none;"></div>
+                    <div class="alert alert-success" id="register-success" style="display: none;"></div>
+
+                    <button type="submit" class="btn btn-primary btn-block" id="register-btn">
+                        Crear Cuenta
+                    </button>
+                </form>
+
+                <div class="login-footer">
+                    <a href="/index.html" class="link-back">← Volver al inicio</a>
+                    <a href="/help.html" class="link-help">¿Necesitas ayuda?</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Recovery Modal -->
+    <div id="password-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Recuperar Contraseña</h2>
+            <p>Ingresa tu email y te enviaremos instrucciones para restablecer tu contraseña.</p>
+            <form id="password-recovery-form">
+                <div class="form-group">
+                    <label for="recovery-email">Email</label>
+                    <input
+                        type="email"
+                        id="recovery-email"
+                        required
+                        placeholder="tu@email.com"
+                    >
+                </div>
+                <div class="alert alert-error" id="recovery-error" style="display: none;"></div>
+                <div class="alert alert-success" id="recovery-success" style="display: none;"></div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    Enviar Instrucciones
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/auth.js"></script>
+</body>
+</html>

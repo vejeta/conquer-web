@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conquer Web - Juego de Estrategia Online</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="container landing-page">
+        <header class="hero">
+            <div class="hero-content">
+                <h1 class="game-title">🎮 CONQUER</h1>
+                <p class="tagline">Juego de Estrategia por Turnos</p>
+                <p class="subtitle">Conquista el mundo, forma alianzas, domina territorios</p>
+            </div>
+        </header>
+
+        <main>
+            <section class="status-section">
+                <div class="status-card">
+                    <h3>📊 Estado del Servidor</h3>
+                    <div class="server-status">
+                        <div class="status-item">
+                            <span class="status-label">Estado:</span>
+                            <span class="status-value online" id="server-status">
+                                <span class="status-indicator"></span>
+                                En línea
+                            </span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Jugadores conectados:</span>
+                            <span class="status-value" id="players-online">Cargando...</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Espacios disponibles:</span>
+                            <span class="status-value" id="slots-available">Cargando...</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="info-section">
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3>🌍 Mundo Persistente</h3>
+                        <p>Tus acciones tienen consecuencias reales. El mundo de Conquer evoluciona con cada decisión de los jugadores.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>⚔️ Estrategia Profunda</h3>
+                        <p>Gestiona recursos, forma ejércitos, establece diplomacia y conquista territorios enemigos.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>👥 Multijugador</h3>
+                        <p>Juega con otros jugadores en tiempo real. Forma alianzas o enfrenta a tus enemigos.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>📜 Interfaz Clásica</h3>
+                        <p>Experimenta el juego original de estrategia con una interfaz de terminal auténtica.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="cta-section">
+                <div class="cta-buttons">
+                    <a href="/login.html" class="btn btn-primary btn-large">
+                        🎮 Jugar Ahora
+                    </a>
+                    <a href="/help.html" class="btn btn-secondary btn-large">
+                        📖 Cómo Jugar
+                    </a>
+                </div>
+                <p class="cta-note">¿Nuevo jugador? Regístrate gratis en el proceso de login</p>
+            </section>
+
+            <section class="features-section">
+                <h2>Características del Juego</h2>
+                <div class="features-list">
+                    <div class="feature">
+                        <span class="feature-icon">🏰</span>
+                        <div class="feature-content">
+                            <h4>Gestión de Ciudades</h4>
+                            <p>Construye y mejora tus ciudades, gestiona población y producción</p>
+                        </div>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">⚔️</span>
+                        <div class="feature-content">
+                            <h4>Combate Táctico</h4>
+                            <p>Planifica tus ataques, defiende tus territorios y conquista enemigos</p>
+                        </div>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">🤝</span>
+                        <div class="feature-content">
+                            <h4>Diplomacia</h4>
+                            <p>Negocia tratados, forma alianzas o declara guerras</p>
+                        </div>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">📊</span>
+                        <div class="feature-content">
+                            <h4>Economía</h4>
+                            <p>Gestiona recursos, comercio y finanzas de tu imperio</p>
+                        </div>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">🗺️</span>
+                        <div class="feature-content">
+                            <h4>Exploración</h4>
+                            <p>Descubre nuevos territorios y expande tu influencia</p>
+                        </div>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">🎯</span>
+                        <div class="feature-content">
+                            <h4>Objetivos</h4>
+                            <p>Completa misiones y alcanza la victoria mundial</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="requirements-section">
+                <h2>Requisitos</h2>
+                <div class="requirements-grid">
+                    <div class="requirement-card">
+                        <h4>💻 Navegador Web</h4>
+                        <p>Chrome, Firefox, Safari o Edge actualizado</p>
+                    </div>
+                    <div class="requirement-card">
+                        <h4>🌐 Conexión</h4>
+                        <p>Internet estable para jugar en tiempo real</p>
+                    </div>
+                    <div class="requirement-card">
+                        <h4>⌨️ Teclado</h4>
+                        <p>Recomendado para mejor experiencia (opcional en móvil)</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Conquer Web &copy; 2025 | <a href="https://github.com/vejeta/conquer-web">GitHub</a> | Licencia: GPL-3.0-or-later</p>
+            <p>Desarrollado por Juan Manuel Méndez Rey</p>
+        </footer>
+    </div>
+
+    <script src="/js/status.js"></script>
+</body>
+</html>

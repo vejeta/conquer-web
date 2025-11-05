@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Conquer Web</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="container dashboard-page">
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1 class="game-title-small">🎮 CONQUER</h1>
+            </div>
+            <div class="header-right">
+                <span class="user-greeting">Hola, <strong id="username">Jugador</strong></span>
+                <button class="btn btn-secondary btn-small" id="logout-btn">Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <main class="dashboard-main">
+            <section class="stats-section">
+                <h2>Tu Perfil</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="user-score">0</div>
+                            <div class="stat-label">Puntuación</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⚔️</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="user-battles">0</div>
+                            <div class="stat-label">Batallas</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏰</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="user-cities">0</div>
+                            <div class="stat-label">Ciudades</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="user-playtime">0h</div>
+                            <div class="stat-label">Tiempo Jugado</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="game-section">
+                <div class="game-controls">
+                    <h2>Jugar</h2>
+                    <div class="session-warning" id="session-warning" style="display: none;">
+                        <span class="warning-icon">⚠️</span>
+                        <span class="warning-text">Tu sesión expirará en <strong id="session-time-left">30</strong> minutos</span>
+                    </div>
+                </div>
+
+                <div class="game-card">
+                    <div class="game-status">
+                        <div class="status-item">
+                            <span class="status-label">Estado del servidor:</span>
+                            <span class="status-badge online" id="server-status">
+                                <span class="status-dot"></span>
+                                En línea
+                            </span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Jugadores conectados:</span>
+                            <span class="status-value" id="players-online">0</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Espacios disponibles:</span>
+                            <span class="status-value" id="slots-available">5</span>
+                        </div>
+                    </div>
+
+                    <div class="game-actions">
+                        <button class="btn btn-primary btn-large" id="play-btn">
+                            🎮 Entrar al Juego
+                        </button>
+                        <p class="game-note">Asegúrate de tener tiempo suficiente para jugar tu turno</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="players-section">
+                <h2>Jugadores en Línea</h2>
+                <div class="players-list" id="players-list">
+                    <div class="loading">Cargando jugadores...</div>
+                </div>
+            </section>
+
+            <section class="world-section">
+                <h2>Estado del Mundo</h2>
+                <div class="world-info">
+                    <div class="world-card">
+                        <h3>📊 Estadísticas Globales</h3>
+                        <ul class="world-stats">
+                            <li>
+                                <span class="stat-name">Naciones activas:</span>
+                                <span class="stat-val" id="world-nations">Cargando...</span>
+                            </li>
+                            <li>
+                                <span class="stat-name">Ciudades totales:</span>
+                                <span class="stat-val" id="world-cities">Cargando...</span>
+                            </li>
+                            <li>
+                                <span class="stat-name">Guerras activas:</span>
+                                <span class="stat-val" id="world-wars">Cargando...</span>
+                            </li>
+                            <li>
+                                <span class="stat-name">Tamaño del mundo:</span>
+                                <span class="stat-val" id="world-size">Cargando...</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="world-card">
+                        <h3>🏆 Ranking</h3>
+                        <div class="ranking-list" id="ranking-list">
+                            <div class="loading">Cargando ranking...</div>
+                        </div>
+                    </div>
+
+                    <div class="world-card">
+                        <h3>📰 Últimas Noticias</h3>
+                        <div class="news-list" id="news-list">
+                            <div class="loading">Cargando noticias...</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="quick-links-section">
+                <h2>Enlaces Rápidos</h2>
+                <div class="quick-links">
+                    <a href="/help.html" class="quick-link">
+                        <span class="link-icon">📖</span>
+                        <span class="link-text">Guía del Juego</span>
+                    </a>
+                    <a href="#" class="quick-link" id="settings-link">
+                        <span class="link-icon">⚙️</span>
+                        <span class="link-text">Configuración</span>
+                    </a>
+                    <a href="#" class="quick-link" id="profile-link">
+                        <span class="link-icon">👤</span>
+                        <span class="link-text">Mi Perfil</span>
+                    </a>
+                    <a href="/admin.html" class="quick-link admin-only" id="admin-link" style="display: none;">
+                        <span class="link-icon">🔧</span>
+                        <span class="link-text">Admin Panel</span>
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Conquer Web &copy; 2025 | <a href="https://github.com/vejeta/conquer-web">GitHub</a></p>
+        </footer>
+    </div>
+
+    <!-- Session Timeout Modal -->
+    <div id="timeout-modal" class="modal">
+        <div class="modal-content modal-warning">
+            <h2>⚠️ Advertencia de Sesión</h2>
+            <p>Tu sesión expirará en <strong id="timeout-countdown">5</strong> minutos.</p>
+            <p>¿Deseas continuar conectado?</p>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="extend-session-btn">Sí, continuar</button>
+                <button class="btn btn-secondary" id="logout-now-btn">Cerrar sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

@@ -9,7 +9,18 @@ A secure, web-based implementation of the classic Conquer strategy game using Do
 
 ## 🎮 Overview
 
-This setup allows multiple players to access the same Conquer game instance through their web browsers, with proper authentication, rate limiting, and security features for safe public deployment.
+This setup allows multiple players to access the same Conquer game instance through their web browsers, with a modern web interface, individual user accounts, authentication system, and comprehensive admin panel.
+
+**✨ New Features (Web UI):**
+- 🎨 Modern web interface with dark theme
+- 👤 Individual user accounts with registration
+- 📊 Player dashboard with statistics and rankings
+- 🔐 JWT-based authentication (no more HTTP Basic Auth popups!)
+- 👑 Admin panel for server management
+- 📱 Fully responsive design (mobile-friendly)
+- 📖 Comprehensive in-game help and tutorial
+- ⏱️ Session management with timeout warnings
+- 📰 News and world statistics
 
 **Important**: Conquer requires pre-generated world data to run. See the [World Generation](#-world-generation) section below for setup instructions.
 
@@ -48,6 +59,38 @@ sudo ./deploy-to-vps.sh
 - **URL**: https://your-configured-domain.com
 - **Setup**: Host Apache + Conquer container
 - **SSL**: Let's Encrypt certificate
+
+## 🌐 Using the Web Interface
+
+### First Time Access
+
+1. **Open your browser** and navigate to `https://localhost` (local) or `https://your-domain.com` (production)
+2. **Landing page** will show server status and game information
+3. **Click "Jugar Ahora"** to access the login page
+4. **Create an account:**
+   - Click the "Registrarse" tab
+   - Fill in: username, email, password
+   - Accept terms and click "Crear Cuenta"
+5. **Login** with your new credentials
+6. **Dashboard** - View your stats, server status, and access the game
+7. **Click "Entrar al Juego"** to start playing
+
+### Default Admin Account
+
+**⚠️ IMPORTANT**: Change these credentials immediately!
+
+- Username: `admin`
+- Password: `admin123`
+- Access admin panel at: `https://your-domain.com/admin.html`
+
+### Available Pages
+
+- `/` - Landing page with game info
+- `/login.html` - User login and registration
+- `/dashboard.html` - Player dashboard (requires login)
+- `/help.html` - Complete game guide and tutorial
+- `/admin.html` - Admin panel (requires admin role)
+- `/play` - Game terminal (accessed from dashboard)
 
 ## 🔧 Configuration
 
@@ -215,10 +258,11 @@ See [SECURITY.md](SECURITY.md) for detailed security configuration.
 
 ## 📚 Documentation
 
-- [VPS Deployment Guide](DEPLOYMENT.md) - Detailed VPS setup instructions
-- [Security Hardening Guide](SECURITY.md) - Advanced security configuration
-- [World Management](generate-world.sh) - World data generation and backup
-- [License Information](LICENSE.md) - GPL v3+ licensing details
+- **[Architecture Guide](ARCHITECTURE.md)** - Complete system architecture and technical details
+- **[VPS Deployment Guide](DEPLOYMENT.md)** - Detailed VPS setup instructions
+- **[Security Hardening Guide](SECURITY.md)** - Advanced security configuration
+- **[World Management](generate-world.sh)** - World data generation and backup
+- **[License Information](LICENSE.md)** - GPL v3+ licensing details
 
 ## 🐛 Troubleshooting
 

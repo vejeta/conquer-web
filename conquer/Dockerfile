@@ -59,7 +59,7 @@ EXPOSE 7681
 
 # Create final startup script with environment variable substitution
 RUN echo '#!/bin/bash' > /start-ttyd.sh && \
-    echo 'exec ttyd -p 7681 -W -m ${MAX_CLIENTS:-5} -c ${TTYD_USERNAME:-conquer}:${TTYD_PASSWORD:-changeme} -P ${SESSION_TIMEOUT:-1800} -t titleFixed=Conquer -t fontSize=16 -t disableLeaveAlert=true /start-conquer.sh' >> /start-ttyd.sh && \
+    echo 'exec ttyd -p 7681 -W -m ${MAX_CLIENTS:-5} -c ${TTYD_USERNAME:-conquer}:${TTYD_PASSWORD:-changeme} -P ${SESSION_TIMEOUT:-1800} -t titleFixed="Conquer Strategy Game" -t fontSize=18 -t fontFamily="Cascadia Code, Fira Code, monospace" -t cursorBlink=true -t disableLeaveAlert=true -t theme="{\"background\":\"#1e1e1e\",\"foreground\":\"#d4d4d4\"}" /start-conquer.sh' >> /start-ttyd.sh && \
     chmod +x /start-ttyd.sh
 
 CMD ["/start-ttyd.sh"]

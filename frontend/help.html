@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayuda - Conquer Web</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="container help-page">
+        <header class="page-header">
+            <h1 class="game-title-small">📖 Guía de Conquer</h1>
+            <nav class="breadcrumb">
+                <a href="/index.html">Inicio</a> &gt;
+                <a href="/dashboard.html">Dashboard</a> &gt;
+                <span>Ayuda</span>
+            </nav>
+        </header>
+
+        <aside class="help-sidebar">
+            <h3>Contenido</h3>
+            <nav class="help-nav">
+                <a href="#getting-started" class="help-nav-link">Primeros Pasos</a>
+                <a href="#game-basics" class="help-nav-link">Conceptos Básicos</a>
+                <a href="#commands" class="help-nav-link">Comandos</a>
+                <a href="#strategy" class="help-nav-link">Estrategia</a>
+                <a href="#diplomacy" class="help-nav-link">Diplomacia</a>
+                <a href="#combat" class="help-nav-link">Combate</a>
+                <a href="#economy" class="help-nav-link">Economía</a>
+                <a href="#tips" class="help-nav-link">Consejos</a>
+                <a href="#faq" class="help-nav-link">FAQ</a>
+            </nav>
+        </aside>
+
+        <main class="help-content">
+            <section id="getting-started" class="help-section">
+                <h2>🚀 Primeros Pasos</h2>
+                <div class="help-card">
+                    <h3>Bienvenido a Conquer</h3>
+                    <p>Conquer es un juego de estrategia por turnos donde controlas una nación y compites contra otros jugadores por el dominio del mundo.</p>
+
+                    <h4>1. Crear una cuenta</h4>
+                    <ul>
+                        <li>Haz clic en "Jugar Ahora" desde la página principal</li>
+                        <li>Selecciona la pestaña "Registrarse"</li>
+                        <li>Completa el formulario con tu información</li>
+                        <li>¡Listo! Ya puedes empezar a jugar</li>
+                    </ul>
+
+                    <h4>2. Entrar al juego</h4>
+                    <ul>
+                        <li>Inicia sesión con tu usuario y contraseña</li>
+                        <li>En el dashboard, haz clic en "Entrar al Juego"</li>
+                        <li>Se abrirá la interfaz de terminal del juego</li>
+                        <li>Sigue las instrucciones en pantalla</li>
+                    </ul>
+
+                    <h4>3. Tu primera partida</h4>
+                    <ul>
+                        <li>Lee la introducción del juego</li>
+                        <li>Elige tu nación inicial</li>
+                        <li>Familiarízate con los comandos básicos</li>
+                        <li>Explora el mundo y planifica tu estrategia</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="game-basics" class="help-section">
+                <h2>📚 Conceptos Básicos</h2>
+                <div class="help-card">
+                    <h3>Elementos del Juego</h3>
+
+                    <div class="concept">
+                        <h4>🏰 Ciudades</h4>
+                        <p>Las ciudades son la base de tu imperio. Producen recursos, tropas y generan ingresos. Cuantas más ciudades controles, más poderoso serás.</p>
+                    </div>
+
+                    <div class="concept">
+                        <h4>⚔️ Ejércitos</h4>
+                        <p>Necesitas ejércitos para conquistar territorios y defender tus ciudades. Los ejércitos se componen de diferentes unidades con fortalezas y debilidades.</p>
+                    </div>
+
+                    <div class="concept">
+                        <h4>💰 Recursos</h4>
+                        <p>Los recursos son esenciales para mantener tu imperio. Necesitas oro para pagar tropas, comida para alimentar tu población, y materiales para construir.</p>
+                    </div>
+
+                    <div class="concept">
+                        <h4>👥 Diplomacia</h4>
+                        <p>Puedes formar alianzas con otros jugadores, declarar guerras, o negociar tratados de paz. La diplomacia es clave para sobrevivir.</p>
+                    </div>
+
+                    <div class="concept">
+                        <h4>🗺️ Territorios</h4>
+                        <p>El mundo está dividido en territorios. Cada territorio puede tener ciudades, recursos naturales, y valor estratégico.</p>
+                    </div>
+
+                    <div class="concept">
+                        <h4>⏱️ Turnos</h4>
+                        <p>El juego avanza por turnos. En cada turno puedes realizar acciones como mover ejércitos, construir, o negociar.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="commands" class="help-section">
+                <h2>⌨️ Comandos Principales</h2>
+                <div class="help-card">
+                    <p>Conquer utiliza comandos de texto. Aquí están los más importantes:</p>
+
+                    <div class="command-grid">
+                        <div class="command-item">
+                            <code>help</code>
+                            <span>Muestra la ayuda en el juego</span>
+                        </div>
+                        <div class="command-item">
+                            <code>map</code>
+                            <span>Muestra el mapa del mundo</span>
+                        </div>
+                        <div class="command-item">
+                            <code>status</code>
+                            <span>Estado de tu nación</span>
+                        </div>
+                        <div class="command-item">
+                            <code>cities</code>
+                            <span>Lista tus ciudades</span>
+                        </div>
+                        <div class="command-item">
+                            <code>armies</code>
+                            <span>Lista tus ejércitos</span>
+                        </div>
+                        <div class="command-item">
+                            <code>move [army] [location]</code>
+                            <span>Mover un ejército</span>
+                        </div>
+                        <div class="command-item">
+                            <code>attack [target]</code>
+                            <span>Atacar un enemigo</span>
+                        </div>
+                        <div class="command-item">
+                            <code>build [type] [location]</code>
+                            <span>Construir en una ciudad</span>
+                        </div>
+                        <div class="command-item">
+                            <code>recruit [type] [amount]</code>
+                            <span>Reclutar tropas</span>
+                        </div>
+                        <div class="command-item">
+                            <code>diplomacy</code>
+                            <span>Menú de diplomacia</span>
+                        </div>
+                        <div class="command-item">
+                            <code>next</code>
+                            <span>Terminar tu turno</span>
+                        </div>
+                        <div class="command-item">
+                            <code>quit</code>
+                            <span>Salir del juego</span>
+                        </div>
+                    </div>
+
+                    <div class="tip-box">
+                        <strong>💡 Consejo:</strong> Puedes escribir <code>help [comando]</code> para obtener ayuda detallada sobre un comando específico.
+                    </div>
+                </div>
+            </section>
+
+            <section id="strategy" class="help-section">
+                <h2>🎯 Estrategia</h2>
+                <div class="help-card">
+                    <h3>Consejos Estratégicos</h3>
+
+                    <div class="strategy-section">
+                        <h4>Fase Inicial</h4>
+                        <ul>
+                            <li><strong>Explora:</strong> Conoce el mapa y localiza recursos valiosos</li>
+                            <li><strong>Expande:</strong> Conquista territorios cercanos débiles</li>
+                            <li><strong>Construye:</strong> Mejora tus ciudades iniciales</li>
+                            <li><strong>Defiende:</strong> Mantén ejércitos defensivos en tus fronteras</li>
+                        </ul>
+                    </div>
+
+                    <div class="strategy-section">
+                        <h4>Fase Media</h4>
+                        <ul>
+                            <li><strong>Consolida:</strong> Fortalece tus territorios conquistados</li>
+                            <li><strong>Diplomacia:</strong> Forma alianzas estratégicas</li>
+                            <li><strong>Economía:</strong> Desarrolla tu infraestructura económica</li>
+                            <li><strong>Moderniza:</strong> Mejora tus unidades militares</li>
+                        </ul>
+                    </div>
+
+                    <div class="strategy-section">
+                        <h4>Fase Final</h4>
+                        <ul>
+                            <li><strong>Dominio:</strong> Lanza campañas decisivas</li>
+                            <li><strong>Control:</strong> Mantén la estabilidad en tu imperio</li>
+                            <li><strong>Presión:</strong> Asfixia económicamente a tus enemigos</li>
+                            <li><strong>Victoria:</strong> Cumple los objetivos de victoria</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="diplomacy" class="help-section">
+                <h2>🤝 Diplomacia</h2>
+                <div class="help-card">
+                    <h3>Relaciones con otros jugadores</h3>
+
+                    <div class="diplo-option">
+                        <h4>Alianzas</h4>
+                        <p>Las alianzas te protegen y te permiten coordinar ataques. Elige aliados de confianza que complementen tu estrategia.</p>
+                    </div>
+
+                    <div class="diplo-option">
+                        <h4>Tratados de Paz</h4>
+                        <p>Si no puedes ganar una guerra, negocia la paz. Esto te da tiempo para recuperarte y reorganizarte.</p>
+                    </div>
+
+                    <div class="diplo-option">
+                        <h4>Comercio</h4>
+                        <p>Intercambia recursos con otros jugadores. El comercio puede ser más rentable que la guerra.</p>
+                    </div>
+
+                    <div class="diplo-option">
+                        <h4>Declarar Guerra</h4>
+                        <p>Antes de atacar, asegúrate de tener la capacidad militar y económica para sostener una guerra.</p>
+                    </div>
+
+                    <div class="warning-box">
+                        <strong>⚠️ Advertencia:</strong> Romper alianzas o tratados puede dañar tu reputación y hacer que otros jugadores no confíen en ti.
+                    </div>
+                </div>
+            </section>
+
+            <section id="combat" class="help-section">
+                <h2>⚔️ Combate</h2>
+                <div class="help-card">
+                    <h3>Sistema de Combate</h3>
+
+                    <p>El combate en Conquer es táctico y depende de múltiples factores:</p>
+
+                    <div class="combat-factors">
+                        <div class="factor">
+                            <h4>Tipos de Unidades</h4>
+                            <ul>
+                                <li><strong>Infantería:</strong> Versátil y económica</li>
+                                <li><strong>Caballería:</strong> Rápida y poderosa</li>
+                                <li><strong>Arqueros:</strong> Ataque a distancia</li>
+                                <li><strong>Artillería:</strong> Daño masivo (costosa)</li>
+                            </ul>
+                        </div>
+
+                        <div class="factor">
+                            <h4>Factores de Combate</h4>
+                            <ul>
+                                <li><strong>Número:</strong> Más tropas = más poder</li>
+                                <li><strong>Experiencia:</strong> Veteranos luchan mejor</li>
+                                <li><strong>Moral:</strong> Afecta el rendimiento</li>
+                                <li><strong>Terreno:</strong> Montañas, ríos, etc.</li>
+                                <li><strong>Suministros:</strong> Tropas sin comida = débiles</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="tip-box">
+                        <strong>💡 Consejo:</strong> No subestimes la importancia de la logística. Un ejército grande sin suministros es inútil.
+                    </div>
+                </div>
+            </section>
+
+            <section id="economy" class="help-section">
+                <h2>💰 Economía</h2>
+                <div class="help-card">
+                    <h3>Gestión Económica</h3>
+
+                    <div class="econ-section">
+                        <h4>Ingresos</h4>
+                        <ul>
+                            <li>Impuestos de ciudades</li>
+                            <li>Comercio con otras naciones</li>
+                            <li>Recursos naturales</li>
+                            <li>Saqueo (guerra)</li>
+                        </ul>
+                    </div>
+
+                    <div class="econ-section">
+                        <h4>Gastos</h4>
+                        <ul>
+                            <li>Mantenimiento de ejércitos</li>
+                            <li>Construcción de edificios</li>
+                            <li>Investigación y tecnología</li>
+                            <li>Subsidios a ciudades</li>
+                        </ul>
+                    </div>
+
+                    <div class="econ-section">
+                        <h4>Balance</h4>
+                        <p>Mantén un balance positivo entre ingresos y gastos. Si gastas más de lo que produces, tu imperio colapsará económicamente.</p>
+                    </div>
+
+                    <div class="warning-box">
+                        <strong>⚠️ Importante:</strong> La bancarrota puede forzarte a disolver ejércitos o perder ciudades por rebeliones.
+                    </div>
+                </div>
+            </section>
+
+            <section id="tips" class="help-section">
+                <h2>💡 Consejos Útiles</h2>
+                <div class="help-card">
+                    <div class="tips-grid">
+                        <div class="tip">
+                            <h4>🎯 Planifica a largo plazo</h4>
+                            <p>No te centres solo en el turno actual. Piensa en dónde quieres estar en 10-20 turnos.</p>
+                        </div>
+
+                        <div class="tip">
+                            <h4>🛡️ Defiende primero</h4>
+                            <p>Asegura tus fronteras antes de expandirte agresivamente.</p>
+                        </div>
+
+                        <div class="tip">
+                            <h4>📊 Conoce tus números</h4>
+                            <p>Revisa constantemente tus estadísticas económicas y militares.</p>
+                        </div>
+
+                        <div class="tip">
+                            <h4>🤝 Haz amigos</h4>
+                            <p>Es difícil ganar solo. Las alianzas son cruciales.</p>
+                        </div>
+
+                        <div class="tip">
+                            <h4>⏱️ Sé paciente</h4>
+                            <p>Conquer recompensa la estrategia a largo plazo, no las decisiones impulsivas.</p>
+                        </div>
+
+                        <div class="tip">
+                            <h4>📖 Lee la ayuda del juego</h4>
+                            <p>Usa el comando <code>help</code> frecuentemente dentro del juego.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="faq" class="help-section">
+                <h2>❓ Preguntas Frecuentes</h2>
+                <div class="help-card">
+                    <div class="faq-item">
+                        <h4>¿Cómo guardo mi progreso?</h4>
+                        <p>El juego guarda automáticamente tu progreso después de cada turno. No necesitas hacer nada especial.</p>
+                    </div>
+
+                    <div class="faq-item">
+                        <h4>¿Puedo jugar desde el móvil?</h4>
+                        <p>Sí, pero la experiencia es mejor en computadora con teclado físico debido a la interfaz de terminal.</p>
+                    </div>
+
+                    <div class="faq-item">
+                        <h4>¿Qué pasa si pierdo la conexión?</h4>
+                        <p>Tu sesión se guardará. Puedes reconectarte y continuar desde donde lo dejaste.</p>
+                    </div>
+
+                    <div class="faq-item">
+                        <h4>¿Cuánto tiempo dura una partida?</h4>
+                        <p>Depende del número de jugadores y la estrategia. Puede durar desde días hasta semanas (tiempo real).</p>
+                    </div>
+
+                    <div class="faq-item">
+                        <h4>¿Puedo tener múltiples naciones?</h4>
+                        <p>No, cada jugador controla una única nación para mantener el balance del juego.</p>
+                    </div>
+
+                    <div class="faq-item">
+                        <h4>¿Hay límite de tiempo por turno?</h4>
+                        <p>Sí, tu sesión tiene un tiempo límite (normalmente 30 minutos). Completa tus acciones antes de que expire.</p>
+                    </div>
+
+                    <div class="faq-item">
+                        <h4>¿Cómo reporto un bug?</h4>
+                        <p>Contacta al administrador o abre un issue en <a href="https://github.com/vejeta/conquer-web/issues">GitHub</a>.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="help-cta">
+                <h2>¿Listo para jugar?</h2>
+                <a href="/dashboard.html" class="btn btn-primary btn-large">Ir al Dashboard</a>
+            </section>
+        </main>
+
+        <footer>
+            <p>Conquer Web &copy; 2025 | <a href="https://github.com/vejeta/conquer-web">GitHub</a></p>
+        </footer>
+    </div>
+
+    <script src="/js/help.js"></script>
+</body>
+</html>
