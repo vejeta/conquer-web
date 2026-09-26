@@ -25,11 +25,12 @@ For development work on your local machine:
 ./setup-environment.sh
 # Choose option 1: Local development
 
-# Start local development environment
-docker-compose up -d
+# Start local development environment (loads config/local.env,
+# creates the self-signed certificate and data/lib/ if missing)
+./start-local.sh
 ```
 
-- **URL**: https://localhost
+- **URL**: https://conquer.local (landing page), https://conquer.local/play/ (game)
 - **Setup**: Full Docker environment (Apache + Conquer containers)
 - **SSL**: Self-signed certificate (accept browser warning)
 
@@ -45,9 +46,74 @@ For deployment on a VPS with existing Apache:
 sudo ./deploy-to-vps.sh
 ```
 
-- **URL**: https://your-configured-domain.com
+- **URL**: https://your-configured-domain.com (landing page), `/play/` (game)
 - **Setup**: Host Apache + Conquer container
 - **SSL**: Let's Encrypt certificate
+
+## 🕹️ How Players Access the Game
+
+- **`https://your-domain/`** – public landing page (`web/index.html`): what Conquer is,
+  how to join, how turns work and a key reference.
+- **`https://your-domain/play/`** – the game terminal (ttyd), protected by the site
+  access credentials (`TTYD_USERNAME` / `TTYD_PASSWORD`).
+
+After signing in, players see a menu instead of a raw game prompt:
+
+1. **Play** – checks that the terminal is at least 80x24, then starts Conquer
+   (nation name + nation password). Quitting the game returns to the menu.
+2. **How to join / how turns work**
+3. **Key reference**
+4. **Scores**
+5. **Full help** – the in-game help screens
+
+The menu also shows the last turn update and the turn schedule.
+
+## 👑 Game Administration
+
+### Creating nations
+
+During the test phase, nations are created by the administrator, not by players:
+
+```bash
+./add-nation.sh      # runs "conqrun -a" inside the running container
+```
+
+Then give the player their nation name and nation password, plus the site access
+credentials.
+
+### Turn updates
+
+Turns are resolved automatically by cron inside the game container. Configure
+the schedule in `config/local.env` or `config/production.env`:
+
+```bash
+TZ=Europe/Madrid
+TURN_SCHEDULE="0 20 * * 0"                     # weekly, Sundays at 20:00
+TURN_SCHEDULE_LABEL="Weekly, Sundays at 20:00"  # text shown to players
+# TURN_SCHEDULE="0 20 * * *"                   # daily at 20:00
+# TURN_SCHEDULE=off                             # manual updates only
+```
+
+Conquer refuses to update while players are logged in, so the update is retried
+every `TURN_RETRY_MINUTES` (default 10) up to `TURN_MAX_RETRIES` times
+(default 18, i.e. 3 hours). Results appear in the container logs (`./logs.sh`).
+
+To run a turn immediately:
+
+```bash
+./run-turn.sh
+```
+
+After changing the schedule, recreate the container so it picks up the new
+settings (`./stop.sh && ./start-local.sh` locally,
+`sudo systemctl restart conquer-web` on the VPS).
+
+### World data persistence
+
+The live world is stored on the host in `data/lib/` and mounted into the
+container, so rebuilding or upgrading the image keeps player progress. On first
+start the container copies the default world shipped in the image (`conquer/lib/`)
+into `data/lib/`.
 
 ## 🔧 Configuration
 
@@ -92,21 +158,29 @@ SESSION_TIMEOUT=1800
 Conquer requires world data to run. Generate it before first use:
 
 ```bash
-# Generate world data
+# Generate world data (becomes the default world in conquer/lib/)
 ./generate-world.sh
 
-# Backup existing world (optional)
+# Backup the live world (data/lib/)
 ./backup-world.sh
 
-# Restore world from backup (optional)
-./restore-world.sh backup-YYYY-MM-DD-HHMMSS.tar.gz
+# Restore the live world from a backup, then restart the container
+./restore-world.sh world_backup_YYYYMMDD_HHMMSS.tar.gz
 ```
+
+`generate-world.sh` replaces the default world shipped in the image. The running
+game keeps using `data/lib/` until you back it up, remove it, rebuild the image
+and start again.
 
 ## 📁 Project Structure
 
 ```
 conquer-web/
 ├── conquer/                    # Conquer game Docker container
+│   ├── lib/                   # Default world shipped in the image
+│   └── scripts/               # Entrypoint, player menu, turn runner
+├── web/                       # Public landing page
+├── data/lib/                  # Live world data (created at runtime, not in git)
 ├── apache/                     # Apache Docker container (local only)
 ├── vps/                       # VPS-specific configurations
 ├── config/                    # Environment configurations
@@ -124,7 +198,10 @@ conquer-web/
 ├── backup-world.sh           # Backup world data
 ├── restore-world.sh          # Restore world from backup
 ├── reset-to-default-world.sh # Reset to default world
-└── health-check.sh           # Container health verification
+├── health-check.sh           # Container health verification
+├── add-nation.sh             # Create a player nation (admin)
+├── run-turn.sh               # Run a turn update now (admin)
+└── setup-local-certs.sh      # Self-signed certificate for local use
 ```
 
 ## 🔍 Management
@@ -202,8 +279,8 @@ See [SECURITY.md](SECURITY.md) for detailed security configuration.
 1. **Install Dependencies**: Docker, Docker Compose
 2. **Generate World**: `./generate-world.sh`
 3. **Setup Environment**: `./setup-environment.sh` (choose option 1)
-4. **Start Development**: `docker-compose up -d`
-5. **Access Game**: https://localhost
+4. **Start Development**: `./start-local.sh`
+5. **Access Game**: https://conquer.local
 
 ### VPS Deployment
 
