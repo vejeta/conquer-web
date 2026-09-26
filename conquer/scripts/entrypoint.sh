@@ -20,6 +20,15 @@ fi
 # Help files must match the compiled binary, refresh them on every start
 cp "$PREFIX"/share/help[0-5] "$WORLD_DIR/"
 
+# Every player and the administrator run as this container user. Conquer
+# (CHECKUSER) only lets one uid add several nations if it owns the god
+# nation, and worlds generated elsewhere belong to another uid.
+god_uid=$("$PREFIX/bin/conqowner" -d "$WORLD_DIR")
+if [ "$god_uid" != "$(id -u)" ]; then
+    echo "[entrypoint] Setting god nation owner from uid $god_uid to $(id -u)"
+    "$PREFIX/bin/conqowner" -d "$WORLD_DIR" -s "$(id -u)" >/dev/null
+fi
+
 # Schedule turn updates. cron does not inherit the container environment,
 # so pass the settings the turn script needs explicitly.
 if [ "$TURN_SCHEDULE" != "off" ]; then

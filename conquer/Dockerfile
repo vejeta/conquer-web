@@ -39,6 +39,14 @@ RUN make PREFIX=${CONQUER_PREFIX} && \
     cp conquer conqrun conqsort ${CONQUER_PREFIX}/bin/ && \
     cp help0 help1 help2 help3 help4 help5 ${CONQUER_PREFIX}/share/
 
+# conqowner: fixes the god nation owner so the admin can add every nation
+# (built against the game headers so the data layout always matches)
+COPY tools/conqowner.c /root/conqowner.c
+RUN gcc -std=gnu99 -D_GNU_SOURCE -O2 -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 \
+        -DDEFAULTDIR=\"${CONQUER_PREFIX}/lib\" -DEXEDIR=\"${CONQUER_PREFIX}/bin\" \
+        -DVERSION=\"4\" -DPATCHLEVEL=\"12\" -DLOGIN=\"root\" -DADMIN -DCONQUER \
+        -I. -o ${CONQUER_PREFIX}/bin/conqowner /root/conqowner.c
+
 ENV PATH="${CONQUER_PREFIX}/bin:${PATH}"
 
 # Default world shipped with the image. It is copied into the data volume
