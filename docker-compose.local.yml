@@ -5,6 +5,10 @@ services:
   conquer:
     build:
       context: ./conquer
+      args:
+        # uid of the unprivileged game user; match the host user that owns
+        # data/ so the backup scripts can read it without sudo
+        CONQUER_UID: ${CONQUER_UID:-1000}
     container_name: conquer-local
     environment:
       - TTYD_USERNAME=${TTYD_USERNAME:-dev}

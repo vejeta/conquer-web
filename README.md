@@ -136,10 +136,16 @@ container, so rebuilding or upgrading the image keeps player progress. On first
 start the container copies the default world shipped in the image (`conquer/lib/`)
 into `data/lib/`.
 
-Every player and the administrator run as the same user inside the container.
-Because Conquer ties nations to Unix users, the container makes that user the
-owner of the god nation on startup (`conqowner`), otherwise `add-nation.sh`
-could only ever create one nation.
+The game runs as an **unprivileged user** (`conquer`, uid `CONQUER_UID`,
+default 1000): the entrypoint only uses root to prepare the volumes and cron,
+then ttyd, the menu, the game and every turn update run as that user. `data/`
+is owned by that uid on the host; set `CONQUER_UID` to your own uid (`id -u`)
+so the backup scripts can read it without `sudo`.
+
+Every player and the administrator share that user. Because Conquer ties
+nations to Unix users, the container makes it the owner of the god nation on
+startup (`conqowner`), otherwise `add-nation.sh` could only ever create one
+nation.
 
 ## 🔧 Configuration
 

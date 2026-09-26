@@ -26,4 +26,4 @@ echo "You will be asked for the nation name, password, race and class."
 echo "Give the player the nation name and password when you are done."
 echo ""
 
-exec docker exec -it "$CONTAINER" conqrun -a
+exec docker exec -it -u conquer "$CONTAINER" conqrun -a

@@ -10,7 +10,7 @@ export TERM=xterm-256color
 PREFIX="${CONQUER_PREFIX:-/opt/conquer}"
 WORLD_DIR="$PREFIX/lib"
 MIN_COLS=80
-UPDATING_FLAG=/run/conquer-turn
+UPDATING_FLAG=/run/conquer/turn
 MIN_ROWS=24
 
 TURN_SCHEDULE_LABEL=""

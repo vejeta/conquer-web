@@ -71,7 +71,7 @@ jobs:
 
       - name: Default world, owner fix and public status
         run: |
-          test "$(docker exec conquer-local conqowner)" = 0
+          test "$(docker exec conquer-local conqowner)" = 1000
           docker exec conquer-local conquer -s | grep -q 'Turn 1'
           test "$(curl -sk https://localhost/status/status.json | jq .turn)" = 1
           test "$(curl -sk https://localhost/status/status.json | jq -r .schedule)" = "$TURN_SCHEDULE_LABEL"
@@ -83,6 +83,26 @@ jobs:
           test "$(curl -sk https://localhost/status/status.json | jq .turn)" = 2
           test "$(curl -sk https://localhost/status/status.json | jq -r .turn_state.state)" = ok
           ls data/backups/world_turn1_*.tar.gz
+
+      - name: Game runs as an unprivileged user
+        run: |
+          test "$(docker exec conquer-local stat -c %U /proc/1)" = conquer
+          test "$(stat -c %u data/lib/data)" = 1000
+
+      - name: Scheduled turn update through cron
+        env:
+          TURN_SCHEDULE: "* * * * *"
+        run: |
+          docker compose -f docker-compose.local.yml up -d --force-recreate conquer
+          for i in $(seq 1 50); do
+            if docker logs conquer-local 2>&1 | grep -q 'Turn update completed, now turn 3'; then
+              docker logs conquer-local 2>&1 | grep '^\[turn'
+              exit 0
+            fi
+            sleep 3
+          done
+          docker logs conquer-local
+          exit 1
 
       - name: Container logs
         if: always()

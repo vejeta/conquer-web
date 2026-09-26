@@ -21,4 +21,4 @@ if [ -z "$CONTAINER" ]; then
 fi
 
 echo "⏭️  Running turn update in $CONTAINER"
-exec docker exec "$CONTAINER" conquer-turn --now
+exec docker exec -u conquer "$CONTAINER" conquer-turn --now

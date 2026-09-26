@@ -34,6 +34,16 @@ validate_email() {
     fi
 }
 
+# uid for the game user in the container: the invoking user, never root
+game_uid() {
+    local uid
+    uid=$(id -u)
+    if [ "$uid" = 0 ]; then
+        uid=${SUDO_UID:-1000}
+    fi
+    echo "$uid"
+}
+
 # Turn update settings shared by both environments
 turn_settings() {
     cat << 'SETTINGS'
@@ -112,6 +122,9 @@ SESSION_TIMEOUT=3600
 # Shown to players in the menu under "How to join"
 ADMIN_CONTACT=
 $(turn_settings)
+
+# uid the game runs as inside the container (owner of data/ on this host)
+CONQUER_UID=$(game_uid)
 EOF
 
     echo "✅ Local environment configured!"
@@ -197,6 +210,9 @@ SESSION_TIMEOUT=$PROD_TIMEOUT
 # Shown to players in the menu under "How to join"
 ADMIN_CONTACT="$PROD_CONTACT"
 $(turn_settings)
+
+# uid the game runs as inside the container (owner of data/ on this host)
+CONQUER_UID=$(game_uid)
 EOF
 
     echo "✅ Production environment configured!"

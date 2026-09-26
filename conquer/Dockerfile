@@ -18,6 +18,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 #   /opt/conquer/lib  -> live world data (mounted as a volume)
 ENV CONQUER_PREFIX=/opt/conquer
 
+# The game runs as this unprivileged user. Conquer compiles the building user
+# (whoami) in as its administrator (LOGIN), so build as that user too: then
+# turn updates and nation creation work without root.
+ARG CONQUER_UID=1000
+RUN useradd -m -u "${CONQUER_UID}" -s /bin/bash conquer
+
 # Game sources: the repository's default branch unless CONQUER_REF names a
 # branch, tag or commit (recommended for reproducible builds)
 ARG CONQUER_REPO=https://github.com/vejeta/conquer.git
@@ -25,11 +31,14 @@ ARG CONQUER_REF=
 WORKDIR /src
 RUN git clone "${CONQUER_REPO}" conquer && \
     if [ -n "${CONQUER_REF}" ]; then git -C conquer checkout "${CONQUER_REF}"; fi && \
-    git -C conquer log -1 --format='Conquer sources: %H %s'
+    git -C conquer log -1 --format='Conquer sources: %H %s' && \
+    chown -R conquer:conquer conquer
 
 WORKDIR /src/conquer/gpl-release
-RUN make PREFIX=${CONQUER_PREFIX} && \
-    mkdir -p ${CONQUER_PREFIX}/bin ${CONQUER_PREFIX}/lib ${CONQUER_PREFIX}/share && \
+USER conquer
+RUN make PREFIX=${CONQUER_PREFIX}
+USER root
+RUN mkdir -p ${CONQUER_PREFIX}/bin ${CONQUER_PREFIX}/lib ${CONQUER_PREFIX}/share && \
     cp conquer conqrun conqsort ${CONQUER_PREFIX}/bin/ && \
     cp help0 help1 help2 help3 help4 help5 ${CONQUER_PREFIX}/share/
 
@@ -38,7 +47,7 @@ RUN make PREFIX=${CONQUER_PREFIX} && \
 COPY tools/conqowner.c /src/conqowner.c
 RUN gcc -std=gnu99 -D_GNU_SOURCE -O2 -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 \
         -DDEFAULTDIR=\"${CONQUER_PREFIX}/lib\" -DEXEDIR=\"${CONQUER_PREFIX}/bin\" \
-        -DVERSION=\"4\" -DPATCHLEVEL=\"12\" -DLOGIN=\"root\" -DADMIN -DCONQUER \
+        -DVERSION=\"4\" -DPATCHLEVEL=\"12\" -DLOGIN=\"conquer\" -DADMIN -DCONQUER \
         -I. -o ${CONQUER_PREFIX}/bin/conqowner /src/conqowner.c
 
 # ttyd: official static release binary, pinned and checksum-verified.
@@ -71,6 +80,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 ENV CONQUER_PREFIX=/opt/conquer
 ENV PATH="${CONQUER_PREFIX}/bin:${PATH}"
+
+# Same user and uid as in the build stage (the game checks it at runtime).
+# The entrypoint starts as root only to prepare the volumes and cron, then
+# runs ttyd, the menu, the game and every turn update as this user.
+ARG CONQUER_UID=1000
+RUN useradd -m -u "${CONQUER_UID}" -s /bin/bash conquer
 
 COPY --from=build /usr/local/bin/ttyd /usr/local/bin/ttyd
 COPY --from=build ${CONQUER_PREFIX} ${CONQUER_PREFIX}

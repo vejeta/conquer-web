@@ -16,6 +16,12 @@
 #
 # Usage: conquer-turn [--now]   (--now: no grace period and no retries)
 
+# Always run as the game user: files written as root (backups, news, the
+# world data) would not be writable by the game afterwards
+if [ "$(id -u)" = 0 ] && id conquer >/dev/null 2>&1; then
+    exec setpriv --reuid=conquer --regid=conquer --init-groups "$0" "$@"
+fi
+
 PREFIX="${CONQUER_PREFIX:-/opt/conquer}"
 WORLD_DIR="$PREFIX/lib"
 BACKUP_DIR="$PREFIX/backups"
@@ -26,7 +32,7 @@ MAX_RETRIES="${TURN_MAX_RETRIES:-18}"
 
 # Present while an update is pending or running; the player menu refuses
 # new games while it exists
-UPDATING_FLAG=/run/conquer-turn
+UPDATING_FLAG=/run/conquer/turn
 STATE_FILE="$WORLD_DIR/.turn-state"
 
 if [ "$1" = "--now" ]; then
@@ -119,7 +125,7 @@ notify() {
 }
 
 # Never run two updates at once (cron and a manual run-turn.sh)
-exec 9> /run/conquer-turn.lock
+exec 9> /run/conquer/turn.lock
 if ! flock -n 9; then
     log "Another turn update is already running"
     exit 1

@@ -5,6 +5,12 @@
 # Publish the public game status (turn, schedule, scores) as JSON for the
 # landing page. Run at container start and after every turn update.
 
+# Always run as the game user: files written as root (backups, news, the
+# world data) would not be writable by the game afterwards
+if [ "$(id -u)" = 0 ] && id conquer >/dev/null 2>&1; then
+    exec setpriv --reuid=conquer --regid=conquer --init-groups "$0" "$@"
+fi
+
 PREFIX="${CONQUER_PREFIX:-/opt/conquer}"
 PUBLIC_DIR="${PUBLIC_DIR:-$PREFIX/public}"
 
