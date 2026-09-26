@@ -18,5 +18,5 @@ COPY security.conf /usr/local/apache2/conf/extra/security.conf
 RUN echo "Include conf/extra/httpd-proxy.conf" >> /usr/local/apache2/conf/httpd.conf
 RUN echo "Include conf/extra/security.conf" >> /usr/local/apache2/conf/httpd.conf
 
-# Incluir certificado self-signed por defecto
-COPY certs/selfsigned/ /usr/local/apache2/conf/certs/live/conquer.local/
+# Certificates are mounted at runtime (see docker-compose files and
+# setup-local-certs.sh); private keys are never baked into the image.
