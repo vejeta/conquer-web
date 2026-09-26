@@ -96,6 +96,7 @@ jobs:
           docker exec conquer-local conquer -s | grep -q 'Turn 2'
           test "$(curl -sk https://localhost/status/status.json | jq .turn)" = 2
           test "$(curl -sk https://localhost/status/status.json | jq -r .turn_state.state)" = ok
+          test "$(curl -sk https://localhost/status/status.json | jq '.news | length')" -ge 1
           ls data/backups/world_turn1_*.tar.gz
 
       - name: Game runs as an unprivileged user

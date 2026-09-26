@@ -84,6 +84,12 @@ SPDX-License-Identifier: GPL-3.0-or-later
     .keys kbd { min-width: 2.2em; text-align: center; }
     .note { border-left: 3px solid var(--warn); padding-left: 12px; color: var(--muted); }
     #status-warning { color: var(--text); margin: 0 0 16px; }
+    #news details { border-top: 1px solid var(--border); padding: 8px 0; }
+    #news details:first-child { border-top: 0; padding-top: 0; }
+    #news summary { cursor: pointer; font-weight: 600; }
+    #news h3 { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 12px 0 4px; }
+    #news ul { margin: 0; }
+    #news li { overflow-wrap: anywhere; }
     .countdown { color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
     a { color: var(--accent); }
     footer { text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: 32px; }
@@ -125,6 +131,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
         <tbody id="status-scores"></tbody>
       </table>
     </div>
+  </section>
+
+  <section id="news" hidden>
+    <h2>World news</h2>
+    <div id="news-editions"></div>
   </section>
 
   <section>
@@ -200,6 +211,38 @@ SPDX-License-Identifier: GPL-3.0-or-later
   </footer>
 </main>
 <script>
+  // Latest world newspapers: newest edition open, older ones collapsed
+  function renderNews(editions) {
+    var box = document.getElementById('news-editions');
+    var MAX_ITEMS = 12;
+    editions.forEach(function (ed, i) {
+      var det = document.createElement('details');
+      det.open = i === 0;
+      var sum = document.createElement('summary');
+      sum.textContent = 'Turn ' + ed.turn;
+      det.appendChild(sum);
+      ed.sections.forEach(function (sec) {
+        var h = document.createElement('h3');
+        h.textContent = sec.title;
+        det.appendChild(h);
+        var ul = document.createElement('ul');
+        sec.items.slice(0, MAX_ITEMS).forEach(function (item) {
+          var li = document.createElement('li');
+          li.textContent = item;
+          ul.appendChild(li);
+        });
+        if (sec.items.length > MAX_ITEMS) {
+          var more = document.createElement('li');
+          more.textContent = '… and ' + (sec.items.length - MAX_ITEMS) + ' more (read the newspaper in the game)';
+          ul.appendChild(more);
+        }
+        det.appendChild(ul);
+      });
+      box.appendChild(det);
+    });
+    document.getElementById('news').hidden = editions.length === 0;
+  }
+
   // Public game status published by the game container after every turn
   fetch('/status/status.json', { cache: 'no-store' })
     .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
@@ -222,6 +265,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
         setInterval(tick, 30000);
         document.getElementById('status-next-box').hidden = false;
       }
+      renderNews(d.news || []);
       var ts = d.turn_state || {};
       if (ts.state === 'failed') {
         var w = document.getElementById('status-warning');
