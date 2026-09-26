@@ -60,7 +60,7 @@ then one of the following extended command keys.
                   '-': separate army into two units
                   '/': separate army into two equal units
 END
-                    Welcome to Conquer Version 4.11a
+                    Welcome to Conquer 4.12
 
 CONQUER is a multi player computer game designed to run under the UNIX
 operating system.  In CONQUER,  each player is the leader of a nation,
@@ -118,7 +118,7 @@ world, other than his own.  The demi-god for each world is indicated
 in the campaign information display ('I').
 
       Perhaps god is looking for people to run his worlds.  Send mail
-to mendezr and you may find out.
+to root and you may find out.
 END
                         CONQUER COMMANDS -- lower case commands
 
