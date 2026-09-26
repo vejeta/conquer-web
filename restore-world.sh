@@ -9,7 +9,7 @@ echo "==============================="
 echo ""
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DOCKER_LIB_DIR="$SCRIPT_DIR/conquer/lib"
+DOCKER_LIB_DIR="$SCRIPT_DIR/data/lib"
 BACKUP_DIR="$SCRIPT_DIR/backups"
 
 # Function to list available backups
@@ -58,7 +58,7 @@ backup_current() {
         local backup_file="$BACKUP_DIR/world_backup_pre_restore_$timestamp.tar.gz"
 
         cd "$SCRIPT_DIR"
-        if tar -czf "$backup_file" -C conquer lib/; then
+        if tar -czf "$backup_file" -C data lib/; then
             echo "✅ Current world backed up to: $(basename "$backup_file")"
         else
             echo "⚠️  Warning: Failed to backup current world"
@@ -81,7 +81,7 @@ restore_world() {
 
     # Extract backup
     cd "$SCRIPT_DIR"
-    if tar -xzf "$backup_file"; then
+    if tar -xzf "$backup_file" -C "$SCRIPT_DIR/data"; then
         echo "✅ World data restored successfully!"
 
         # Set proper permissions
@@ -182,9 +182,8 @@ main() {
         echo "🎉 World restore completed!"
         echo ""
         echo "📋 Next steps:"
-        echo "  1. Rebuild containers: ./rebuild.sh --force"
-        echo "  2. Start the game: ./start-local.sh"
-        echo "  3. Access at: https://conquer.local"
+        echo "  1. Restart the game container so it reloads the world:"
+        echo "     docker restart conquer-local   (or conquer-vps on the VPS)"
     else
         echo "❌ Restore failed"
         exit 1

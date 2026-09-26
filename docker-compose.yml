@@ -14,6 +14,16 @@ services:
       - TTYD_PASSWORD=${TTYD_PASSWORD:-changeme}
       - MAX_CLIENTS=${MAX_CLIENTS:-5}
       - SESSION_TIMEOUT=${SESSION_TIMEOUT:-1800}
+      - TTYD_FONT_SIZE=${TTYD_FONT_SIZE:-16}
+      - TZ=${TZ:-UTC}
+      - TURN_SCHEDULE=${TURN_SCHEDULE:-0 20 * * 0}
+      - TURN_SCHEDULE_LABEL=${TURN_SCHEDULE_LABEL:-Weekly, Sundays at 20:00 UTC}
+      - TURN_RETRY_MINUTES=${TURN_RETRY_MINUTES:-10}
+      - TURN_MAX_RETRIES=${TURN_MAX_RETRIES:-18}
+      - ADMIN_CONTACT=${ADMIN_CONTACT:-}
+    volumes:
+      # Live world data: persists across rebuilds, seeded on first start
+      - ./data/lib:/opt/conquer/lib
     restart: unless-stopped
 
   apache:
@@ -21,6 +31,8 @@ services:
       context: ./apache
     container_name: apache-local
     volumes:
+      # Public landing page
+      - ./web:/usr/local/apache2/htdocs:ro
       - ./apache/certs/live:/usr/local/apache2/conf/certs/live:rw
     ports:
       - "80:80"

@@ -11,6 +11,16 @@ services:
       - TTYD_PASSWORD=${TTYD_PASSWORD:-changeme}
       - MAX_CLIENTS=${MAX_CLIENTS:-10}
       - SESSION_TIMEOUT=${SESSION_TIMEOUT:-3600}
+      - TTYD_FONT_SIZE=${TTYD_FONT_SIZE:-16}
+      - TZ=${TZ:-UTC}
+      - TURN_SCHEDULE=${TURN_SCHEDULE:-0 20 * * 0}
+      - TURN_SCHEDULE_LABEL=${TURN_SCHEDULE_LABEL:-Weekly, Sundays at 20:00 UTC}
+      - TURN_RETRY_MINUTES=${TURN_RETRY_MINUTES:-10}
+      - TURN_MAX_RETRIES=${TURN_MAX_RETRIES:-18}
+      - ADMIN_CONTACT=${ADMIN_CONTACT:-}
+    volumes:
+      # Live world data: persists across rebuilds, seeded on first start
+      - ./data/lib:/opt/conquer/lib
     restart: unless-stopped
     networks:
       - conquer-local
@@ -19,6 +29,8 @@ services:
     build: ./apache
     container_name: apache-local
     volumes:
+      # Public landing page
+      - ./web:/usr/local/apache2/htdocs:ro
       # Local self-signed certificates
       - ./apache/certs/live/conquer.local:/usr/local/apache2/conf/certs/live/conquer.local:ro
       # Local Apache configuration

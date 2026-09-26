@@ -9,10 +9,15 @@ ARG TTYD_PASSWORD=changeme
 ARG MAX_CLIENTS=5
 ARG SESSION_TIMEOUT=1800
 
-# Dependencias
-RUN apt-get update && apt-get install -y \
-    git build-essential libncurses5-dev libncursesw5-dev \
-    cmake libjson-c-dev libwebsockets-dev
+# Build and runtime dependencies
+# - cron/tzdata: scheduled turn updates in the configured time zone
+# - curl: container health check
+# - less: pager for scores in the player menu
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates git build-essential libncurses5-dev libncursesw5-dev \
+    cmake libjson-c-dev libwebsockets-dev \
+    cron tzdata curl less \
+    && rm -rf /var/lib/apt/lists/*
 
 # Clone and compile ttyd
 WORKDIR /opt
@@ -21,45 +26,43 @@ RUN mkdir -p /opt/ttyd/build
 WORKDIR /opt/ttyd/build
 RUN cmake .. && make && make install
 
-# Clonar y compilar Conquer
+# Conquer hardcodes its data (DEFAULTDIR) and binary (EXEDIR) paths at
+# compile time. Build with a fixed prefix so help files and conqsort are found:
+#   /opt/conquer/bin  -> conquer, conqrun, conqsort
+#   /opt/conquer/lib  -> live world data (mounted as a volume)
+ENV CONQUER_PREFIX=/opt/conquer
 WORKDIR /root
 RUN git clone https://github.com/vejeta/conquer.git
 WORKDIR /root/conquer/gpl-release
-RUN make
-#RUN make install
+RUN make PREFIX=${CONQUER_PREFIX} && \
+    mkdir -p ${CONQUER_PREFIX}/bin ${CONQUER_PREFIX}/lib ${CONQUER_PREFIX}/share && \
+    cp conquer conqrun conqsort ${CONQUER_PREFIX}/bin/ && \
+    cp help0 help1 help2 help3 help4 help5 ${CONQUER_PREFIX}/share/
 
-# This will copy an externally generated world data into the docker image.
-COPY lib/ ./lib/
-COPY lib/.userlog ./lib/.userlog
+ENV PATH="${CONQUER_PREFIX}/bin:${PATH}"
+
+# Default world shipped with the image. It is copied into the data volume
+# on first start only, so player progress survives rebuilds.
+COPY lib/ ${CONQUER_PREFIX}/default-world/
 
 # Create non-root user for security
 RUN useradd -m -s /bin/bash conqueruser && \
     mkdir -p /home/conqueruser && \
     chown -R conqueruser:conqueruser /home/conqueruser
 
-# Create symlink for game data directory (game expects /usr/lib/conquer)
-RUN mkdir -p /usr/lib && ln -sf /root/conquer/gpl-release/lib /usr/lib/conquer
+# Container scripts
+COPY scripts/entrypoint.sh /usr/local/bin/conquer-entrypoint
+COPY scripts/menu.sh /usr/local/bin/conquer-menu
+COPY scripts/turn.sh /usr/local/bin/conquer-turn
+RUN chmod 755 /usr/local/bin/conquer-entrypoint /usr/local/bin/conquer-menu /usr/local/bin/conquer-turn
 
-# Create a startup script with security
-RUN echo '#!/bin/bash' > /start-conquer.sh && \
-    echo 'cd /root/conquer/gpl-release' >> /start-conquer.sh && \
-    echo 'export TERM=xterm-256color' >> /start-conquer.sh && \
-    echo 'echo "=== CONQUER GAME ==="' >> /start-conquer.sh && \
-    echo 'echo "Authenticated user session"' >> /start-conquer.sh && \
-    echo 'echo "Waiting for terminal to be ready..."' >> /start-conquer.sh && \
-    echo 'sleep 2' >> /start-conquer.sh && \
-    echo 'echo "Starting game now..."' >> /start-conquer.sh && \
-    echo 'exec ./conquer' >> /start-conquer.sh && \
-    chmod +x /start-conquer.sh
+VOLUME ["/opt/conquer/lib"]
 
 # Exponer el puerto de ttyd
 EXPOSE 7681
 
-# Lanzar conquer con ttyd usando el script
+# ttyd answers 401 without credentials, so authenticate the probe
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
+    CMD curl -fsS -o /dev/null -u "${TTYD_USERNAME:-conquer}:${TTYD_PASSWORD:-changeme}" http://localhost:7681/play/ || exit 1
 
-# Create final startup script with environment variable substitution
-RUN echo '#!/bin/bash' > /start-ttyd.sh && \
-    echo 'exec ttyd -p 7681 -W -m ${MAX_CLIENTS:-5} -c ${TTYD_USERNAME:-conquer}:${TTYD_PASSWORD:-changeme} -P ${SESSION_TIMEOUT:-1800} -t titleFixed=Conquer -t fontSize=16 -t disableLeaveAlert=true /start-conquer.sh' >> /start-ttyd.sh && \
-    chmod +x /start-ttyd.sh
-
-CMD ["/start-ttyd.sh"]
+CMD ["/usr/local/bin/conquer-entrypoint"]

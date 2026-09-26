@@ -34,6 +34,26 @@ validate_email() {
     fi
 }
 
+# Turn update settings shared by both environments
+turn_settings() {
+    cat << 'SETTINGS'
+
+# Turn updates (cron format: minute hour day-of-month month day-of-week)
+# Weekly on Sundays at 20:00 while players learn the game.
+# Daily at 20:00 would be "0 20 * * *". Use "off" to disable.
+TZ=UTC
+TURN_SCHEDULE="0 20 * * 0"
+# Human-readable schedule shown to players in the game menu
+TURN_SCHEDULE_LABEL="Weekly, Sundays at 20:00 UTC"
+# The update waits while players are logged in: retry interval and attempts
+TURN_RETRY_MINUTES=10
+TURN_MAX_RETRIES=18
+
+# Terminal font size in the browser
+TTYD_FONT_SIZE=16
+SETTINGS
+}
+
 # Setup local environment
 setup_local() {
     echo "📋 Setting up LOCAL development environment..."
@@ -80,6 +100,10 @@ TTYD_USERNAME=$LOCAL_USER
 TTYD_PASSWORD=$LOCAL_PASS
 MAX_CLIENTS=$LOCAL_MAX_CLIENTS
 SESSION_TIMEOUT=3600
+
+# Shown to players in the menu under "How to join"
+ADMIN_CONTACT=
+$(turn_settings)
 EOF
 
     echo "✅ Local environment configured!"
@@ -136,6 +160,9 @@ setup_vps_production() {
     read -p "Session timeout in seconds [1800]: " PROD_TIMEOUT
     PROD_TIMEOUT=${PROD_TIMEOUT:-1800}
 
+    # Contact shown to players who want a nation
+    read -p "Administrator contact shown to players (e.g. email, optional): " PROD_CONTACT
+
     # Create production.env
     cat > config/production.env << EOF
 # Production Environment Configuration
@@ -158,6 +185,10 @@ TTYD_USERNAME=$PROD_USER
 TTYD_PASSWORD=$PROD_PASS
 MAX_CLIENTS=$PROD_MAX_CLIENTS
 SESSION_TIMEOUT=$PROD_TIMEOUT
+
+# Shown to players in the menu under "How to join"
+ADMIN_CONTACT="$PROD_CONTACT"
+$(turn_settings)
 EOF
 
     echo "✅ Production environment configured!"

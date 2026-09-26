@@ -61,7 +61,7 @@ fi
 # Check world data status
 echo ""
 echo "🌍 World Data Status:"
-WORLD_LIB_DIR="$(pwd)/conquer/lib"
+WORLD_LIB_DIR="$(pwd)/data/lib"
 
 if [ -d "$WORLD_LIB_DIR" ]; then
     echo "   World directory: ✅ Found ($WORLD_LIB_DIR)"

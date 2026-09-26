@@ -44,3 +44,5 @@ Thumbs.db
 backups/
 lib/.userlog
 lib/data
+# Live world data (mounted into the game container)
+data/
