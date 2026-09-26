@@ -123,16 +123,17 @@ jobs:
         env:
           TZ: Europe/Madrid
           TURN_SCHEDULE: "0 20 * * 0"
+          # Only the new container publishes this label; the previous one
+          # (scheduled every minute) may still rewrite the status meanwhile
+          TURN_SCHEDULE_LABEL: "Madrid schedule check"
         run: |
           status() { curl -sk https://localhost/status/status.json | jq -r "$1"; }
-          before=$(status .generated)
-          sleep 1
           docker compose -f docker-compose.local.yml up -d --force-recreate conquer
-          # wait for the new container to publish a fresh status
           for i in $(seq 1 30); do
-            [ "$(status .generated)" != "$before" ] && break
+            [ "$(status .schedule)" = "$TURN_SCHEDULE_LABEL" ] && break
             sleep 2
           done
+          test "$(status .schedule)" = "$TURN_SCHEDULE_LABEL"
           next=$(status .next_turn)
           echo "next turn: $(date -d "@$next")"
           # Sunday (7) at 20:00 Madrid time
