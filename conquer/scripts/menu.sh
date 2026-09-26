@@ -23,6 +23,35 @@ yellow=$(tput setaf 3 2>/dev/null)
 green=$(tput setaf 2 2>/dev/null)
 reset=$(tput sgr0 2>/dev/null)
 
+# The game engine reports and auto-repairs inconsistent world data on start
+# ("file main.c: line N: nation[X] army[Y] ... (water)"). Those lines are
+# diagnostics for the administrator, not for players, so drop them.
+# Login prompts are also written to stderr without a trailing newline, so
+# filter byte by byte and only hold back text that may start a diagnostic.
+FILTER_DIAGNOSTICS='
+$| = 1;
+my $buf = "";
+while (sysread(STDIN, my $chunk, 4096)) {
+    $buf .= $chunk;
+    while ($buf =~ s/^([^\n]*\n)//) {
+        my $line = $1;
+        print $line unless $line =~ /^files? \S+: line \d+: /;
+    }
+    if ($buf ne "" && index("files ", $buf) != 0 && $buf !~ /^files? /) {
+        print $buf;
+        $buf = "";
+    }
+}
+print $buf;
+'
+
+run_game() {
+    "$PREFIX/bin/conquer" "$@" 2> >(perl -e "$FILTER_DIAGNOSTICS" >&2)
+    local status=$?
+    wait $! 2>/dev/null
+    return $status
+}
+
 pause() {
     echo
     read -r -s -n 1 -p "${dim}Press any key to return to the menu...${reset}"
@@ -130,12 +159,13 @@ show_scores() {
 play() {
     check_terminal_size
     clear
-    "$PREFIX/bin/conquer"
+    run_game
     local status=$?
     if [ $status -ne 0 ]; then
         echo
-        echo "${yellow}The game exited with status $status.${reset}"
-        echo "If the world is being updated, try again in a few minutes."
+        echo "${yellow}Could not enter the game.${reset}"
+        echo "Check your nation name and password. If a turn update is"
+        echo "running, try again in a few minutes."
         pause
     fi
 }
@@ -155,7 +185,7 @@ while true; do
         2) show_how_to_join ;;
         3) show_keys ;;
         4) show_scores ;;
-        5) check_terminal_size; "$PREFIX/bin/conquer" -h ;;
+        5) check_terminal_size; run_game -h ;;
         q|Q) clear; echo "Goodbye, commander."; exit 0 ;;
     esac
 done
