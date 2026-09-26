@@ -15,6 +15,7 @@ UPDATING_FLAG=/run/conquer/turn
 PLAYER="${TTYD_USER:-}"
 MIN_ROWS=24
 
+TURN_SCHEDULE=""
 TURN_SCHEDULE_LABEL=""
 ADMIN_CONTACT=""
 # shellcheck source=/dev/null
@@ -112,6 +113,11 @@ show_banner() {
     [ -n "$PLAYER" ] && echo "  ${dim}Signed in as:    ${reset} ${bold}${PLAYER}${reset}"
     echo "  ${dim}Last turn update:${reset} $(last_update)"
     echo "  ${dim}Turn schedule:   ${reset} ${TURN_SCHEDULE_LABEL:-see game administrator}"
+    local next
+    if [ -n "$TURN_SCHEDULE" ] && [ "$TURN_SCHEDULE" != off ] \
+        && next=$(/usr/local/bin/conquer-next-turn "$TURN_SCHEDULE" 2>/dev/null); then
+        echo "  ${dim}Next turn update:${reset} $(date -d "@$next" '+%a %d %b %H:%M %Z')"
+    fi
     if [ -e "$UPDATING_FLAG" ]; then
         echo
         echo "  ${yellow}${bold}A turn update is in progress.${reset} Please come back in a few minutes."

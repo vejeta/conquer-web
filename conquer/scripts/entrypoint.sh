@@ -89,6 +89,7 @@ fi
 
 # Settings shown to players by the menu
 cat > /etc/conquer-web.env <<EOF
+TURN_SCHEDULE="$TURN_SCHEDULE"
 TURN_SCHEDULE_LABEL="${TURN_SCHEDULE_LABEL:-Weekly, Sundays at 20:00 ${TZ:-UTC}}"
 ADMIN_CONTACT="${ADMIN_CONTACT:-}"
 EOF

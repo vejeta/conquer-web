@@ -84,6 +84,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     .keys kbd { min-width: 2.2em; text-align: center; }
     .note { border-left: 3px solid var(--warn); padding-left: 12px; color: var(--muted); }
     #status-warning { color: var(--text); margin: 0 0 16px; }
+    .countdown { color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
     a { color: var(--accent); }
     footer { text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: 32px; }
     .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
@@ -116,6 +117,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
       <div class="fact"><div class="label">Season</div><div class="value" id="status-season"></div></div>
       <div class="fact"><div class="label">Last update</div><div class="value" id="status-last"></div></div>
       <div class="fact"><div class="label">Turn schedule</div><div class="value" id="status-schedule"></div></div>
+      <div class="fact" id="status-next-box" hidden><div class="label">Next update</div><div class="value" id="status-next"></div><div class="countdown" id="status-countdown"></div></div>
     </div>
     <div class="table-wrap">
       <table>
@@ -207,6 +209,19 @@ SPDX-License-Identifier: GPL-3.0-or-later
       set('status-season', d.season || '-');
       set('status-last', d.last_update || 'not yet');
       set('status-schedule', d.schedule || 'set by the administrator');
+      if (d.next_turn) {
+        var next = new Date(d.next_turn * 1000);
+        set('status-next', next.toLocaleString(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }));
+        var tick = function () {
+          var s = Math.round((next - Date.now()) / 1000);
+          if (s <= 0) { set('status-countdown', 'updating now'); return; }
+          var dd = Math.floor(s / 86400), hh = Math.floor(s % 86400 / 3600), mm = Math.floor(s % 3600 / 60);
+          set('status-countdown', 'in ' + (dd ? dd + 'd ' : '') + (dd || hh ? hh + 'h ' : '') + mm + 'm');
+        };
+        tick();
+        setInterval(tick, 30000);
+        document.getElementById('status-next-box').hidden = false;
+      }
       var ts = d.turn_state || {};
       if (ts.state === 'failed') {
         var w = document.getElementById('status-warning');

@@ -118,6 +118,25 @@ jobs:
           docker logs conquer-local
           exit 1
 
+      - name: Next turn time follows the schedule and time zone
+        env:
+          TZ: Europe/Madrid
+          TURN_SCHEDULE: "0 20 * * 0"
+        run: |
+          status() { curl -sk https://localhost/status/status.json | jq -r "$1"; }
+          before=$(status .generated)
+          sleep 1
+          docker compose -f docker-compose.local.yml up -d --force-recreate conquer
+          # wait for the new container to publish a fresh status
+          for i in $(seq 1 30); do
+            [ "$(status .generated)" != "$before" ] && break
+            sleep 2
+          done
+          next=$(status .next_turn)
+          echo "next turn: $(date -d "@$next")"
+          # Sunday (7) at 20:00 Madrid time
+          test "$(date -d "@$next" +%u-%H:%M)" = "7-20:00"
+
       - name: Container logs
         if: always()
         run: docker compose -f docker-compose.local.yml logs --no-color

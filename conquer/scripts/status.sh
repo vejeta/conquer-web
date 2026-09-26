@@ -14,9 +14,15 @@ fi
 PREFIX="${CONQUER_PREFIX:-/opt/conquer}"
 PUBLIC_DIR="${PUBLIC_DIR:-$PREFIX/public}"
 
-TURN_SCHEDULE_LABEL=""
+TURN_SCHEDULE="" TURN_SCHEDULE_LABEL=""
 # shellcheck source=/dev/null
 [ -f /etc/conquer-web.env ] && . /etc/conquer-web.env
+
+# Time of the next scheduled turn update (Unix time), if any
+next_turn=""
+if [ -n "$TURN_SCHEDULE" ] && [ "$TURN_SCHEDULE" != off ]; then
+    next_turn=$(/usr/local/bin/conquer-next-turn "$TURN_SCHEDULE" 2>/dev/null)
+fi
 
 # Result of the last turn update, written by conquer-turn
 TURN_STATE="" TURN_STATE_TIME="" TURN_STATE_MESSAGE=""
@@ -32,7 +38,8 @@ tmp=$(mktemp "$PUBLIC_DIR/.status.XXXXXX") || exit 1
 # "Last Update:" line, a column header and one row per nation. Monster
 # nations (pirates, savages...) have no score and are left out.
 awk -v schedule="$TURN_SCHEDULE_LABEL" -v generated="$(date -u '+%Y-%m-%dT%H:%M:%SZ')" \
-    -v state="$TURN_STATE" -v state_time="$TURN_STATE_TIME" -v state_message="$TURN_STATE_MESSAGE" '
+    -v state="$TURN_STATE" -v state_time="$TURN_STATE_TIME" -v state_message="$TURN_STATE_MESSAGE" \
+    -v next_turn="$next_turn" '
 function json(s) {
     gsub(/\\/, "\\\\", s); gsub(/"/, "\\\"", s); gsub(/\t/, " ", s)
     return "\"" s "\""
@@ -53,6 +60,7 @@ NF >= 6 && $1 ~ /^[0-9]+$/ && $6 ~ /^[0-9]+$/ {
 END {
     printf "{\"generated\":%s,\"season\":%s,\"turn\":%d,\"last_update\":%s,\"schedule\":%s,",
         json(generated), json(season), turn, json(last), json(schedule)
+    printf "\"next_turn\":%s,", (next_turn ~ /^[0-9]+$/ ? next_turn : "null")
     printf "\"turn_state\":{\"state\":%s,\"time\":%s,\"message\":%s},\"nations\":[",
         json(state), json(state_time), json(state_message)
     for (i = 1; i <= n; i++) printf "%s%s", (i > 1 ? "," : ""), rows[i]
