@@ -62,6 +62,13 @@ jobs:
           test "$(code https://localhost/play/)" = 401
           test "$(code -u "$TTYD_USERNAME:$TTYD_PASSWORD" https://localhost/play/)" = 200
 
+      - name: No credentials in the container logs
+        run: |
+          if docker logs conquer-local 2>&1 | grep -iE "credential|$TTYD_PASSWORD"; then
+            echo "Credentials leaked to the logs" >&2
+            exit 1
+          fi
+
       - name: Default world, owner fix and public status
         run: |
           test "$(docker exec conquer-local conqowner)" = 0

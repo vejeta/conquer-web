@@ -68,7 +68,9 @@ EOF
 # Public status for the landing page (turn, schedule, scores)
 conquer-status || echo "[entrypoint] Could not publish game status"
 
-exec ttyd -p 7681 -W -b /play \
+# Log level 3 = errors and warnings: ttyd's notice level (7) would print the
+# site credential (base64 of user:password) to the container logs
+exec ttyd -p 7681 -W -b /play -d "${TTYD_LOG_LEVEL:-3}" \
     -m "${MAX_CLIENTS:-5}" \
     -c "${TTYD_USERNAME:-conquer}:${TTYD_PASSWORD:-changeme}" \
     -P "${SESSION_TIMEOUT:-1800}" \

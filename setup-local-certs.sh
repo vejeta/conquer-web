@@ -21,7 +21,8 @@ openssl req -x509 -nodes -newkey rsa:2048 -days "${CERT_DAYS:-365}" \
     -keyout "$CERT_DIR/privkey.pem" \
     -out "$CERT_DIR/fullchain.pem" \
     -subj "/CN=$DOMAIN" \
-    -addext "subjectAltName=DNS:$DOMAIN,DNS:localhost,IP:127.0.0.1"
+    -addext "subjectAltName=DNS:$DOMAIN,DNS:localhost,IP:127.0.0.1" \
+    -addext "basicConstraints=critical,CA:FALSE"
 
 chmod 600 "$CERT_DIR/privkey.pem"
 echo "✅ Self-signed certificate created in $CERT_DIR"
