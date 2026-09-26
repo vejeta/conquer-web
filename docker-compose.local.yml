@@ -11,8 +11,6 @@ services:
         CONQUER_UID: ${CONQUER_UID:-1000}
     container_name: conquer-local
     environment:
-      - TTYD_USERNAME=${TTYD_USERNAME:-dev}
-      - TTYD_PASSWORD=${TTYD_PASSWORD:-changeme}
       - MAX_CLIENTS=${MAX_CLIENTS:-10}
       - SESSION_TIMEOUT=${SESSION_TIMEOUT:-3600}
       - TTYD_FONT_SIZE=${TTYD_FONT_SIZE:-16}
@@ -43,6 +41,8 @@ services:
       # Public landing page
       - ./web:/usr/local/apache2/htdocs:ro
       - ./data/public:/usr/local/apache2/status:ro
+      # Player accounts (manage-players.sh)
+      - ./data/auth:/usr/local/apache2/conf/conquer:ro
       # Local self-signed certificates
       - ./apache/certs/live/conquer.local:/usr/local/apache2/conf/certs/live/conquer.local:ro
       # Local Apache configuration

@@ -20,6 +20,14 @@ jobs:
       - name: ShellCheck
         run: shellcheck -S warning ./*.sh conquer/scripts/*.sh
 
+      - name: Game password check is the last <Location> in the Apache configs
+        run: |
+          for f in apache/local.conf vps/virtualhost.conf.template; do
+            awk '/<Location "\/play\/">/ { seen = 1; next }
+                 seen && /<Location/ { print FILENAME ": <Location> after /play/: " $0; bad = 1 }
+                 END { exit bad }' "$f"
+          done
+
       - name: Dockerfile checks
         run: |
           docker build --check ./conquer
@@ -39,7 +47,8 @@ jobs:
       - name: Prepare local environment
         run: |
           ./setup-local-certs.sh
-          mkdir -p data/lib data/public data/backups
+          mkdir -p data/lib data/public data/backups data/auth
+          printf '%s\n' "$TTYD_PASSWORD" | ./manage-players.sh add "$TTYD_USERNAME" --password-stdin
 
       - name: Build and start the local stack
         run: docker compose -f docker-compose.local.yml up -d --build
@@ -61,6 +70,11 @@ jobs:
           test "$(code https://localhost/game.html)" = 200
           test "$(code https://localhost/play/)" = 401
           test "$(code -u "$TTYD_USERNAME:$TTYD_PASSWORD" https://localhost/play/)" = 200
+          test "$(code -u "$TTYD_USERNAME:wrong-password" https://localhost/play/)" = 401
+          # A client-supplied identity header must not get past Apache
+          test "$(code -H "X-WEBAUTH-USER: $TTYD_USERNAME" https://localhost/play/)" = 401
+          # ttyd itself refuses requests that did not come through the proxy
+          test "$(docker exec conquer-local curl -s -o /dev/null -w '%{http_code}' http://localhost:7681/play/)" = 407
 
       - name: No credentials in the container logs
         run: |

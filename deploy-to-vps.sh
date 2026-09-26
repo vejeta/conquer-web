@@ -78,7 +78,7 @@ install_dependencies() {
     fi
 
     # Install other dependencies
-    apt install -y certbot python3-certbot-apache curl
+    apt install -y certbot python3-certbot-apache curl apache2-utils
 
     echo "✅ Dependencies installed"
 }
@@ -110,6 +110,18 @@ EOF
     a2enconf conquer-security
 
     echo "✅ Apache modules and security configured"
+}
+
+# Player web accounts checked by Apache for /play/
+setup_player_accounts() {
+    local file=/etc/apache2/conquer-web.htpasswd
+    if [ ! -s "$file" ]; then
+        echo "👤 Creating the administrator web account '$TTYD_USERNAME'..."
+        printf '%s\n' "$TTYD_PASSWORD" | htpasswd -ciB "$file" "$TTYD_USERNAME"
+    fi
+    chown root:www-data "$file"
+    chmod 640 "$file"
+    echo "✅ Player accounts in $file (manage with: sudo ./manage-players.sh)"
 }
 
 # Install the public landing page served at /
@@ -391,6 +403,7 @@ main() {
     install_dependencies
     configure_apache
     install_landing_page
+    setup_player_accounts
     setup_virtual_host
     setup_ssl
     build_container

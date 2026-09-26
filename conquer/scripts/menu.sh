@@ -11,6 +11,8 @@ PREFIX="${CONQUER_PREFIX:-/opt/conquer}"
 WORLD_DIR="$PREFIX/lib"
 MIN_COLS=80
 UPDATING_FLAG=/run/conquer/turn
+# Web account the player signed in with (set by ttyd from the proxy header)
+PLAYER="${TTYD_USER:-}"
 MIN_ROWS=24
 
 TURN_SCHEDULE_LABEL=""
@@ -81,6 +83,14 @@ check_terminal_size() {
     done
 }
 
+# Name of the player's nation when the web account is named after one
+player_nation() {
+    [ -n "$PLAYER" ] || return 1
+    (cd "$WORLD_DIR" && "$PREFIX/bin/conquer" -s 2>/dev/null) \
+        | awk -v n="$PLAYER" '$1 ~ /^[0-9]+$/ && $2 == n { found = 1 } END { exit !found }' \
+        && echo "$PLAYER"
+}
+
 last_update() {
     if [ -s "$WORLD_DIR/timelog" ]; then
         head -n 1 "$WORLD_DIR/timelog"
@@ -99,6 +109,7 @@ show_banner() {
     echo "  \\____\\___/|_| |_|\\__, |\\__,_|\\___|_|    "
     echo "                      |_|                     "
     echo "${reset}"
+    [ -n "$PLAYER" ] && echo "  ${dim}Signed in as:    ${reset} ${bold}${PLAYER}${reset}"
     echo "  ${dim}Last turn update:${reset} $(last_update)"
     echo "  ${dim}Turn schedule:   ${reset} ${TURN_SCHEDULE_LABEL:-see game administrator}"
     if [ -e "$UPDATING_FLAG" ]; then
@@ -125,10 +136,12 @@ ${bold}How to join the game${reset}
 During the test phase new nations are created by the game administrator.
 
   1. Ask the administrator for a nation. You will receive:
-       - your nation name
+       - a player account for this site (usually your nation's name)
        - your nation password
-  2. Choose "Play" in this menu.
-  3. Type your nation name, then your nation password.
+  2. Sign in with your player account and choose "Play" in this menu.
+  3. Your nation opens directly: type your nation password.
+     (If your account is not named after your nation, type the nation
+     name first.)
 
 ${bold}How turns work${reset}
 
@@ -183,7 +196,13 @@ play() {
     fi
     check_terminal_size
     clear
-    run_game
+    local nation
+    if nation=$(player_nation); then
+        echo "Opening your nation ${bold}${nation}${reset}."
+        run_game -n "$nation"
+    else
+        run_game
+    fi
     local status=$?
     if [ -e "$UPDATING_FLAG" ]; then
         clear

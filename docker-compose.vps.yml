@@ -14,8 +14,6 @@ services:
         CONQUER_UID: ${CONQUER_UID:-1000}
     container_name: conquer-vps
     environment:
-      - TTYD_USERNAME=${TTYD_USERNAME:-user}
-      - TTYD_PASSWORD=${TTYD_PASSWORD:-changeme}
       - MAX_CLIENTS=${MAX_CLIENTS:-5}
       - SESSION_TIMEOUT=${SESSION_TIMEOUT:-1800}
       - TTYD_FONT_SIZE=${TTYD_FONT_SIZE:-16}

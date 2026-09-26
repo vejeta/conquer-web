@@ -59,8 +59,8 @@ sudo ./deploy-to-vps.sh
   the terminal and adds an on-screen key bar (movement, Esc, Enter, Ctrl-L...) that
   is shown by default on phones and tablets. On small screens the terminal font is
   scaled down so the game always gets its 80x24 screen.
-- **`https://your-domain/play/`** – the game terminal itself (ttyd), protected by
-  the site access credentials (`TTYD_USERNAME` / `TTYD_PASSWORD`).
+- **`https://your-domain/play/`** – the game terminal itself (ttyd). Every player
+  signs in with **their own account** (see *Player accounts* below).
 - **`https://your-domain/status/status.json`** – public game status, written by the
   game container at startup and after every turn update.
 
@@ -85,8 +85,33 @@ During the test phase, nations are created by the administrator, not by players:
 ./add-nation.sh      # runs "conqrun -a" inside the running container
 ```
 
-Then give the player their nation name and nation password, plus the site access
-credentials.
+After the nation, the script offers to create the player's web account (see
+below). Give the player that account and the nation password.
+
+### Player accounts
+
+Players sign in to `/play/` with their own account. Apache checks it and
+passes the account name to the game, so an account named like a nation opens
+that nation directly (the player only types the nation password).
+
+```bash
+./manage-players.sh add kestrel        # create or reset (asks for a password,
+                                       # or generates one if left empty)
+./manage-players.sh remove kestrel     # revoke access
+./manage-players.sh list
+```
+
+The accounts live in `data/auth/htpasswd` locally and in
+`/etc/apache2/conquer-web.htpasswd` on the VPS (use `sudo` there); changes
+apply immediately. `TTYD_USERNAME`/`TTYD_PASSWORD` from the environment file
+create the administrator's account the first time (`start-local.sh`,
+`deploy-to-vps.sh`); that account is not a nation, so it can open any nation
+with its nation password. Failed sign-ins are counted by the fail2ban filter
+from `setup-security.sh`.
+
+ttyd trusts the account name Apache sends, so only Apache may reach it: port
+7681 is not published in the local setup and is bound to `127.0.0.1` on the
+VPS (anyone with a shell on the VPS could reach it directly).
 
 ### Turn updates
 
@@ -151,7 +176,9 @@ nation.
 
 ### Authentication Setup
 
-Configure authentication during setup or by editing environment files:
+`TTYD_USERNAME`/`TTYD_PASSWORD` define the administrator's web account, created
+on first start; players get their own accounts with `./manage-players.sh`.
+Configure them during setup or by editing environment files:
 
 **Local Development** (`config/local.env`):
 ```bash
@@ -173,8 +200,9 @@ SESSION_TIMEOUT=1800
 
 **🔐 IMPORTANT**: Change default credentials before first use!
 
-1. **Edit environment file** (see above) - Change `TTYD_USERNAME` and `TTYD_PASSWORD`
-2. **Restart containers**:
+1. **Change a password** with `./manage-players.sh add NAME` (it resets an
+   existing account); no restart is needed.
+2. **Other settings**: edit the environment file (see above) and restart:
    - Local: `./rebuild.sh --quick`
    - VPS: `sudo systemctl restart conquer-web`
 
@@ -220,6 +248,7 @@ conquer-web/
 ├── web/                       # Landing page and mobile-friendly game page
 ├── data/lib/                  # Live world data (created at runtime, not in git)
 ├── data/public/               # Published status.json (created at runtime)
+├── data/auth/                 # Player accounts, htpasswd (local setup)
 ├── apache/                     # Apache Docker container (local only)
 ├── vps/                       # VPS-specific configurations
 ├── config/                    # Environment configurations
@@ -238,6 +267,7 @@ conquer-web/
 ├── reset-to-default-world.sh # Reset to default world
 ├── health-check.sh           # Container health verification
 ├── add-nation.sh             # Create a player nation (admin)
+├── manage-players.sh         # Player web accounts (admin)
 ├── run-turn.sh               # Run a turn update now (admin)
 └── setup-local-certs.sh      # Self-signed certificate for local use
 ```

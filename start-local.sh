@@ -28,7 +28,13 @@ if [ ! -f "$CERT_PATH/fullchain.pem" ] || [ ! -f "$CERT_PATH/privkey.pem" ]; the
 fi
 
 # Live world data directory (seeded by the container on first start)
-mkdir -p data/lib data/public data/backups
+mkdir -p data/lib data/public data/backups data/auth
+
+# Player accounts: create the administrator's account on first start
+if [ ! -s data/auth/htpasswd ]; then
+    echo "📋 Creating the administrator web account '$TTYD_USERNAME'"
+    printf '%s\n' "$TTYD_PASSWORD" | ./manage-players.sh add "$TTYD_USERNAME" --password-stdin
+fi
 
 # Add domain to /etc/hosts if not present
 if ! grep -q "127.0.0.1.*$DOMAIN" /etc/hosts; then
@@ -50,4 +56,5 @@ echo "  ./logs.sh          - View container logs"
 echo "  ./stop.sh          - Stop all containers"
 echo "  ./health-check.sh  - Check service status"
 echo "  ./add-nation.sh    - Create a player nation (admin)"
+echo "  ./manage-players.sh - Manage player web accounts (admin)"
 echo "  ./run-turn.sh      - Run a turn update now (admin)"

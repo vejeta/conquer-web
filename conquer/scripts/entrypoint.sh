@@ -96,11 +96,14 @@ EOF
 # Public status for the landing page (turn, schedule, scores)
 "${AS_GAME_USER[@]}" conquer-status || echo "[entrypoint] Could not publish game status"
 
-# Log level 3 = errors and warnings: ttyd's notice level (7) would print the
-# site credential (base64 of user:password) to the container logs
+# Players sign in at the reverse proxy (Apache, per-player accounts), which
+# passes the account name in X-WEBAUTH-USER; ttyd rejects requests without
+# it and exports it to the menu as TTYD_USER. Only Apache may reach port
+# 7681: it is not published locally and bound to 127.0.0.1 on the VPS.
+# Log level 3 = errors and warnings, instead of ttyd's chatty default.
 exec "${AS_GAME_USER[@]}" ttyd -p 7681 -W -b /play -d "${TTYD_LOG_LEVEL:-3}" \
+    -H X-WEBAUTH-USER \
     -m "${MAX_CLIENTS:-5}" \
-    -c "${TTYD_USERNAME:-conquer}:${TTYD_PASSWORD:-changeme}" \
     -P "${SESSION_TIMEOUT:-1800}" \
     -t titleFixed=Conquer \
     -t fontSize="${TTYD_FONT_SIZE:-16}" \

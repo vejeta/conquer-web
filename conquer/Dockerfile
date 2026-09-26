@@ -107,8 +107,8 @@ VOLUME ["/opt/conquer/lib", "/opt/conquer/public", "/opt/conquer/backups"]
 # ttyd listens here; Apache proxies /play/ to it
 EXPOSE 7681
 
-# ttyd answers 401 without credentials, so authenticate the probe
+# ttyd trusts the proxy's identity header and answers 407 without it
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-    CMD curl -fsS -o /dev/null -u "${TTYD_USERNAME:-conquer}:${TTYD_PASSWORD:-changeme}" http://localhost:7681/play/ || exit 1
+    CMD curl -fsS -o /dev/null -H "X-WEBAUTH-USER: healthcheck" http://localhost:7681/play/ || exit 1
 
 CMD ["/usr/local/bin/conquer-entrypoint"]

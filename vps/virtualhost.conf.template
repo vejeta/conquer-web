@@ -58,6 +58,10 @@
     # Game terminal: ttyd runs with base path /play
     RedirectMatch permanent ^/play$ /play/
 
+    # Drop any client-supplied identity header so it cannot be forged
+    # (the player account check for /play/ is at the end of this vhost)
+    RequestHeader unset X-WEBAUTH-USER early
+
     # Enable rewrite engine for WebSocket upgrade
     RewriteEngine on
 
@@ -90,13 +94,6 @@
         Require all denied
     </LocationMatch>
 
-    # Rate limiting per IP for game access
-    <Location />
-        # Basic rate limiting - can be enhanced with mod_evasive
-        <RequireAll>
-            Require all granted
-        </RequireAll>
-    </Location>
 
     # Logging
     ErrorLog ${APACHE_LOG_DIR}/conquer_ssl_error.log
@@ -104,6 +101,20 @@
 
     # Log format for monitoring
     LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" combined
+
+    # Player accounts: Apache authenticates every request to the terminal
+    # (manage-players.sh edits the file) and tells ttyd who signed in.
+    # KEEP THIS THE LAST <Location> OF THE VHOST: sections are merged in
+    # order, so a later <Location /> with "Require all granted" would
+    # silently remove the password from the game.
+    <Location "/play/">
+        AuthType Basic
+        AuthName "Conquer"
+        AuthBasicProvider file
+        AuthUserFile "/etc/apache2/conquer-web.htpasswd"
+        Require valid-user
+        RequestHeader set X-WEBAUTH-USER "%{REMOTE_USER}s"
+    </Location>
 </VirtualHost>
 
 # Additional security configuration

@@ -23,7 +23,17 @@ fi
 echo "🏰 Adding a new nation in $CONTAINER"
 echo ""
 echo "You will be asked for the nation name, password, race and class."
-echo "Give the player the nation name and password when you are done."
+echo "Then you can create the player's web account for the site."
 echo ""
 
-exec docker exec -it -u conquer "$CONTAINER" conqrun -a
+docker exec -it -u conquer "$CONTAINER" conqrun -a
+
+echo ""
+read -r -p "Web account for the player (usually the nation name, empty to skip): " account
+if [ -n "$account" ]; then
+    "$(dirname "$0")/manage-players.sh" add "$account"
+    echo ""
+    echo "Give the player: the web account '$account' with its password,"
+    echo "and the nation password. An account named like the nation opens it"
+    echo "directly after signing in."
+fi
