@@ -54,7 +54,8 @@ backup_current() {
     if [ -d "$DOCKER_LIB_DIR" ] && [ "$(ls -A "$DOCKER_LIB_DIR" 2>/dev/null)" ]; then
         echo "💾 Backing up current world before restore..."
 
-        local timestamp=$(date +%Y%m%d_%H%M%S)
+        local timestamp
+        timestamp=$(date +%Y%m%d_%H%M%S)
         local backup_file="$BACKUP_DIR/world_backup_pre_restore_$timestamp.tar.gz"
 
         cd "$SCRIPT_DIR"
@@ -76,7 +77,7 @@ restore_world() {
     mkdir -p "$DOCKER_LIB_DIR"
 
     # Remove existing world data
-    rm -rf "$DOCKER_LIB_DIR"/*
+    rm -rf "${DOCKER_LIB_DIR:?}"/*
     rm -f "$DOCKER_LIB_DIR"/.*userlog* 2>/dev/null || true
 
     # Extract backup
@@ -92,12 +93,14 @@ restore_world() {
         echo ""
         echo "📊 Restored World Information:"
         if [ -f "$DOCKER_LIB_DIR/nations" ]; then
-            local nation_count=$(wc -l < "$DOCKER_LIB_DIR/nations" 2>/dev/null || echo "unknown")
+            local nation_count
+            nation_count=$(wc -l < "$DOCKER_LIB_DIR/nations" 2>/dev/null || echo "unknown")
             echo "   Nations: $nation_count"
         fi
 
         if [ -f "$DOCKER_LIB_DIR/data" ]; then
-            local data_size=$(du -h "$DOCKER_LIB_DIR/data" 2>/dev/null | cut -f1 || echo "unknown")
+            local data_size
+            data_size=$(du -h "$DOCKER_LIB_DIR/data" 2>/dev/null | cut -f1 || echo "unknown")
             echo "   World data size: $data_size"
         fi
 

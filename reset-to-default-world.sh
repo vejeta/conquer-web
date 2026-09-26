@@ -30,7 +30,8 @@ backup_current() {
         echo "💾 Backing up current world..."
 
         mkdir -p "$BACKUP_DIR"
-        local timestamp=$(date +%Y%m%d_%H%M%S)
+        local timestamp
+        timestamp=$(date +%Y%m%d_%H%M%S)
         local backup_file="$BACKUP_DIR/world_backup_before_reset_$timestamp.tar.gz"
 
         cd "$SCRIPT_DIR"
@@ -52,7 +53,7 @@ restore_default() {
     mkdir -p "$DOCKER_LIB_DIR"
 
     # Remove existing world data
-    rm -rf "$DOCKER_LIB_DIR"/*
+    rm -rf "${DOCKER_LIB_DIR:?}"/*
     rm -f "$DOCKER_LIB_DIR"/.*userlog* 2>/dev/null || true
 
     # Extract default world
@@ -68,12 +69,14 @@ restore_default() {
         echo ""
         echo "📊 Default World Information:"
         if [ -f "$DOCKER_LIB_DIR/nations" ]; then
-            local nation_count=$(wc -l < "$DOCKER_LIB_DIR/nations" 2>/dev/null || echo "unknown")
+            local nation_count
+            nation_count=$(wc -l < "$DOCKER_LIB_DIR/nations" 2>/dev/null || echo "unknown")
             echo "   Nations: $nation_count"
         fi
 
         if [ -f "$DOCKER_LIB_DIR/data" ]; then
-            local data_size=$(du -h "$DOCKER_LIB_DIR/data" 2>/dev/null | cut -f1 || echo "unknown")
+            local data_size
+            data_size=$(du -h "$DOCKER_LIB_DIR/data" 2>/dev/null | cut -f1 || echo "unknown")
             echo "   World data size: $data_size"
         fi
 
@@ -93,7 +96,8 @@ main() {
 
     # Show default world info
     echo "📋 Default World Info:"
-    local default_size=$(du -h "$DEFAULT_WORLD_BACKUP" | cut -f1)
+    local default_size
+    default_size=$(du -h "$DEFAULT_WORLD_BACKUP" | cut -f1)
     echo "   Backup file: $DEFAULT_WORLD_BACKUP"
     echo "   Backup size: $default_size"
 
@@ -102,7 +106,8 @@ main() {
         echo ""
         echo "📊 Current World Info:"
         if [ -f "$DOCKER_LIB_DIR/nations" ]; then
-            local current_nations=$(wc -l < "$DOCKER_LIB_DIR/nations" 2>/dev/null || echo "unknown")
+            local current_nations
+            current_nations=$(wc -l < "$DOCKER_LIB_DIR/nations" 2>/dev/null || echo "unknown")
             echo "   Nations: $current_nations"
         fi
 

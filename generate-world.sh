@@ -67,7 +67,8 @@ backup_existing_world() {
         local backup_dir="$SCRIPT_DIR/backups"
         mkdir -p "$backup_dir"
 
-        local timestamp=$(date +%Y%m%d_%H%M%S)
+        local timestamp
+        timestamp=$(date +%Y%m%d_%H%M%S)
         local backup_file="$backup_dir/world_backup_$timestamp.tar.gz"
 
         cd "$SCRIPT_DIR"
@@ -190,7 +191,7 @@ install_world() {
     mkdir -p "$DOCKER_LIB_DIR"
 
     # Remove old world data
-    rm -rf "$DOCKER_LIB_DIR"/*
+    rm -rf "${DOCKER_LIB_DIR:?}"/*
     rm -f "$DOCKER_LIB_DIR/.*" 2>/dev/null || true
 
     # Copy new world data
@@ -215,12 +216,14 @@ show_world_info() {
     echo "===================="
 
     if [ -f "$DOCKER_LIB_DIR/nations" ]; then
-        local nation_count=$(wc -l < "$DOCKER_LIB_DIR/nations" 2>/dev/null || echo "unknown")
+        local nation_count
+        nation_count=$(wc -l < "$DOCKER_LIB_DIR/nations" 2>/dev/null || echo "unknown")
         echo "Nations: $nation_count"
     fi
 
     if [ -f "$DOCKER_LIB_DIR/data" ]; then
-        local data_size=$(du -h "$DOCKER_LIB_DIR/data" 2>/dev/null | cut -f1 || echo "unknown")
+        local data_size
+        data_size=$(du -h "$DOCKER_LIB_DIR/data" 2>/dev/null | cut -f1 || echo "unknown")
         echo "World data size: $data_size"
     fi
 
@@ -228,7 +231,7 @@ show_world_info() {
     echo ""
 
     echo "📋 Files created:"
-    ls -la "$DOCKER_LIB_DIR" | grep -E '\.(data|nations|userlog|help|mesg|exec|news|rules)|\.$' || true
+    ls -la "$DOCKER_LIB_DIR"
 }
 
 # Main execution
