@@ -24,6 +24,8 @@ services:
     volumes:
       # Live world data: persists across rebuilds, seeded on first start
       - ./data/lib:/opt/conquer/lib
+      # Public game status (status.json) served by Apache under /status/
+      - ${STATUS_DIR:-./data/public}:/opt/conquer/public
     restart: unless-stopped
 
   apache:
@@ -33,6 +35,7 @@ services:
     volumes:
       # Public landing page
       - ./web:/usr/local/apache2/htdocs:ro
+      - ./data/public:/usr/local/apache2/status:ro
       - ./apache/certs/live:/usr/local/apache2/conf/certs/live:rw
     ports:
       - "80:80"

@@ -59,6 +59,9 @@ TURN_SCHEDULE_LABEL="${TURN_SCHEDULE_LABEL:-Weekly, Sundays at 20:00 ${TZ:-UTC}}
 ADMIN_CONTACT="${ADMIN_CONTACT:-}"
 EOF
 
+# Public status for the landing page (turn, schedule, scores)
+conquer-status || echo "[entrypoint] Could not publish game status"
+
 exec ttyd -p 7681 -W -b /play \
     -m "${MAX_CLIENTS:-5}" \
     -c "${TTYD_USERNAME:-conquer}:${TTYD_PASSWORD:-changeme}" \

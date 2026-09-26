@@ -28,7 +28,7 @@ if [ ! -f "$CERT_PATH/fullchain.pem" ] || [ ! -f "$CERT_PATH/privkey.pem" ]; the
 fi
 
 # Live world data directory (seeded by the container on first start)
-mkdir -p data/lib
+mkdir -p data/lib data/public
 
 # Add domain to /etc/hosts if not present
 if ! grep -q "127.0.0.1.*$DOMAIN" /etc/hosts; then

@@ -21,6 +21,8 @@ services:
     volumes:
       # Live world data: persists across rebuilds, seeded on first start
       - ./data/lib:/opt/conquer/lib
+      # Public game status (status.json) served by Apache under /status/
+      - ${STATUS_DIR:-./data/public}:/opt/conquer/public
     restart: unless-stopped
     networks:
       - conquer-local
@@ -31,6 +33,7 @@ services:
     volumes:
       # Public landing page
       - ./web:/usr/local/apache2/htdocs:ro
+      - ./data/public:/usr/local/apache2/status:ro
       # Local self-signed certificates
       - ./apache/certs/live/conquer.local:/usr/local/apache2/conf/certs/live/conquer.local:ro
       # Local Apache configuration

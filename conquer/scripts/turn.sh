@@ -30,6 +30,7 @@ while true; do
 
     if [ $status -eq 0 ]; then
         log "Turn update completed"
+        /usr/local/bin/conquer-status || log "Could not publish game status"
         exit 0
     fi
 

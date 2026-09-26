@@ -62,9 +62,11 @@ RUN useradd -m -s /bin/bash conqueruser && \
 COPY scripts/entrypoint.sh /usr/local/bin/conquer-entrypoint
 COPY scripts/menu.sh /usr/local/bin/conquer-menu
 COPY scripts/turn.sh /usr/local/bin/conquer-turn
-RUN chmod 755 /usr/local/bin/conquer-entrypoint /usr/local/bin/conquer-menu /usr/local/bin/conquer-turn
+COPY scripts/status.sh /usr/local/bin/conquer-status
+RUN chmod 755 /usr/local/bin/conquer-entrypoint /usr/local/bin/conquer-menu \
+    /usr/local/bin/conquer-turn /usr/local/bin/conquer-status
 
-VOLUME ["/opt/conquer/lib"]
+VOLUME ["/opt/conquer/lib", "/opt/conquer/public"]
 
 # Exponer el puerto de ttyd
 EXPOSE 7681

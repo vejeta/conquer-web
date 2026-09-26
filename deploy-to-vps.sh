@@ -123,6 +123,15 @@ install_landing_page() {
     # Live world data directory (seeded by the container on first start)
     mkdir -p "$PROJECT_DIR/data/lib"
 
+    # Public game status (status.json) is written by the container straight
+    # into the web root, so Apache serves it at /status/ without extra config
+    local status_dir="/var/www/$DOMAIN_NAME/status"
+    mkdir -p "$status_dir"
+    if ! grep -q '^STATUS_DIR=' "$PROJECT_DIR/config/production.env"; then
+        printf '\n# Public game status served at /status/\nSTATUS_DIR=%s\n' "$status_dir" \
+            >> "$PROJECT_DIR/config/production.env"
+    fi
+
     echo "✅ Landing page installed to /var/www/$DOMAIN_NAME"
 }
 

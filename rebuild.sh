@@ -79,7 +79,7 @@ source "$ENV_FILE"
 set +a
 
 # Live world data directory (seeded by the container on first start)
-mkdir -p data/lib
+mkdir -p data/lib data/public
 
 echo "   Environment: $ENV_NAME ($COMPOSE_FILE, $ENV_FILE)"
 

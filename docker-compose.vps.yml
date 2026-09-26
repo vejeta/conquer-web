@@ -24,6 +24,8 @@ services:
     volumes:
       # Live world data: persists across rebuilds, seeded on first start
       - ./data/lib:/opt/conquer/lib
+      # Public game status (status.json) served by Apache under /status/
+      - ${STATUS_DIR:-./data/public}:/opt/conquer/public
     restart: unless-stopped
     ports:
       - "127.0.0.1:7681:7681"  # Only bind to localhost for security

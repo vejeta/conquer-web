@@ -85,6 +85,17 @@ SPDX-License-Identifier: GPL-3.0-or-later
     .note { border-left: 3px solid var(--warn); padding-left: 12px; color: var(--muted); }
     a { color: var(--accent); }
     footer { text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: 32px; }
+    .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .fact { border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+    .fact .label { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .fact .value { font-weight: 600; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    th { color: var(--muted); font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    [hidden] { display: none !important; }
+    @media (max-width: 560px) { .optional { display: none; } }
   </style>
 </head>
 <body>
@@ -95,6 +106,22 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <a class="play" href="/play/">Play now</a>
     <p class="hint">You will be asked for the site access credentials first.</p>
   </header>
+
+  <section id="status" hidden>
+    <h2>Current game</h2>
+    <div class="facts">
+      <div class="fact"><div class="label">Turn</div><div class="value" id="status-turn"></div></div>
+      <div class="fact"><div class="label">Season</div><div class="value" id="status-season"></div></div>
+      <div class="fact"><div class="label">Last update</div><div class="value" id="status-last"></div></div>
+      <div class="fact"><div class="label">Turn schedule</div><div class="value" id="status-schedule"></div></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th class="num">#</th><th>Nation</th><th>Race</th><th class="optional">Class</th><th class="optional">Alignment</th><th class="num">Score</th></tr></thead>
+        <tbody id="status-scores"></tbody>
+      </table>
+    </div>
+  </section>
 
   <section>
     <h2>What is Conquer?</h2>
@@ -166,5 +193,32 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <a href="https://github.com/vejeta/conquer-web">web server</a>
   </footer>
 </main>
+<script>
+  // Public game status published by the game container after every turn
+  fetch('/status/status.json', { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function (d) {
+      function set(id, text) { document.getElementById(id).textContent = text; }
+      set('status-turn', d.turn);
+      set('status-season', d.season || '-');
+      set('status-last', d.last_update || 'not yet');
+      set('status-schedule', d.schedule || 'set by the administrator');
+      var body = document.getElementById('status-scores');
+      (d.nations || []).slice().sort(function (a, b) { return b.score - a.score; })
+        .forEach(function (n, i) {
+          var tr = document.createElement('tr');
+          [i + 1, n.name, n.race, n.class, n.alignment, n.score].forEach(function (v, col) {
+            var td = document.createElement('td');
+            td.textContent = v;
+            if (col === 0 || col === 5) td.className = 'num';
+            if (col === 3 || col === 4) td.className = 'optional';
+            tr.appendChild(td);
+          });
+          body.appendChild(tr);
+        });
+      document.getElementById('status').hidden = false;
+    })
+    .catch(function () { /* no status yet: keep the section hidden */ });
+</script>
 </body>
 </html>
