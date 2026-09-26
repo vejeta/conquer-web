@@ -1,0 +1,80 @@
+# SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ShellCheck
+        run: shellcheck -S warning ./*.sh conquer/scripts/*.sh
+
+      - name: Dockerfile checks
+        run: |
+          docker build --check ./conquer
+          docker build --check ./apache
+
+  smoke:
+    needs: lint
+    runs-on: ubuntu-latest
+    env:
+      TTYD_USERNAME: ci
+      TTYD_PASSWORD: ci-password
+      TURN_SCHEDULE: "off"
+      TURN_SCHEDULE_LABEL: "Weekly, Sundays at 20:00 UTC"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare local environment
+        run: |
+          ./setup-local-certs.sh
+          mkdir -p data/lib data/public
+
+      - name: Build and start the local stack
+        run: docker compose -f docker-compose.local.yml up -d --build
+
+      - name: Wait for the game container to be healthy
+        run: |
+          for i in $(seq 1 60); do
+            status=$(docker inspect -f '{{.State.Health.Status}}' conquer-local)
+            echo "health: $status"
+            [ "$status" = healthy ] && exit 0
+            sleep 3
+          done
+          exit 1
+
+      - name: Web pages and authentication
+        run: |
+          code() { curl -sk -o /dev/null -w '%{http_code}' "$@"; }
+          test "$(code https://localhost/)" = 200
+          test "$(code https://localhost/game.html)" = 200
+          test "$(code https://localhost/play/)" = 401
+          test "$(code -u "$TTYD_USERNAME:$TTYD_PASSWORD" https://localhost/play/)" = 200
+
+      - name: Default world, owner fix and public status
+        run: |
+          test "$(docker exec conquer-local conqowner)" = 0
+          docker exec conquer-local conquer -s | grep -q 'Turn 1'
+          test "$(curl -sk https://localhost/status/status.json | jq .turn)" = 1
+          test "$(curl -sk https://localhost/status/status.json | jq -r .schedule)" = "$TURN_SCHEDULE_LABEL"
+
+      - name: Turn update
+        run: |
+          docker exec conquer-local conquer-turn --now
+          docker exec conquer-local conquer -s | grep -q 'Turn 2'
+          test "$(curl -sk https://localhost/status/status.json | jq .turn)" = 2
+
+      - name: Container logs
+        if: always()
+        run: docker compose -f docker-compose.local.yml logs --no-color
