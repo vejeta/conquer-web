@@ -52,9 +52,10 @@ sudo ./deploy-to-vps.sh
 
 ## 🕹️ How Players Access the Game
 
-- **`https://your-domain/`** – public landing page (`web/index.html`): the current
-  turn, turn schedule and scores, what Conquer is, how to join, how turns work and
-  a key reference.
+- **`https://your-domain/`** – public landing page (`web/index.html`), in English
+  and Spanish (browser language, EN/ES switch or `?lang=es`): the current turn,
+  the next turn update with a countdown, scores, the latest world news, what
+  Conquer is, how to join, how turns work and a key reference.
 - **`https://your-domain/game.html`** – the game page opened by "Play now". It embeds
   the terminal and adds an on-screen key bar (movement, Esc, Enter, Ctrl-L...) that
   is shown by default on phones and tablets. On small screens the terminal font is
