@@ -43,11 +43,11 @@
 
     # Enhanced security headers
     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-    Header always set X-Frame-Options DENY
+    Header always set X-Frame-Options SAMEORIGIN
     Header always set X-Content-Type-Options nosniff
     Header always set X-XSS-Protection "1; mode=block"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' wss:; font-src 'self'"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' wss:; font-src 'self'; frame-ancestors 'self'"
 
     # Hide server information
     ServerSignature Off
