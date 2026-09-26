@@ -15,7 +15,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: ShellCheck
         run: shellcheck -S warning ./*.sh conquer/scripts/*.sh
@@ -34,7 +34,7 @@ jobs:
       TURN_SCHEDULE: "off"
       TURN_SCHEDULE_LABEL: "Weekly, Sundays at 20:00 UTC"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Prepare local environment
         run: |

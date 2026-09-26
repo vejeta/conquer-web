@@ -18,11 +18,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 #   /opt/conquer/lib  -> live world data (mounted as a volume)
 ENV CONQUER_PREFIX=/opt/conquer
 
-# Game sources; set CONQUER_REF to a tag or commit for reproducible builds
+# Game sources: the repository's default branch unless CONQUER_REF names a
+# branch, tag or commit (recommended for reproducible builds)
 ARG CONQUER_REPO=https://github.com/vejeta/conquer.git
-ARG CONQUER_REF=main
+ARG CONQUER_REF=
 WORKDIR /src
-RUN git clone "${CONQUER_REPO}" conquer && git -C conquer checkout "${CONQUER_REF}"
+RUN git clone "${CONQUER_REPO}" conquer && \
+    if [ -n "${CONQUER_REF}" ]; then git -C conquer checkout "${CONQUER_REF}"; fi && \
+    git -C conquer log -1 --format='Conquer sources: %H %s'
 
 WORKDIR /src/conquer/gpl-release
 RUN make PREFIX=${CONQUER_PREFIX} && \
