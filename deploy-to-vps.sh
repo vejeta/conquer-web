@@ -112,6 +112,20 @@ EOF
     echo "✅ Apache modules and security configured"
 }
 
+# Install the public landing page served at /
+install_landing_page() {
+    echo "📄 Installing landing page..."
+
+    mkdir -p "/var/www/$DOMAIN_NAME"
+    cp -r "$PROJECT_DIR/web/." "/var/www/$DOMAIN_NAME/"
+    chmod -R a+rX "/var/www/$DOMAIN_NAME"
+
+    # Live world data directory (seeded by the container on first start)
+    mkdir -p "$PROJECT_DIR/data/lib"
+
+    echo "✅ Landing page installed to /var/www/$DOMAIN_NAME"
+}
+
 # Setup Apache virtual host
 setup_virtual_host() {
     echo "🌐 Setting up Apache virtual host for $DOMAIN_NAME..."
@@ -367,6 +381,7 @@ main() {
     check_environment
     install_dependencies
     configure_apache
+    install_landing_page
     setup_virtual_host
     setup_ssl
     build_container

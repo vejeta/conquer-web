@@ -52,24 +52,33 @@
     # Hide server information
     ServerSignature Off
 
+    # Landing page (static, public)
+    DocumentRoot "/var/www/DOMAIN_NAME"
+
+    # Game terminal: ttyd runs with base path /play
+    RedirectMatch permanent ^/play$ /play/
+
     # Enable rewrite engine for WebSocket upgrade
     RewriteEngine on
 
     # WebSocket upgrade handling
     RewriteCond %{HTTP:Upgrade} websocket [NC]
     RewriteCond %{HTTP:Connection} upgrade [NC]
-    RewriteRule ^/?(.*) "ws://127.0.0.1:7681/$1" [P,L]
+    RewriteRule ^/play/(.*) "ws://127.0.0.1:7681/play/$1" [P,L]
 
-    # Regular HTTP proxy to Docker container
+    # Regular HTTP proxy
     ProxyPreserveHost On
-    ProxyPass /ws ws://127.0.0.1:7681/ws
-    ProxyPassReverse /ws ws://127.0.0.1:7681/ws
-    ProxyPass / http://127.0.0.1:7681/
-    ProxyPassReverse / http://127.0.0.1:7681/
+    ProxyPass /play/ http://127.0.0.1:7681/play/
+    ProxyPassReverse /play/ http://127.0.0.1:7681/play/
 
     # WebSocket proxy settings
     ProxyTimeout 3600
-    ProxyPassMatch ^/(.*) http://127.0.0.1:7681/$1
+
+    <Directory "/var/www/DOMAIN_NAME">
+        Options None
+        AllowOverride None
+        Require all granted
+    </Directory>
 
     # Security: Block access to sensitive files
     <Files ~ "^\.(htaccess|htpasswd|git|env|log)">

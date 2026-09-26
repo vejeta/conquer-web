@@ -1,0 +1,170 @@
+<!doctype html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conquer Web</title>
+  <meta name="description" content="Play Conquer, the classic multiplayer turn-based strategy game, in your browser.">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #3fb950;
+      --accent-text: #0d1117;
+      --warn: #d29922;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f6f8fa;
+        --panel: #ffffff;
+        --border: #d0d7de;
+        --text: #1f2328;
+        --muted: #57606a;
+        --accent: #1a7f37;
+        --accent-text: #ffffff;
+        --warn: #9a6700;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    main { max-width: 820px; margin: 0 auto; padding: 32px 16px 48px; }
+    header { text-align: center; margin-bottom: 32px; }
+    .logo {
+      margin: 0 0 8px;
+      color: var(--accent);
+      font: bold clamp(2.2rem, 9vw, 3.6rem)/1.1 ui-monospace, "DejaVu Sans Mono", monospace;
+      letter-spacing: 0.3em;
+      padding-left: 0.3em;
+    }
+    h1 { font-size: 1.1rem; font-weight: 500; color: var(--muted); margin: 0 0 24px; }
+    h2 { font-size: 1.2rem; margin: 0 0 12px; }
+    .play {
+      display: inline-block;
+      padding: 14px 40px;
+      border-radius: 8px;
+      background: var(--accent);
+      color: var(--accent-text);
+      font-size: 1.15rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .play:hover, .play:focus-visible { filter: brightness(1.1); }
+    .hint { color: var(--muted); font-size: 0.9rem; margin-top: 10px; }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+    }
+    ol, ul { padding-left: 1.3em; margin: 0; }
+    li + li { margin-top: 6px; }
+    kbd {
+      font: 0.85em ui-monospace, "DejaVu Sans Mono", monospace;
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      padding: 1px 6px;
+      white-space: nowrap;
+    }
+    .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 6px 24px; }
+    .keys div { display: flex; gap: 10px; align-items: baseline; }
+    .keys kbd { min-width: 2.2em; text-align: center; }
+    .note { border-left: 3px solid var(--warn); padding-left: 12px; color: var(--muted); }
+    a { color: var(--accent); }
+    footer { text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: 32px; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+<p class="logo">CONQUER</p>
+    <h1>The classic multiplayer strategy game, in your browser</h1>
+    <a class="play" href="/play/">Play now</a>
+    <p class="hint">You will be asked for the site access credentials first.</p>
+  </header>
+
+  <section>
+    <h2>What is Conquer?</h2>
+    <p>Conquer is a turn-based fantasy strategy game for many players, first released on Usenet
+      in 1987 by Ed Barlow and Adam Bryant. Each player rules a nation: build cities, raise
+      armies, cast magic, trade and negotiate with other rulers, and expand across a shared world.</p>
+  </section>
+
+  <section>
+    <h2>How to join</h2>
+    <p class="note">The game is in a test phase: nations are created by the game administrator.</p>
+    <ol>
+      <li>Ask the administrator for a <strong>nation</strong>. You will get a nation name and its password,
+        plus the site access credentials.</li>
+      <li>Press <strong>Play now</strong> and sign in with the site access credentials.</li>
+      <li>In the menu choose <kbd>1</kbd> <strong>Play</strong>, then type your nation name and nation password.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>How turns work</h2>
+    <ul>
+      <li>Log in as often as you like to give orders: move armies, draft troops, build, trade, send messages.</li>
+      <li>All orders are resolved together at the next <strong>turn update</strong>. During the test phase
+        updates are <strong>weekly</strong>; the in-game menu shows the exact schedule and the last update.</li>
+      <li>The update waits while players are connected, so press <kbd>q</kbd> to quit the game when you are done.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Before you play</h2>
+    <ul>
+      <li>Use a computer with a keyboard. Conquer is controlled entirely with keys.</li>
+      <li>The game needs a terminal of at least <strong>80&times;24</strong> characters. If the menu warns that
+        the screen is too small, enlarge the window or zoom out with <kbd>Ctrl</kbd> + <kbd>-</kbd>.</li>
+      <li>If the screen looks garbled, press <kbd>Ctrl</kbd> + <kbd>L</kbd> to redraw it.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Key reference</h2>
+    <div class="keys">
+      <div><kbd>y k u</kbd><span>move NW / N / NE</span></div>
+      <div><kbd>h &nbsp; l</kbd><span>move W / E</span></div>
+      <div><kbd>b j n</kbd><span>move SW / S / SE</span></div>
+      <div><kbd>?</kbd><span>help screens</span></div>
+      <div><kbd>p</kbd><span>pick next unit</span></div>
+      <div><kbd>m</kbd><span>move selected unit</span></div>
+      <div><kbd>a</kbd><span>army report</span></div>
+      <div><kbd>D</kbd><span>draft troops</span></div>
+      <div><kbd>C</kbd><span>construct</span></div>
+      <div><kbd>r</kbd><span>redesignate sector</span></div>
+      <div><kbd>B</kbd><span>budget</span></div>
+      <div><kbd>P</kbd><span>production</span></div>
+      <div><kbd>S</kbd><span>diplomacy</span></div>
+      <div><kbd>M</kbd><span>magic</span></div>
+      <div><kbd>d</kbd><span>change display</span></div>
+      <div><kbd>N</kbd><span>read newspaper</span></div>
+      <div><kbd>R</kbd><span>read messages</span></div>
+      <div><kbd>W</kbd><span>write message</span></div>
+      <div><kbd>s</kbd><span>score</span></div>
+      <div><kbd>q</kbd><span>quit</span></div>
+    </div>
+  </section>
+
+  <footer>
+    Conquer is free software (GPL-3.0-or-later).
+    Source: <a href="https://github.com/vejeta/conquer">game</a> &middot;
+    <a href="https://github.com/vejeta/conquer-web">web server</a>
+  </footer>
+</main>
+</body>
+</html>
