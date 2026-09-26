@@ -83,6 +83,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     .keys div { display: flex; gap: 10px; align-items: baseline; }
     .keys kbd { min-width: 2.2em; text-align: center; }
     .note { border-left: 3px solid var(--warn); padding-left: 12px; color: var(--muted); }
+    #status-warning { color: var(--text); margin: 0 0 16px; }
     a { color: var(--accent); }
     footer { text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: 32px; }
     .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
@@ -109,6 +110,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
   <section id="status" hidden>
     <h2>Current game</h2>
+    <p class="note" id="status-warning" hidden></p>
     <div class="facts">
       <div class="fact"><div class="label">Turn</div><div class="value" id="status-turn"></div></div>
       <div class="fact"><div class="label">Season</div><div class="value" id="status-season"></div></div>
@@ -205,6 +207,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
       set('status-season', d.season || '-');
       set('status-last', d.last_update || 'not yet');
       set('status-schedule', d.schedule || 'set by the administrator');
+      var ts = d.turn_state || {};
+      if (ts.state === 'failed') {
+        var w = document.getElementById('status-warning');
+        w.textContent = 'The last turn update did not run (' + ts.time + '). ' +
+          'The administrator has been notified; orders are kept for the next update.';
+        w.hidden = false;
+      }
       var body = document.getElementById('status-scores');
       (d.nations || []).slice().sort(function (a, b) { return b.score - a.score; })
         .forEach(function (n, i) {

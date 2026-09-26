@@ -101,9 +101,24 @@ TURN_SCHEDULE_LABEL="Weekly, Sundays at 20:00"  # text shown to players
 # TURN_SCHEDULE=off                             # manual updates only
 ```
 
-Conquer refuses to update while players are logged in, so the update is retried
-every `TURN_RETRY_MINUTES` (default 10) up to `TURN_MAX_RETRIES` times
-(default 18, i.e. 3 hours). Results appear in the container logs (`./logs.sh`).
+Every turn update:
+
+1. **Makes room for the update.** Conquer refuses to update while anyone is in
+   the game, so the menu stops accepting new games, players still in the game
+   get a warning on screen every minute and, after `TURN_GRACE_MINUTES`
+   (default 5), their session is ended. The game saves their orders when it is
+   stopped this way, and the menu tells them they were disconnected.
+2. **Backs up the world** to `data/backups/`, keeping the last `TURN_BACKUPS`
+   archives (default 10, `0` disables). Restore one with
+   `./restore-world.sh world_turnN_YYYYMMDD_HHMMSS.tar.gz`.
+3. **Runs the update**, retrying every `TURN_RETRY_MINUTES` (default 10) up to
+   `TURN_MAX_RETRIES` times (default 18) if it still cannot run.
+4. **Reports the result**: the landing page and the player menu show a notice
+   if the last update failed, and `TURN_WEBHOOK_URL` (optional) receives a
+   message after every update. The payload has both `text` (Slack, Mattermost)
+   and `content` (Discord) fields.
+
+Details appear in the container logs (`./logs.sh`).
 
 To run a turn immediately:
 

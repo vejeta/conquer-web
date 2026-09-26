@@ -39,7 +39,7 @@ jobs:
       - name: Prepare local environment
         run: |
           ./setup-local-certs.sh
-          mkdir -p data/lib data/public
+          mkdir -p data/lib data/public data/backups
 
       - name: Build and start the local stack
         run: docker compose -f docker-compose.local.yml up -d --build
@@ -74,6 +74,8 @@ jobs:
           docker exec conquer-local conquer-turn --now
           docker exec conquer-local conquer -s | grep -q 'Turn 2'
           test "$(curl -sk https://localhost/status/status.json | jq .turn)" = 2
+          test "$(curl -sk https://localhost/status/status.json | jq -r .turn_state.state)" = ok
+          ls data/backups/world_turn1_*.tar.gz
 
       - name: Container logs
         if: always()

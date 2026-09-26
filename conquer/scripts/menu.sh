@@ -10,6 +10,7 @@ export TERM=xterm-256color
 PREFIX="${CONQUER_PREFIX:-/opt/conquer}"
 WORLD_DIR="$PREFIX/lib"
 MIN_COLS=80
+UPDATING_FLAG=/run/conquer-turn
 MIN_ROWS=24
 
 TURN_SCHEDULE_LABEL=""
@@ -49,6 +50,9 @@ run_game() {
     "$PREFIX/bin/conquer" "$@" 2> >(perl -e "$FILTER_DIAGNOSTICS" >&2)
     local status=$?
     wait $! 2>/dev/null
+    # A game ended by a signal (turn update) leaves curses' raw mode behind
+    stty sane 2>/dev/null
+    tput sgr0 2>/dev/null
     return $status
 }
 
@@ -97,6 +101,19 @@ show_banner() {
     echo "${reset}"
     echo "  ${dim}Last turn update:${reset} $(last_update)"
     echo "  ${dim}Turn schedule:   ${reset} ${TURN_SCHEDULE_LABEL:-see game administrator}"
+    if [ -e "$UPDATING_FLAG" ]; then
+        echo
+        echo "  ${yellow}${bold}A turn update is in progress.${reset} Please come back in a few minutes."
+    else
+        local TURN_STATE="" TURN_STATE_TIME="" TURN_STATE_MESSAGE=""
+        # shellcheck source=/dev/null
+        [ -f "$WORLD_DIR/.turn-state" ] && . "$WORLD_DIR/.turn-state"
+        if [ "$TURN_STATE" = failed ]; then
+            echo
+            echo "  ${yellow}${bold}The last turn update failed${reset} ($TURN_STATE_TIME): ${dim}${TURN_STATE_MESSAGE}${reset}"
+            echo "  The administrator has been notified; your orders are kept for the next update."
+        fi
+    fi
     echo
 }
 
@@ -157,11 +174,24 @@ show_scores() {
 }
 
 play() {
+    if [ -e "$UPDATING_FLAG" ]; then
+        echo
+        echo
+        echo "  ${yellow}A turn update is in progress.${reset} Please try again in a few minutes."
+        pause
+        return
+    fi
     check_terminal_size
     clear
     run_game
     local status=$?
-    if [ $status -ne 0 ]; then
+    if [ -e "$UPDATING_FLAG" ]; then
+        clear
+        echo
+        echo "${yellow}You were disconnected for the turn update.${reset}"
+        echo "Your orders were saved. Come back in a few minutes for the new turn."
+        pause
+    elif [ $status -ne 0 ]; then
         echo
         echo "${yellow}Could not enter the game.${reset}"
         echo "Check your nation name and password. If a turn update is"

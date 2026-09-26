@@ -49,6 +49,14 @@ TURN_SCHEDULE_LABEL="Weekly, Sundays at 20:00 UTC"
 TURN_RETRY_MINUTES=10
 TURN_MAX_RETRIES=18
 
+# Before a turn update, players still in the game are warned and, after this
+# many minutes, disconnected (the game saves their orders)
+TURN_GRACE_MINUTES=5
+# World backups kept in data/backups (taken before every turn; 0 disables)
+TURN_BACKUPS=10
+# Optional webhook notified after every turn update (Slack, Mattermost, Discord)
+TURN_WEBHOOK_URL=
+
 # Terminal font size in the browser
 TTYD_FONT_SIZE=16
 SETTINGS

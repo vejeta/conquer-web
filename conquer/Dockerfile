@@ -87,7 +87,7 @@ COPY scripts/status.sh /usr/local/bin/conquer-status
 RUN chmod 755 /usr/local/bin/conquer-entrypoint /usr/local/bin/conquer-menu \
     /usr/local/bin/conquer-turn /usr/local/bin/conquer-status
 
-VOLUME ["/opt/conquer/lib", "/opt/conquer/public"]
+VOLUME ["/opt/conquer/lib", "/opt/conquer/public", "/opt/conquer/backups"]
 
 # ttyd listens here; Apache proxies /play/ to it
 EXPOSE 7681

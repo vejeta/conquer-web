@@ -20,10 +20,15 @@ services:
       - TURN_SCHEDULE_LABEL=${TURN_SCHEDULE_LABEL:-Weekly, Sundays at 20:00 UTC}
       - TURN_RETRY_MINUTES=${TURN_RETRY_MINUTES:-10}
       - TURN_MAX_RETRIES=${TURN_MAX_RETRIES:-18}
+      - TURN_GRACE_MINUTES=${TURN_GRACE_MINUTES:-5}
+      - TURN_BACKUPS=${TURN_BACKUPS:-10}
+      - TURN_WEBHOOK_URL=${TURN_WEBHOOK_URL:-}
       - ADMIN_CONTACT=${ADMIN_CONTACT:-}
     volumes:
       # Live world data: persists across rebuilds, seeded on first start
       - ./data/lib:/opt/conquer/lib
+      # Automatic world backups taken before every turn update
+      - ./data/backups:/opt/conquer/backups
       # Public game status (status.json) served by Apache under /status/
       - ${STATUS_DIR:-./data/public}:/opt/conquer/public
     restart: unless-stopped

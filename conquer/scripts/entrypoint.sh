@@ -11,6 +11,9 @@ PREFIX="${CONQUER_PREFIX:-/opt/conquer}"
 WORLD_DIR="$PREFIX/lib"
 TURN_SCHEDULE="${TURN_SCHEDULE:-0 20 * * 0}"
 
+# A container restart during an update leaves the "update running" flag behind
+rm -f /run/conquer-turn
+
 # Seed the world on first start only; never overwrite a running game
 if [ ! -f "$WORLD_DIR/data" ]; then
     echo "[entrypoint] No world found in $WORLD_DIR, installing default world"
@@ -44,6 +47,9 @@ CONQUER_PREFIX=$PREFIX
 TZ=${TZ:-UTC}
 TURN_RETRY_MINUTES=${TURN_RETRY_MINUTES:-10}
 TURN_MAX_RETRIES=${TURN_MAX_RETRIES:-18}
+TURN_GRACE_MINUTES=${TURN_GRACE_MINUTES:-5}
+TURN_BACKUPS=${TURN_BACKUPS:-10}
+TURN_WEBHOOK_URL=${TURN_WEBHOOK_URL:-}
 $TURN_SCHEDULE root /usr/local/bin/conquer-turn >> /proc/1/fd/1 2>&1
 EOF
     chmod 644 /etc/cron.d/conquer-turn
