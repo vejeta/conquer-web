@@ -12,7 +12,7 @@ elif docker ps --format "table {{.Names}}" | grep -q "conquer-vps"; then
 else
     echo "❌ No Conquer Web containers are running"
     echo "   Start the application first with:"
-    echo "   Local: docker-compose up -d"
+    echo "   Local: ./start-local.sh"
     echo "   VPS: sudo systemctl start conquer-web"
     exit 1
 fi

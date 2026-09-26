@@ -52,10 +52,17 @@ sudo ./deploy-to-vps.sh
 
 ## 🕹️ How Players Access the Game
 
-- **`https://your-domain/`** – public landing page (`web/index.html`): what Conquer is,
-  how to join, how turns work and a key reference.
-- **`https://your-domain/play/`** – the game terminal (ttyd), protected by the site
-  access credentials (`TTYD_USERNAME` / `TTYD_PASSWORD`).
+- **`https://your-domain/`** – public landing page (`web/index.html`): the current
+  turn, turn schedule and scores, what Conquer is, how to join, how turns work and
+  a key reference.
+- **`https://your-domain/game.html`** – the game page opened by "Play now". It embeds
+  the terminal and adds an on-screen key bar (movement, Esc, Enter, Ctrl-L...) that
+  is shown by default on phones and tablets. On small screens the terminal font is
+  scaled down so the game always gets its 80x24 screen.
+- **`https://your-domain/play/`** – the game terminal itself (ttyd), protected by
+  the site access credentials (`TTYD_USERNAME` / `TTYD_PASSWORD`).
+- **`https://your-domain/status/status.json`** – public game status, written by the
+  game container at startup and after every turn update.
 
 After signing in, players see a menu instead of a raw game prompt:
 
@@ -147,7 +154,7 @@ SESSION_TIMEOUT=1800
 
 1. **Edit environment file** (see above) - Change `TTYD_USERNAME` and `TTYD_PASSWORD`
 2. **Restart containers**:
-   - Local: `docker-compose restart`
+   - Local: `./rebuild.sh --quick`
    - VPS: `sudo systemctl restart conquer-web`
 
 ### Security Best Practices
@@ -187,14 +194,15 @@ warning if it detects one.
 conquer-web/
 ├── conquer/                    # Conquer game Docker container
 │   ├── lib/                   # Default world shipped in the image
-│   └── scripts/               # Entrypoint, player menu, turn runner
-├── web/                       # Public landing page
+│   ├── scripts/               # Entrypoint, player menu, turn runner, status
+│   └── tools/                 # conqowner (god nation owner fix)
+├── web/                       # Landing page and mobile-friendly game page
 ├── data/lib/                  # Live world data (created at runtime, not in git)
+├── data/public/               # Published status.json (created at runtime)
 ├── apache/                     # Apache Docker container (local only)
 ├── vps/                       # VPS-specific configurations
 ├── config/                    # Environment configurations
-├── docker-compose.yml         # Local development setup
-├── docker-compose.local.yml   # Local development (explicit)
+├── docker-compose.local.yml   # Local development (Apache + Conquer)
 ├── docker-compose.vps.yml     # VPS production setup
 ├── setup-environment.sh       # Interactive setup script
 ├── deploy-to-vps.sh          # VPS deployment script
@@ -218,8 +226,8 @@ conquer-web/
 ### Local Development
 
 ```bash
-# Start services
-docker-compose up -d
+# Start services (loads config/local.env)
+./start-local.sh
 
 # View logs
 ./logs.sh
@@ -234,7 +242,7 @@ docker-compose up -d
 ./rebuild.sh --quick
 
 # Check status
-docker-compose ps
+./health-check.sh
 
 # Stop services
 ./stop.sh
@@ -314,8 +322,8 @@ See [SECURITY.md](SECURITY.md) for detailed security configuration.
 docker logs conquer-local        # Local
 docker logs conquer-vps          # VPS
 
-# Rebuild containers
-docker-compose build --no-cache
+# Rebuild containers (loads the environment file)
+./rebuild.sh --force
 ```
 
 ### VPS Service Issues
