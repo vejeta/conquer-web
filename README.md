@@ -105,8 +105,7 @@ To run a turn immediately:
 ```
 
 After changing the schedule, recreate the container so it picks up the new
-settings (`./stop.sh && ./start-local.sh` locally,
-`sudo systemctl restart conquer-web` on the VPS).
+settings: `./rebuild.sh --quick` (it loads the environment file).
 
 ### World data persistence
 
@@ -114,6 +113,11 @@ The live world is stored on the host in `data/lib/` and mounted into the
 container, so rebuilding or upgrading the image keeps player progress. On first
 start the container copies the default world shipped in the image (`conquer/lib/`)
 into `data/lib/`.
+
+Every player and the administrator run as the same user inside the container.
+Because Conquer ties nations to Unix users, the container makes that user the
+owner of the god nation on startup (`conqowner`), otherwise `add-nation.sh`
+could only ever create one nation.
 
 ## 🔧 Configuration
 
@@ -169,8 +173,13 @@ Conquer requires world data to run. Generate it before first use:
 ```
 
 `generate-world.sh` replaces the default world shipped in the image. The running
-game keeps using `data/lib/` until you back it up, remove it, rebuild the image
-and start again.
+game keeps using `data/lib/` until you back it up, remove it and run
+`./rebuild.sh --force`.
+
+**Map size:** Conquer stores army and capital coordinates in 8 bits, so worlds
+must be at most **256x256** (the shipped default world is 128x128). Larger maps
+misplace armies into the sea and players see an empty map; the container logs a
+warning if it detects one.
 
 ## 📁 Project Structure
 
