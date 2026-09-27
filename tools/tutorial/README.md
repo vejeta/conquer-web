@@ -9,9 +9,8 @@ coach) are generated from a real game session.
 |------|------------|
 | `first-turn.steps.json` | The keys pressed at each step, with the text that must be on screen |
 | `first-turn.content.json` | The explanation of each step, and the screen text the coach waits for |
-| `first-turn.content.es.json` | The same steps in Spanish |
-| `tutorial.template.html` | The page; the steps go where `<!--steps-->` is, and each `{{name}}` is a text of `tutorial.strings.json` |
-| `tutorial.strings.json` | The rest of the page's text, per language |
+| `tutorial.template.html` | The page; the steps go where `<!--steps-->` is, and each `{{name}}` is a text of the page |
+| `i18n/<language>.json` | The page's texts in each language and, but in English, the steps' title, text and veteran note by step id |
 | `record.py` | Plays the steps in the running game container and records the session |
 | `build.py` | Writes the page and the coach steps |
 | `video.py` | Renders the narrated videos (MP4 + captions) |
@@ -54,13 +53,13 @@ same text and replace the synthesis in `render()`.
 Each page shows the video of its own language (`<html lang>`). To add one,
 say French (`fr`):
 
-1. `first-turn.content.fr.json`: a copy of `first-turn.content.json` with
-   `title`, `text` and `veteran` translated (keep `id`, `keys`, `detect`).
-2. `tutorial.strings.json`: an `"fr"` entry with every text of `"en"`.
-3. `build.py`: `"fr": ("first-turn.content.fr.json", "tutorial.fr.html", None)`
-   in `LANGUAGES`.
-4. `narration.json`: an `"fr"` text (and `title_fr`) in every segment and a
-   Kokoro voice under `voices`; the video's captions in `TEXT` in
-   `video.py`; then `python3 tools/tutorial/video.py fr`.
-5. A link to `tutorial.fr.html` next to the other languages in the crumbs of
-   `tutorial.strings.json`.
+1. `i18n/fr.json`: a copy of `i18n/es.json` with every text in French
+   (`language` is the language's own name, "Français"). A text or step left
+   out is shown in English. `build.py` then writes `web/tutorial.fr.html`
+   and `web/tutorial/first-turn.fr.json`, and links every tutorial page to
+   the others.
+2. The rest of the site: see `web/i18n/README.md` (the language list in
+   `web/site.js`, where `pages` gets `tutorial`).
+3. The narrated video: an `"fr"` text (and `title_fr`) in every segment of
+   `narration.json` and a voice under `voices`, the video's captions in
+   `TEXT` in `video.py`, then `python3 tools/tutorial/video.py fr`.

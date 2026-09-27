@@ -9,8 +9,8 @@
 //   conquerCoach(term, relayout, stepsUrl)
 //     term      function returning the xterm.js terminal (or null)
 //     relayout  function called when the coach opens or closes
-//     stepsUrl  the steps (tutorial/first-turn.json); for Spanish visitors
-//               the Spanish ones next to it (first-turn.es.json)
+//     stepsUrl  the steps (tutorial/first-turn.json); the ones in the
+//               visitor's language are next to it (first-turn.es.json)
 function conquerCoach(term, relayout, stepsUrl) {
   // Coach: walks through the first-turn tutorial (tutorial/first-turn.json)
   // next to the terminal, and moves to the next step when the terminal
@@ -20,15 +20,12 @@ function conquerCoach(term, relayout, stepsUrl) {
   var COACH_STORE = 'conquer-coach';
   var steps = [], stepIndex = 0, stepScreen = null;
   var KEY_INPUT = { Space: ' ', Enter: '\r', Esc: '\x1b' };
-  var es = window.conquerLang && conquerLang() === 'es';
-  var T = es ? {
-    count: 'Entrenador · paso %1 de %2', press: 'Pulsa', password: 'la contraseña de tu nación',
-    next: 'Siguiente', finish: 'Terminar', Space: 'Espacio'
-  } : {
-    count: 'Coach · step %1 of %2', press: 'Press', password: 'your nation password',
-    next: 'Next', finish: 'Finish', Space: 'Space'
-  };
-  if (es) stepsUrl = stepsUrl.replace(/\.json$/, '.es.json');
+  // Texts: i18n/<language>.json, "coach" (site.js); the steps in the
+  // visitor's language when the tutorial is written in it
+  function T(key, params) { return conquerI18n.t('coach.' + key, params); }
+  var lang = conquerI18n.lang();
+  var localSteps = lang !== 'en' && conquerI18n.pageUrl('tutorial') !== 'tutorial.html'
+    ? stepsUrl.replace(/\.json$/, '.' + lang + '.json') : null;
 
   function coachSave() {
     try { localStorage.setItem(COACH_STORE, JSON.stringify({ open: !coach.hidden, step: stepIndex })); } catch (e) {}
@@ -41,7 +38,7 @@ function conquerCoach(term, relayout, stepsUrl) {
     if (!st) return;
     // The screen the step started on: only a different one moves on
     stepScreen = screenText();
-    document.getElementById('coach-count').textContent = T.count.replace('%1', stepIndex + 1).replace('%2', steps.length);
+    document.getElementById('coach-count').textContent = T('count', { n: stepIndex + 1, total: steps.length });
     document.getElementById('coach-progress').style.width = (100 * (stepIndex + 1) / steps.length) + '%';
     document.getElementById('coach-title').textContent = st.title;
     // Step texts are part of this site (tools/tutorial), not user content
@@ -50,20 +47,20 @@ function conquerCoach(term, relayout, stepsUrl) {
     box.textContent = '';
     if (st.keys.length) {
       var label = document.createElement('span');
-      label.textContent = T.press;
+      label.textContent = T('press');
       box.appendChild(label);
     }
     st.keys.forEach(function (k) {
       if (k === 'password') {
         var typed = document.createElement('span');
         typed.className = 'typed';
-        typed.textContent = T.password;
+        typed.textContent = T('password');
         box.appendChild(typed);
         return;
       }
       var b = document.createElement('button');
       b.type = 'button';
-      b.textContent = T[k] || k;
+      b.textContent = k === 'Space' ? T('space') : k;
       b.addEventListener('click', function () {
         var t = term();
         if (t) { t.input(KEY_INPUT[k] || k, true); t.focus(); }
@@ -71,14 +68,17 @@ function conquerCoach(term, relayout, stepsUrl) {
       box.appendChild(b);
     });
     document.getElementById('coach-back').disabled = stepIndex === 0;
-    document.getElementById('coach-next').textContent = stepIndex === steps.length - 1 ? T.finish : T.next;
+    document.getElementById('coach-next').textContent = stepIndex === steps.length - 1 ? T('finish') : T('next');
     coachSave();
   }
   function showCoach(show) {
     coach.hidden = !show;
     coachToggle.setAttribute('aria-expanded', String(show));
     if (show && !steps.length) {
-      fetch(stepsUrl).then(function (r) { return r.json(); }).then(function (d) {
+      var get = function (url) { return fetch(url).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }); };
+      conquerI18n.ready().then(function () {
+        return localSteps ? get(localSteps).catch(function () { return get(stepsUrl); }) : get(stepsUrl);
+      }).then(function (d) {
         steps = d.steps.map(function (s) { s.re = new RegExp(s.detect); return s; });
         steps.forEach(function (s) {
           s.unique = steps.filter(function (o) { return o.detect === s.detect; }).length === 1;

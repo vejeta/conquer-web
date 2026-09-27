@@ -105,11 +105,16 @@ The menu also shows the last turn update and the turn schedule.
 
 **Languages.** The site, the guide, the tutorial and its video, the game
 page, the coach, the player menu and the invite-code wizard are in English
-and Spanish. Pages follow the visitor's choice on the landing page (EN/ES),
-`?lang=es` or the browser language; the game page passes it to the menu
-(ttyd `--url-arg`: `/play/?arg=es`, where the menu accepts only a known
-language). The game's own screens are the original English ones.
-`TURN_SCHEDULE_LABEL` is shown as written, so pick its language.
+and Spanish. Every text is in one catalog per language, with English shown
+for anything a language does not have yet: `web/i18n/` (pages, coach),
+`tools/tutorial/i18n/` (tutorial and coach steps), `conquer/i18n/` (menu and
+join wizard). Pages follow `?lang=`, the language menu of the home page or
+the browser; the game page passes the language to the menu (ttyd
+`--url-arg`: `/play/?arg=es`, where the menu accepts only a language it has
+texts for). `web/i18n/README.md` explains how to add a language, and
+`tools/check-i18n.py` (run by CI) finds missing or broken texts. The game's
+own screens are the original English ones. `TURN_SCHEDULE_LABEL` is shown
+as written, so pick its language.
 
 ## 👑 Game Administration
 

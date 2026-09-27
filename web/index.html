@@ -131,131 +131,127 @@ SPDX-License-Identifier: GPL-3.0-or-later
     @media (max-width: 560px) { .optional { display: none; } }
     header { position: relative; }
     .lang { position: absolute; top: -16px; right: 0; display: flex; gap: 4px; }
-    .lang button {
-      font: 600 0.8rem system-ui, sans-serif; color: var(--muted); background: none;
-      border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; cursor: pointer;
+    .lang select {
+      font: 600 0.8rem system-ui, sans-serif; color: var(--muted); background: var(--bg);
+      border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px; cursor: pointer;
     }
-    .lang button[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
     @media (max-width: 560px) { .lang { position: static; justify-content: flex-end; margin: -16px 0 8px; } }
   </style>
 </head>
 <body>
 <main>
   <header>
-    <nav class="lang" aria-label="Language">
-      <button type="button" data-lang="en" lang="en">EN</button>
-      <button type="button" data-lang="es" lang="es">ES</button>
-    </nav>
+    <nav class="lang"><select id="lang" aria-label="Language" data-i18n-title="index.language"></select></nav>
 <p class="logo">CONQUER</p>
-    <h1 data-i18n="tagline">The classic multiplayer strategy game, in your browser</h1>
-    <a class="play" href="game.html" data-server-link="game.html" data-i18n="play">Play now</a>
-    <a class="try" href="try/" data-href-es="try/?lang=es" data-i18n="try">Try it now: no account needed</a>
-    <p class="hint" data-i18n="hint">You will be asked for your player account first.</p>
-    <p class="join" id="join" hidden><span data-i18n="join">Have an invite code? Press Play now and sign in as</span>
+    <h1 data-i18n="index.tagline">The classic multiplayer strategy game, in your browser</h1>
+    <a class="play" href="game.html" data-server-link="game.html" data-i18n="index.play">Play now</a>
+    <a class="try" href="try/" data-i18n="index.try">Try it now: no account needed</a>
+    <p class="hint" data-i18n="index.hint">You will be asked for your player account first.</p>
+    <p class="join" id="join" hidden><span data-i18n="index.join">Have an invite code? Press Play now and sign in as</span>
       <code id="join-account"></code> / <code id="join-password"></code></p>
-    <p class="hint"><a href="tutorial.html" data-href-es="tutorial.es.html" data-i18n="tutorial">New here? Play your first turn step by step</a> · <a href="guide.html" data-href-es="guide.es.html" data-i18n="guide">Player's guide</a> · <a href="hall.html" data-i18n="hall">Hall of fame</a></p>
+    <p class="hint"><a href="tutorial.html" data-i18n-page="tutorial" data-i18n="index.tutorial">New here? Play your first turn step by step</a> · <a href="guide.html" data-i18n-page="guide" data-i18n="index.guide">Player's guide</a> · <a href="hall.html" data-i18n="index.hall">Hall of fame</a></p>
   </header>
 
   <section id="status" hidden>
-    <h2 data-i18n="h_current">Current game</h2>
+    <h2 data-i18n="index.h_current">Current game</h2>
     <p class="note" id="status-warning" hidden></p>
     <div class="facts">
-      <div class="fact"><div class="label" data-i18n="l_turn">Turn</div><div class="value" id="status-turn"></div></div>
-      <div class="fact"><div class="label" data-i18n="l_season">Season</div><div class="value" id="status-season"></div></div>
-      <div class="fact"><div class="label" data-i18n="l_last">Last update</div><div class="value" id="status-last"></div></div>
-      <div class="fact"><div class="label" data-i18n="l_schedule">Turn schedule</div><div class="value" id="status-schedule"></div></div>
-      <div class="fact" id="status-ready-box" hidden><div class="label" data-i18n="l_ready">Orders done</div><div class="value" id="status-ready"></div><div class="countdown" id="status-ready-note"></div></div>
-      <div class="fact" id="status-next-box" hidden><div class="label" data-i18n="l_next">Next update</div><div class="value" id="status-next"></div><div class="countdown" id="status-countdown"></div></div>
+      <div class="fact"><div class="label" data-i18n="index.l_turn">Turn</div><div class="value" id="status-turn"></div></div>
+      <div class="fact"><div class="label" data-i18n="index.l_season">Season</div><div class="value" id="status-season"></div></div>
+      <div class="fact"><div class="label" data-i18n="index.l_last">Last update</div><div class="value" id="status-last"></div></div>
+      <div class="fact"><div class="label" data-i18n="index.l_schedule">Turn schedule</div><div class="value" id="status-schedule"></div></div>
+      <div class="fact" id="status-ready-box" hidden><div class="label" data-i18n="index.l_ready">Orders done</div><div class="value" id="status-ready"></div><div class="countdown" id="status-ready-note"></div></div>
+      <div class="fact" id="status-next-box" hidden><div class="label" data-i18n="index.l_next">Next update</div><div class="value" id="status-next"></div><div class="countdown" id="status-countdown"></div></div>
     </div>
     <figure class="chart" id="chart" hidden>
-      <h3 data-i18n="h_chart">Score, turn by turn: the five leading nations</h3>
+      <h3 data-i18n="index.h_chart">Score, turn by turn: the five leading nations</h3>
       <div id="chart-box"></div>
       <div class="legend-row" id="chart-legend"></div>
     </figure>
     <div class="table-wrap">
       <table>
-        <thead><tr><th class="num">#</th><th data-i18n="th_nation">Nation</th><th data-i18n="th_race">Race</th><th class="optional" data-i18n="th_class">Class</th><th class="optional" data-i18n="th_alignment">Alignment</th><th class="num" data-i18n="th_score">Score</th></tr></thead>
+        <thead><tr><th class="num">#</th><th data-i18n="index.th_nation">Nation</th><th data-i18n="index.th_race">Race</th><th class="optional" data-i18n="index.th_class">Class</th><th class="optional" data-i18n="index.th_alignment">Alignment</th><th class="num" data-i18n="index.th_score">Score</th></tr></thead>
         <tbody id="status-scores"></tbody>
       </table>
     </div>
   </section>
 
   <section id="news" hidden>
-    <h2 data-i18n="h_news">World news</h2>
+    <h2 data-i18n="index.h_news">World news</h2>
     <div id="news-editions"></div>
   </section>
 
   <section>
-    <h2 data-i18n="h_what">What is Conquer?</h2>
-    <p data-i18n="p_what">Conquer is a turn-based fantasy strategy game for many players, first released on Usenet
+    <h2 data-i18n="index.h_what">What is Conquer?</h2>
+    <p data-i18n="index.p_what">Conquer is a turn-based fantasy strategy game for many players, first released on Usenet
       in 1987 by Ed Barlow and Adam Bryant. Each player rules a nation: build cities, raise
       armies, cast magic, trade and negotiate with other rulers, and expand across a shared world.</p>
   </section>
 
   <section>
-    <h2 data-i18n="h_join">How to join</h2>
-    <p class="note" data-i18n="note_join">The game is in a test phase: nations are created by the game administrator.</p>
+    <h2 data-i18n="index.h_join">How to join</h2>
+    <p class="note" data-i18n="index.note_join">The game is in a test phase: nations are created by the game administrator.</p>
     <ol>
-      <li data-i18n="join1">Ask the administrator for a <strong>nation</strong>. You will get a player account for this site
+      <li data-i18n="index.join1">Ask the administrator for a <strong>nation</strong>. You will get a player account for this site
         linked to your nation, and your nation's password.</li>
-      <li data-i18n="join2">Press <strong>Play now</strong> and sign in with your player account.</li>
-      <li data-i18n="join3">In the menu choose <kbd>1</kbd> <strong>Play</strong>: your nation opens and asks for its password.</li>
+      <li data-i18n="index.join2">Press <strong>Play now</strong> and sign in with your player account.</li>
+      <li data-i18n="index.join3">In the menu choose <kbd>1</kbd> <strong>Play</strong>: your nation opens and asks for its password.</li>
     </ol>
   </section>
 
   <section>
-    <h2 data-i18n="h_turns">How turns work</h2>
+    <h2 data-i18n="index.h_turns">How turns work</h2>
     <ul>
-      <li data-i18n="turns1">Log in as often as you like to give orders: move armies, draft troops, build, trade, send messages.</li>
-      <li data-i18n="turns2">All orders are resolved together at the next <strong>turn update</strong>. During the test phase
+      <li data-i18n="index.turns1">Log in as often as you like to give orders: move armies, draft troops, build, trade, send messages.</li>
+      <li data-i18n="index.turns2">All orders are resolved together at the next <strong>turn update</strong>. During the test phase
         updates are <strong>weekly</strong>; the in-game menu shows the exact schedule and the last update.</li>
-      <li data-i18n="turns3">Before each update, players still in the game are warned and, a few minutes later,
+      <li data-i18n="index.turns3">Before each update, players still in the game are warned and, a few minutes later,
         disconnected; their orders are saved. Press <kbd>q</kbd> to quit the game when you are done.</li>
-      <li data-i18n="turns4">When you quit, the menu asks whether your orders for the turn are done. Once every
+      <li data-i18n="index.turns4">When you quit, the menu asks whether your orders for the turn are done. Once every
         nation is done, the update can run right away instead of waiting for the schedule.</li>
     </ul>
   </section>
 
   <section>
-    <h2 data-i18n="h_before">Before you play</h2>
+    <h2 data-i18n="index.h_before">Before you play</h2>
     <ul>
-      <li data-i18n="before1">Conquer is controlled entirely with keys, so a computer keyboard is the most comfortable.
+      <li data-i18n="index.before1">Conquer is controlled entirely with keys, so a computer keyboard is the most comfortable.
         On phones and tablets an on-screen key bar provides <kbd>Esc</kbd>, <kbd>Enter</kbd>, movement
         and other common keys; use the <strong>Keyboard</strong> button to type names and passwords.</li>
-      <li data-i18n="before2">The game needs a terminal of at least <strong>80&times;24</strong> characters. If the menu warns that
+      <li data-i18n="index.before2">The game needs a terminal of at least <strong>80&times;24</strong> characters. If the menu warns that
         the screen is too small, enlarge the window or zoom out with <kbd>Ctrl</kbd> + <kbd>-</kbd>.</li>
-      <li data-i18n="before3">If the screen looks garbled, press <kbd>Ctrl</kbd> + <kbd>L</kbd> to redraw it.</li>
-      <li data-i18n="before4">The game itself is in English.</li>
+      <li data-i18n="index.before3">If the screen looks garbled, press <kbd>Ctrl</kbd> + <kbd>L</kbd> to redraw it.</li>
+      <li data-i18n="index.before4">The game itself is in English.</li>
     </ul>
   </section>
 
   <section>
-    <h2 data-i18n="h_keys">Key reference</h2>
+    <h2 data-i18n="index.h_keys">Key reference</h2>
     <div class="keys">
-      <div><kbd>y k u</kbd><span data-i18n="k_y">move NW / N / NE</span></div>
-      <div><kbd>h &nbsp; l</kbd><span data-i18n="k_h">move W / E</span></div>
-      <div><kbd>b j n</kbd><span data-i18n="k_b">move SW / S / SE</span></div>
-      <div><kbd>?</kbd><span data-i18n="k_help">help screens</span></div>
-      <div><kbd>p</kbd><span data-i18n="k_p">pick next unit</span></div>
-      <div><kbd>m</kbd><span data-i18n="k_m">move selected unit</span></div>
-      <div><kbd>a</kbd><span data-i18n="k_a">army report</span></div>
-      <div><kbd>D</kbd><span data-i18n="k_D">draft troops</span></div>
-      <div><kbd>C</kbd><span data-i18n="k_C">construct</span></div>
-      <div><kbd>r</kbd><span data-i18n="k_r">redesignate sector</span></div>
-      <div><kbd>B</kbd><span data-i18n="k_B">budget</span></div>
-      <div><kbd>P</kbd><span data-i18n="k_P">production</span></div>
-      <div><kbd>S</kbd><span data-i18n="k_S">diplomacy</span></div>
-      <div><kbd>M</kbd><span data-i18n="k_M">magic</span></div>
-      <div><kbd>d</kbd><span data-i18n="k_d">change display</span></div>
-      <div><kbd>N</kbd><span data-i18n="k_N">read newspaper</span></div>
-      <div><kbd>R</kbd><span data-i18n="k_R">read messages</span></div>
-      <div><kbd>W</kbd><span data-i18n="k_W">write message</span></div>
-      <div><kbd>s</kbd><span data-i18n="k_s">score</span></div>
-      <div><kbd>q</kbd><span data-i18n="k_q">quit</span></div>
+      <div><kbd>y k u</kbd><span data-i18n="index.k_y">move NW / N / NE</span></div>
+      <div><kbd>h &nbsp; l</kbd><span data-i18n="index.k_h">move W / E</span></div>
+      <div><kbd>b j n</kbd><span data-i18n="index.k_b">move SW / S / SE</span></div>
+      <div><kbd>?</kbd><span data-i18n="index.k_help">help screens</span></div>
+      <div><kbd>p</kbd><span data-i18n="index.k_p">pick next unit</span></div>
+      <div><kbd>m</kbd><span data-i18n="index.k_m">move selected unit</span></div>
+      <div><kbd>a</kbd><span data-i18n="index.k_a">army report</span></div>
+      <div><kbd>D</kbd><span data-i18n="index.k_D">draft troops</span></div>
+      <div><kbd>C</kbd><span data-i18n="index.k_C">construct</span></div>
+      <div><kbd>r</kbd><span data-i18n="index.k_r">redesignate sector</span></div>
+      <div><kbd>B</kbd><span data-i18n="index.k_B">budget</span></div>
+      <div><kbd>P</kbd><span data-i18n="index.k_P">production</span></div>
+      <div><kbd>S</kbd><span data-i18n="index.k_S">diplomacy</span></div>
+      <div><kbd>M</kbd><span data-i18n="index.k_M">magic</span></div>
+      <div><kbd>d</kbd><span data-i18n="index.k_d">change display</span></div>
+      <div><kbd>N</kbd><span data-i18n="index.k_N">read newspaper</span></div>
+      <div><kbd>R</kbd><span data-i18n="index.k_R">read messages</span></div>
+      <div><kbd>W</kbd><span data-i18n="index.k_W">write message</span></div>
+      <div><kbd>s</kbd><span data-i18n="index.k_s">score</span></div>
+      <div><kbd>q</kbd><span data-i18n="index.k_q">quit</span></div>
     </div>
   </section>
 
-  <footer data-i18n="footer">
+  <footer data-i18n="index.footer">
     Conquer is free software (GPL-3.0-or-later).
     Source: <a href="https://github.com/vejeta/conquer">game</a> &middot;
     <a href="https://github.com/vejeta/conquer-web">web server</a>
@@ -264,117 +260,22 @@ SPDX-License-Identifier: GPL-3.0-or-later
 <script src="server.js"></script>
 <script src="site.js"></script>
 <script>
-  // Spanish texts; English is the HTML itself. Values are static markup.
-  var ES = {
-    tagline: 'El clásico juego de estrategia multijugador, en tu navegador',
-    play: 'Jugar',
-    try: 'Pruébalo ya, sin cuenta',
-    hint: 'Primero se te pedirá tu cuenta de jugador.',
-    guide: 'Guía del jugador',
-    hall: 'Salón de la fama',
-    tutorial: '¿Eres nuevo? Tu primer turno paso a paso, con vídeo',
-    join: '¿Tienes un código de invitación? Pulsa Jugar y entra como',
-    h_current: 'Partida actual',
-    l_turn: 'Turno', l_season: 'Estación', l_last: 'Última actualización',
-    l_schedule: 'Calendario de turnos', l_next: 'Próxima actualización', l_ready: 'Órdenes listas',
-    th_nation: 'Nación', th_race: 'Raza', th_class: 'Clase', th_alignment: 'Alineamiento', th_score: 'Puntos',
-    h_news: 'Noticias del mundo',
-    h_chart: 'Puntuación turno a turno: las cinco naciones en cabeza',
-    h_what: '¿Qué es Conquer?',
-    p_what: 'Conquer es un juego de estrategia fantástica por turnos para muchos jugadores, publicado por primera vez ' +
-      'en Usenet en 1987 por Ed Barlow y Adam Bryant. Cada jugador gobierna una nación: construye ciudades, recluta ' +
-      'ejércitos, usa la magia, comercia y negocia con otros gobernantes y se expande por un mundo compartido.',
-    h_join: 'Cómo unirse',
-    note_join: 'El juego está en fase de pruebas: las naciones las crea el administrador del juego.',
-    join1: 'Pide una <strong>nación</strong> al administrador. Recibirás una cuenta de jugador para este sitio ' +
-      'vinculada a tu nación y la contraseña de tu nación.',
-    join2: 'Pulsa <strong>Jugar</strong> e inicia sesión con tu cuenta de jugador.',
-    join3: 'En el menú elige <kbd>1</kbd> <strong>Play</strong>: se abre tu nación y te pide su contraseña.',
-    h_turns: 'Cómo funcionan los turnos',
-    turns1: 'Entra cuantas veces quieras para dar órdenes: mover ejércitos, reclutar tropas, construir, comerciar, enviar mensajes.',
-    turns2: 'Todas las órdenes se resuelven a la vez en la siguiente <strong>actualización de turno</strong>. Durante la fase ' +
-      'de pruebas las actualizaciones son <strong>semanales</strong>; el menú del juego muestra el calendario exacto y la última actualización.',
-    turns3: 'Antes de cada actualización se avisa a quien siga jugando y, unos minutos después, se le desconecta; ' +
-      'sus órdenes se guardan. Pulsa <kbd>q</kbd> para salir del juego cuando termines.',
-    turns4: 'Al salir, el menú te pregunta si tus órdenes del turno están listas. Cuando todas las naciones lo están, ' +
-      'la actualización puede hacerse en ese momento sin esperar al calendario.',
-    h_before: 'Antes de jugar',
-    before1: 'Conquer se controla solo con el teclado, así que lo más cómodo es un ordenador. En móviles y tabletas hay una ' +
-      'barra de teclas en pantalla con <kbd>Esc</kbd>, <kbd>Enter</kbd>, movimiento y otras teclas habituales; usa el botón ' +
-      '<strong>Keyboard</strong> para escribir nombres y contraseñas.',
-    before2: 'El juego necesita un terminal de al menos <strong>80&times;24</strong> caracteres. Si el menú avisa de que la ' +
-      'pantalla es pequeña, agranda la ventana o reduce el zoom con <kbd>Ctrl</kbd> + <kbd>-</kbd>.',
-    before3: 'Si la pantalla se ve rara, pulsa <kbd>Ctrl</kbd> + <kbd>L</kbd> para redibujarla.',
-    before4: 'El juego en sí está en inglés.',
-    h_keys: 'Teclas',
-    k_y: 'mover NO / N / NE', k_h: 'mover O / E', k_b: 'mover SO / S / SE', k_help: 'pantallas de ayuda',
-    k_p: 'siguiente unidad', k_m: 'mover la unidad elegida', k_a: 'informe de ejércitos', k_D: 'reclutar tropas',
-    k_C: 'construir', k_r: 'cambiar uso del sector', k_B: 'presupuesto', k_P: 'producción', k_S: 'diplomacia',
-    k_M: 'magia', k_d: 'cambiar la vista', k_N: 'leer el periódico', k_R: 'leer mensajes', k_W: 'escribir mensaje',
-    k_s: 'puntuación', k_q: 'salir',
-    footer: 'Conquer es software libre (GPL-3.0-or-later). Código: <a href="https://github.com/vejeta/conquer">juego</a> ' +
-      '&middot; <a href="https://github.com/vejeta/conquer-web">servidor web</a>'
-  };
-
-  // Texts built by the scripts below
-  var MSG = {
-    en: {
-      turn: 'Turn ', more: function (n) { return '… and ' + n + ' more (read the newspaper in the game)'; },
-      share: 'share', notYet: 'not yet', byAdmin: 'set by the administrator', now: 'updating now', inTime: 'in ',
-      ready: function (d, t) { return d + ' of ' + t + ' nations'; }, early: 'turn runs when all are done',
-      failed: function (t) { return 'The last turn update did not run (' + t + '). The administrator has been notified; orders are kept for the next update.'; }
-    },
-    es: {
-      turn: 'Turno ', more: function (n) { return '… y ' + n + ' más (lee el periódico en el juego)'; },
-      share: 'compartir', notYet: 'todavía no', byAdmin: 'lo fija el administrador', now: 'actualizando', inTime: 'dentro de ',
-      ready: function (d, t) { return d + ' de ' + t + ' naciones'; }, early: 'el turno avanza cuando todas estén listas',
-      failed: function (t) { return 'La última actualización de turno no se hizo (' + t + '). Se ha avisado al administrador; las órdenes se conservan para la próxima.'; }
-    }
-  };
-
-  var STORE = 'conquer-lang';
-  var lang = 'en';
+  // Texts of the page: i18n/<language>.json, "index" (site.js)
+  function m(key, params) { return conquerI18n.t('index.' + key, params); }
   // not "status": window.status is a legacy string property
   var gameStatus = null;
   var tickTimer = null;
 
-  function pickLang() {
-    var q = new URLSearchParams(location.search).get('lang');
-    if (q === 'en' || q === 'es') return q;
-    try { var saved = localStorage.getItem(STORE); if (saved === 'en' || saved === 'es') return saved; } catch (e) {}
-    return (navigator.language || '').toLowerCase().indexOf('es') === 0 ? 'es' : 'en';
-  }
-
-  function applyLang(l) {
-    lang = l;
-    document.documentElement.lang = l;
-    document.querySelectorAll('[data-i18n]').forEach(function (el) {
-      if (el.dataset.en === undefined) el.dataset.en = el.innerHTML;
-      var key = el.getAttribute('data-i18n');
-      el.innerHTML = (l === 'es' && ES[key]) ? ES[key] : el.dataset.en;
-    });
-    // The game server may be another site, which does not share the choice
-    document.querySelectorAll('a[data-server-link]').forEach(function (el) {
-      var link = el.getAttribute('data-server-link');
-      if (l === 'es') link += (link.indexOf('?') < 0 ? '?' : '&') + 'lang=es';
-      el.href = conquerServerUrl(link);
-    });
-    document.querySelectorAll('[data-href-es]').forEach(function (el) {
-      if (el.dataset.hrefEn === undefined) el.dataset.hrefEn = el.getAttribute('href');
-      el.setAttribute('href', l === 'es' ? el.dataset.hrefEs : el.dataset.hrefEn);
-    });
-    document.querySelectorAll('.lang button').forEach(function (b) {
-      b.setAttribute('aria-pressed', String(b.getAttribute('data-lang') === l));
-    });
-    if (gameStatus) renderStatus(gameStatus);
-  }
-
-  document.querySelectorAll('.lang button').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var l = b.getAttribute('data-lang');
-      try { localStorage.setItem(STORE, l); } catch (e) {}
-      applyLang(l);
-    });
+  // Language menu: every language of the site, in its own name
+  var select = document.getElementById('lang');
+  conquerI18n.languages.forEach(function (l) {
+    var o = document.createElement('option');
+    o.value = l.code; o.lang = l.code; o.textContent = l.name;
+    select.appendChild(o);
+  });
+  select.value = conquerI18n.lang();
+  select.addEventListener('change', function () {
+    conquerI18n.setLang(select.value).then(function () { if (gameStatus) renderStatus(gameStatus); });
   });
 
   // Latest world newspapers: newest edition open, older ones collapsed.
@@ -387,12 +288,12 @@ SPDX-License-Identifier: GPL-3.0-or-later
       var det = document.createElement('details');
       det.open = i === 0;
       var sum = document.createElement('summary');
-      sum.textContent = MSG[lang].turn + ed.turn;
+      sum.textContent = m('m_turn', { n: ed.turn });
       // Shareable page of this edition, with a link preview
       var share = document.createElement('a');
       share.className = 'share';
       share.href = conquerServerUrl('status/news/' + ed.turn + '.html');
-      share.textContent = MSG[lang].share;
+      share.textContent = m('m_share');
       share.addEventListener('click', function (e) { e.stopPropagation(); });
       sum.appendChild(share);
       det.appendChild(sum);
@@ -408,7 +309,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
         });
         if (sec.items.length > MAX_ITEMS) {
           var more = document.createElement('li');
-          more.textContent = MSG[lang].more(sec.items.length - MAX_ITEMS);
+          more.textContent = m('m_more', { n: sec.items.length - MAX_ITEMS });
           ul.appendChild(more);
         }
         det.appendChild(ul);
@@ -419,21 +320,20 @@ SPDX-License-Identifier: GPL-3.0-or-later
   }
 
   function renderStatus(d) {
-    var m = MSG[lang];
     function set(id, text) { document.getElementById(id).textContent = text; }
     set('status-turn', d.turn);
     set('status-season', d.season || '-');
-    set('status-last', d.last_update || m.notYet);
-    set('status-schedule', d.schedule || m.byAdmin);
+    set('status-last', d.last_update || m('m_not_yet'));
+    set('status-schedule', d.schedule || m('m_by_admin'));
     if (tickTimer) clearInterval(tickTimer);
     if (d.next_turn) {
       var next = new Date(d.next_turn * 1000);
-      set('status-next', next.toLocaleString(lang, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }));
+      set('status-next', next.toLocaleString(conquerI18n.lang(), { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }));
       var tick = function () {
         var s = Math.round((next - Date.now()) / 1000);
-        if (s <= 0) { set('status-countdown', m.now); return; }
+        if (s <= 0) { set('status-countdown', m('m_now')); return; }
         var dd = Math.floor(s / 86400), hh = Math.floor(s % 86400 / 3600), mm = Math.floor(s % 3600 / 60);
-        set('status-countdown', m.inTime + (dd ? dd + 'd ' : '') + (dd || hh ? hh + 'h ' : '') + mm + 'm');
+        set('status-countdown', m('m_in', { time: (dd ? dd + 'd ' : '') + (dd || hh ? hh + 'h ' : '') + mm + 'm' }));
       };
       tick();
       tickTimer = setInterval(tick, 30000);
@@ -442,8 +342,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
     var r = d.ready;
     document.getElementById('status-ready-box').hidden = !r;
     if (r) {
-      set('status-ready', m.ready(r.done, r.total));
-      set('status-ready-note', r.early ? m.early : '');
+      set('status-ready', m('m_ready', { done: r.done, total: r.total }));
+      set('status-ready-note', r.early ? m('m_early') : '');
     }
     if (d.join) {
       set('join-account', d.join.account);
@@ -454,7 +354,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     var ts = d.turn_state || {};
     var w = document.getElementById('status-warning');
     w.hidden = ts.state !== 'failed';
-    if (ts.state === 'failed') w.textContent = m.failed(ts.time);
+    if (ts.state === 'failed') w.textContent = m('m_failed', { time: ts.time });
     var body = document.getElementById('status-scores');
     body.textContent = '';
     (d.nations || []).slice().sort(function (a, b) { return b.score - a.score; })
@@ -472,7 +372,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
     document.getElementById('status').hidden = false;
   }
 
-  applyLang(pickLang());
 
   // Score history of the five leading nations (history.json, written by the
   // game container after every turn). Color follows the nation in rank order
@@ -498,7 +397,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
       if (text != null) e.textContent = text;
       return e;
     }
-    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Score by turn' });
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': m('chart_label') });
     for (var v = 0; v <= top; v += step) {
       svg.appendChild(el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v), 'class': 'gridline' }));
       svg.appendChild(el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end', 'class': 'axis' }, v));
@@ -536,7 +435,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
       var i = Math.max(0, Math.min(last, Math.round((px - L) / (W - L - R) * last)));
       cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); cross.setAttribute('visibility', 'visible');
       tip.textContent = '';
-      var head = document.createElement('b'); head.textContent = MSG[lang].turn + turns[i]; tip.appendChild(head);
+      var head = document.createElement('b'); head.textContent = m('m_turn', { n: turns[i] }); tip.appendChild(head);
       names.forEach(function (n, s) {
         var row = document.createElement('div'), dot = document.createElement('i'), val = document.createElement('span');
         dot.style.setProperty('--c', 'var(--s' + (s + 1) + ')');
@@ -562,13 +461,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
   }
   fetch(conquerServerUrl('status/history.json'), { cache: 'no-store' })
     .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
-    .then(renderChart)
+    .then(function (h) { return conquerI18n.ready().then(function () { renderChart(h); }); })
     .catch(function () { /* no history yet */ });
 
   // Public game status published by the game container after every turn
   fetch(conquerServerUrl('status/status.json'), { cache: 'no-store' })
     .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
-    .then(function (d) { gameStatus = d; renderStatus(d); })
+    .then(function (d) { gameStatus = d; return conquerI18n.ready().then(function () { renderStatus(d); }); })
     .catch(function () { /* no status yet: keep the section hidden */ });
 </script>
 </body>

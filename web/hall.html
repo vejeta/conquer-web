@@ -7,7 +7,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Conquer Hall of Fame</title>
+  <title data-i18n="hall.page_title">Conquer Hall of Fame</title>
   <meta name="description" content="The rulers who won the seasons of Conquer, the classic multiplayer strategy game.">
   <meta property="og:title" content="Conquer Hall of Fame">
   <meta property="og:description" content="The rulers who won the seasons of Conquer, the 1987 Usenet strategy game back in the browser.">
@@ -55,17 +55,18 @@ SPDX-License-Identifier: GPL-3.0-or-later
 </head>
 <body>
 <main>
-  <p class="crumbs"><a href="index.html">Conquer</a> / Hall of fame</p>
-  <h1>Hall of fame</h1>
-  <p class="lede">Every season of Conquer on this server, and the rulers who ended it on top.</p>
-  <div id="seasons"><p class="empty">The first season is still being fought. Its winners will be written here.</p></div>
+  <p class="crumbs"><a href="index.html">Conquer</a> / <span data-i18n="hall.title">Hall of fame</span></p>
+  <h1 data-i18n="hall.title">Hall of fame</h1>
+  <p class="lede" data-i18n="hall.lede">Every season of Conquer on this server, and the rulers who ended it on top.</p>
+  <div id="seasons"><p class="empty" data-i18n="hall.empty">The first season is still being fought. Its winners will be written here.</p></div>
 </main>
 <script src="server.js"></script>
 <script src="site.js"></script>
 <script>
   (function () {
     var box = document.getElementById('seasons');
-    var PLACES = [['1st', '--gold'], ['2nd', '--silver'], ['3rd', '--bronze']];
+    function T(key, params) { return conquerI18n.t('hall.' + key, params); }
+    var PLACES = [['first', '--gold'], ['second', '--silver'], ['third', '--bronze']];
     function add(parent, tag, cls, text) {
       var e = document.createElement(tag);
       if (cls) e.className = cls;
@@ -77,21 +78,21 @@ SPDX-License-Identifier: GPL-3.0-or-later
       var nations = (s.final.nations || []).slice().sort(function (a, b) { return b.score - a.score; });
       var sec = add(box, 'section', 'season');
       add(sec, 'h2', null, s.name);
-      add(sec, 'p', 'meta', 'Ended ' + s.ended + ' · ' + (s.final.season || '') + ' · turn ' + s.final.turn);
+      add(sec, 'p', 'meta', T('ended', { date: s.ended, season: s.final.season || '', turn: s.final.turn }));
       var podium = add(sec, 'ol', 'podium');
       nations.slice(0, 3).forEach(function (n, i) {
         var li = add(podium, 'li');
         li.style.setProperty('--c', 'var(' + PLACES[i][1] + ')');
-        add(li, 'div', 'place', PLACES[i][0]);
+        add(li, 'div', 'place', T(PLACES[i][0]));
         add(li, 'div', 'name', n.name);
-        add(li, 'div', 'detail', n.race + ' ' + n['class'] + ' · ' + n.score + ' points');
+        add(li, 'div', 'detail', T('detail', { race: n.race, 'class': n['class'], score: n.score }));
       });
       var det = add(sec, 'details');
-      add(det, 'summary', null, 'Final scores of all ' + nations.length + ' nations');
+      add(det, 'summary', null, T('all_scores', { n: nations.length }));
       var wrap = add(det, 'div', 'table-wrap');
       var table = add(wrap, 'table');
       var head = add(add(table, 'thead'), 'tr');
-      ['#', 'Nation', 'Race', 'Class', 'Score'].forEach(function (h, i) { add(head, 'th', i === 0 || i === 4 ? 'num' : null, h); });
+      ['#', T('nation'), T('race'), T('class'), T('score')].forEach(function (h, i) { add(head, 'th', i === 0 || i === 4 ? 'num' : null, h); });
       var body = add(table, 'tbody');
       nations.forEach(function (n, i) {
         var tr = add(body, 'tr');
@@ -99,7 +100,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
         add(tr, 'td', null, n['class']); add(tr, 'td', 'num', n.score);
       });
     }
-    fetch(conquerServerUrl('status/seasons/index.json'), { cache: 'no-store' })
+    conquerI18n.ready().then(function () { return fetch(conquerServerUrl('status/seasons/index.json'), { cache: 'no-store' }); })
       .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
       .then(function (list) {
         if (!list.length) return;

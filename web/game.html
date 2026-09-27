@@ -120,49 +120,49 @@ SPDX-License-Identifier: GPL-3.0-or-later
   <div class="top">
     <a href="./" id="home">&larr; Conquer</a>
     <span class="spacer"></span>
-    <button id="coach-toggle" type="button" aria-controls="coach" aria-expanded="false" title="Step-by-step help for your first turn" data-es-title="Ayuda paso a paso para tu primer turno">Coach</button>
-    <button id="keyboard" type="button" title="Show the device keyboard" data-es-title="Muestra el teclado del dispositivo" data-es="Teclado">Keyboard</button>
-    <button id="toggle" type="button" aria-controls="keys" aria-expanded="false" data-es="Teclas">Keys</button>
+    <button id="coach-toggle" type="button" aria-controls="coach" aria-expanded="false" title="Step-by-step help for your first turn" data-i18n-title="coach.toggle_title">Coach</button>
+    <button id="keyboard" type="button" title="Show the device keyboard" data-i18n-title="game.keyboard_title" data-i18n="game.keyboard">Keyboard</button>
+    <button id="toggle" type="button" aria-controls="keys" aria-expanded="false" data-i18n="game.toggle">Keys</button>
   </div>
 
   <div class="stage">
-    <iframe id="game" title="Conquer game terminal" data-es-title="Terminal del juego Conquer"></iframe>
+    <iframe id="game" title="Conquer game terminal" data-i18n-title="game.game_title"></iframe>
     <aside class="coach" id="coach" hidden aria-live="polite">
-      <div class="head"><span id="coach-count"></span><button class="close" id="coach-close" type="button" title="Close the coach" data-es-title="Cerrar el entrenador">&times;</button></div>
+      <div class="head"><span id="coach-count"></span><button class="close" id="coach-close" type="button" title="Close the coach" data-i18n-title="coach.close_title">&times;</button></div>
       <div class="bar"><span id="coach-progress"></span></div>
       <h2 id="coach-title"></h2>
       <div class="press" id="coach-keys"></div>
       <div id="coach-text"></div>
       <div class="nav">
-        <button id="coach-back" type="button" data-es="Atrás">Back</button>
+        <button id="coach-back" type="button" data-i18n="coach.back">Back</button>
         <button id="coach-next" type="button">Next</button>
       </div>
-      <p class="auto" data-es="El entrenador avanza solo cuando el juego muestra la pantalla siguiente. Toca una tecla de arriba para pulsarla.">The coach moves on by itself when the game shows the next screen. Tap a key above to press it.</p>
+      <p class="auto" data-i18n="coach.auto">The coach moves on by itself when the game shows the next screen. Tap a key above to press it.</p>
     </aside>
   </div>
 
   <div class="keys" id="keys" hidden>
     <div class="pad" aria-label="Move">
-      <button data-key="y" title="Move north-west" data-es-title="Mover al noroeste">y</button>
-      <button data-key="k" title="Move north" data-es-title="Mover al norte">k</button>
-      <button data-key="u" title="Move north-east" data-es-title="Mover al noreste">u</button>
-      <button data-key="h" title="Move west" data-es-title="Mover al oeste">h</button>
-      <button data-key="p" title="Pick next unit" data-es-title="Elegir la unidad siguiente">p</button>
-      <button data-key="l" title="Move east" data-es-title="Mover al este">l</button>
-      <button data-key="b" title="Move south-west" data-es-title="Mover al suroeste">b</button>
-      <button data-key="j" title="Move south" data-es-title="Mover al sur">j</button>
-      <button data-key="n" title="Move south-east" data-es-title="Mover al sureste">n</button>
+      <button data-key="y" title="Move north-west" data-i18n-title="game.key_nw_title">y</button>
+      <button data-key="k" title="Move north" data-i18n-title="game.key_n_title">k</button>
+      <button data-key="u" title="Move north-east" data-i18n-title="game.key_ne_title">u</button>
+      <button data-key="h" title="Move west" data-i18n-title="game.key_w_title">h</button>
+      <button data-key="p" title="Pick next unit" data-i18n-title="game.key_pick_title">p</button>
+      <button data-key="l" title="Move east" data-i18n-title="game.key_e_title">l</button>
+      <button data-key="b" title="Move south-west" data-i18n-title="game.key_sw_title">b</button>
+      <button data-key="j" title="Move south" data-i18n-title="game.key_s_title">j</button>
+      <button data-key="n" title="Move south-east" data-i18n-title="game.key_se_title">n</button>
     </div>
     <div class="group">
       <button data-key="\x1b" title="Escape">Esc</button>
       <button data-key="\r" title="Enter">Enter</button>
-      <button data-key=" " title="Space" data-es-title="Espacio" data-es="Espacio">Space</button>
-      <button data-key="\x7f" title="Backspace" data-es-title="Borrar">&#9003;</button>
-      <button data-key="\x0c" title="Redraw the screen (Ctrl-L)" data-es-title="Redibujar la pantalla (Ctrl-L)" data-es="Redibujar">Redraw</button>
-      <button data-key="?" title="Help" data-es-title="Ayuda">?</button>
-      <button data-key="m" title="Move selected unit" data-es-title="Mover la unidad seleccionada">m</button>
-      <button data-key="a" title="Army report" data-es-title="Informe de ejércitos">a</button>
-      <button data-key="q" title="Quit the game" data-es-title="Salir del juego">q</button>
+      <button data-key=" " title="Space" data-i18n-title="game.key_space_title" data-i18n="game.key_space">Space</button>
+      <button data-key="\x7f" title="Backspace" data-i18n-title="game.key_backspace_title">&#9003;</button>
+      <button data-key="\x0c" title="Redraw the screen (Ctrl-L)" data-i18n-title="game.key_redraw_title" data-i18n="game.key_redraw">Redraw</button>
+      <button data-key="?" title="Help" data-i18n-title="game.key_help_title">?</button>
+      <button data-key="m" title="Move selected unit" data-i18n-title="game.key_move_title">m</button>
+      <button data-key="a" title="Army report" data-i18n-title="game.key_army_title">a</button>
+      <button data-key="q" title="Quit the game" data-i18n-title="game.key_quit_title">q</button>
     </div>
   </div>
 

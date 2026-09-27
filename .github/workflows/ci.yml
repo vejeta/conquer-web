@@ -18,7 +18,10 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: ShellCheck
-        run: shellcheck -S warning ./*.sh conquer/scripts/*.sh
+        run: shellcheck -S warning -x -P conquer/scripts ./*.sh conquer/scripts/*.sh conquer/i18n/*.sh
+
+      - name: Translations
+        run: python3 tools/check-i18n.py
 
       - name: Game password check is the last <Location> in the Apache configs
         run: |

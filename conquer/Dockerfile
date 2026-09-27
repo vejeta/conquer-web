@@ -122,6 +122,10 @@ COPY scripts/status.sh /usr/local/bin/conquer-status
 COPY scripts/next-turn.sh /usr/local/bin/conquer-next-turn
 COPY scripts/ready.sh /usr/local/bin/conquer-ready
 COPY scripts/join.sh /usr/local/bin/conquer-join
+# Texts of the menu and the join wizard, one file per language
+COPY scripts/i18n.sh /usr/local/lib/conquer-i18n.sh
+COPY i18n/ /usr/local/share/conquer-web/i18n/
+RUN chmod 644 /usr/local/lib/conquer-i18n.sh /usr/local/share/conquer-web/i18n/*
 RUN chmod 755 /usr/local/bin/conquer-entrypoint /usr/local/bin/conquer-menu \
     /usr/local/bin/conquer-turn /usr/local/bin/conquer-status /usr/local/bin/conquer-next-turn \
     /usr/local/bin/conquer-ready /usr/local/bin/conquer-join
