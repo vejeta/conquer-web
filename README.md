@@ -484,8 +484,8 @@ sudo apache2ctl configtest
 # Check certificate status
 sudo certbot certificates
 
-# Renew certificate manually
-sudo certbot renew --apache
+# Test the automatic renewal
+sudo certbot renew --dry-run
 ```
 
 ## 📄 License

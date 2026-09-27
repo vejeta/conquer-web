@@ -97,19 +97,24 @@ dig game.example.com
 ## Step 5: SSL Certificate Setup
 
 ```bash
-# Stop Apache temporarily
-sudo systemctl stop apache2
+# Get the Let's Encrypt certificate through the running Apache (replace with
+# your domain and email). Renewals use the same method, with Apache running.
+sudo certbot certonly --apache --cert-name game.example.com -d game.example.com \
+    --email admin@example.com --agree-tos --no-eff-email
 
-# Get Let's Encrypt certificate (replace with your domain and email)
-sudo certbot certonly --standalone -d game.example.com --email admin@example.com --agree-tos --no-eff-email
-
-# Start Apache
-sudo systemctl start apache2
+# Reload Apache after every renewal, so it serves the new certificate
+printf '#!/bin/sh\nsystemctl reload apache2\n' | sudo tee /etc/letsencrypt/renewal-hooks/deploy/reload-apache.sh
+sudo chmod 755 /etc/letsencrypt/renewal-hooks/deploy/reload-apache.sh
 
 # Enable site (replace with your domain)
 sudo a2ensite game.example.com
 sudo systemctl reload apache2
 ```
+
+A certificate got earlier with `--standalone` does not renew while Apache
+holds port 80 (`certbot renew --dry-run` says "Could not bind TCP port 80").
+Get it again with the command above plus `--force-renewal`: the new method is
+kept for its renewals.
 
 ## Step 6: Build and Start Conquer Container
 
@@ -212,8 +217,8 @@ sudo systemctl restart conquer-web
 cd /home/conquer/conquer-web
 ./backup-world.sh
 
-# Renew SSL certificate (automatic via cron)
-sudo certbot renew --apache
+# Renew SSL certificates (automatic: certbot.timer)
+sudo certbot renew
 ```
 
 ## Security Considerations
@@ -250,8 +255,8 @@ sudo apache2ctl configtest
 # Check certificate
 sudo certbot certificates
 
-# Renew manually
-sudo certbot renew --apache --dry-run
+# Test the renewal
+sudo certbot renew --dry-run
 ```
 
 ### Domain not resolving
@@ -266,13 +271,10 @@ sudo apache2ctl -S
 
 ## Monitoring and Maintenance
 
-### Set up automatic certificate renewal
+### Automatic certificate renewal
+Debian's certbot package renews certificates with a systemd timer:
 ```bash
-# Add to crontab
-sudo crontab -e
-
-# Add this line:
-0 2 * * 0 /usr/bin/certbot renew --apache --quiet
+systemctl list-timers certbot.timer
 ```
 
 ### Set up log rotation

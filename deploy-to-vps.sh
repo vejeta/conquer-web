@@ -177,31 +177,49 @@ setup_virtual_host() {
 }
 
 # Setup SSL certificate
+# Let's Encrypt checks the domain through the running Apache (--apache), so
+# neither the first certificate nor its renewals need port 80 free. Runs
+# before the virtual host, which needs the certificate files to exist.
 setup_ssl() {
     echo "🔒 Setting up SSL certificate for $DOMAIN_NAME..."
 
-    # Check if certificate already exists
-    if certbot certificates | grep -q "$DOMAIN_NAME"; then
-        echo "✅ SSL certificate already exists"
-        return 0
-    fi
+    local cert="/etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem"
+    local renewal="/etc/letsencrypt/renewal/$DOMAIN_NAME.conf"
+    local force=()
 
-    echo "   Obtaining Let's Encrypt certificate..."
-
-    # Stop Apache temporarily for standalone authentication
-    systemctl stop apache2
-
-    # Get certificate
-    if certbot certonly --standalone -d "$DOMAIN_NAME" --email "$LETSENCRYPT_EMAIL_CONFIG" --agree-tos --no-eff-email --non-interactive; then
-        echo "✅ SSL certificate obtained"
+    if [ -f "$cert" ] && openssl x509 -checkend $((30 * 86400)) -noout -in "$cert" >/dev/null 2>&1 \
+        && ! grep -q '^authenticator *= *standalone' "$renewal" 2>/dev/null; then
+        echo "✅ SSL certificate valid until $(openssl x509 -enddate -noout -in "$cert" | cut -d= -f2)"
     else
-        echo "❌ Failed to obtain SSL certificate"
-        systemctl start apache2
-        exit 1
+        # A certificate got with --standalone never renews while Apache
+        # holds port 80: get it again with --apache, which is then kept
+        # for its renewals
+        if grep -q '^authenticator *= *standalone' "$renewal" 2>/dev/null; then
+            echo "   The certificate was got with --standalone and cannot renew: getting it again"
+            force=(--force-renewal)
+        fi
+        echo "   Obtaining Let's Encrypt certificate..."
+        if certbot certonly --apache --cert-name "$DOMAIN_NAME" -d "$DOMAIN_NAME" "${force[@]}" \
+            --email "$LETSENCRYPT_EMAIL_CONFIG" --agree-tos --no-eff-email --non-interactive; then
+            echo "✅ SSL certificate obtained"
+        else
+            echo "❌ Failed to obtain SSL certificate"
+            echo "   Check that $DOMAIN_NAME points to this server and port 80 is open"
+            exit 1
+        fi
     fi
 
-    # Start Apache
-    systemctl start apache2
+    # Apache loads certificates at start: reload it after every renewal
+    # (for all the certificates of this server)
+    local hook=/etc/letsencrypt/renewal-hooks/deploy/reload-apache.sh
+    if [ ! -f "$hook" ]; then
+        mkdir -p "$(dirname "$hook")"
+        printf '#!/bin/sh\nsystemctl reload apache2\n' > "$hook"
+        chmod 755 "$hook"
+    fi
+    if systemctl is-active --quiet apache2; then
+        systemctl reload apache2
+    fi
 }
 
 # Build Docker container
@@ -303,10 +321,18 @@ start_services() {
 setup_auto_renewal() {
     echo "📅 Setting up automatic certificate renewal..."
 
-    # Add cron job for certificate renewal
-    (crontab -l 2>/dev/null; echo "0 2 * * 0 /usr/bin/certbot renew --apache --quiet") | crontab -
+    # Debian's certbot package renews twice a day with a systemd timer
+    if systemctl list-unit-files certbot.timer >/dev/null 2>&1; then
+        systemctl enable --now certbot.timer
+    elif ! crontab -l 2>/dev/null | grep -q 'certbot renew'; then
+        (crontab -l 2>/dev/null; echo "0 2 * * * /usr/bin/certbot renew --quiet") | crontab -
+    fi
 
-    echo "✅ Automatic certificate renewal configured"
+    if certbot renew --dry-run --cert-name "$DOMAIN_NAME" >/dev/null 2>&1; then
+        echo "✅ Automatic certificate renewal configured and tested"
+    else
+        echo "⚠️  The renewal test failed: run 'certbot renew --dry-run --cert-name $DOMAIN_NAME'"
+    fi
 }
 
 # Verify deployment
@@ -330,10 +356,10 @@ verify_deployment() {
     fi
 
     # Check SSL certificate
-    if certbot certificates | grep -q "$DOMAIN_NAME"; then
+    if openssl x509 -checkend 0 -noout -in "/etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem" >/dev/null 2>&1; then
         echo "✅ SSL certificate valid"
     else
-        echo "⚠️  SSL certificate issues"
+        echo "⚠️  SSL certificate missing or expired: see 'certbot certificates'"
     fi
 
     # Test HTTP connection
@@ -344,7 +370,7 @@ verify_deployment() {
     fi
 
     # Test HTTPS connection (if cert is ready)
-    if curl -s -k -o /dev/null -w "%{http_code}" https://$DOMAIN_NAME | grep -q "200"; then
+    if curl -s -o /dev/null -w "%{http_code}" "https://$DOMAIN_NAME" | grep -q "200"; then
         echo "✅ HTTPS connection working"
     else
         echo "⚠️  HTTPS connection issues"
@@ -413,8 +439,8 @@ main() {
     configure_apache
     install_landing_page
     setup_player_accounts
-    setup_virtual_host
     setup_ssl
+    setup_virtual_host
     build_container
     setup_systemd_service
     start_services
