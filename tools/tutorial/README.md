@@ -75,9 +75,10 @@ it as `narration/voices/<language>.wav`. Every segment is then spoken in
 that voice, and later renders reuse the file, so the narrator stays the
 same. To choose another narrator, change `design` and delete the `.wav`.
 
-Today: English uses `qwen-custom` Ryan, Chinese `qwen-custom` Uncle_Fu, and
+Today: English uses `qwen-custom` Ryan, Chinese `qwen-custom` Uncle_Fu,
 Spanish, German, Portuguese (Brazil) and Russian `qwen-clone` narrators
-designed as native speakers.
+designed as native speakers, and Polish a `voxcpm` narrator designed the
+same way.
 
 ### Generating the videos
 
