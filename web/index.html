@@ -67,6 +67,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
     }
     .play:hover, .play:focus-visible { filter: brightness(1.1); }
     .hint { color: var(--muted); font-size: 0.9rem; margin-top: 10px; }
+    .try { display: inline-block; margin-left: 10px; padding: 13px 22px; border-radius: 8px; border: 1px solid var(--accent); color: var(--accent); font-weight: 600; text-decoration: none; }
+    .try:hover, .try:focus-visible { background: var(--panel); }
+    @media (max-width: 560px) { .try { margin: 10px 0 0; } }
     .join { margin: 12px auto 0; max-width: 34em; padding: 8px 14px; border: 1px dashed var(--accent); border-radius: 8px; font-size: 0.95rem; }
     .join code { font: 600 1em ui-monospace, "DejaVu Sans Mono", monospace; color: var(--accent); user-select: all; }
     section {
@@ -146,6 +149,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 <p class="logo">CONQUER</p>
     <h1 data-i18n="tagline">The classic multiplayer strategy game, in your browser</h1>
     <a class="play" href="game.html" data-server-link="game.html" data-i18n="play">Play now</a>
+    <a class="try" href="try/" data-i18n="try">Try it now: no account needed</a>
     <p class="hint" data-i18n="hint">You will be asked for your player account first.</p>
     <p class="join" id="join" hidden><span data-i18n="join">Have an invite code? Press Play now and sign in as</span>
       <code id="join-account"></code> / <code id="join-password"></code></p>
@@ -264,6 +268,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
   var ES = {
     tagline: 'El clásico juego de estrategia multijugador, en tu navegador',
     play: 'Jugar',
+    try: 'Pruébalo ya, sin cuenta',
     hint: 'Primero se te pedirá tu cuenta de jugador.',
     guide: 'Guía del jugador (en inglés)',
     hall: 'Salón de la fama',
