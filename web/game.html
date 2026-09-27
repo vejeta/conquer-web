@@ -118,54 +118,56 @@ SPDX-License-Identifier: GPL-3.0-or-later
 </head>
 <body>
   <div class="top">
-    <a href="./">&larr; Conquer</a>
+    <a href="./" id="home">&larr; Conquer</a>
     <span class="spacer"></span>
-    <button id="coach-toggle" type="button" aria-controls="coach" aria-expanded="false" title="Step-by-step help for your first turn">Coach</button>
-    <button id="keyboard" type="button" title="Show the device keyboard">Keyboard</button>
-    <button id="toggle" type="button" aria-controls="keys" aria-expanded="false">Keys</button>
+    <button id="coach-toggle" type="button" aria-controls="coach" aria-expanded="false" title="Step-by-step help for your first turn" data-es-title="Ayuda paso a paso para tu primer turno">Coach</button>
+    <button id="keyboard" type="button" title="Show the device keyboard" data-es-title="Muestra el teclado del dispositivo" data-es="Teclado">Keyboard</button>
+    <button id="toggle" type="button" aria-controls="keys" aria-expanded="false" data-es="Teclas">Keys</button>
   </div>
 
   <div class="stage">
-    <iframe id="game" src="/play/" title="Conquer game terminal"></iframe>
+    <iframe id="game" title="Conquer game terminal" data-es-title="Terminal del juego Conquer"></iframe>
     <aside class="coach" id="coach" hidden aria-live="polite">
-      <div class="head"><span id="coach-count"></span><button class="close" id="coach-close" type="button" title="Close the coach">&times;</button></div>
+      <div class="head"><span id="coach-count"></span><button class="close" id="coach-close" type="button" title="Close the coach" data-es-title="Cerrar el entrenador">&times;</button></div>
       <div class="bar"><span id="coach-progress"></span></div>
       <h2 id="coach-title"></h2>
       <div class="press" id="coach-keys"></div>
       <div id="coach-text"></div>
       <div class="nav">
-        <button id="coach-back" type="button">Back</button>
+        <button id="coach-back" type="button" data-es="Atrás">Back</button>
         <button id="coach-next" type="button">Next</button>
       </div>
-      <p class="auto">The coach moves on by itself when the game shows the next screen. Tap a key above to press it.</p>
+      <p class="auto" data-es="El entrenador avanza solo cuando el juego muestra la pantalla siguiente. Toca una tecla de arriba para pulsarla.">The coach moves on by itself when the game shows the next screen. Tap a key above to press it.</p>
     </aside>
   </div>
 
   <div class="keys" id="keys" hidden>
     <div class="pad" aria-label="Move">
-      <button data-key="y" title="Move north-west">y</button>
-      <button data-key="k" title="Move north">k</button>
-      <button data-key="u" title="Move north-east">u</button>
-      <button data-key="h" title="Move west">h</button>
-      <button data-key="p" title="Pick next unit">p</button>
-      <button data-key="l" title="Move east">l</button>
-      <button data-key="b" title="Move south-west">b</button>
-      <button data-key="j" title="Move south">j</button>
-      <button data-key="n" title="Move south-east">n</button>
+      <button data-key="y" title="Move north-west" data-es-title="Mover al noroeste">y</button>
+      <button data-key="k" title="Move north" data-es-title="Mover al norte">k</button>
+      <button data-key="u" title="Move north-east" data-es-title="Mover al noreste">u</button>
+      <button data-key="h" title="Move west" data-es-title="Mover al oeste">h</button>
+      <button data-key="p" title="Pick next unit" data-es-title="Elegir la unidad siguiente">p</button>
+      <button data-key="l" title="Move east" data-es-title="Mover al este">l</button>
+      <button data-key="b" title="Move south-west" data-es-title="Mover al suroeste">b</button>
+      <button data-key="j" title="Move south" data-es-title="Mover al sur">j</button>
+      <button data-key="n" title="Move south-east" data-es-title="Mover al sureste">n</button>
     </div>
     <div class="group">
       <button data-key="\x1b" title="Escape">Esc</button>
       <button data-key="\r" title="Enter">Enter</button>
-      <button data-key=" " title="Space">Space</button>
-      <button data-key="\x7f" title="Backspace">&#9003;</button>
-      <button data-key="\x0c" title="Redraw the screen (Ctrl-L)">Redraw</button>
-      <button data-key="?" title="Help">?</button>
-      <button data-key="m" title="Move selected unit">m</button>
-      <button data-key="a" title="Army report">a</button>
-      <button data-key="q" title="Quit the game">q</button>
+      <button data-key=" " title="Space" data-es-title="Espacio" data-es="Espacio">Space</button>
+      <button data-key="\x7f" title="Backspace" data-es-title="Borrar">&#9003;</button>
+      <button data-key="\x0c" title="Redraw the screen (Ctrl-L)" data-es-title="Redibujar la pantalla (Ctrl-L)" data-es="Redibujar">Redraw</button>
+      <button data-key="?" title="Help" data-es-title="Ayuda">?</button>
+      <button data-key="m" title="Move selected unit" data-es-title="Mover la unidad seleccionada">m</button>
+      <button data-key="a" title="Army report" data-es-title="Informe de ejércitos">a</button>
+      <button data-key="q" title="Quit the game" data-es-title="Salir del juego">q</button>
     </div>
   </div>
 
+<script src="server.js"></script>
+<script src="site.js"></script>
 <script src="coach.js"></script>
 <script>
   (function () {
@@ -173,6 +175,10 @@ SPDX-License-Identifier: GPL-3.0-or-later
     var keys = document.getElementById('keys');
     var toggle = document.getElementById('toggle');
     var STORE = 'conquer-keybar';
+
+    // The terminal menu speaks the language of the pages: ttyd passes the
+    // "arg" parameter to it (ttyd --url-arg)
+    frame.src = '/play/?arg=' + conquerLang();
 
     // ttyd exposes the xterm.js instance as window.term in the same-origin frame
     function term() {

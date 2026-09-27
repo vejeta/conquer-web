@@ -37,14 +37,17 @@
   "key_password": "your password",
   "just_look": "just look",
   "veterans": "Veterans:",
-  "screen_label": "Game screen"
+  "screen_label": "Game screen",
+  "coach_link": "game.html?coach",
+  "try_link": "try/",
+  "guide_link": "guide.html"
  },
  "es": {
   "head_title": "<title>Conquer: tu primer turno</title>",
   "meta_desc": "content=\"Aprende Conquer, el juego de estrategia de Usenet de 1987, tecla a tecla: un primer turno grabado con todas sus pantallas, desde que entras hasta la actualización del turno.\"",
   "og_title": "content=\"Conquer: tu primer turno\"",
   "og_desc": "content=\"El juego de estrategia de Usenet de 1987, de vuelta en tu navegador. Apréndelo tecla a tecla.\"",
-  "crumbs": "<p class=\"crumbs\"><a href=\"index.html?lang=es\">Conquer</a> / <a href=\"guide.html\">Guía del jugador (en inglés)</a> / Primer turno · <a href=\"tutorial.html\" hreflang=\"en\" lang=\"en\">English</a></p>",
+  "crumbs": "<p class=\"crumbs\"><a href=\"index.html?lang=es\">Conquer</a> / <a href=\"guide.es.html\">Guía del jugador</a> / Primer turno · <a href=\"tutorial.html\" hreflang=\"en\" lang=\"en\">English</a></p>",
   "eyebrow": "Tutorial · 10 minutos",
   "h1": "<h1>Tu primer turno</h1>",
   "lede": "Un primer turno real de una nación nueva, tecla a tecla: entrar, leer los informes, salir a conquistar tierra, reclutar tropas y entregar tus órdenes. Todas las pantallas de abajo salen del propio juego.",
@@ -67,16 +70,19 @@
   "r3": "<strong>Primero, la comida.</strong> Una capital sola no produce comida. Toma llanos con buena vegetación y conviértelos en granjas (<kbd>r</kbd> sobre un sector tuyo).",
   "r4": "<strong>Sal cuando termines.</strong> El turno no puede procesarse mientras estás en el juego. Pulsa <kbd>q</kbd> y marca tus órdenes como terminadas.",
   "h_practice": "<h2>Practica sin riesgo</h2>",
-  "p_practice": "La opción <kbd>7</kbd> del menú abre tu propio mundo de práctica: el mismo juego, sin nadie más. Prueba lo que quieras, procesa tú mismo el turno siguiente y empieza de nuevo cuando quieras. El entrenador (botón <strong>Coach</strong> encima del juego) te guía por este mismo turno dentro de la terminal (en inglés).",
+  "p_practice": "La opción <kbd>7</kbd> del menú abre tu propio mundo de práctica: el mismo juego, sin nadie más. Prueba lo que quieras, procesa tú mismo el turno siguiente y empieza de nuevo cuando quieras. El entrenador (botón <strong>Coach</strong> encima del juego) te guía por este mismo turno dentro de la terminal.",
   "cta_play": ">Jugar con el entrenador</a>",
   "cta_try": ">O pruébalo en tu navegador, sin cuenta</a>",
-  "cta_guide": ">Volver a la guía del jugador (en inglés)</a>",
+  "cta_guide": ">Volver a la guía del jugador</a>",
   "footer": "Grabado con Conquer 4.12 en este servidor. El reproductor de terminal es",
   "lang": "es",
   "key_space": "Espacio",
   "key_password": "tu contraseña",
   "just_look": "solo mira",
   "veterans": "Veteranos:",
-  "screen_label": "Pantalla del juego"
+  "screen_label": "Pantalla del juego",
+  "coach_link": "game.html?coach&amp;lang=es",
+  "try_link": "try/?lang=es",
+  "guide_link": "guide.es.html"
  }
 }

@@ -70,26 +70,26 @@ SPDX-License-Identifier: GPL-3.0-or-later
   <div class="top">
     <a href="../">&larr;</a>
     <span class="title">CONQUER</span>
-    <span class="note" id="note">Practice world on your device · nation <b>trainee</b>, password <b>train1</b></span>
+    <span class="note" id="note" data-es="Mundo de práctica en tu dispositivo · nación <b>trainee</b>, contraseña <b>train1</b>">Practice world on your device · nation <b>trainee</b>, password <b>train1</b></span>
     <span class="spacer"></span>
-    <button id="coach-toggle" type="button" aria-controls="coach" aria-expanded="false" title="Step-by-step help for your first turn">Coach</button>
-    <button id="turn" type="button" title="Run the turn update of your practice world" hidden>Next turn</button>
-    <button id="reset" type="button" title="Delete your practice world and start again">Start over</button>
-    <button id="toggle-keys" type="button">Keys</button>
+    <button id="coach-toggle" type="button" aria-controls="coach" aria-expanded="false" title="Step-by-step help for your first turn" data-es-title="Ayuda paso a paso para tu primer turno">Coach</button>
+    <button id="turn" type="button" title="Run the turn update of your practice world" data-es-title="Procesa el turno de tu mundo de práctica" data-es="Siguiente turno" hidden>Next turn</button>
+    <button id="reset" type="button" title="Delete your practice world and start again" data-es-title="Borra tu mundo de práctica y empieza de nuevo" data-es="Empezar de nuevo">Start over</button>
+    <button id="toggle-keys" type="button" data-es="Teclas">Keys</button>
   </div>
   <div class="stage">
     <div id="terminal"></div>
     <aside class="coach" id="coach" hidden aria-live="polite">
-      <div class="head"><span id="coach-count"></span><button class="close" id="coach-close" type="button" title="Close the coach">&times;</button></div>
+      <div class="head"><span id="coach-count"></span><button class="close" id="coach-close" type="button" title="Close the coach" data-es-title="Cerrar el entrenador">&times;</button></div>
       <div class="bar"><span id="coach-progress"></span></div>
       <h2 id="coach-title"></h2>
       <div class="press" id="coach-keys"></div>
       <div id="coach-text"></div>
       <div class="nav">
-        <button id="coach-back" type="button">Back</button>
+        <button id="coach-back" type="button" data-es="Atrás">Back</button>
         <button id="coach-next" type="button">Next</button>
       </div>
-      <p class="auto">The coach moves on by itself when the game shows the next screen. Tap a key above to press it.</p>
+      <p class="auto" data-es="El entrenador avanza solo cuando el juego muestra la pantalla siguiente. Toca una tecla de arriba para pulsarla.">The coach moves on by itself when the game shows the next screen. Tap a key above to press it.</p>
     </aside>
   </div>
   <div class="keys" id="keys" hidden>
@@ -99,7 +99,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
       <button data-key="b">b</button><button data-key="j">j</button><button data-key="n">n</button>
     </div>
     <div class="group">
-      <button data-key="\x1b">Esc</button><button data-key="\r">Enter</button><button data-key=" ">Space</button>
+      <button data-key="\x1b">Esc</button><button data-key="\r">Enter</button><button data-key=" " data-es="Espacio">Space</button>
       <button data-key="\x7f">&#9003;</button><button data-key="?">?</button><button data-key="m">m</button>
       <button data-key="a">a</button><button data-key="q">q</button>
     </div>
@@ -109,6 +109,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 <script src="../vendor/xterm/addon-fit.js"></script>
 <script src="conquer.js"></script>
 <script src="conqrun.js"></script>
+<script src="../site.js"></script>
 <script src="../coach.js"></script>
 <script>
   (function () {
@@ -116,6 +117,40 @@ SPDX-License-Identifier: GPL-3.0-or-later
     // the game was compiled to look for it
     var LIB = '/conquer/lib';
     var NATION = 'trainee';
+
+    var T = conquerLang() === 'es' ? {
+      title: 'Prueba Conquer',
+      subtitle: 'mundo de práctica, en tu dispositivo',
+      intro: '  Tu nación es \x1b[1mtrainee\x1b[0m; su contraseña es \x1b[1mtrain1\x1b[0m.\r\n' +
+        '  No se envía nada a ningún sitio: el juego funciona en esta página y\r\n' +
+        '  tu mundo se guarda en este navegador. Las pantallas del juego están\r\n' +
+        '  en inglés, como en 1987.\r\n\r\n' +
+        '  Pulsa \x1b[1mEspacio\x1b[0m para jugar. \x1b[2m(Siguiente turno y Empezar de nuevo, arriba.)\x1b[0m\r\n',
+      saved: 'Partida guardada.',
+      running: 'Procesando el turno...',
+      newTurn: '\x1b[32mHa empezado un nuevo turno.\x1b[0m Juega para leer el periódico (N).',
+      confirm: '¿Borrar mi mundo?',
+      startOver: 'Empezar de nuevo',
+      starting: 'Creando un mundo de práctica nuevo...',
+      ready: 'Tu nuevo mundo de práctica está listo.',
+      failed: 'No se pudo arrancar:'
+    } : {
+      title: 'Try Conquer',
+      subtitle: 'practice world, on your device',
+      intro: '  Your nation is \x1b[1mtrainee\x1b[0m; its password is \x1b[1mtrain1\x1b[0m.\r\n' +
+        '  Nothing is sent anywhere: the game runs in this page and\r\n' +
+        '  your world is kept in this browser.\r\n\r\n' +
+        '  Press \x1b[1mSpace\x1b[0m to play. \x1b[2m(Next turn and Start over are above.)\x1b[0m\r\n',
+      saved: 'Game saved.',
+      running: 'Running the turn update...',
+      newTurn: '\x1b[32mA new turn has begun.\x1b[0m Play to read the newspaper (N).',
+      confirm: 'Delete my world?',
+      startOver: 'Start over',
+      starting: 'Starting a new practice world...',
+      ready: 'A new practice world is ready.',
+      failed: 'Could not start:'
+    };
+    document.title = T.title;
 
     var term = new Terminal({ cols: 80, rows: 24, fontSize: 16, cursorBlink: true,
       fontFamily: 'ui-monospace, "DejaVu Sans Mono", Menlo, monospace',
@@ -219,7 +254,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
           running = M;
           M.callMain(args);
         }).catch(function (e) {
-          term.write('\r\n\x1b[31mCould not start: ' + e + '\x1b[0m\r\n');
+          term.write('\r\n\x1b[31m' + T.failed + ' ' + e + '\x1b[0m\r\n');
           done();
         });
       }).then(function () { running = null; });
@@ -227,12 +262,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
     function menu(message) {
       term.write('\x1b[0m\x1b[H\x1b[2J');
-      term.write('\r\n  \x1b[1;32mConquer\x1b[0m  \x1b[2mpractice world, on your device\x1b[0m\r\n\r\n');
+      term.write('\r\n  \x1b[1;32mConquer\x1b[0m  \x1b[2m' + T.subtitle + '\x1b[0m\r\n\r\n');
       if (message) term.write('  ' + message + '\r\n\r\n');
-      term.write('  Your nation is \x1b[1mtrainee\x1b[0m; its password is \x1b[1mtrain1\x1b[0m.\r\n');
-      term.write('  Nothing is sent anywhere: the game runs in this page and\r\n');
-      term.write('  your world is kept in this browser.\r\n\r\n');
-      term.write('  Press \x1b[1mSpace\x1b[0m to play. \x1b[2m(Next turn and Start over are above.)\x1b[0m\r\n');
+      term.write(T.intro);
       document.getElementById('turn').hidden = false;
       // Keys go to the game, not to the button that was just pressed
       if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
@@ -243,13 +275,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
       if (running) return;
       term.focus();
       term.write('\x1b[H\x1b[2J');
-      launch(createConquer, ['-n', NATION]).then(function () { menu('Game saved.'); });
+      launch(createConquer, ['-n', NATION]).then(function () { menu(T.saved); });
     }
 
     document.getElementById('turn').addEventListener('click', function () {
       if (running) return;
-      term.write('\x1b[0m\x1b[H\x1b[2J  Running the turn update...\r\n\r\n');
-      launch(createConqrun, ['-x']).then(function () { menu('\x1b[32mA new turn has begun.\x1b[0m Play to read the newspaper (N).'); });
+      term.write('\x1b[0m\x1b[H\x1b[2J  ' + T.running + '\r\n\r\n');
+      launch(createConqrun, ['-x']).then(function () { menu(T.newTurn); });
     });
 
     // Two taps, so a stray one does not delete the world
@@ -257,15 +289,15 @@ SPDX-License-Identifier: GPL-3.0-or-later
     resetButton.addEventListener('click', function () {
       if (running) return;
       if (!armed) {
-        resetButton.textContent = 'Delete my world?';
-        armed = setTimeout(function () { armed = null; resetButton.textContent = 'Start over'; }, 4000);
+        resetButton.textContent = T.confirm;
+        armed = setTimeout(function () { armed = null; resetButton.textContent = T.startOver; }, 4000);
         return;
       }
-      clearTimeout(armed); armed = null; resetButton.textContent = 'Start over';
-      term.write('\x1b[H\x1b[2J  Starting a new practice world...\r\n');
+      clearTimeout(armed); armed = null; resetButton.textContent = T.startOver;
+      term.write('\x1b[H\x1b[2J  ' + T.starting + '\r\n');
       createConquer({ noExitRuntime: true, preRun: [function (mod) { mod.FS.init(null, output, output); }] })
         .then(function (M) { return prepare(M, true); })
-        .then(function () { menu('A new practice world is ready.'); });
+        .then(function () { menu(T.ready); });
     });
 
     // The coach of the tutorial, next to the terminal

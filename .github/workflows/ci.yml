@@ -138,6 +138,15 @@ jobs:
             conqrun -x -d /tmp/p > /dev/null
             conquer -d /tmp/p -s | grep -q "Turn 2"'
 
+      - name: Player menu in English and Spanish
+        run: |
+          menu() { docker exec -u conquer -e TTYD_USER="$TTYD_USERNAME" conquer-local bash -c "printf q | conquer-menu $1"; }
+          menu | grep -q ') Play'
+          menu es | grep -q ') Jugar'
+          # Only a known language is taken from the browser
+          menu es-ES | grep -q ') Play'
+          docker exec conquer-local ps -o args= -C ttyd | grep -q -- '--url-arg'
+
       - name: Game runs as an unprivileged user
         run: |
           test "$(docker exec conquer-local stat -c %U /proc/1)" = conquer

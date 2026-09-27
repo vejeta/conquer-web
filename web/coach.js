@@ -9,7 +9,8 @@
 //   conquerCoach(term, relayout, stepsUrl)
 //     term      function returning the xterm.js terminal (or null)
 //     relayout  function called when the coach opens or closes
-//     stepsUrl  the steps (tutorial/first-turn.json)
+//     stepsUrl  the steps (tutorial/first-turn.json); for Spanish visitors
+//               the Spanish ones next to it (first-turn.es.json)
 function conquerCoach(term, relayout, stepsUrl) {
   // Coach: walks through the first-turn tutorial (tutorial/first-turn.json)
   // next to the terminal, and moves to the next step when the terminal
@@ -19,6 +20,15 @@ function conquerCoach(term, relayout, stepsUrl) {
   var COACH_STORE = 'conquer-coach';
   var steps = [], stepIndex = 0, stepScreen = null;
   var KEY_INPUT = { Space: ' ', Enter: '\r', Esc: '\x1b' };
+  var es = window.conquerLang && conquerLang() === 'es';
+  var T = es ? {
+    count: 'Entrenador · paso %1 de %2', press: 'Pulsa', password: 'la contraseña de tu nación',
+    next: 'Siguiente', finish: 'Terminar', Space: 'Espacio'
+  } : {
+    count: 'Coach · step %1 of %2', press: 'Press', password: 'your nation password',
+    next: 'Next', finish: 'Finish', Space: 'Space'
+  };
+  if (es) stepsUrl = stepsUrl.replace(/\.json$/, '.es.json');
 
   function coachSave() {
     try { localStorage.setItem(COACH_STORE, JSON.stringify({ open: !coach.hidden, step: stepIndex })); } catch (e) {}
@@ -31,7 +41,7 @@ function conquerCoach(term, relayout, stepsUrl) {
     if (!st) return;
     // The screen the step started on: only a different one moves on
     stepScreen = screenText();
-    document.getElementById('coach-count').textContent = 'Coach · step ' + (stepIndex + 1) + ' of ' + steps.length;
+    document.getElementById('coach-count').textContent = T.count.replace('%1', stepIndex + 1).replace('%2', steps.length);
     document.getElementById('coach-progress').style.width = (100 * (stepIndex + 1) / steps.length) + '%';
     document.getElementById('coach-title').textContent = st.title;
     // Step texts are part of this site (tools/tutorial), not user content
@@ -40,20 +50,20 @@ function conquerCoach(term, relayout, stepsUrl) {
     box.textContent = '';
     if (st.keys.length) {
       var label = document.createElement('span');
-      label.textContent = 'Press';
+      label.textContent = T.press;
       box.appendChild(label);
     }
     st.keys.forEach(function (k) {
       if (k === 'password') {
         var typed = document.createElement('span');
         typed.className = 'typed';
-        typed.textContent = 'your nation password';
+        typed.textContent = T.password;
         box.appendChild(typed);
         return;
       }
       var b = document.createElement('button');
       b.type = 'button';
-      b.textContent = k;
+      b.textContent = T[k] || k;
       b.addEventListener('click', function () {
         var t = term();
         if (t) { t.input(KEY_INPUT[k] || k, true); t.focus(); }
@@ -61,7 +71,7 @@ function conquerCoach(term, relayout, stepsUrl) {
       box.appendChild(b);
     });
     document.getElementById('coach-back').disabled = stepIndex === 0;
-    document.getElementById('coach-next').textContent = stepIndex === steps.length - 1 ? 'Finish' : 'Next';
+    document.getElementById('coach-next').textContent = stepIndex === steps.length - 1 ? T.finish : T.next;
     coachSave();
   }
   function showCoach(show) {

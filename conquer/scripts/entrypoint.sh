@@ -116,9 +116,12 @@ fi
 # passes the account name in X-WEBAUTH-USER; ttyd rejects requests without
 # it and exports it to the menu as TTYD_USER. Only Apache may reach port
 # 7681: it is not published locally and bound to 127.0.0.1 on the VPS.
+# --url-arg passes the page's language to the menu (/play/?arg=es); the
+# menu accepts only a known language there.
 # Log level 3 = errors and warnings, instead of ttyd's chatty default.
 exec "${AS_GAME_USER[@]}" ttyd -p 7681 -W -b /play -d "${TTYD_LOG_LEVEL:-3}" \
     -H X-WEBAUTH-USER \
+    --url-arg \
     -m "${MAX_CLIENTS:-5}" \
     -P "${SESSION_TIMEOUT:-1800}" \
     -t titleFixed=Conquer \

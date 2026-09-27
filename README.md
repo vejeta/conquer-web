@@ -60,7 +60,8 @@ sudo ./deploy-to-vps.sh
   screenshots in `web/guide/`): the history of Conquer since 1987, a step-by-step
   tutorial of the whole workflow, advice for new rulers and veterans, the
   tournament formats with their `TURN_SCHEDULE` settings, and the season plan
-  towards the game's 40th anniversary. Linked from the landing page.
+  towards the game's 40th anniversary. Linked from the landing page. In
+  Spanish at `guide.es.html`.
 - **`https://your-domain/try/`** – Conquer compiled to WebAssembly, running
   entirely in the visitor's browser: a private practice world with its own
   turns, no account needed, also on GitHub Pages (see `wasm/README.md`).
@@ -101,6 +102,14 @@ player. It follows the game on its own, moving to the next step when the
 screen changes.
 
 The menu also shows the last turn update and the turn schedule.
+
+**Languages.** The site, the guide, the tutorial and its video, the game
+page, the coach, the player menu and the invite-code wizard are in English
+and Spanish. Pages follow the visitor's choice on the landing page (EN/ES),
+`?lang=es` or the browser language; the game page passes it to the menu
+(ttyd `--url-arg`: `/play/?arg=es`, where the menu accepts only a known
+language). The game's own screens are the original English ones.
+`TURN_SCHEDULE_LABEL` is shown as written, so pick its language.
 
 ## 👑 Game Administration
 

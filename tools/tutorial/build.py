@@ -17,6 +17,7 @@ Outputs:
   web/tutorial.html               the tutorial page (English)
   web/tutorial.es.html            the tutorial page (Spanish)
   web/tutorial/first-turn.json    the steps for the in-game coach (game.html)
+  web/tutorial/first-turn.es.json the same in Spanish
 
 Re-record after game changes with record.py (see README.md), then run this.
 """
@@ -28,11 +29,10 @@ import re
 HERE = os.path.dirname(os.path.abspath(__file__))
 WEB = os.path.join(HERE, "..", "..", "web")
 
-# Language: steps, page and coach steps written for it (the coach is in
-# English only for now)
+# Language: steps, and the page and coach steps written from them
 LANGUAGES = {
     "en": ("first-turn.content.json", "tutorial.html", "first-turn.json"),
-    "es": ("first-turn.content.es.json", "tutorial.es.html", None),
+    "es": ("first-turn.content.es.json", "tutorial.es.html", "first-turn.es.json"),
 }
 
 

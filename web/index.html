@@ -149,11 +149,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
 <p class="logo">CONQUER</p>
     <h1 data-i18n="tagline">The classic multiplayer strategy game, in your browser</h1>
     <a class="play" href="game.html" data-server-link="game.html" data-i18n="play">Play now</a>
-    <a class="try" href="try/" data-i18n="try">Try it now: no account needed</a>
+    <a class="try" href="try/" data-href-es="try/?lang=es" data-i18n="try">Try it now: no account needed</a>
     <p class="hint" data-i18n="hint">You will be asked for your player account first.</p>
     <p class="join" id="join" hidden><span data-i18n="join">Have an invite code? Press Play now and sign in as</span>
       <code id="join-account"></code> / <code id="join-password"></code></p>
-    <p class="hint"><a href="tutorial.html" data-href-es="tutorial.es.html" data-i18n="tutorial">New here? Play your first turn step by step</a> · <a href="guide.html" data-i18n="guide">Player's guide</a> · <a href="hall.html" data-i18n="hall">Hall of fame</a></p>
+    <p class="hint"><a href="tutorial.html" data-href-es="tutorial.es.html" data-i18n="tutorial">New here? Play your first turn step by step</a> · <a href="guide.html" data-href-es="guide.es.html" data-i18n="guide">Player's guide</a> · <a href="hall.html" data-i18n="hall">Hall of fame</a></p>
   </header>
 
   <section id="status" hidden>
@@ -270,7 +270,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     play: 'Jugar',
     try: 'Pruébalo ya, sin cuenta',
     hint: 'Primero se te pedirá tu cuenta de jugador.',
-    guide: 'Guía del jugador (en inglés)',
+    guide: 'Guía del jugador',
     hall: 'Salón de la fama',
     tutorial: '¿Eres nuevo? Tu primer turno paso a paso, con vídeo',
     join: '¿Tienes un código de invitación? Pulsa Jugar y entra como',
@@ -352,6 +352,12 @@ SPDX-License-Identifier: GPL-3.0-or-later
       if (el.dataset.en === undefined) el.dataset.en = el.innerHTML;
       var key = el.getAttribute('data-i18n');
       el.innerHTML = (l === 'es' && ES[key]) ? ES[key] : el.dataset.en;
+    });
+    // The game server may be another site, which does not share the choice
+    document.querySelectorAll('a[data-server-link]').forEach(function (el) {
+      var link = el.getAttribute('data-server-link');
+      if (l === 'es') link += (link.indexOf('?') < 0 ? '?' : '&') + 'lang=es';
+      el.href = conquerServerUrl(link);
     });
     document.querySelectorAll('[data-href-es]').forEach(function (el) {
       if (el.dataset.hrefEn === undefined) el.dataset.hrefEn = el.getAttribute('href');
