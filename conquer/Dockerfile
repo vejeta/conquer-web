@@ -109,6 +109,10 @@ COPY --from=build ${CONQUER_PREFIX} ${CONQUER_PREFIX}
 # on first start only, so player progress survives rebuilds.
 COPY lib/ ${CONQUER_PREFIX}/default-world/
 
+# Template of the players' private practice worlds: the default world with
+# a ready nation (trainee, password train1) at turn 1
+COPY practice-world/ ${CONQUER_PREFIX}/practice-world/
+
 # Container scripts
 COPY scripts/entrypoint.sh /usr/local/bin/conquer-entrypoint
 COPY scripts/menu.sh /usr/local/bin/conquer-menu
@@ -120,7 +124,7 @@ RUN chmod 755 /usr/local/bin/conquer-entrypoint /usr/local/bin/conquer-menu \
     /usr/local/bin/conquer-turn /usr/local/bin/conquer-status /usr/local/bin/conquer-next-turn \
     /usr/local/bin/conquer-ready
 
-VOLUME ["/opt/conquer/lib", "/opt/conquer/public", "/opt/conquer/backups"]
+VOLUME ["/opt/conquer/lib", "/opt/conquer/public", "/opt/conquer/backups", "/opt/conquer/practice"]
 
 # ttyd listens here; Apache proxies /play/ to it
 EXPOSE 7681

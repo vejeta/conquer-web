@@ -29,6 +29,8 @@ services:
       - ./data/lib:/opt/conquer/lib
       # Automatic world backups taken before every turn update
       - ./data/backups:/opt/conquer/backups
+      # Players' private practice worlds
+      - ./data/practice:/opt/conquer/practice
       # Public game status (status.json) served by Apache under /status/
       - ${STATUS_DIR:-./data/public}:/opt/conquer/public
     restart: unless-stopped

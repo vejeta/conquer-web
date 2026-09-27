@@ -25,7 +25,36 @@ SPDX-License-Identifier: GPL-3.0-or-later
       height: 100dvh;
       font: 14px/1.2 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     }
-    iframe { flex: 1; width: 100%; border: 0; display: block; min-height: 0; }
+    .stage { flex: 1; display: flex; min-height: 0; }
+    iframe { flex: 1; width: 100%; border: 0; display: block; min-height: 0; min-width: 0; }
+    /* Coach: step-by-step help next to the terminal (below it on phones) */
+    .coach {
+      width: 330px; flex: none; overflow-y: auto; padding: 14px 16px;
+      background: var(--bar); border-left: 1px solid var(--key);
+      font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    .coach .head { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .coach .bar { height: 3px; background: var(--key); border-radius: 2px; margin: 8px 0 12px; }
+    .coach .bar span { display: block; height: 100%; background: var(--key-active); border-radius: 2px; transition: width 0.3s; }
+    .coach h2 { font-size: 17px; margin: 0 0 8px; line-height: 1.3; }
+    .coach p, .coach ul { margin: 0 0 10px; }
+    .coach ul { padding-left: 1.1em; }
+    .coach code, .coach pre { font: 13px ui-monospace, "DejaVu Sans Mono", monospace; }
+    .coach pre { background: var(--bg); padding: 4px 10px; border-radius: 6px; display: inline-block; }
+    .coach kbd { font: 600 12px ui-monospace, monospace; border: 1px solid var(--key); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
+    .coach .rule { border-left: 3px solid #d29922; padding-left: 10px; color: var(--muted); }
+    .coach .press { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 12px; align-items: center; }
+    .coach .press span { color: var(--muted); font-size: 12px; margin-right: 2px; }
+    .coach .press button { background: #0f2417; color: var(--key-active); border: 1px solid var(--key-active); }
+    .coach .press .typed { font-style: italic; color: var(--muted); font: italic 13px system-ui, sans-serif; }
+    .coach .nav { display: flex; gap: 8px; }
+    .coach .nav button { font: 13px system-ui, sans-serif; height: 30px; }
+    .coach .auto { color: var(--muted); font-size: 12px; margin-top: 10px; }
+    .coach .close { background: none; min-width: 0; padding: 0 4px; color: var(--muted); font: 16px system-ui, sans-serif; height: 22px; }
+    @media (max-width: 800px) {
+      .stage { flex-direction: column; }
+      .coach { width: auto; max-height: 38vh; border-left: 0; border-top: 1px solid var(--key); padding: 10px 14px; }
+    }
     .top {
       display: flex;
       gap: 8px;
@@ -69,7 +98,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
         grid-template-rows: auto 1fr;
       }
       .top { grid-column: 1 / 3; padding: 2px 8px; }
-      iframe { grid-column: 1; grid-row: 2; height: 100%; }
+      .stage { grid-column: 1; grid-row: 2; height: 100%; min-height: 0; }
+      .coach { width: 260px; max-height: none; border-top: 0; border-left: 1px solid var(--key); }
+      .stage { flex-direction: row; }
       .keys {
         grid-column: 2;
         grid-row: 2;
@@ -89,11 +120,26 @@ SPDX-License-Identifier: GPL-3.0-or-later
   <div class="top">
     <a href="./">&larr; Conquer</a>
     <span class="spacer"></span>
+    <button id="coach-toggle" type="button" aria-controls="coach" aria-expanded="false" title="Step-by-step help for your first turn">Coach</button>
     <button id="keyboard" type="button" title="Show the device keyboard">Keyboard</button>
     <button id="toggle" type="button" aria-controls="keys" aria-expanded="false">Keys</button>
   </div>
 
-  <iframe id="game" src="/play/" title="Conquer game terminal"></iframe>
+  <div class="stage">
+    <iframe id="game" src="/play/" title="Conquer game terminal"></iframe>
+    <aside class="coach" id="coach" hidden aria-live="polite">
+      <div class="head"><span id="coach-count"></span><button class="close" id="coach-close" type="button" title="Close the coach">&times;</button></div>
+      <div class="bar"><span id="coach-progress"></span></div>
+      <h2 id="coach-title"></h2>
+      <div class="press" id="coach-keys"></div>
+      <div id="coach-text"></div>
+      <div class="nav">
+        <button id="coach-back" type="button">Back</button>
+        <button id="coach-next" type="button">Next</button>
+      </div>
+      <p class="auto">The coach moves on by itself when the game shows the next screen. Tap a key above to press it.</p>
+    </aside>
+  </div>
 
   <div class="keys" id="keys" hidden>
     <div class="pad" aria-label="Move">
@@ -183,6 +229,115 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
     // Keep the terminal sized to the frame when the window changes
     window.addEventListener('resize', function () { setTimeout(fitColumns, 50); });
+
+    // Coach: walks through the first-turn tutorial (tutorial/first-turn.json)
+    // next to the terminal, and moves to the next step when the terminal
+    // shows that step's screen
+    var coach = document.getElementById('coach');
+    var coachToggle = document.getElementById('coach-toggle');
+    var COACH_STORE = 'conquer-coach';
+    var steps = [], stepIndex = 0, stepScreen = null;
+    var KEY_INPUT = { Space: ' ', Enter: '\r', Esc: '\x1b' };
+
+    function coachSave() {
+      try { localStorage.setItem(COACH_STORE, JSON.stringify({ open: !coach.hidden, step: stepIndex })); } catch (e) {}
+    }
+    function coachLoad() {
+      try { return JSON.parse(localStorage.getItem(COACH_STORE)) || {}; } catch (e) { return {}; }
+    }
+    function renderStep() {
+      var st = steps[stepIndex];
+      if (!st) return;
+      // The screen the step started on: only a different one moves on
+      stepScreen = screenText();
+      document.getElementById('coach-count').textContent = 'Coach · step ' + (stepIndex + 1) + ' of ' + steps.length;
+      document.getElementById('coach-progress').style.width = (100 * (stepIndex + 1) / steps.length) + '%';
+      document.getElementById('coach-title').textContent = st.title;
+      // Step texts are part of this site (tools/tutorial), not user content
+      document.getElementById('coach-text').innerHTML = st.text;
+      var box = document.getElementById('coach-keys');
+      box.textContent = '';
+      if (st.keys.length) {
+        var label = document.createElement('span');
+        label.textContent = 'Press';
+        box.appendChild(label);
+      }
+      st.keys.forEach(function (k) {
+        if (k === 'password') {
+          var typed = document.createElement('span');
+          typed.className = 'typed';
+          typed.textContent = 'your nation password';
+          box.appendChild(typed);
+          return;
+        }
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = k;
+        b.addEventListener('click', function () {
+          var t = term();
+          if (t) { t.input(KEY_INPUT[k] || k, true); t.focus(); }
+        });
+        box.appendChild(b);
+      });
+      document.getElementById('coach-back').disabled = stepIndex === 0;
+      document.getElementById('coach-next').textContent = stepIndex === steps.length - 1 ? 'Finish' : 'Next';
+      coachSave();
+    }
+    function showCoach(show) {
+      coach.hidden = !show;
+      coachToggle.setAttribute('aria-expanded', String(show));
+      if (show && !steps.length) {
+        fetch('tutorial/first-turn.json').then(function (r) { return r.json(); }).then(function (d) {
+          steps = d.steps.map(function (s) { s.re = new RegExp(s.detect); return s; });
+          steps.forEach(function (s) {
+            s.unique = steps.filter(function (o) { return o.detect === s.detect; }).length === 1;
+          });
+          stepIndex = Math.min(coachLoad().step || 0, steps.length - 1);
+          renderStep();
+        }).catch(function () { coach.hidden = true; });
+      }
+      coachSave();
+      setTimeout(fitColumns, 50);
+    }
+    function screenText() {
+      var t = term();
+      if (!t || !t.buffer) return '';
+      var buf = t.buffer.active, lines = [];
+      for (var y = 0; y < t.rows; y++) {
+        var line = buf.getLine(buf.viewportY + y);
+        if (line) lines.push(line.translateToString(true));
+      }
+      return lines.join('\n');
+    }
+    // Follow the player: when the next step's screen appears, move there.
+    // A player who takes another path is caught up by any of the next few
+    // steps whose screen is unmistakable (its text belongs to that step only).
+    setInterval(function () {
+      if (coach.hidden || !steps.length) return;
+      var text = screenText();
+      if (text === stepScreen) return;
+      for (var i = stepIndex + 1; i < Math.min(stepIndex + 7, steps.length); i++) {
+        if ((i === stepIndex + 1 || steps[i].unique) && steps[i].re.test(text)) {
+          stepIndex = i;
+          renderStep();
+          return;
+        }
+      }
+    }, 600);
+
+    coachToggle.addEventListener('click', function () { showCoach(coach.hidden); });
+    document.getElementById('coach-close').addEventListener('click', function () { showCoach(false); });
+    document.getElementById('coach-back').addEventListener('click', function () {
+      if (stepIndex > 0) { stepIndex--; renderStep(); }
+    });
+    document.getElementById('coach-next').addEventListener('click', function () {
+      if (stepIndex < steps.length - 1) { stepIndex++; renderStep(); }
+      else { stepIndex = 0; showCoach(false); }
+    });
+    // Open with ?coach (links from the tutorial), or as it was last time
+    var coachState = coachLoad();
+    if (/[?&]coach\b/.test(location.search)) { coachState.step = 0; try { localStorage.setItem(COACH_STORE, JSON.stringify(coachState)); } catch (e) {} showCoach(true); }
+    else if (coachState.open) showCoach(true);
 
     // Keep fitting while ttyd connects and applies its settings
     var tries = 0;

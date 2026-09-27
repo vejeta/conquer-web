@@ -12,6 +12,12 @@ WORLD_DIR="$PREFIX/lib"
 MIN_COLS=80
 UPDATING_FLAG=/run/conquer/turn
 PLAYERS_FILE="$WORLD_DIR/.players"
+# Private practice worlds, one per account, copied from a template world
+# with a ready nation (see practice_menu)
+PRACTICE_ROOT="$PREFIX/practice"
+PRACTICE_TEMPLATE="$PREFIX/practice-world"
+PRACTICE_NATION=trainee
+PRACTICE_PASSWORD=train1
 # Web account the player signed in with (set by ttyd from the proxy header)
 PLAYER="${TTYD_USER:-}"
 MIN_ROWS=24
@@ -305,6 +311,81 @@ EOF
     pause
 }
 
+# Practice world of the signed-in account
+practice_dir() {
+    local name="${PLAYER:-guest}"
+    echo "$PRACTICE_ROOT/${name//[^A-Za-z0-9_.-]/_}"
+}
+
+new_practice_world() {
+    local dir
+    dir=$(practice_dir)
+    rm -rf "$dir"
+    mkdir -p "$PRACTICE_ROOT" &&
+        cp -a "$PRACTICE_TEMPLATE" "$dir" &&
+        cp "$PREFIX"/share/help[0-5] "$dir"/ &&
+        "$PREFIX/bin/conqowner" -d "$dir" -s "$(id -u)" > /dev/null
+}
+
+practice_turn() {
+    "$PREFIX/bin/conquer" -d "$1" -s 2>/dev/null | sed -n 's/^Conquer .*: \(.*\)$/\1/p' | head -n 1
+}
+
+practice_menu() {
+    local dir choice before
+    dir=$(practice_dir)
+    if [ ! -f "$dir/data" ] && ! new_practice_world; then
+        echo; echo "  ${yellow}Could not create your practice world.${reset}"; pause; return
+    fi
+    while true; do
+        clear
+        echo
+        echo "  ${bold}${green}Practice world${reset}   ${dim}only you play here; nothing counts${reset}"
+        echo
+        echo "  ${dim}Your nation:  ${reset} ${bold}${PRACTICE_NATION}${reset}   ${dim}password:${reset} ${bold}${PRACTICE_PASSWORD}${reset}"
+        echo "  ${dim}Now:          ${reset} $(practice_turn "$dir")"
+        echo
+        echo "  Try anything, run the next turn yourself and see what happens."
+        echo "  The Coach button above the game walks you through a first turn."
+        echo
+        echo "  ${bold}1${reset}) Play the practice nation"
+        echo "  ${bold}2${reset}) Run the next turn now"
+        echo "  ${bold}3${reset}) Start again with a new world"
+        echo "  ${bold}q${reset}) Back to the main menu"
+        echo
+        read -r -s -n 1 -p "  Choose an option: " choice
+        case "$choice" in
+            1)
+                check_terminal_size
+                clear
+                run_game -d "$dir" -n "$PRACTICE_NATION"
+                ;;
+            2)
+                clear
+                before=$(practice_turn "$dir")
+                echo "  Running the turn update of your practice world..."
+                if "$PREFIX/bin/conqrun" -x -d "$dir" > /dev/null 2>&1; then
+                    echo "  ${green}Done:${reset} $before -> $(practice_turn "$dir")"
+                    echo "  Play again to read the newspaper (N) and your mail (R)."
+                else
+                    echo "  ${yellow}The update did not run.${reset} Quit the practice game first."
+                fi
+                pause
+                ;;
+            3)
+                clear
+                read -r -s -n 1 -p "  Delete your practice world and start again? [y/N] " choice
+                echo
+                if [ "$choice" = y ] || [ "$choice" = Y ]; then
+                    new_practice_world && echo "  ${green}A new practice world is ready.${reset}"
+                    pause
+                fi
+                ;;
+            q|Q) return ;;
+        esac
+    done
+}
+
 show_scores() {
     clear
     (cd "$WORLD_DIR" && "$PREFIX/bin/conquer" -s 2>/dev/null) | less -R -P "Scores - q to return"
@@ -366,6 +447,7 @@ while true; do
             echo "  ${bold}6${reset}) My orders for this turn are done"
         fi
     fi
+    [ -d "$PRACTICE_TEMPLATE" ] && echo "  ${bold}7${reset}) Practice world (only you, nothing counts)"
     echo "  ${bold}q${reset}) Log out"
     echo
     read -r -s -n 1 -p "  Choose an option: " choice
@@ -376,6 +458,7 @@ while true; do
         4) show_scores ;;
         5) check_terminal_size; run_game -h ;;
         6) [ -e "$UPDATING_FLAG" ] || toggle_orders_done ;;
+        7) [ -d "$PRACTICE_TEMPLATE" ] && practice_menu ;;
         q|Q) clear; echo "Goodbye, commander."; exit 0 ;;
     esac
 done

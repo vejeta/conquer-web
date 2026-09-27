@@ -140,7 +140,7 @@ install_landing_page() {
     chmod -R a+rX "/var/www/$DOMAIN_NAME"
 
     # Live world data directory (seeded by the container on first start)
-    mkdir -p "$PROJECT_DIR/data/lib" "$PROJECT_DIR/data/backups"
+    mkdir -p "$PROJECT_DIR/data/lib" "$PROJECT_DIR/data/backups" "$PROJECT_DIR/data/practice"
 
     # Public game status (status.json) is written by the container straight
     # into the web root, so Apache serves it at /status/ without extra config

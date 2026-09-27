@@ -28,7 +28,7 @@ if [ ! -f "$CERT_PATH/fullchain.pem" ] || [ ! -f "$CERT_PATH/privkey.pem" ]; the
 fi
 
 # Live world data directory (seeded by the container on first start)
-mkdir -p data/lib data/public data/backups data/auth
+mkdir -p data/lib data/public data/backups data/auth data/practice
 
 # Player accounts: create the administrator's account on first start
 if [ ! -s data/auth/htpasswd ]; then

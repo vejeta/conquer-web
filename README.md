@@ -79,6 +79,18 @@ After signing in, players see a menu instead of a raw game prompt:
 3. **Key reference**
 4. **Scores**
 5. **Full help** – the in-game help screens
+6. **My orders for this turn are done** (see *Early turns when everyone is done*)
+7. **Practice world** – a private copy of the default world with a ready
+   nation (`trainee`, password `train1`) for every account. Players try
+   anything, run its turns themselves and start again at will; it never
+   touches the real game and never blocks its turn updates. Practice worlds
+   live in `data/practice/`.
+
+The **Coach** button above the game (or `game.html?coach`) opens a
+step-by-step guide next to the terminal: the same first turn as the
+tutorial page (`/tutorial.html`), with buttons that press the keys for the
+player. It follows the game on its own, moving to the next step when the
+screen changes.
 
 The menu also shows the last turn update and the turn schedule.
 

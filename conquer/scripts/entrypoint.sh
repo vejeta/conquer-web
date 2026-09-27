@@ -48,8 +48,8 @@ cp "$PREFIX"/share/help[0-5] "$WORLD_DIR/"
 
 # The game user must own the world, the published status and the backups
 # (worlds from older images or restored backups may belong to root)
-mkdir -p "$PREFIX/public" "$PREFIX/backups"
-chown -R "$GAME_USER:$GAME_USER" "$WORLD_DIR" "$PREFIX/public" "$PREFIX/backups"
+mkdir -p "$PREFIX/public" "$PREFIX/backups" "$PREFIX/practice"
+chown -R "$GAME_USER:$GAME_USER" "$WORLD_DIR" "$PREFIX/public" "$PREFIX/backups" "$PREFIX/practice"
 
 # Every player and the administrator run as the game user. Conquer
 # (CHECKUSER) only lets one uid add several nations if it owns the god

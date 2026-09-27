@@ -52,13 +52,17 @@ current_turn() {
     "$PREFIX/bin/conquer" -s 2>/dev/null | sed -n 's/^Conquer .*, Turn \([0-9][0-9]*\)$/\1/p' | head -n 1
 }
 
-# PIDs of running game sessions (from /proc: procps is not in the image)
+# PIDs of running game sessions (from /proc: procps is not in the image).
+# Games in the players' practice worlds (-d .../practice/...) do not block
+# the update and are left alone.
 game_pids() {
-    local comm found=1
+    local comm pid found=1
     for comm in /proc/[0-9]*/comm; do
         if [ "$(cat "$comm" 2>/dev/null)" = conquer ]; then
-            comm=${comm#/proc/}
-            echo "${comm%/comm}"
+            pid=${comm#/proc/}
+            pid=${pid%/comm}
+            tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null | grep -q -- "-d $PREFIX/practice/" && continue
+            echo "$pid"
             found=0
         fi
     done

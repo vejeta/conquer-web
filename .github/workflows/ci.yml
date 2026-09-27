@@ -47,7 +47,7 @@ jobs:
       - name: Prepare local environment
         run: |
           ./setup-local-certs.sh
-          mkdir -p data/lib data/public data/backups data/auth
+          mkdir -p data/lib data/public data/backups data/auth data/practice
           printf '%s\n' "$TTYD_PASSWORD" | ./manage-players.sh add "$TTYD_USERNAME" --admin --password-stdin
 
       - name: Build and start the local stack
