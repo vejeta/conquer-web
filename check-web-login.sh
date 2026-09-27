@@ -8,7 +8,7 @@
 #
 #   sudo ./check-web-login.sh [ACCOUNT]      (default: conquer)
 #
-# The password is only shown at the end, on this terminal.
+# The password is saved in /root/conquer-web-password-ACCOUNT.txt.
 
 set -u
 
@@ -89,10 +89,12 @@ if ! docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
     docker ps --format '     {{.Names}}  {{.Image}}  {{.Status}}'
 else
     info "$(docker ps --filter "name=^$CONTAINER\$" --format 'Image {{.Image}}, created {{.CreatedAt}}, {{.Status}}')"
+    info "Started by docker-compose from $(docker inspect "$CONTAINER" --format \
+        '{{index .Config.Labels "com.docker.compose.project.working_dir"}} ({{index .Config.Labels "com.docker.compose.project.config_files"}}, project {{index .Config.Labels "com.docker.compose.project"}})' 2>/dev/null)"
     args=$(docker exec "$CONTAINER" cat /proc/1/cmdline 2>/dev/null | tr '\0' ' ')
     if echo "$args" | grep -q -- ' -c '; then
-        bad "ttyd has its own password (-c): this is the old container. Rebuild it:"
-        info "  docker-compose -f docker-compose.vps.yml up -d --build"
+        bad "ttyd has its own password (-c): this is the old container, built from other files"
+        info "Compare the directory above with $SCRIPT_DIR and see: systemctl cat conquer-web"
     elif echo "$args" | grep -q -- '-H X-WEBAUTH-USER'; then
         ok "ttyd trusts Apache's login (-H X-WEBAUTH-USER)"
     else
@@ -102,7 +104,12 @@ else
     [ "$code" = 200 ] && ok "ttyd answers /play/ (HTTP 200)" || bad "ttyd answers /play/ with HTTP $code"
 fi
 
+# The password goes to a file only root can read, not to the screen, so it
+# is not copied along with the rest of this output
+SECRET="/root/conquer-web-password-$NAME.txt"
+( umask 077; printf '%s\n' "$PASSWORD" > "$SECRET" )
 echo
-echo "🔑 Password for '$NAME': $PASSWORD"
-echo "   Keep it; do not paste it anywhere. Try it in a private browser window."
+echo "🔑 The new password for '$NAME' is in $SECRET (only root can read it):"
+echo "     sudo cat $SECRET"
+echo "   Try it in a private browser window."
 echo "   If fail2ban blocked you: fail2ban-client set apache-auth-conquer unbanip <your IP>"
