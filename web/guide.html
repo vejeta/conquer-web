@@ -561,7 +561,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
       <li>Open a chat room for the season and set <code>TURN_WEBHOOK_URL</code> so it announces every turn (Slack, Mattermost and Discord work).</li>
       <li>Fill in <code>ADMIN_CONTACT</code> so players know where to ask for a nation.</li>
       <li>Backups are taken before every turn in <code>data/backups/</code>; <code>./restore-world.sh</code> brings one back if a turn goes wrong.</li>
-      <li>At the end, announce the winner from the final scores and keep the last backup as the season's archive.</li>
+      <li>At the end, run <code>./season-end.sh "Season name"</code>: the final scores go to the <a href="hall.html">hall of fame</a>. Keep the last backup as the season's archive.</li>
+      <li>Hand out invite codes (<code>./manage-players.sh invite 10</code>) and let players build their own nations with the join account shown on the home page.</li>
     </ul>
   </section>
 

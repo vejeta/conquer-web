@@ -133,3 +133,87 @@ END {
 
 chmod 644 "$tmp"
 mv -f "$tmp" "$PUBLIC_DIR/status.json"
+
+# Score history for the chart on the landing page: one line per turn and
+# nation in lib/.score-history, published as history.json. A new world
+# (the turn went back) starts a new history.
+HISTORY_FILE="$PREFIX/lib/.score-history"
+if [ -n "$turn" ]; then
+    last=$(awk -F'\t' '$1 > max { max = $1 } END { print max + 0 }' "$HISTORY_FILE" 2>/dev/null)
+    [ "${last:-0}" -gt "$turn" ] && : > "$HISTORY_FILE"
+    {
+        awk -F'\t' -v t="$turn" '$1 != t' "$HISTORY_FILE" 2>/dev/null
+        awk -v t="$turn" 'NF >= 6 && $1 ~ /^[0-9]+$/ && $6 ~ /^[0-9]+$/ { print t "\t" $2 "\t" $6 }' <<< "$scores"
+    } | sort -t "$(printf '\t')" -k1,1n -k2,2 > "$HISTORY_FILE.tmp" && mv -f "$HISTORY_FILE.tmp" "$HISTORY_FILE"
+    awk -F'\t' '
+        { if (!($1 in seen_t)) { seen_t[$1] = 1; turns[++nt] = $1 }
+          if (!($2 in seen_n)) { seen_n[$2] = 1; names[++nn] = $2 }
+          score[$1, $2] = $3 }
+        END {
+            printf "{\"turns\":["
+            for (i = 1; i <= nt; i++) printf "%s%d", (i > 1 ? "," : ""), turns[i]
+            printf "],\"nations\":{"
+            for (j = 1; j <= nn; j++) {
+                printf "%s\"%s\":[", (j > 1 ? "," : ""), names[j]
+                for (i = 1; i <= nt; i++)
+                    printf "%s%s", (i > 1 ? "," : ""), ((turns[i], names[j]) in score ? score[turns[i], names[j]] : "null")
+                printf "]"
+            }
+            print "}}"
+        }' "$HISTORY_FILE" > "$PUBLIC_DIR/.history.tmp" &&
+        chmod 644 "$PUBLIC_DIR/.history.tmp" && mv -f "$PUBLIC_DIR/.history.tmp" "$PUBLIC_DIR/history.json"
+fi
+
+# One shareable page per newspaper edition (status/news/<turn>.html), with
+# link preview tags for chat apps and social networks. Old editions never
+# change; the newest is rewritten, since rulers can still post to it.
+mkdir -p "$PUBLIC_DIR/news"
+for ((n = ${turn:-1} - 1; n >= 0; n--)); do
+    src="$PREFIX/lib/news$n"
+    page="$PUBLIC_DIR/news/$n.html"
+    [ -s "$src" ] || continue
+    [ -f "$page" ] && [ "$n" -lt $((${turn:-1} - 1)) ] && continue
+    awk -v turn="$n" '
+    function esc(s) { gsub(/&/, "\\&amp;", s); gsub(/</, "\\&lt;", s); gsub(/>/, "\\&gt;", s); gsub(/"/, "\\&quot;", s); return s }
+    BEGIN {
+        split("Spring Summer Fall Winter", season, " ")
+        when = season[(turn - 1) % 4 + 1] " of Year " int((turn - 1) / 4) + 1
+        if (turn < 1) when = "Before the first turn"
+    }
+    /^[0-9]+\t/ {
+        split($0, parts, "\t"); skip = (parts[1] == 3)
+        if (open) body = body "</ul>\n"
+        if (!skip) body = body "<h2>" esc(substr($0, index($0, "\t") + 1)) "</h2>\n<ul>\n"
+        open = !skip; next
+    }
+    /^[0-9]+[^\t]*\t/ {
+        if (skip || !open) next
+        text = substr($0, index($0, "\t") + 1); gsub(/^[ \t]+|[ \t]+$/, "", text)
+        if (text == "") next
+        body = body "<li>" esc(text) "</li>\n"
+        if (++items <= 3) summary = summary (summary == "" ? "" : "; ") text
+    }
+    END {
+        if (open) body = body "</ul>\n"
+        title = "Conquer world news: turn " turn ", " when
+        if (summary == "") summary = "The world newspaper of Conquer, the classic multiplayer strategy game."
+        print "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">"
+        print "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+        print "<title>" esc(title) "</title>"
+        print "<meta name=\"description\" content=\"" esc(summary) "\">"
+        print "<meta property=\"og:title\" content=\"" esc(title) "\">"
+        print "<meta property=\"og:description\" content=\"" esc(summary) "\">"
+        print "<meta property=\"og:type\" content=\"article\">"
+        print "<meta name=\"twitter:card\" content=\"summary\">"
+        print "<style>body{margin:0;background:#0d1117;color:#e6edf3;font:17px/1.6 system-ui,sans-serif}"
+        print "main{max-width:760px;margin:0 auto;padding:32px 16px 64px}a{color:#3fb950}"
+        print ".mast{font:700 clamp(1.8rem,7vw,2.8rem)/1 ui-monospace,\"DejaVu Sans Mono\",monospace;letter-spacing:.25em;color:#3fb950;margin:0 0 6px}"
+        print ".when{color:#8b949e;margin:0 0 28px;font-family:ui-monospace,monospace}"
+        print "h2{font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;color:#8b949e;border-top:1px solid #30363d;padding-top:14px}"
+        print "li+li{margin-top:4px}.cta{margin-top:36px}</style>\n</head>\n<body>\n<main>"
+        print "<p class=\"mast\">CONQUER</p>\n<p class=\"when\">World news &middot; turn " turn " &middot; " esc(when) "</p>"
+        printf "%s", body
+        print "<p class=\"cta\"><a href=\"../../\">The current game and how to join &rarr;</a></p>"
+        print "</main>\n</body>\n</html>"
+    }' "$src" > "$page.tmp" && chmod 644 "$page.tmp" && mv -f "$page.tmp" "$page"
+done

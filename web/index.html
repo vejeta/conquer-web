@@ -19,6 +19,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
       --accent: #3fb950;
       --accent-text: #0d1117;
       --warn: #d29922;
+      /* Score chart series: validated categorical slots (dataviz palette) */
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
+      --grid: #30363d;
     }
     @media (prefers-color-scheme: light) {
       :root {
@@ -30,6 +33,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
         --accent: #1a7f37;
         --accent-text: #ffffff;
         --warn: #9a6700;
+        --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4;
+        --grid: #e3e6ea;
       }
     }
     * { box-sizing: border-box; }
@@ -92,6 +97,21 @@ SPDX-License-Identifier: GPL-3.0-or-later
     #news h3 { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 12px 0 4px; }
     #news ul { margin: 0; }
     #news li { overflow-wrap: anywhere; }
+    .chart { margin: 4px 0 18px; position: relative; }
+    .chart h3 { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 6px; font-weight: 500; }
+    .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+    .chart .axis { fill: var(--muted); font: 11px system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+    .chart .gridline { stroke: var(--grid); stroke-width: 1; }
+    .chart .line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+    .chart .end { font: 600 11px system-ui, sans-serif; fill: var(--text); }
+    .chart .cross { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+    .legend-row { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.85rem; color: var(--muted); margin-top: 6px; }
+    .legend-row span::before { content: ""; display: inline-block; width: 10px; height: 3px; border-radius: 2px; background: var(--c); margin-right: 6px; vertical-align: middle; }
+    .tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 6px 9px; font-size: 0.8rem; box-shadow: 0 4px 14px rgba(0,0,0,.25); white-space: nowrap; }
+    .tip b { display: block; margin-bottom: 2px; }
+    .tip i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 6px; font-style: normal; }
+    .tip span { float: right; margin-left: 14px; font-variant-numeric: tabular-nums; }
+    .share { font-size: 0.8rem; font-weight: 400; margin-left: 8px; }
     .countdown { color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
     a { color: var(--accent); }
     footer { text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: 32px; }
@@ -129,7 +149,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <p class="hint" data-i18n="hint">You will be asked for your player account first.</p>
     <p class="join" id="join" hidden><span data-i18n="join">Have an invite code? Press Play now and sign in as</span>
       <code id="join-account"></code> / <code id="join-password"></code></p>
-    <p class="hint"><a href="tutorial.html" data-i18n="tutorial">New here? Play your first turn step by step</a> · <a href="guide.html" data-i18n="guide">Player's guide</a></p>
+    <p class="hint"><a href="tutorial.html" data-i18n="tutorial">New here? Play your first turn step by step</a> · <a href="guide.html" data-i18n="guide">Player's guide</a> · <a href="hall.html" data-i18n="hall">Hall of fame</a></p>
   </header>
 
   <section id="status" hidden>
@@ -143,6 +163,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
       <div class="fact" id="status-ready-box" hidden><div class="label" data-i18n="l_ready">Orders done</div><div class="value" id="status-ready"></div><div class="countdown" id="status-ready-note"></div></div>
       <div class="fact" id="status-next-box" hidden><div class="label" data-i18n="l_next">Next update</div><div class="value" id="status-next"></div><div class="countdown" id="status-countdown"></div></div>
     </div>
+    <figure class="chart" id="chart" hidden>
+      <h3 data-i18n="h_chart">Score, turn by turn: the five leading nations</h3>
+      <div id="chart-box"></div>
+      <div class="legend-row" id="chart-legend"></div>
+    </figure>
     <div class="table-wrap">
       <table>
         <thead><tr><th class="num">#</th><th data-i18n="th_nation">Nation</th><th data-i18n="th_race">Race</th><th class="optional" data-i18n="th_class">Class</th><th class="optional" data-i18n="th_alignment">Alignment</th><th class="num" data-i18n="th_score">Score</th></tr></thead>
@@ -241,6 +266,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     play: 'Jugar',
     hint: 'Primero se te pedirá tu cuenta de jugador.',
     guide: 'Guía del jugador (en inglés)',
+    hall: 'Salón de la fama',
     tutorial: '¿Eres nuevo? Tu primer turno paso a paso (en inglés)',
     join: '¿Tienes un código de invitación? Pulsa Jugar y entra como',
     h_current: 'Partida actual',
@@ -248,6 +274,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     l_schedule: 'Calendario de turnos', l_next: 'Próxima actualización', l_ready: 'Órdenes listas',
     th_nation: 'Nación', th_race: 'Raza', th_class: 'Clase', th_alignment: 'Alineamiento', th_score: 'Puntos',
     h_news: 'Noticias del mundo',
+    h_chart: 'Puntuación turno a turno: las cinco naciones en cabeza',
     h_what: '¿Qué es Conquer?',
     p_what: 'Conquer es un juego de estrategia fantástica por turnos para muchos jugadores, publicado por primera vez ' +
       'en Usenet en 1987 por Ed Barlow y Adam Bryant. Cada jugador gobierna una nación: construye ciudades, recluta ' +
@@ -288,13 +315,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
   var MSG = {
     en: {
       turn: 'Turn ', more: function (n) { return '… and ' + n + ' more (read the newspaper in the game)'; },
-      notYet: 'not yet', byAdmin: 'set by the administrator', now: 'updating now', inTime: 'in ',
+      share: 'share', notYet: 'not yet', byAdmin: 'set by the administrator', now: 'updating now', inTime: 'in ',
       ready: function (d, t) { return d + ' of ' + t + ' nations'; }, early: 'turn runs when all are done',
       failed: function (t) { return 'The last turn update did not run (' + t + '). The administrator has been notified; orders are kept for the next update.'; }
     },
     es: {
       turn: 'Turno ', more: function (n) { return '… y ' + n + ' más (lee el periódico en el juego)'; },
-      notYet: 'todavía no', byAdmin: 'lo fija el administrador', now: 'actualizando', inTime: 'dentro de ',
+      share: 'compartir', notYet: 'todavía no', byAdmin: 'lo fija el administrador', now: 'actualizando', inTime: 'dentro de ',
       ready: function (d, t) { return d + ' de ' + t + ' naciones'; }, early: 'el turno avanza cuando todas estén listas',
       failed: function (t) { return 'La última actualización de turno no se hizo (' + t + '). Se ha avisado al administrador; las órdenes se conservan para la próxima.'; }
     }
@@ -346,6 +373,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
       det.open = i === 0;
       var sum = document.createElement('summary');
       sum.textContent = MSG[lang].turn + ed.turn;
+      // Shareable page of this edition, with a link preview
+      var share = document.createElement('a');
+      share.className = 'share';
+      share.href = conquerServerUrl('status/news/' + ed.turn + '.html');
+      share.textContent = MSG[lang].share;
+      share.addEventListener('click', function (e) { e.stopPropagation(); });
+      sum.appendChild(share);
       det.appendChild(sum);
       ed.sections.forEach(function (sec) {
         var h = document.createElement('h3');
@@ -424,6 +458,97 @@ SPDX-License-Identifier: GPL-3.0-or-later
   }
 
   applyLang(pickLang());
+
+  // Score history of the five leading nations (history.json, written by the
+  // game container after every turn). Color follows the nation in rank order
+  // of the latest turn; names are also written at the line ends.
+  function renderChart(h) {
+    var turns = h.turns || [];
+    if (turns.length < 2) return;
+    var last = turns.length - 1;
+    var names = Object.keys(h.nations).filter(function (n) { return h.nations[n][last] != null; })
+      .sort(function (a, b) { return h.nations[b][last] - h.nations[a][last]; }).slice(0, 5);
+    var W = 640, H = 230, L = 42, R = 86, T = 10, B = 26;
+    var max = 0;
+    names.forEach(function (n) { h.nations[n].forEach(function (v) { if (v > max) max = v; }); });
+    var step = Math.pow(10, Math.floor(Math.log10(Math.max(max, 1))));
+    [1, 2, 5, 10].some(function (m) { if (max / (step * m) <= 5) { step *= m; return true; } });
+    var top = Math.max(step, Math.ceil(max / step) * step);
+    function x(i) { return L + (W - L - R) * i / last; }
+    function y(v) { return T + (H - T - B) * (1 - v / top); }
+    var ns = 'http://www.w3.org/2000/svg';
+    function el(tag, attrs, text) {
+      var e = document.createElementNS(ns, tag);
+      for (var k in attrs) e.setAttribute(k, attrs[k]);
+      if (text != null) e.textContent = text;
+      return e;
+    }
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Score by turn' });
+    for (var v = 0; v <= top; v += step) {
+      svg.appendChild(el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v), 'class': 'gridline' }));
+      svg.appendChild(el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end', 'class': 'axis' }, v));
+    }
+    var every = Math.ceil(turns.length / 8);
+    turns.forEach(function (t, i) {
+      if (i % every === 0 || i === last) svg.appendChild(el('text', { x: x(i), y: H - 6, 'text-anchor': 'middle', 'class': 'axis' }, t));
+    });
+    var ends = [];
+    names.forEach(function (n, s) {
+      var d = '', pen = false;
+      h.nations[n].forEach(function (v, i) {
+        if (v == null) { pen = false; return; }
+        d += (pen ? 'L' : 'M') + x(i).toFixed(1) + ',' + y(v).toFixed(1);
+        pen = true;
+      });
+      svg.appendChild(el('path', { d: d, 'class': 'line', stroke: 'var(--s' + (s + 1) + ')' }));
+      ends.push({ n: n, y: y(h.nations[n][last]) });
+    });
+    // Direct labels at the line ends, nudged apart so they never overlap
+    ends.sort(function (a, b) { return a.y - b.y; });
+    for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
+    ends.forEach(function (e) { svg.appendChild(el('text', { x: W - R + 8, y: e.y + 4, 'class': 'end' }, e.n)); });
+    var cross = el('line', { y1: T, y2: H - B, 'class': 'cross', visibility: 'hidden' });
+    svg.appendChild(cross);
+    var box = document.getElementById('chart-box');
+    box.textContent = '';
+    box.appendChild(svg);
+    var tip = document.createElement('div');
+    tip.className = 'tip'; tip.hidden = true;
+    box.parentNode.appendChild(tip);
+    // Crosshair and tooltip on the nearest turn
+    svg.addEventListener('pointermove', function (ev) {
+      var r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) * W / r.width;
+      var i = Math.max(0, Math.min(last, Math.round((px - L) / (W - L - R) * last)));
+      cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); cross.setAttribute('visibility', 'visible');
+      tip.textContent = '';
+      var head = document.createElement('b'); head.textContent = MSG[lang].turn + turns[i]; tip.appendChild(head);
+      names.forEach(function (n, s) {
+        var row = document.createElement('div'), dot = document.createElement('i'), val = document.createElement('span');
+        dot.style.setProperty('--c', 'var(--s' + (s + 1) + ')');
+        row.appendChild(dot); row.appendChild(document.createTextNode(n));
+        val.textContent = h.nations[n][i] == null ? '-' : h.nations[n][i];
+        row.appendChild(val); tip.appendChild(row);
+      });
+      tip.hidden = false;
+      var left = x(i) * r.width / W + 12;
+      tip.style.left = Math.min(left, r.width - tip.offsetWidth) + 'px';
+      tip.style.top = '28px';
+    });
+    svg.addEventListener('pointerleave', function () { cross.setAttribute('visibility', 'hidden'); tip.hidden = true; });
+    var legend = document.getElementById('chart-legend');
+    legend.textContent = '';
+    names.forEach(function (n, s) {
+      var item = document.createElement('span');
+      item.style.setProperty('--c', 'var(--s' + (s + 1) + ')');
+      item.textContent = n;
+      legend.appendChild(item);
+    });
+    document.getElementById('chart').hidden = false;
+  }
+  fetch(conquerServerUrl('status/history.json'), { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(renderChart)
+    .catch(function () { /* no history yet */ });
 
   // Public game status published by the game container after every turn
   fetch(conquerServerUrl('status/status.json'), { cache: 'no-store' })
