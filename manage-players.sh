@@ -4,16 +4,22 @@
 #
 # Manage the web accounts players use to open the game at /play/.
 # Apache checks them (basic auth against an htpasswd file) and tells ttyd
-# who signed in; an account named like a nation opens that nation directly.
+# who signed in. Each account opens only the nation assigned to it; an
+# administrator account ("--admin") may open any nation, including god.
 #
 # Usage:
-#   ./manage-players.sh add NAME [--password-stdin]   create or reset an account
-#   ./manage-players.sh remove NAME                   delete an account
-#   ./manage-players.sh list                          list accounts
+#   ./manage-players.sh add NAME [--nation NATION | --admin] [--password-stdin]
+#                                           create or reset an account
+#   ./manage-players.sh assign NAME NATION  assign a nation to an account
+#   ./manage-players.sh assign NAME --admin let an account open any nation
+#   ./manage-players.sh remove NAME         delete an account
+#   ./manage-players.sh list                list accounts and their nations
 #
-# The account file is data/auth/htpasswd for the local setup and
-# /etc/apache2/conquer-web.htpasswd on the VPS (run with sudo there).
+# Without an assignment an account opens the nation with the same name, if
+# there is one. The account file is data/auth/htpasswd for the local setup
+# and /etc/apache2/conquer-web.htpasswd on the VPS (run with sudo there).
 # Set HTPASSWD_FILE to use another file.
+# Assignments are kept with the world, in data/lib/.players (PLAYERS_FILE).
 
 set -e
 
@@ -29,8 +35,10 @@ if [ -z "$HTPASSWD_FILE" ]; then
     fi
 fi
 
+PLAYERS_FILE="${PLAYERS_FILE:-$SCRIPT_DIR/data/lib/.players}"
+
 usage() {
-    sed -n '/^# Usage:/,/^# Set HTPASSWD_FILE/p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '/^# Usage:/,/^# Assignments are kept/p' "$0" | sed 's/^# \{0,1\}//'
     exit 1
 }
 
@@ -48,20 +56,57 @@ valid_name() {
     [[ "$1" =~ ^[A-Za-z0-9_.-]{1,32}$ ]]
 }
 
+# Conquer nation names: up to 9 characters
+valid_nation() {
+    [[ "$1" =~ ^[A-Za-z0-9_.-]{1,9}$ ]]
+}
+
+# Remove the line for account $2 from the "name:..." file $1
 remove_line() {
-    local tmp
-    [ -f "$HTPASSWD_FILE" ] || return 0
-    tmp=$(mktemp "$HTPASSWD_FILE.XXXXXX")
-    awk -F: -v user="$1" '$1 != user' "$HTPASSWD_FILE" > "$tmp"
-    cat "$tmp" > "$HTPASSWD_FILE"
+    local file="$1" tmp
+    [ -f "$file" ] || return 0
+    tmp=$(mktemp "$file.XXXXXX")
+    awk -F: -v user="$2" '$1 != user' "$file" > "$tmp"
+    cat "$tmp" > "$file"
     rm -f "$tmp"
 }
 
-cmd_add() {
-    local name="$1" password password2 line
-    valid_name "$name" || { echo "❌ Invalid name: use letters, digits, . _ - (max 32)"; exit 1; }
+# Assign nation $2 ("*" = any nation) to account $1
+set_nation() {
+    mkdir -p "$(dirname "$PLAYERS_FILE")"
+    touch "$PLAYERS_FILE"
+    remove_line "$PLAYERS_FILE" "$1"
+    printf '%s:%s\n' "$1" "$2" >> "$PLAYERS_FILE"
+    chmod 644 "$PLAYERS_FILE"
+}
 
-    if [ "$2" = "--password-stdin" ]; then
+# Nation argument: --admin or a nation name, printed as stored
+nation_arg() {
+    if [ "$1" = "--admin" ]; then
+        echo "*"
+    elif valid_nation "$1"; then
+        echo "$1"
+    else
+        echo "❌ Invalid nation name: use letters, digits, . _ - (max 9)" >&2
+        return 1
+    fi
+}
+
+cmd_add() {
+    local name="$1" password password2 line nation="" stdin=""
+    valid_name "$name" || { echo "❌ Invalid name: use letters, digits, . _ - (max 32)"; exit 1; }
+    shift
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --password-stdin) stdin=1 ;;
+            --admin) nation="*" ;;
+            --nation) nation=$(nation_arg "$2") || exit 1; shift ;;
+            *) usage ;;
+        esac
+        shift
+    done
+
+    if [ -n "$stdin" ]; then
         IFS= read -r password
     else
         read -r -s -p "Password for $name (empty = generate one): " password; echo
@@ -82,9 +127,29 @@ cmd_add() {
     line=$(printf '%s\n' "$password" | hash_line "$name")
     mkdir -p "$(dirname "$HTPASSWD_FILE")"
     touch "$HTPASSWD_FILE"
-    remove_line "$name"
+    remove_line "$HTPASSWD_FILE" "$name"
     printf '%s\n' "$line" >> "$HTPASSWD_FILE"
     echo "✅ Account '$name' saved in $HTPASSWD_FILE"
+    if [ -n "$nation" ]; then
+        set_nation "$name" "$nation"
+        describe "$name" "$nation"
+    fi
+}
+
+describe() {
+    if [ "$2" = "*" ]; then
+        echo "✅ '$1' is an administrator account: it may open any nation"
+    else
+        echo "✅ '$1' opens the nation '$2'"
+    fi
+}
+
+cmd_assign() {
+    local nation
+    valid_name "$1" || { echo "❌ Invalid name"; exit 1; }
+    nation=$(nation_arg "$2") || exit 1
+    set_nation "$1" "$nation"
+    describe "$1" "$nation"
 }
 
 cmd_remove() {
@@ -93,7 +158,8 @@ cmd_remove() {
         echo "❌ No account named '$1'"
         exit 1
     fi
-    remove_line "$1"
+    remove_line "$HTPASSWD_FILE" "$1"
+    remove_line "$PLAYERS_FILE" "$1"
     echo "✅ Account '$1' removed"
 }
 
@@ -102,11 +168,24 @@ cmd_list() {
         echo "No accounts yet ($HTPASSWD_FILE)"
         return
     fi
-    cut -d: -f1 "$HTPASSWD_FILE" | sort
+    # Account and its nation ("-" when none is assigned)
+    cut -d: -f1 "$HTPASSWD_FILE" | sort | awk -F: -v players="$PLAYERS_FILE" '
+        BEGIN {
+            while ((getline line < players) > 0) {
+                split(line, f, ":"); nation[f[1]] = f[2]
+            }
+            printf "%-32s %s\n", "ACCOUNT", "NATION"
+        }
+        {
+            n = ($1 in nation) ? nation[$1] : "-"
+            if (n == "*") n = "* (administrator)"
+            printf "%-32s %s\n", $1, n
+        }'
 }
 
 case "${1:-}" in
-    add) [ -n "$2" ] || usage; cmd_add "$2" "$3" ;;
+    add) [ -n "$2" ] || usage; shift; cmd_add "$@" ;;
+    assign) [ -n "$3" ] || usage; cmd_assign "$2" "$3" ;;
     remove) [ -n "$2" ] || usage; cmd_remove "$2" ;;
     list) cmd_list ;;
     *) usage ;;

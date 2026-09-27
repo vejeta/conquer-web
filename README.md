@@ -67,8 +67,9 @@ sudo ./deploy-to-vps.sh
 
 After signing in, players see a menu instead of a raw game prompt:
 
-1. **Play** – checks that the terminal is at least 80x24, then starts Conquer
-   (nation name + nation password). Quitting the game returns to the menu.
+1. **Play** – checks that the terminal is at least 80x24, then opens the
+   player's own nation (only the nation password is asked). Quitting the game
+   returns to the menu.
 2. **How to join / how turns work**
 3. **Key reference**
 4. **Scores**
@@ -86,27 +87,38 @@ During the test phase, nations are created by the administrator, not by players:
 ./add-nation.sh      # runs "conqrun -a" inside the running container
 ```
 
-After the nation, the script offers to create the player's web account (see
-below). Give the player that account and the nation password.
+After the nation, the script asks for its name and creates the player's web
+account linked to it (see below). Give the player that account and the nation
+password.
 
 ### Player accounts
 
 Players sign in to `/play/` with their own account. Apache checks it and
-passes the account name to the game, so an account named like a nation opens
-that nation directly (the player only types the nation password).
+passes the account name to the game menu, which opens **only the nation
+assigned to that account** (the player just types the nation password). An
+account without an assignment opens the nation with the same name, if any.
+Administrator accounts may open any nation, god included.
 
 ```bash
-./manage-players.sh add kestrel        # create or reset (asks for a password,
-                                       # or generates one if left empty)
-./manage-players.sh remove kestrel     # revoke access
-./manage-players.sh list
+./manage-players.sh add kestrel --nation Elves   # create or reset (asks for a
+                                                 # password, or generates one)
+./manage-players.sh add admin2 --admin           # may open any nation
+./manage-players.sh assign kestrel Dwarves       # change the nation
+./manage-players.sh remove kestrel               # revoke access
+./manage-players.sh list                         # accounts and their nations
 ```
+
+Assignments are stored with the world, in `data/lib/.players`
+(`account:nation`, `*` for administrators), so backups and restores keep them.
+Worlds without that file (deployments older than this feature) keep the old
+behaviour where any account can type any nation name: assign the existing
+accounts, starting with `./manage-players.sh assign ADMIN --admin`.
 
 The accounts live in `data/auth/htpasswd` locally and in
 `/etc/apache2/conquer-web.htpasswd` on the VPS (use `sudo` there); changes
 apply immediately. `TTYD_USERNAME`/`TTYD_PASSWORD` from the environment file
 create the administrator's account the first time (`start-local.sh`,
-`deploy-to-vps.sh`); that account is not a nation, so it can open any nation
+`deploy-to-vps.sh`) as an administrator account, which can open any nation
 with its nation password. Failed sign-ins are counted by the fail2ban filter
 from `setup-security.sh`.
 

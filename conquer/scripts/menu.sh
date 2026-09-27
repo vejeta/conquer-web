@@ -11,6 +11,7 @@ PREFIX="${CONQUER_PREFIX:-/opt/conquer}"
 WORLD_DIR="$PREFIX/lib"
 MIN_COLS=80
 UPDATING_FLAG=/run/conquer/turn
+PLAYERS_FILE="$WORLD_DIR/.players"
 # Web account the player signed in with (set by ttyd from the proxy header)
 PLAYER="${TTYD_USER:-}"
 MIN_ROWS=24
@@ -84,12 +85,31 @@ check_terminal_size() {
     done
 }
 
-# Name of the player's nation when the web account is named after one
-player_nation() {
-    [ -n "$PLAYER" ] || return 1
+# Is $1 the name of a nation in the world?
+is_nation() {
     (cd "$WORLD_DIR" && "$PREFIX/bin/conquer" -s 2>/dev/null) \
-        | awk -v n="$PLAYER" '$1 ~ /^[0-9]+$/ && $2 == n { found = 1 } END { exit !found }' \
-        && echo "$PLAYER"
+        | awk -v n="$1" '$1 ~ /^[0-9]+$/ && $2 == n { found = 1 } END { exit !found }'
+}
+
+# Nation the signed-in account may open, "*" for any (administrators).
+# Assignments ("account:nation", manage-players.sh) live with the world;
+# an account without one opens the nation named like it. Worlds without an
+# assignment file keep the old open behaviour: any account, any nation.
+player_nation() {
+    local nation
+    if [ -n "$PLAYER" ] && [ -f "$PLAYERS_FILE" ]; then
+        nation=$(awk -F: -v user="$PLAYER" '$1 == user { print $2; exit }' "$PLAYERS_FILE")
+        if [ -n "$nation" ]; then
+            echo "$nation"
+            return 0
+        fi
+    fi
+    if [ -n "$PLAYER" ] && is_nation "$PLAYER"; then
+        echo "$PLAYER"
+        return 0
+    fi
+    [ -f "$PLAYERS_FILE" ] && return 1
+    echo "*"
 }
 
 last_update() {
@@ -110,7 +130,16 @@ show_banner() {
     echo "  \\____\\___/|_| |_|\\__, |\\__,_|\\___|_|    "
     echo "                      |_|                     "
     echo "${reset}"
-    [ -n "$PLAYER" ] && echo "  ${dim}Signed in as:    ${reset} ${bold}${PLAYER}${reset}"
+    if [ -n "$PLAYER" ]; then
+        local nation
+        nation=$(player_nation)
+        case "$nation" in
+            "") nation="${dim}no nation assigned yet${reset}" ;;
+            "*") nation="${dim}any nation${reset}" ;;
+            *) nation="nation ${bold}${nation}${reset}" ;;
+        esac
+        echo "  ${dim}Signed in as:    ${reset} ${bold}${PLAYER}${reset} (${nation})"
+    fi
     echo "  ${dim}Last turn update:${reset} $(last_update)"
     echo "  ${dim}Turn schedule:   ${reset} ${TURN_SCHEDULE_LABEL:-see game administrator}"
     local next
@@ -142,12 +171,10 @@ ${bold}How to join the game${reset}
 During the test phase new nations are created by the game administrator.
 
   1. Ask the administrator for a nation. You will receive:
-       - a player account for this site (usually your nation's name)
+       - a player account for this site, linked to your nation
        - your nation password
   2. Sign in with your player account and choose "Play" in this menu.
   3. Your nation opens directly: type your nation password.
-     (If your account is not named after your nation, type the nation
-     name first.)
 
 ${bold}How turns work${reset}
 
@@ -203,11 +230,18 @@ play() {
     check_terminal_size
     clear
     local nation
-    if nation=$(player_nation); then
+    if ! nation=$(player_nation); then
+        echo
+        echo "  ${yellow}No nation is assigned to your account${PLAYER:+ '$PLAYER'} yet.${reset}"
+        echo "  Ask the game administrator for one (see \"How to join\" in the menu)."
+        pause
+        return
+    fi
+    if [ "$nation" = "*" ]; then
+        run_game
+    else
         echo "Opening your nation ${bold}${nation}${reset}."
         run_game -n "$nation"
-    else
-        run_game
     fi
     local status=$?
     if [ -e "$UPDATING_FLAG" ]; then

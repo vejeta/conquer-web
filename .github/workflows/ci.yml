@@ -48,7 +48,7 @@ jobs:
         run: |
           ./setup-local-certs.sh
           mkdir -p data/lib data/public data/backups data/auth
-          printf '%s\n' "$TTYD_PASSWORD" | ./manage-players.sh add "$TTYD_USERNAME" --password-stdin
+          printf '%s\n' "$TTYD_PASSWORD" | ./manage-players.sh add "$TTYD_USERNAME" --admin --password-stdin
 
       - name: Build and start the local stack
         run: docker compose -f docker-compose.local.yml up -d --build

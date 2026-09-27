@@ -29,11 +29,11 @@ echo ""
 docker exec -it -u conquer "$CONTAINER" conqrun -a
 
 echo ""
-read -r -p "Web account for the player (usually the nation name, empty to skip): " account
-if [ -n "$account" ]; then
-    "$(dirname "$0")/manage-players.sh" add "$account"
+read -r -p "Name of the nation you just created (empty to skip the web account): " nation
+if [ -n "$nation" ]; then
+    read -r -p "Web account for the player [$nation]: " account
+    "$(dirname "$0")/manage-players.sh" add "${account:-$nation}" --nation "$nation"
     echo ""
-    echo "Give the player: the web account '$account' with its password,"
-    echo "and the nation password. An account named like the nation opens it"
-    echo "directly after signing in."
+    echo "Give the player: the web account '${account:-$nation}' with its password,"
+    echo "and the nation password. The account opens only this nation."
 fi

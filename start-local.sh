@@ -33,7 +33,7 @@ mkdir -p data/lib data/public data/backups data/auth
 # Player accounts: create the administrator's account on first start
 if [ ! -s data/auth/htpasswd ]; then
     echo "📋 Creating the administrator web account '$TTYD_USERNAME'"
-    printf '%s\n' "$TTYD_PASSWORD" | ./manage-players.sh add "$TTYD_USERNAME" --password-stdin
+    printf '%s\n' "$TTYD_PASSWORD" | ./manage-players.sh add "$TTYD_USERNAME" --admin --password-stdin
 fi
 
 # Add domain to /etc/hosts if not present

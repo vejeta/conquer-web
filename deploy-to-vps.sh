@@ -119,6 +119,13 @@ setup_player_accounts() {
         echo "👤 Creating the administrator web account '$TTYD_USERNAME'..."
         printf '%s\n' "$TTYD_PASSWORD" | htpasswd -ciB "$file" "$TTYD_USERNAME"
     fi
+    # Each account opens only its own nation; the administrator any nation
+    local players="$PROJECT_DIR/data/lib/.players"
+    if [ ! -s "$players" ]; then
+        mkdir -p "$PROJECT_DIR/data/lib"
+        printf '%s:*\n' "$TTYD_USERNAME" > "$players"
+        chmod 644 "$players"
+    fi
     chown root:www-data "$file"
     chmod 640 "$file"
     echo "✅ Player accounts in $file (manage with: sudo ./manage-players.sh)"
