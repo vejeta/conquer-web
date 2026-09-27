@@ -125,6 +125,25 @@ Administrator accounts may open any nation, god included.
 ./manage-players.sh list                         # accounts and their nations
 ```
 
+#### Joining with an invite code
+
+Players can also create their own account and nation. The administrator
+creates a public *join* account once and hands out invite codes:
+
+```bash
+./manage-players.sh join-account      # prints JOIN_ACCOUNT/JOIN_PASSWORD for
+                                      # the environment file
+./manage-players.sh invite 5          # five single-use codes
+./manage-players.sh invites           # the codes not used yet
+```
+
+The landing page shows the join account to visitors. Signing in with it
+opens a wizard in the terminal instead of the menu: the player types the
+invite code, chooses an account and password, and builds their nation with
+the game's nation builder. The account is created, linked to the new nation
+and the code is used up. After turn 5 the game only lets the administrator
+add nations, so the wizard then asks players to contact them.
+
 Assignments are stored with the world, in `data/lib/.players`
 (`account:nation`, `*` for administrators), so backups and restores keep them.
 Worlds without that file (deployments older than this feature) keep the old

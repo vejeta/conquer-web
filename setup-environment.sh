@@ -69,6 +69,10 @@ TURN_WEBHOOK_URL=
 # Run the turn update early once every player nation has marked its orders
 # as done in the game menu (on/off); the schedule still applies as deadline
 TURN_EARLY=on
+# Joining with invite codes: the public account shown on the landing page
+# (./manage-players.sh join-account prints both lines; empty = disabled)
+JOIN_ACCOUNT=
+JOIN_PASSWORD=
 
 # Terminal font size in the browser
 TTYD_FONT_SIZE=16

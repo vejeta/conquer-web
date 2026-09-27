@@ -14,7 +14,7 @@ fi
 PREFIX="${CONQUER_PREFIX:-/opt/conquer}"
 PUBLIC_DIR="${PUBLIC_DIR:-$PREFIX/public}"
 
-TURN_SCHEDULE="" TURN_SCHEDULE_LABEL="" TURN_EARLY=""
+TURN_SCHEDULE="" TURN_SCHEDULE_LABEL="" TURN_EARLY="" JOIN_ACCOUNT="" JOIN_PASSWORD=""
 # shellcheck source=/dev/null
 [ -f /etc/conquer-web.env ] && . /etc/conquer-web.env
 
@@ -95,7 +95,7 @@ END { close_edition(); printf "[%s]", out }
 NEWS_JSON="$news_json" awk -v schedule="$TURN_SCHEDULE_LABEL" -v generated="$(date -u '+%Y-%m-%dT%H:%M:%SZ')" \
     -v state="$TURN_STATE" -v state_time="$TURN_STATE_TIME" -v state_message="$TURN_STATE_MESSAGE" \
     -v next_turn="$next_turn" -v ready="${ready_count:-0}" -v ready_total="${ready_total:-0}" \
-    -v early="$TURN_EARLY" '
+    -v early="$TURN_EARLY" -v join_account="$JOIN_ACCOUNT" -v join_password="$JOIN_PASSWORD" '
 function json(s) {
     gsub(/\\/, "\\\\", s); gsub(/"/, "\\\"", s); gsub(/\t/, " ", s)
     return "\"" s "\""
@@ -123,6 +123,9 @@ END {
         printf "\"ready\":null,"
     printf "\"turn_state\":{\"state\":%s,\"time\":%s,\"message\":%s},",
         json(state), json(state_time), json(state_message)
+    # The public join account (invite codes), shown on the landing page
+    if (join_account != "")
+        printf "\"join\":{\"account\":%s,\"password\":%s},", json(join_account), json(join_password)
     printf "\"news\":%s,\"nations\":[", ENVIRON["NEWS_JSON"]
     for (i = 1; i <= n; i++) printf "%s%s", (i > 1 ? "," : ""), rows[i]
     print "]}"

@@ -62,6 +62,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
     }
     .play:hover, .play:focus-visible { filter: brightness(1.1); }
     .hint { color: var(--muted); font-size: 0.9rem; margin-top: 10px; }
+    .join { margin: 12px auto 0; max-width: 34em; padding: 8px 14px; border: 1px dashed var(--accent); border-radius: 8px; font-size: 0.95rem; }
+    .join code { font: 600 1em ui-monospace, "DejaVu Sans Mono", monospace; color: var(--accent); user-select: all; }
     section {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -125,6 +127,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <h1 data-i18n="tagline">The classic multiplayer strategy game, in your browser</h1>
     <a class="play" href="game.html" data-server-link="game.html" data-i18n="play">Play now</a>
     <p class="hint" data-i18n="hint">You will be asked for your player account first.</p>
+    <p class="join" id="join" hidden><span data-i18n="join">Have an invite code? Press Play now and sign in as</span>
+      <code id="join-account"></code> / <code id="join-password"></code></p>
     <p class="hint"><a href="tutorial.html" data-i18n="tutorial">New here? Play your first turn step by step</a> · <a href="guide.html" data-i18n="guide">Player's guide</a></p>
   </header>
 
@@ -238,6 +242,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     hint: 'Primero se te pedirá tu cuenta de jugador.',
     guide: 'Guía del jugador (en inglés)',
     tutorial: '¿Eres nuevo? Tu primer turno paso a paso (en inglés)',
+    join: '¿Tienes un código de invitación? Pulsa Jugar y entra como',
     h_current: 'Partida actual',
     l_turn: 'Turno', l_season: 'Estación', l_last: 'Última actualización',
     l_schedule: 'Calendario de turnos', l_next: 'Próxima actualización', l_ready: 'Órdenes listas',
@@ -390,6 +395,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
     if (r) {
       set('status-ready', m.ready(r.done, r.total));
       set('status-ready-note', r.early ? m.early : '');
+    }
+    if (d.join) {
+      set('join-account', d.join.account);
+      set('join-password', d.join.password);
+      document.getElementById('join').hidden = false;
     }
     renderNews(d.news || []);
     var ts = d.turn_state || {};

@@ -126,7 +126,9 @@ setup_player_accounts() {
         printf '%s:*\n' "$TTYD_USERNAME" > "$players"
         chmod 644 "$players"
     fi
-    chown root:www-data "$file"
+    # Owned by the game user, so players can join with invite codes; Apache
+    # reads it through its group
+    chown "${CONQUER_UID:-1000}:www-data" "$file"
     chmod 640 "$file"
     echo "✅ Player accounts in $file (manage with: sudo ./manage-players.sh)"
 }

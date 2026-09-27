@@ -89,8 +89,9 @@ FROM debian:${DEBIAN_TAG}
 # - cron/tzdata: scheduled turn updates in the configured time zone
 # - curl: container health check
 # - less: pager for scores in the player menu
+# - apache2-utils: htpasswd, for accounts created with invite codes
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libncurses6 cron tzdata curl less \
+    libncurses6 cron tzdata curl less apache2-utils \
     && rm -rf /var/lib/apt/lists/*
 
 ENV CONQUER_PREFIX=/opt/conquer
@@ -120,9 +121,10 @@ COPY scripts/turn.sh /usr/local/bin/conquer-turn
 COPY scripts/status.sh /usr/local/bin/conquer-status
 COPY scripts/next-turn.sh /usr/local/bin/conquer-next-turn
 COPY scripts/ready.sh /usr/local/bin/conquer-ready
+COPY scripts/join.sh /usr/local/bin/conquer-join
 RUN chmod 755 /usr/local/bin/conquer-entrypoint /usr/local/bin/conquer-menu \
     /usr/local/bin/conquer-turn /usr/local/bin/conquer-status /usr/local/bin/conquer-next-turn \
-    /usr/local/bin/conquer-ready
+    /usr/local/bin/conquer-ready /usr/local/bin/conquer-join
 
 VOLUME ["/opt/conquer/lib", "/opt/conquer/public", "/opt/conquer/backups", "/opt/conquer/practice"]
 

@@ -14,6 +14,10 @@
 #   ./manage-players.sh assign NAME --admin let an account open any nation
 #   ./manage-players.sh remove NAME         delete an account
 #   ./manage-players.sh list                list accounts and their nations
+#   ./manage-players.sh invite [COUNT]      create invite codes (default 1)
+#   ./manage-players.sh invites             list the unused invite codes
+#   ./manage-players.sh join-account [NAME] create the public account that
+#                                           players with an invite code use
 #
 # Without an assignment an account opens the nation with the same name, if
 # there is one. The account file is data/auth/htpasswd for the local setup
@@ -36,6 +40,7 @@ if [ -z "$HTPASSWD_FILE" ]; then
 fi
 
 PLAYERS_FILE="${PLAYERS_FILE:-$SCRIPT_DIR/data/lib/.players}"
+INVITES_FILE="${INVITES_FILE:-$SCRIPT_DIR/data/lib/.invites}"
 
 usage() {
     sed -n '/^# Usage:/,/^# Assignments are kept/p' "$0" | sed 's/^# \{0,1\}//'
@@ -71,6 +76,15 @@ remove_line() {
     rm -f "$tmp"
 }
 
+# Files in data/lib belong to the game user (the join wizard in the game
+# container writes them too), also when this script runs with sudo
+match_world_owner() {
+    local owner
+    owner=$(stat -c %u "$(dirname "$1")" 2>/dev/null) || return 0
+    [ "$(id -u)" = 0 ] && chown "$owner" "$1" 2>/dev/null
+    return 0
+}
+
 # Assign nation $2 ("*" = any nation) to account $1
 set_nation() {
     mkdir -p "$(dirname "$PLAYERS_FILE")"
@@ -78,6 +92,7 @@ set_nation() {
     remove_line "$PLAYERS_FILE" "$1"
     printf '%s:%s\n' "$1" "$2" >> "$PLAYERS_FILE"
     chmod 644 "$PLAYERS_FILE"
+    match_world_owner "$PLAYERS_FILE"
 }
 
 # Nation argument: --admin or a nation name, printed as stored
@@ -183,10 +198,58 @@ cmd_list() {
         }'
 }
 
+# Invite codes: players type one in the join wizard (sign in with the
+# join account) to build their nation and create their own account
+cmd_invite() {
+    local count="${1:-1}" i code
+    [[ "$count" =~ ^[0-9]+$ ]] && [ "$count" -ge 1 ] && [ "$count" -le 100 ] || usage
+    mkdir -p "$(dirname "$INVITES_FILE")"
+    touch "$INVITES_FILE"
+    chmod 640 "$INVITES_FILE"
+    match_world_owner "$INVITES_FILE"
+    for ((i = 0; i < count; i++)); do
+        code=$(LC_ALL=C tr -dc 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' < /dev/urandom | head -c 8)
+        code="${code:0:4}-${code:4:4}"
+        printf '%s\n' "$code" >> "$INVITES_FILE"
+        echo "$code"
+    done
+    echo "✅ $count invite code(s) added; each works once" >&2
+}
+
+cmd_invites() {
+    if [ ! -s "$INVITES_FILE" ]; then
+        echo "No unused invite codes ($INVITES_FILE)"
+        return
+    fi
+    cat "$INVITES_FILE"
+}
+
+cmd_join_account() {
+    local name="${1:-join}" password
+    valid_name "$name" || { echo "❌ Invalid name"; exit 1; }
+    password=$(openssl rand -base64 9 | tr -d '/+=' | cut -c1-10)
+    printf '%s\n' "$password" | cmd_add "$name" --password-stdin > /dev/null
+    remove_line "$PLAYERS_FILE" "$name"
+    cat <<EOF
+✅ Join account created. Anyone may use it: it only opens the join wizard,
+   and joining needs an invite code (./manage-players.sh invite).
+   Add these lines to the environment file (config/local.env or
+   config/production.env) and restart with ./rebuild.sh --quick:
+
+JOIN_ACCOUNT=$name
+JOIN_PASSWORD=$password
+
+   The landing page then shows this account and password to visitors.
+EOF
+}
+
 case "${1:-}" in
     add) [ -n "$2" ] || usage; shift; cmd_add "$@" ;;
     assign) [ -n "$3" ] || usage; cmd_assign "$2" "$3" ;;
     remove) [ -n "$2" ] || usage; cmd_remove "$2" ;;
     list) cmd_list ;;
+    invite) cmd_invite "${2:-1}" ;;
+    invites) cmd_invites ;;
+    join-account) cmd_join_account "${2:-join}" ;;
     *) usage ;;
 esac

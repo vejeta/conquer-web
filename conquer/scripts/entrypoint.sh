@@ -93,7 +93,21 @@ TURN_SCHEDULE="$TURN_SCHEDULE"
 TURN_SCHEDULE_LABEL="${TURN_SCHEDULE_LABEL:-Weekly, Sundays at 20:00 ${TZ:-UTC}}"
 ADMIN_CONTACT="${ADMIN_CONTACT:-}"
 TURN_EARLY="${TURN_EARLY:-on}"
+JOIN_ACCOUNT="${JOIN_ACCOUNT:-}"
+JOIN_PASSWORD="${JOIN_PASSWORD:-}"
+HTPASSWD_FILE="$PREFIX/auth/htpasswd"
 EOF
+
+# Joining with an invite code creates player accounts, so the game user
+# must be able to write the account file Apache reads (the group is kept)
+if [ -n "${JOIN_ACCOUNT:-}" ]; then
+    if [ -f "$PREFIX/auth/htpasswd" ]; then
+        chown "$GAME_USER" "$PREFIX/auth/htpasswd"
+        echo "[entrypoint] Joining with invite codes enabled (account '$JOIN_ACCOUNT')"
+    else
+        echo "[entrypoint] JOIN_ACCOUNT is set but no account file is mounted at $PREFIX/auth/htpasswd"
+    fi
+fi
 
 # Public status for the landing page (turn, schedule, scores)
 "${AS_GAME_USER[@]}" conquer-status || echo "[entrypoint] Could not publish game status"

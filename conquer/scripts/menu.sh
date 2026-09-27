@@ -26,8 +26,14 @@ TURN_SCHEDULE=""
 TURN_SCHEDULE_LABEL=""
 ADMIN_CONTACT=""
 TURN_EARLY=""
+JOIN_ACCOUNT=""
 # shellcheck source=/dev/null
 [ -f /etc/conquer-web.env ] && . /etc/conquer-web.env
+
+# The public join account only gets the join wizard (invite codes)
+if [ -n "$JOIN_ACCOUNT" ] && [ "$PLAYER" = "$JOIN_ACCOUNT" ]; then
+    exec /usr/local/bin/conquer-join
+fi
 
 bold=$(tput bold 2>/dev/null)
 dim=$(tput dim 2>/dev/null)

@@ -26,6 +26,8 @@ services:
       - TURN_BACKUPS=${TURN_BACKUPS:-10}
       - TURN_WEBHOOK_URL=${TURN_WEBHOOK_URL:-}
       - TURN_EARLY=${TURN_EARLY:-on}
+      - JOIN_ACCOUNT=${JOIN_ACCOUNT:-}
+      - JOIN_PASSWORD=${JOIN_PASSWORD:-}
       - ADMIN_CONTACT=${ADMIN_CONTACT:-}
     volumes:
       # Live world data: persists across rebuilds, seeded on first start
@@ -34,6 +36,9 @@ services:
       - ./data/backups:/opt/conquer/backups
       # Players' private practice worlds
       - ./data/practice:/opt/conquer/practice
+      # Player accounts (the file host Apache checks), written when players
+      # join with an invite code
+      - ${HTPASSWD_FILE:-/etc/apache2/conquer-web.htpasswd}:/opt/conquer/auth/htpasswd
       # Public game status (status.json) served by Apache under /status/
       - ${STATUS_DIR:-./data/public}:/opt/conquer/public
     restart: unless-stopped
