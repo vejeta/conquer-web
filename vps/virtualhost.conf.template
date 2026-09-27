@@ -84,6 +84,14 @@
         Require all granted
     </Directory>
 
+    # Public game status, written by the game container
+    <Directory "/var/www/DOMAIN_NAME/status">
+        # The website may also be published elsewhere (GitHub Pages) and
+        # read the public game status from here
+        Header always set Access-Control-Allow-Origin "*"
+        Header always set Cache-Control "no-cache"
+    </Directory>
+
     # Security: Block access to sensitive files
     <Files ~ "^\.(htaccess|htpasswd|git|env|log)">
         Require all denied
@@ -114,6 +122,8 @@
         AuthUserFile "/etc/apache2/conquer-web.htpasswd"
         Require valid-user
         RequestHeader set X-WEBAUTH-USER "%{REMOTE_USER}s"
+        # Keep search engines out of the game terminal
+        Header always set X-Robots-Tag "noindex, nofollow"
     </Location>
 </VirtualHost>
 
@@ -122,6 +132,8 @@
     # Block known bad user agents and suspicious patterns
     SetEnvIfNoCase User-Agent "^(libwww|wget|python|perl|curl|PHP)" bad_bot
     SetEnvIfNoCase User-Agent "(bot|crawler|spider)" bad_bot
+    # Search engines and link previews (chat apps, social networks) are welcome
+    SetEnvIfNoCase User-Agent "(Googlebot|bingbot|DuckDuckBot|Twitterbot|facebookexternalhit|Discordbot|Slackbot|LinkedInBot|TelegramBot|WhatsApp|Mastodon)" !bad_bot
 
     # Allow legitimate browsers and game clients
     SetEnvIfNoCase User-Agent "(firefox|chrome|safari|edge|opera)" good_browser
@@ -143,5 +155,5 @@ LimitRequestBody 1048576
 Timeout 60
 KeepAliveTimeout 5
 
-# Additional security headers for all responses
-Header always set X-Robots-Tag "noindex, nofollow"
+# The landing page and the guide are public and meant to be found; only the
+# game terminal is kept out of search engines (see <Location "/play/">)

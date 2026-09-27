@@ -89,6 +89,8 @@ jobs:
           docker exec conquer-local conquer -s | grep -q 'Turn 1'
           test "$(curl -sk https://localhost/status/status.json | jq .turn)" = 1
           test "$(curl -sk https://localhost/status/status.json | jq -r .schedule)" = "$TURN_SCHEDULE_LABEL"
+          # Readable from other sites (the website on GitHub Pages)
+          curl -skI https://localhost/status/status.json | grep -i '^access-control-allow-origin: \*'
 
       - name: Turn update
         run: |

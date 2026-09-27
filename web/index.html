@@ -123,9 +123,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
     </nav>
 <p class="logo">CONQUER</p>
     <h1 data-i18n="tagline">The classic multiplayer strategy game, in your browser</h1>
-    <a class="play" href="/game.html" data-i18n="play">Play now</a>
+    <a class="play" href="game.html" data-server-link="game.html" data-i18n="play">Play now</a>
     <p class="hint" data-i18n="hint">You will be asked for your player account first.</p>
-    <p class="hint"><a href="/guide.html" data-i18n="guide">New here? Read the player's guide</a></p>
+    <p class="hint"><a href="guide.html" data-i18n="guide">New here? Read the player's guide</a></p>
   </header>
 
   <section id="status" hidden>
@@ -228,6 +228,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <a href="https://github.com/vejeta/conquer-web">web server</a>
   </footer>
 </main>
+<script src="config.js"></script>
+<script src="site.js"></script>
 <script>
   // Spanish texts; English is the HTML itself. Values are static markup.
   var ES = {
@@ -413,7 +415,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
   applyLang(pickLang());
 
   // Public game status published by the game container after every turn
-  fetch('/status/status.json', { cache: 'no-store' })
+  fetch(conquerServerUrl('status/status.json'), { cache: 'no-store' })
     .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
     .then(function (d) { gameStatus = d; renderStatus(d); })
     .catch(function () { /* no status yet: keep the section hidden */ });
