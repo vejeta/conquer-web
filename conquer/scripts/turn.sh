@@ -11,10 +11,13 @@
 #  2. Back up the world, keeping the last TURN_BACKUPS archives.
 #  3. Run the update, retrying every TURN_RETRY_MINUTES up to
 #     TURN_MAX_RETRIES times.
-#  4. Record the result, publish the public status and, if TURN_WEBHOOK_URL
-#     is set, post a notification.
+#  4. Record the result, clear the players' "orders done" marks, publish
+#     the public status and, if TURN_WEBHOOK_URL is set, post a notification.
 #
-# Usage: conquer-turn [--now]   (--now: no grace period and no retries)
+# Usage: conquer-turn [--now | --if-ready]
+#   --now       no grace period and no retries (manual run-turn.sh)
+#   --if-ready  early update, only if every player nation marked its orders
+#               as done (started by the player menu when TURN_EARLY=on)
 
 # Always run as the game user: files written as root (backups, news, the
 # world data) would not be writable by the game afterwards
@@ -35,10 +38,11 @@ MAX_RETRIES="${TURN_MAX_RETRIES:-18}"
 UPDATING_FLAG=/run/conquer/turn
 STATE_FILE="$WORLD_DIR/.turn-state"
 
-if [ "$1" = "--now" ]; then
-    GRACE_MINUTES=0
-    MAX_RETRIES=0
-fi
+IF_READY=""
+case "$1" in
+    --now) GRACE_MINUTES=0; MAX_RETRIES=0 ;;
+    --if-ready) IF_READY=1 ;;
+esac
 
 log() {
     echo "[turn $(date '+%Y-%m-%d %H:%M:%S %Z')] $*"
@@ -131,6 +135,16 @@ if ! flock -n 9; then
     exit 1
 fi
 
+# Checked under the lock: when several players finish at once, only the
+# first early update runs, the others find the marks cleared
+if [ -n "$IF_READY" ]; then
+    if ! /usr/local/bin/conquer-ready all; then
+        log "Early turn update skipped: not every nation is ready"
+        exit 0
+    fi
+    log "Every nation marked its orders as done, running the turn update early"
+fi
+
 touch "$UPDATING_FLAG"
 trap 'rm -f "$UPDATING_FLAG"' EXIT
 
@@ -148,6 +162,7 @@ while true; do
         turn=$(current_turn)
         log "Turn update completed, now turn $turn"
         record_state ok "Turn $turn started"
+        /usr/local/bin/conquer-ready clear
         /usr/local/bin/conquer-status || log "Could not publish game status"
         notify "turn update completed, turn $turn has started"
         exit 0

@@ -92,6 +92,7 @@ cat > /etc/conquer-web.env <<EOF
 TURN_SCHEDULE="$TURN_SCHEDULE"
 TURN_SCHEDULE_LABEL="${TURN_SCHEDULE_LABEL:-Weekly, Sundays at 20:00 ${TZ:-UTC}}"
 ADMIN_CONTACT="${ADMIN_CONTACT:-}"
+TURN_EARLY="${TURN_EARLY:-on}"
 EOF
 
 # Public status for the landing page (turn, schedule, scores)

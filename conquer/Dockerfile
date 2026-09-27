@@ -115,8 +115,10 @@ COPY scripts/menu.sh /usr/local/bin/conquer-menu
 COPY scripts/turn.sh /usr/local/bin/conquer-turn
 COPY scripts/status.sh /usr/local/bin/conquer-status
 COPY scripts/next-turn.sh /usr/local/bin/conquer-next-turn
+COPY scripts/ready.sh /usr/local/bin/conquer-ready
 RUN chmod 755 /usr/local/bin/conquer-entrypoint /usr/local/bin/conquer-menu \
-    /usr/local/bin/conquer-turn /usr/local/bin/conquer-status /usr/local/bin/conquer-next-turn
+    /usr/local/bin/conquer-turn /usr/local/bin/conquer-status /usr/local/bin/conquer-next-turn \
+    /usr/local/bin/conquer-ready
 
 VOLUME ["/opt/conquer/lib", "/opt/conquer/public", "/opt/conquer/backups"]
 

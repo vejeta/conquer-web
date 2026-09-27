@@ -66,6 +66,9 @@ TURN_GRACE_MINUTES=5
 TURN_BACKUPS=10
 # Optional webhook notified after every turn update (Slack, Mattermost, Discord)
 TURN_WEBHOOK_URL=
+# Run the turn update early once every player nation has marked its orders
+# as done in the game menu (on/off); the schedule still applies as deadline
+TURN_EARLY=on
 
 # Terminal font size in the browser
 TTYD_FONT_SIZE=16

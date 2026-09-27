@@ -158,6 +158,16 @@ Every turn update:
 
 Details appear in the container logs (`./logs.sh`).
 
+#### Early turns when everyone is done
+
+When a player quits the game, the menu asks whether their orders for the turn
+are done (option 6 changes it later). The menu banner and the landing page
+show how many nations are done. Once **every nation assigned to a player
+account** (see *Player accounts*) is done, the turn update starts right away
+instead of waiting for the schedule, which remains the deadline for the
+slower players. Set `TURN_EARLY=off` to only count the nations without
+running early updates. Marks from an earlier turn never count.
+
 To run a turn immediately:
 
 ```bash

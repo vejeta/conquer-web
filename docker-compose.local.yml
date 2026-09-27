@@ -22,6 +22,7 @@ services:
       - TURN_GRACE_MINUTES=${TURN_GRACE_MINUTES:-5}
       - TURN_BACKUPS=${TURN_BACKUPS:-10}
       - TURN_WEBHOOK_URL=${TURN_WEBHOOK_URL:-}
+      - TURN_EARLY=${TURN_EARLY:-on}
       - ADMIN_CONTACT=${ADMIN_CONTACT:-}
     volumes:
       # Live world data: persists across rebuilds, seeded on first start

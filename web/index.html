@@ -135,6 +135,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
       <div class="fact"><div class="label" data-i18n="l_season">Season</div><div class="value" id="status-season"></div></div>
       <div class="fact"><div class="label" data-i18n="l_last">Last update</div><div class="value" id="status-last"></div></div>
       <div class="fact"><div class="label" data-i18n="l_schedule">Turn schedule</div><div class="value" id="status-schedule"></div></div>
+      <div class="fact" id="status-ready-box" hidden><div class="label" data-i18n="l_ready">Orders done</div><div class="value" id="status-ready"></div><div class="countdown" id="status-ready-note"></div></div>
       <div class="fact" id="status-next-box" hidden><div class="label" data-i18n="l_next">Next update</div><div class="value" id="status-next"></div><div class="countdown" id="status-countdown"></div></div>
     </div>
     <div class="table-wrap">
@@ -162,7 +163,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <p class="note" data-i18n="note_join">The game is in a test phase: nations are created by the game administrator.</p>
     <ol>
       <li data-i18n="join1">Ask the administrator for a <strong>nation</strong>. You will get a player account for this site
-        (usually named after your nation) and your nation's password.</li>
+        linked to your nation, and your nation's password.</li>
       <li data-i18n="join2">Press <strong>Play now</strong> and sign in with your player account.</li>
       <li data-i18n="join3">In the menu choose <kbd>1</kbd> <strong>Play</strong>: your nation opens and asks for its password.</li>
     </ol>
@@ -176,6 +177,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
         updates are <strong>weekly</strong>; the in-game menu shows the exact schedule and the last update.</li>
       <li data-i18n="turns3">Before each update, players still in the game are warned and, a few minutes later,
         disconnected; their orders are saved. Press <kbd>q</kbd> to quit the game when you are done.</li>
+      <li data-i18n="turns4">When you quit, the menu asks whether your orders for the turn are done. Once every
+        nation is done, the update can run right away instead of waiting for the schedule.</li>
     </ul>
   </section>
 
@@ -232,7 +235,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     hint: 'Primero se te pedirá tu cuenta de jugador.',
     h_current: 'Partida actual',
     l_turn: 'Turno', l_season: 'Estación', l_last: 'Última actualización',
-    l_schedule: 'Calendario de turnos', l_next: 'Próxima actualización',
+    l_schedule: 'Calendario de turnos', l_next: 'Próxima actualización', l_ready: 'Órdenes listas',
     th_nation: 'Nación', th_race: 'Raza', th_class: 'Clase', th_alignment: 'Alineamiento', th_score: 'Puntos',
     h_news: 'Noticias del mundo',
     h_what: '¿Qué es Conquer?',
@@ -242,7 +245,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     h_join: 'Cómo unirse',
     note_join: 'El juego está en fase de pruebas: las naciones las crea el administrador del juego.',
     join1: 'Pide una <strong>nación</strong> al administrador. Recibirás una cuenta de jugador para este sitio ' +
-      '(normalmente con el nombre de tu nación) y la contraseña de tu nación.',
+      'vinculada a tu nación y la contraseña de tu nación.',
     join2: 'Pulsa <strong>Jugar</strong> e inicia sesión con tu cuenta de jugador.',
     join3: 'En el menú elige <kbd>1</kbd> <strong>Play</strong>: se abre tu nación y te pide su contraseña.',
     h_turns: 'Cómo funcionan los turnos',
@@ -251,6 +254,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
       'de pruebas las actualizaciones son <strong>semanales</strong>; el menú del juego muestra el calendario exacto y la última actualización.',
     turns3: 'Antes de cada actualización se avisa a quien siga jugando y, unos minutos después, se le desconecta; ' +
       'sus órdenes se guardan. Pulsa <kbd>q</kbd> para salir del juego cuando termines.',
+    turns4: 'Al salir, el menú te pregunta si tus órdenes del turno están listas. Cuando todas las naciones lo están, ' +
+      'la actualización puede hacerse en ese momento sin esperar al calendario.',
     h_before: 'Antes de jugar',
     before1: 'Conquer se controla solo con el teclado, así que lo más cómodo es un ordenador. En móviles y tabletas hay una ' +
       'barra de teclas en pantalla con <kbd>Esc</kbd>, <kbd>Enter</kbd>, movimiento y otras teclas habituales; usa el botón ' +
@@ -274,11 +279,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
     en: {
       turn: 'Turn ', more: function (n) { return '… and ' + n + ' more (read the newspaper in the game)'; },
       notYet: 'not yet', byAdmin: 'set by the administrator', now: 'updating now', inTime: 'in ',
+      ready: function (d, t) { return d + ' of ' + t + ' nations'; }, early: 'turn runs when all are done',
       failed: function (t) { return 'The last turn update did not run (' + t + '). The administrator has been notified; orders are kept for the next update.'; }
     },
     es: {
       turn: 'Turno ', more: function (n) { return '… y ' + n + ' más (lee el periódico en el juego)'; },
       notYet: 'todavía no', byAdmin: 'lo fija el administrador', now: 'actualizando', inTime: 'dentro de ',
+      ready: function (d, t) { return d + ' de ' + t + ' naciones'; }, early: 'el turno avanza cuando todas estén listas',
       failed: function (t) { return 'La última actualización de turno no se hizo (' + t + '). Se ha avisado al administrador; las órdenes se conservan para la próxima.'; }
     }
   };
@@ -372,6 +379,12 @@ SPDX-License-Identifier: GPL-3.0-or-later
       tick();
       tickTimer = setInterval(tick, 30000);
       document.getElementById('status-next-box').hidden = false;
+    }
+    var r = d.ready;
+    document.getElementById('status-ready-box').hidden = !r;
+    if (r) {
+      set('status-ready', m.ready(r.done, r.total));
+      set('status-ready-note', r.early ? m.early : '');
     }
     renderNews(d.news || []);
     var ts = d.turn_state || {};

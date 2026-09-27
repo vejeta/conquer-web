@@ -14,7 +14,7 @@ fi
 PREFIX="${CONQUER_PREFIX:-/opt/conquer}"
 PUBLIC_DIR="${PUBLIC_DIR:-$PREFIX/public}"
 
-TURN_SCHEDULE="" TURN_SCHEDULE_LABEL=""
+TURN_SCHEDULE="" TURN_SCHEDULE_LABEL="" TURN_EARLY=""
 # shellcheck source=/dev/null
 [ -f /etc/conquer-web.env ] && . /etc/conquer-web.env
 
@@ -28,6 +28,9 @@ fi
 TURN_STATE="" TURN_STATE_TIME="" TURN_STATE_MESSAGE=""
 # shellcheck source=/dev/null
 [ -f "$PREFIX/lib/.turn-state" ] && . "$PREFIX/lib/.turn-state"
+
+# Nations that marked their orders as done ("<ready> <total>")
+read -r ready_count ready_total < <(/usr/local/bin/conquer-ready count 2>/dev/null)
 
 mkdir -p "$PUBLIC_DIR" || exit 1
 
@@ -91,7 +94,8 @@ END { close_edition(); printf "[%s]", out }
 # backslash escapes inside it
 NEWS_JSON="$news_json" awk -v schedule="$TURN_SCHEDULE_LABEL" -v generated="$(date -u '+%Y-%m-%dT%H:%M:%SZ')" \
     -v state="$TURN_STATE" -v state_time="$TURN_STATE_TIME" -v state_message="$TURN_STATE_MESSAGE" \
-    -v next_turn="$next_turn" '
+    -v next_turn="$next_turn" -v ready="${ready_count:-0}" -v ready_total="${ready_total:-0}" \
+    -v early="$TURN_EARLY" '
 function json(s) {
     gsub(/\\/, "\\\\", s); gsub(/"/, "\\\"", s); gsub(/\t/, " ", s)
     return "\"" s "\""
@@ -113,6 +117,10 @@ END {
     printf "{\"generated\":%s,\"season\":%s,\"turn\":%d,\"last_update\":%s,\"schedule\":%s,",
         json(generated), json(season), turn, json(last), json(schedule)
     printf "\"next_turn\":%s,", (next_turn ~ /^[0-9]+$/ ? next_turn : "null")
+    if (ready_total > 0)
+        printf "\"ready\":{\"done\":%d,\"total\":%d,\"early\":%s},", ready, ready_total, (early == "on" ? "true" : "false")
+    else
+        printf "\"ready\":null,"
     printf "\"turn_state\":{\"state\":%s,\"time\":%s,\"message\":%s},",
         json(state), json(state_time), json(state_message)
     printf "\"news\":%s,\"nations\":[", ENVIRON["NEWS_JSON"]

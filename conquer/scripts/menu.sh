@@ -19,6 +19,7 @@ MIN_ROWS=24
 TURN_SCHEDULE=""
 TURN_SCHEDULE_LABEL=""
 ADMIN_CONTACT=""
+TURN_EARLY=""
 # shellcheck source=/dev/null
 [ -f /etc/conquer-web.env ] && . /etc/conquer-web.env
 
@@ -112,6 +113,79 @@ player_nation() {
     echo "*"
 }
 
+# Nation whose orders this account can mark as done (not administrators)
+own_nation() {
+    local nation
+    [ -f "$PLAYERS_FILE" ] || return 1
+    nation=$(player_nation) && [ "$nation" != "*" ] && echo "$nation"
+}
+
+# Line for the banner: how many nations have finished their orders
+ready_summary() {
+    local ready total
+    read -r ready total < <(conquer-ready count 2>/dev/null)
+    [ "${total:-0}" -gt 0 ] || return 1
+    echo "$ready of $total nations"
+}
+
+# Start the turn update now if every nation is done (TURN_EARLY=on). It
+# runs in its own session so it survives this browser session.
+maybe_run_early_turn() {
+    [ "$TURN_EARLY" = on ] || return 1
+    conquer-ready all || return 1
+    setsid conquer-turn --if-ready < /dev/null >> /run/conquer/log 2>&1 &
+    echo
+    echo "  ${green}${bold}Every nation is ready: the turn update starts now.${reset}"
+    echo "  Come back in a few minutes for the new turn."
+}
+
+# Ask whether the orders are done after a game session
+ask_orders_done() {
+    local nation="$1" answer
+    echo
+    read -r -s -n 1 -p "  Are your orders for this turn done? [y/N] " answer
+    echo
+    case "$answer" in
+        y|Y)
+            conquer-ready mark "$nation"
+            publish_status
+            echo "  ${green}Orders marked as done.${reset} You can still change them until the update."
+            maybe_run_early_turn
+            pause
+            ;;
+        *)
+            conquer-ready is-marked "$nation" || return 0
+            conquer-ready unmark "$nation"
+            publish_status
+            ;;
+    esac
+}
+
+# Refresh the landing page's count of finished nations
+publish_status() {
+    conquer-status > /dev/null 2>&1 &
+}
+
+toggle_orders_done() {
+    local nation
+    nation=$(own_nation) || return
+    clear
+    echo
+    if conquer-ready is-marked "$nation"; then
+        conquer-ready unmark "$nation"
+        publish_status
+        echo "  Your orders are ${bold}no longer marked as done${reset}."
+    else
+        conquer-ready mark "$nation"
+        publish_status
+        echo "  ${green}Your orders are marked as done for this turn.${reset}"
+        if ! maybe_run_early_turn && [ "$TURN_EARLY" = on ]; then
+            echo "  The turn update runs early once every nation is done."
+        fi
+    fi
+    pause
+}
+
 last_update() {
     if [ -s "$WORLD_DIR/timelog" ]; then
         head -n 1 "$WORLD_DIR/timelog"
@@ -146,6 +220,15 @@ show_banner() {
     if [ -n "$TURN_SCHEDULE" ] && [ "$TURN_SCHEDULE" != off ] \
         && next=$(/usr/local/bin/conquer-next-turn "$TURN_SCHEDULE" 2>/dev/null); then
         echo "  ${dim}Next turn update:${reset} $(date -d "@$next" '+%a %d %b %H:%M %Z')"
+    fi
+    local summary nation
+    if summary=$(ready_summary); then
+        if nation=$(own_nation) && conquer-ready is-marked "$nation"; then
+            summary="$summary ${green}(yours: done)${reset}"
+        elif [ -n "$nation" ]; then
+            summary="$summary ${yellow}(yours: not yet)${reset}"
+        fi
+        echo "  ${dim}Orders done:     ${reset} $summary"
     fi
     if [ -e "$UPDATING_FLAG" ]; then
         echo
@@ -183,8 +266,14 @@ orders (move armies, draft, build, trade...). All orders are resolved
 together at the next turn update: ${TURN_SCHEDULE_LABEL:-see game administrator}.
 
 The update waits while players are logged in, so please quit the game
-(press 'q') when you are done.
+(press 'q') when you are done. When you quit, the menu asks whether your
+orders are done; you can also change that with option 6.
 EOF
+    if [ "$TURN_EARLY" = on ]; then
+        echo
+        echo "When every nation has marked its orders as done, the turn update"
+        echo "runs right away instead of waiting for the schedule."
+    fi
     if [ -n "$ADMIN_CONTACT" ]; then
         echo
         echo "Administrator contact: ${bold}${ADMIN_CONTACT}${reset}"
@@ -256,6 +345,8 @@ play() {
         echo "Check your nation name and password. If a turn update is"
         echo "running, try again in a few minutes."
         pause
+    elif nation=$(own_nation); then
+        ask_orders_done "$nation"
     fi
 }
 
@@ -266,6 +357,13 @@ while true; do
     echo "  ${bold}3${reset}) Key reference"
     echo "  ${bold}4${reset}) Scores"
     echo "  ${bold}5${reset}) Full help (in-game help screens)"
+    if nation=$(own_nation); then
+        if conquer-ready is-marked "$nation"; then
+            echo "  ${bold}6${reset}) My orders are not done yet"
+        else
+            echo "  ${bold}6${reset}) My orders for this turn are done"
+        fi
+    fi
     echo "  ${bold}q${reset}) Log out"
     echo
     read -r -s -n 1 -p "  Choose an option: " choice
@@ -275,6 +373,7 @@ while true; do
         3) show_keys ;;
         4) show_scores ;;
         5) check_terminal_size; run_game -h ;;
+        6) [ -e "$UPDATING_FLAG" ] || toggle_orders_done ;;
         q|Q) clear; echo "Goodbye, commander."; exit 0 ;;
     esac
 done
