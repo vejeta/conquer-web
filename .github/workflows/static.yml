@@ -1,43 +1,74 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+# SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Publish the public website (landing page, player's guide, tutorial) to
+# GitHub Pages. Only web/ is published, never the rest of the repository.
+#
+# The game itself (terminal, accounts, turns) runs on the game server. Set
+# the repository variable CONQUER_SERVER_URL (Settings > Secrets and
+# variables > Actions > Variables), e.g. https://conquer.example.org, so
+# "Play now" opens the game there and the live game status is read from it.
+# Enable Pages with Settings > Pages > Source: GitHub Actions.
+name: Deploy the website to GitHub Pages
 
 on:
-  # Runs on pushes targeting the default branch
   push:
-    branches: ["master"]
-
-  # Allows you to run this workflow manually from the Actions tab
+    branches: [master]
+    paths:
+      - "web/**"
+      - ".github/workflows/static.yml"
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+# One deployment at a time; never cancel a deployment in progress
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: false
 
 jobs:
-  # Single deploy job since we're just deploying
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/configure-pages@v5
+
+      - name: Build the site from web/
+        env:
+          CONQUER_SERVER_URL: ${{ vars.CONQUER_SERVER_URL }}
+        run: |
+          if [ ! -f web/index.html ]; then
+            echo "web/index.html not found: nothing to publish" >&2
+            exit 1
+          fi
+          rm -rf _site
+          cp -r web _site
+          # The game terminal only works on the game server (it embeds /play/)
+          rm -f _site/game.html
+          # Where the game server lives (empty: the site shows no live status)
+          server="${CONQUER_SERVER_URL%/}"
+          printf 'window.CONQUER_CONFIG = { server: %s };\n' \
+            "$(jq -Rn --arg s "$server" '$s')" > _site/config.js
+          # Serve files as they are (no Jekyll processing)
+          touch _site/.nojekyll
+          echo "Game server: ${server:-(not set)}"
+          ls -la _site
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
   deploy:
+    needs: build
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          # Upload entire repository
-          path: '.'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
