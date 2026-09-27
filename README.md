@@ -65,8 +65,9 @@ sudo ./deploy-to-vps.sh
   entirely in the visitor's browser: a private practice world with its own
   turns, no account needed, also on GitHub Pages (see `wasm/README.md`).
 - **`https://your-domain/tutorial.html`** – the first turn of a new nation,
-  key by key, with the real screens, a terminal recording and narrated videos
-  in English and Spanish (see `tools/tutorial/README.md`).
+  key by key, with the real screens, a terminal recording and a narrated
+  video; in Spanish at `tutorial.es.html`, with the Spanish video (see
+  `tools/tutorial/README.md`).
 - **`https://your-domain/hall.html`** – the hall of fame of finished seasons.
 - **`https://your-domain/game.html`** – the game page opened by "Play now". It embeds
   the terminal and adds an on-screen key bar (movement, Esc, Enter, Ctrl-L...) that

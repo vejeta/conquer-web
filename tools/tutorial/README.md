@@ -1,6 +1,7 @@
 # First-turn tutorial
 
-`web/tutorial.html` (the page), `web/tutorial/first-turn.cast` (the terminal
+`web/tutorial.html` and `web/tutorial.es.html` (the page in English and
+Spanish), `web/tutorial/first-turn.cast` (the terminal
 recording) and `web/tutorial/first-turn.json` (the steps for the in-game
 coach) are generated from a real game session.
 
@@ -8,10 +9,12 @@ coach) are generated from a real game session.
 |------|------------|
 | `first-turn.steps.json` | The keys pressed at each step, with the text that must be on screen |
 | `first-turn.content.json` | The explanation of each step, and the screen text the coach waits for |
-| `tutorial.template.html` | The page; the steps go where `<!--steps-->` is |
+| `first-turn.content.es.json` | The same steps in Spanish |
+| `tutorial.template.html` | The page; the steps go where `<!--steps-->` is, and each `{{name}}` is a text of `tutorial.strings.json` |
+| `tutorial.strings.json` | The rest of the page's text, per language |
 | `record.py` | Plays the steps in the running game container and records the session |
 | `build.py` | Writes the page and the coach steps |
-| `video.sh` | Renders the narrated videos (MP4 + captions) |
+| `video.py` | Renders the narrated videos (MP4 + captions) |
 
 To record again, on a world at turn 1 with a new nation `tidewater`
 (password `tide123`) linked to the account `maren`, and the game container
@@ -45,3 +48,19 @@ python3 tools/tutorial/video.py en es          # needs ffmpeg and node + playwri
 
 To use a human voice instead, record one audio file per segment with the
 same text and replace the synthesis in `render()`.
+
+## Another language
+
+Each page shows the video of its own language (`<html lang>`). To add one,
+say French (`fr`):
+
+1. `first-turn.content.fr.json`: a copy of `first-turn.content.json` with
+   `title`, `text` and `veteran` translated (keep `id`, `keys`, `detect`).
+2. `tutorial.strings.json`: an `"fr"` entry with every text of `"en"`.
+3. `build.py`: `"fr": ("first-turn.content.fr.json", "tutorial.fr.html", None)`
+   in `LANGUAGES`.
+4. `narration.json`: an `"fr"` text (and `title_fr`) in every segment and a
+   Kokoro voice under `voices`; the video's captions in `TEXT` in
+   `video.py`; then `python3 tools/tutorial/video.py fr`.
+5. A link to `tutorial.fr.html` next to the other languages in the crumbs of
+   `tutorial.strings.json`.

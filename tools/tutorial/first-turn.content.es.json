@@ -1,0 +1,169 @@
+{
+ "title": "Tu primer turno",
+ "nation": "tidewater",
+ "steps": [
+  {
+   "id": "menu",
+   "title": "Entra y abre el menú",
+   "keys": [
+    "1"
+   ],
+   "detect": "Choose an option",
+   "text": "<p>Pulsa <strong>Jugar</strong> en la página principal y entra con tu cuenta de jugador. El menú dice quién eres y cuál es tu nación. Pulsa <kbd>1</kbd> para jugar.</p>",
+   "veteran": "Sin línea de comandos ni <code>conquer -n</code>: el menú arranca el juego por ti."
+  },
+  {
+   "id": "password",
+   "title": "Escribe la contraseña de tu nación",
+   "keys": [
+    "password",
+    "Enter"
+   ],
+   "detect": "Nation's Password",
+   "text": "<p>Tu nación se abre directamente. Escribe la <strong>contraseña de la nación</strong> (hasta 7 caracteres) y pulsa <kbd>Enter</kbd>. No aparece nada mientras escribes; es normal.</p>"
+  },
+  {
+   "id": "title",
+   "title": "La pantalla de título",
+   "keys": [
+    "Space"
+   ],
+   "detect": "PRESS ANY KEY",
+   "text": "<p>La misma pantalla de título que veían los jugadores en 1988. Cuando el juego diga <em>PRESS ANY KEY</em>, pulsa cualquier tecla; lo habitual es <kbd>Espacio</kbd>.</p>"
+  },
+  {
+   "id": "map",
+   "title": "Lee la pantalla principal",
+   "keys": [],
+   "detect": "nation\\.\\.\\.",
+   "text": "<p>Aquí pasarás la partida. Tiene cuatro partes:</p><ul><li><strong>El mapa</strong>, a la izquierda. <code>C</code> es tu capital. Las letras resaltadas (en vídeo inverso) son sectores tuyos. Las demás muestran el terreno: <code>~</code> agua, <code>-</code> llano, <code>%</code> colinas, <code>^</code> montañas, <code>#</code> cumbres.</li><li><strong>Tus unidades</strong>, arriba a la derecha. <code>*</code> marca la seleccionada y <code>&gt;</code> las demás del mismo sector. <em>mv</em> es cuánto puede moverse aún cada una este turno; <em>st</em>, sus órdenes.</li><li><strong>El sector bajo el cursor</strong>, abajo a la derecha: dueño, uso, vegetación, terreno y población.</li><li><strong>La línea de estado</strong>, abajo del todo: turno, tesoro en talentos de oro, estación y <em>You have Conquer Mail</em> cuando hay mensajes.</li></ul><p>Empiezas solo con tu capital. Todo lo demás hay que conquistarlo.</p>"
+  },
+  {
+   "id": "mail",
+   "title": "Lee tu correo",
+   "keys": [
+    "R"
+   ],
+   "detect": "Message from",
+   "text": "<p>Pulsa <kbd>R</kbd>. Los mensajes llegan del juego, del administrador y de otros gobernantes. Cualquier tecla muestra el siguiente; <kbd>Enter</kbd> borra el que estás leyendo.</p>"
+  },
+  {
+   "id": "mail2",
+   "title": "El siguiente mensaje",
+   "keys": [
+    "Space"
+   ],
+   "detect": "Message from",
+   "text": "<p>El aviso de fundación de tu nación. Pulsa <kbd>Espacio</kbd> otra vez para volver al mapa.</p>"
+  },
+  {
+   "id": "budget",
+   "title": "Revisa el presupuesto",
+   "keys": [
+    "B"
+   ],
+   "detect": "BUDGET ESTIMATES",
+   "text": "<p>Pulsa <kbd>B</kbd>. Tu pueblo paga impuestos (aquí 330.000 talentos de 33.000 habitantes en la capital) y tus tropas cuestan dinero (100.000 por 2.000 soldados). La última línea es el tesoro de la próxima estación.</p><p>Mira también el <strong>granero</strong>. Con solo una capital no produces comida, y una nación sin granjas pasa hambre en pocas estaciones.</p>"
+  },
+  {
+   "id": "armies",
+   "title": "Conoce a tus ejércitos",
+   "keys": [
+    "Space",
+    "a"
+   ],
+   "detect": "ARMY STATS SUMMARY",
+   "text": "<p>Pulsa <kbd>Espacio</kbd> para salir del presupuesto y luego <kbd>a</kbd>. El ejército 0 es la <strong>guarnición</strong>: 250 soldados que nunca salen de la capital. El rey y los barones son <strong>líderes</strong>. Más a la derecha (pulsa cualquier tecla que no sea <kbd>Espacio</kbd> para avanzar) están tus <strong>ejércitos de campaña</strong>, que pueden marchar. Pulsa <kbd>Espacio</kbd> al terminar.</p>"
+  },
+  {
+   "id": "select",
+   "title": "Elige un ejército de campaña",
+   "keys": [
+    "Space",
+    "o",
+    "o"
+   ],
+   "detect": "\\*army [1-9][0-9]*: [0-9]+ Inf",
+   "text": "<p><kbd>p</kbd> selecciona la unidad siguiente y <kbd>o</kbd> la anterior. Pulsa <kbd>o</kbd> hasta que el <code>*</code> esté en un ejército de campaña con movimiento: aquí el <strong>ejército 20</strong>, 112 soldados de infantería y 10 de movimiento.</p>"
+  },
+  {
+   "id": "move",
+   "title": "Sal a conquistar tierra",
+   "keys": [
+    "m",
+    "j"
+   ],
+   "detect": "MOVE(MENT )?SCREEN",
+   "text": "<p>Pulsa <kbd>m</kbd> y después una dirección:</p><pre class=\"dirs\">y k u\n h l\nb j n</pre><p>Cada paso gasta puntos de movimiento; colinas y bosques cuestan más. Si el juego dice <em>Can't Move Here</em> (normalmente agua), pulsa una tecla y prueba otra dirección.</p>"
+  },
+  {
+   "id": "moved",
+   "title": "Termina el movimiento",
+   "keys": [
+    "Space"
+   ],
+   "detect": "nation\\.\\.\\.",
+   "text": "<p>Pulsa <kbd>Espacio</kbd> para parar. El sector ya es tuyo: el informe dice <em>owner: tidewater</em>.</p><p class=\"rule\">Un ejército solo toma tierra vacía si es lo bastante grande: al menos 75 soldados, y al menos uno por cada 350 habitantes de tu nación (unos 95 para una nación nueva). El ejército 21, con 70 soldados, es demasiado pequeño por sí solo.</p>"
+  },
+  {
+   "id": "draft",
+   "title": "Recluta tropas nuevas",
+   "keys": [
+    "k",
+    "D",
+    "I",
+    "50",
+    "Enter"
+   ],
+   "detect": "raise a new army",
+   "text": "<p>Vuelve con el cursor a la capital (<kbd>k</kbd>) y pulsa <kbd>D</kbd> para reclutar, <kbd>I</kbd> para infantería, escribe <kbd>50</kbd> y pulsa <kbd>Enter</kbd>. Las tropas se reclutan en ciudades y en la capital, y cuestan talentos y metal.</p>"
+  },
+  {
+   "id": "drafted",
+   "title": "Como un ejército nuevo",
+   "keys": [
+    "y"
+   ],
+   "detect": "nation\\.\\.\\.",
+   "text": "<p>Responde <kbd>y</kbd> para formar un ejército nuevo. Si respondes que no, las tropas se unen al ejército del sector y <strong>ese ejército pierde su movimiento este turno</strong>. Las tropas nuevas no pueden marchar hasta el turno siguiente, así que déjalas defendiendo la capital.</p>"
+  },
+  {
+   "id": "diplomacy",
+   "title": "Mira a las demás naciones",
+   "keys": [
+    "Space",
+    "S"
+   ],
+   "detect": "DIPLOMACY SUMMARY",
+   "text": "<p>Pulsa <kbd>S</kbd>. Todas las naciones empiezan como <em>UNMET</em> (sin contacto). Cuando conozcas a una, <kbd>Enter</kbd> te deja fijar tu postura (aliado, neutral, hostil, guerra…). Para escribir a otro gobernante, pulsa <kbd>W</kbd> en el mapa. Pulsa <kbd>Espacio</kbd> para salir.</p>"
+  },
+  {
+   "id": "quit",
+   "title": "Guarda y sal",
+   "keys": [
+    "Space",
+    "q"
+   ],
+   "detect": "orders for this turn done",
+   "text": "<p>Pulsa <kbd>q</kbd>. Tus órdenes quedan guardadas y el menú te pregunta si has terminado este turno.</p>"
+  },
+  {
+   "id": "done",
+   "title": "Marca tus órdenes como terminadas",
+   "keys": [
+    "y"
+   ],
+   "detect": "Orders marked as done",
+   "text": "<p>Responde <kbd>y</kbd>. Cuando todas las naciones hayan hecho lo mismo, el turno se procesa en el acto; si no, a la hora programada. Hasta entonces puedes volver y cambiar tus órdenes.</p>"
+  },
+  {
+   "id": "newturn",
+   "title": "Una nueva estación",
+   "keys": [
+    "Space"
+   ],
+   "detect": "Last turn update",
+   "text": "<p>En esta partida tidewater era el único jugador, así que el turno se procesó enseguida. Vuelve a jugar para ver la nueva estación: tu nuevo sector, el periódico (<kbd>N</kbd>) y tu correo. Ese es todo el ritmo de Conquer: leer, dar órdenes, salir y esperar las noticias.</p>"
+  }
+ ]
+}

@@ -153,7 +153,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <p class="hint" data-i18n="hint">You will be asked for your player account first.</p>
     <p class="join" id="join" hidden><span data-i18n="join">Have an invite code? Press Play now and sign in as</span>
       <code id="join-account"></code> / <code id="join-password"></code></p>
-    <p class="hint"><a href="tutorial.html" data-i18n="tutorial">New here? Play your first turn step by step</a> · <a href="guide.html" data-i18n="guide">Player's guide</a> · <a href="hall.html" data-i18n="hall">Hall of fame</a></p>
+    <p class="hint"><a href="tutorial.html" data-href-es="tutorial.es.html" data-i18n="tutorial">New here? Play your first turn step by step</a> · <a href="guide.html" data-i18n="guide">Player's guide</a> · <a href="hall.html" data-i18n="hall">Hall of fame</a></p>
   </header>
 
   <section id="status" hidden>
@@ -272,7 +272,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     hint: 'Primero se te pedirá tu cuenta de jugador.',
     guide: 'Guía del jugador (en inglés)',
     hall: 'Salón de la fama',
-    tutorial: '¿Eres nuevo? Tu primer turno paso a paso (en inglés)',
+    tutorial: '¿Eres nuevo? Tu primer turno paso a paso, con vídeo',
     join: '¿Tienes un código de invitación? Pulsa Jugar y entra como',
     h_current: 'Partida actual',
     l_turn: 'Turno', l_season: 'Estación', l_last: 'Última actualización',
@@ -352,6 +352,10 @@ SPDX-License-Identifier: GPL-3.0-or-later
       if (el.dataset.en === undefined) el.dataset.en = el.innerHTML;
       var key = el.getAttribute('data-i18n');
       el.innerHTML = (l === 'es' && ES[key]) ? ES[key] : el.dataset.en;
+    });
+    document.querySelectorAll('[data-href-es]').forEach(function (el) {
+      if (el.dataset.hrefEn === undefined) el.dataset.hrefEn = el.getAttribute('href');
+      el.setAttribute('href', l === 'es' ? el.dataset.hrefEs : el.dataset.hrefEn);
     });
     document.querySelectorAll('.lang button').forEach(function (b) {
       b.setAttribute('aria-pressed', String(b.getAttribute('data-lang') === l));
