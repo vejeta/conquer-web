@@ -122,6 +122,18 @@ jobs:
           test "$(game conquer-ready count)" = "0 2"
           test "$(status .ready.done)" = 0
 
+      - name: Practice world template
+        run: |
+          # The menu's practice world: a copy of the template, playable and
+          # with turns of its own
+          docker exec -u conquer conquer-local sh -ec '
+            rm -rf /tmp/p && cp -a /opt/conquer/practice-world /tmp/p
+            cp /opt/conquer/share/help[0-5] /tmp/p/
+            conqowner -d /tmp/p -s "$(id -u)" > /dev/null
+            conquer -d /tmp/p -s | grep -q trainee
+            conqrun -x -d /tmp/p > /dev/null
+            conquer -d /tmp/p -s | grep -q "Turn 2"'
+
       - name: Game runs as an unprivileged user
         run: |
           test "$(docker exec conquer-local stat -c %U /proc/1)" = conquer
