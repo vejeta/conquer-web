@@ -314,9 +314,18 @@ game keeps using `data/lib/` until you back it up, remove it and run
 `./rebuild.sh --force`.
 
 **Map size:** Conquer stores army and capital coordinates in 8 bits, so worlds
-must be at most **256x256** (the shipped default world is 128x128). Larger maps
-misplace armies into the sea and players see an empty map; the container logs a
-warning if it detects one.
+must be at most **256x256**. Larger maps misplace armies into the sea and
+players see an empty map; the container logs a warning if it detects one.
+
+**The default world** is made for about 15 players: 112x112 sectors with 60%
+water (about 4,400 land sectors), 7 computer nations (anorian, darboth,
+edland, fung, goldor, woooo, sahara, listed in `conquer/lib/nations`) and the
+monsters (pirates, nomads, savages, lizards). Conquer holds at most 35
+nations counting god, the computer nations and the 4 monsters, so this world
+leaves 23 places for players: 15 and room for late arrivals. Neighbours
+meet within a few turns and have land to grow for about 25 turns. Every
+computer nation in `nations` takes a player's place: keep the list short
+when you generate a world for many players.
 
 ## 📁 Project Structure
 

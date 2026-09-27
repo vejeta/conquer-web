@@ -114,11 +114,11 @@ jobs:
           turn() { docker exec conquer-local conquer -s | sed -n 's/.*, Turn \([0-9]*\)$/\1/p'; }
           game() { docker exec -u conquer conquer-local "$@"; }
           # data/lib belongs to the game user (uid 1000), not to the runner
-          for p in p1:argos p2:fung; do
+          for p in p1:anorian p2:fung; do
             printf '%s\n' player-password | sudo ./manage-players.sh add "${p%:*}" --nation "${p#*:}" --password-stdin
           done
           sudo ./manage-players.sh list
-          game conquer-ready mark argos
+          game conquer-ready mark anorian
           game conquer-turn --if-ready
           test "$(turn)" = 2
           game conquer-status
