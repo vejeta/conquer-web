@@ -98,7 +98,11 @@ jobs:
           docker exec conquer-local conquer -s | grep -q 'Turn 2'
           test "$(curl -sk https://localhost/status/status.json | jq .turn)" = 2
           test "$(curl -sk https://localhost/status/status.json | jq -r .turn_state.state)" = ok
-          test "$(curl -sk https://localhost/status/status.json | jq '.news | length')" -ge 1
+          # The newspaper of turn 1 is published. The landing page list may
+          # be empty: it leaves out the captured sectors, and a quiet first
+          # turn has no other news
+          test "$(curl -sk https://localhost/status/status.json | jq -r '.news | type')" = array
+          test "$(curl -sk -o /dev/null -w '%{http_code}' https://localhost/status/news/1.html)" = 200
           ls data/backups/world_turn1_*.tar.gz
 
       - name: Early turn update once every nation is done
