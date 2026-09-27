@@ -1,0 +1,81 @@
+# SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# TEMPORARY: publish the website from this branch to GitHub Pages before it
+# is merged, so it can be tried in every language. Delete this file before
+# merging: after the merge, static.yml (pull request #2) publishes master.
+# Needs the branch allowed in Settings > Environments > github-pages >
+# Deployment branches and tags.
+#
+# Publish the public website (landing page, player's guide, tutorial) to
+# GitHub Pages. Only web/ is published, never the rest of the repository.
+#
+# The game itself (terminal, accounts, turns) runs on the game server. Set
+# the repository variable CONQUER_SERVER_URL (Settings > Secrets and
+# variables > Actions > Variables), e.g. https://conquer.example.org, so
+# "Play now" opens the game there and the live game status is read from it.
+# Enable Pages with Settings > Pages > Source: GitHub Actions.
+name: Deploy the website to GitHub Pages (branch preview)
+
+on:
+  push:
+    branches: [claude/cool-feynman-97nv7c]
+    paths:
+      - "web/**"
+      - ".github/workflows/pages-preview.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; never cancel a deployment in progress
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/configure-pages@v5
+
+      - name: Build the site from web/
+        env:
+          CONQUER_SERVER_URL: ${{ vars.CONQUER_SERVER_URL }}
+        run: |
+          if [ ! -f web/index.html ]; then
+            echo "web/index.html not found: nothing to publish" >&2
+            exit 1
+          fi
+          rm -rf _site
+          cp -r web _site
+          # The game terminal only works on the game server (it embeds /play/)
+          rm -f _site/game.html
+          # Where the game server lives (empty: the site shows no live status).
+          # Named server.js: the VPS vhost refuses paths containing "config"
+          server="${CONQUER_SERVER_URL%/}"
+          printf 'window.CONQUER_CONFIG = { server: %s };\n' \
+            "$(jq -Rn --arg s "$server" '$s')" > _site/server.js
+          # Serve files as they are (no Jekyll processing)
+          touch _site/.nojekyll
+          echo "Game server: ${server:-(not set)}"
+          ls -la _site
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
