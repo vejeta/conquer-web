@@ -155,7 +155,7 @@ EF English Proficiency Index 2025 scores are snippet only (https://www.ef.com/ww
 
 ## 4. Offline TTS for the narrated tutorial
 
-**Current state.** The tutorial uses Kokoro via kokoro-onnx with `bm_george` for English and `em_alex` for Spanish (`tools/tutorial/narration.json`, `tools/tutorial/README.md`). Kokoro's own voice metadata grades these voices **C** and **D** respectively (https://github.com/hexgrad/kokoro/blob/main/kokoro.js/src/voices.js).
+**State at the time of this research.** The tutorial used Kokoro via kokoro-onnx with `bm_george` for English and `em_alex` for Spanish (since replaced by Qwen3-TTS, see `tools/tutorial/README.md`). Kokoro's own voice metadata grades these voices **C** and **D** respectively (https://github.com/hexgrad/kokoro/blob/main/kokoro.js/src/voices.js).
 
 **Model licenses and languages.** All verified from the repository README or LICENSE on GitHub unless marked otherwise.
 

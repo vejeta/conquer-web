@@ -6,7 +6,7 @@
       "id": "menu",
       "title": "Sign in and open the menu",
       "keys": ["1"],
-      "detect": "Choose an option",
+      "detect_menu": "menu_choose",
       "text": "<p>Press <strong>Play now</strong> on the home page and sign in with your player account. The menu says who you are and which nation is yours. Press <kbd>1</kbd> to play.</p>",
       "veteran": "No shell prompt, no <code>conquer -n</code>: the menu starts the game for you."
     },
@@ -105,21 +105,21 @@
       "id": "quit",
       "title": "Save and quit",
       "keys": ["Space", "q"],
-      "detect": "orders for this turn done",
+      "detect_menu": "menu_ask_done",
       "text": "<p>Press <kbd>q</kbd>. Your orders are saved, and the menu asks whether you have finished this turn.</p>"
     },
     {
       "id": "done",
       "title": "Mark your orders done",
       "keys": ["y"],
-      "detect": "Orders marked as done",
+      "detect_menu": "menu_marked",
       "text": "<p>Answer <kbd>y</kbd>. When every nation has done the same, the turn update runs straight away; otherwise it runs at the scheduled time. You can come back and change your orders until then.</p>"
     },
     {
       "id": "newturn",
       "title": "A new season",
       "keys": ["Space"],
-      "detect": "Last turn update",
+      "detect_menu": "menu_last_update",
       "text": "<p>In this game tidewater was the only player, so the update ran at once. Play again to see the new season: your new sector, the newspaper (<kbd>N</kbd>) and your mail. That is the whole rhythm of Conquer: read, order, quit, wait for the news.</p>"
     }
   ]

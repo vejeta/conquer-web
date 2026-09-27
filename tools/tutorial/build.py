@@ -6,6 +6,9 @@
 Inputs (tools/tutorial/):
   first-turn.content.json   the steps, in English: title, keys, explanation,
                             and the screen text that shows the step is reached
+                            (detect), or for screens of the player menu the
+                            menu text to wait for, in the page's language
+                            (detect_menu, a key of conquer/i18n)
   first-turn.screens.json   the 80x24 screen after every step, written by
                             record.py together with web/tutorial/first-turn.cast
   tutorial.template.html    the page, with <!--steps--> where the steps go and
@@ -61,6 +64,23 @@ def screen_html(lines, ui):
     return '<pre class="screen" role="img" aria-label="%s">%s</pre>' % (html.escape(ui["screen_label"]), "\n".join(rows))
 
 
+def menu_texts(lang):
+    """The player menu's texts in a language (conquer/i18n), English under."""
+    texts = {}
+    for code in ("en", lang):
+        path = os.path.join(HERE, "..", "..", "conquer", "i18n", code + ".sh")
+        if os.path.exists(path):
+            texts.update(re.findall(r'^MSG\[(\w+)\]="((?:[^"\\]|\\.)*)"', open(path).read(), re.M | re.S))
+    return texts
+
+
+def menu_detect(text):
+    """Regular expression for the first line of a menu text as the terminal
+    shows it: styles removed, %s standing for anything."""
+    line = next(l for l in re.sub(r"\$\{\w+\}", "", text).split("\n") if l.strip()).strip()
+    return ".*".join(re.escape(part) for part in line.split("%s"))
+
+
 def load_languages():
     """{code: catalog}, English first; every language falls back to English."""
     langs = {"en": json.load(open(os.path.join(HERE, "i18n", "en.json")))}
@@ -80,10 +100,14 @@ def build(lang, langs, template, screens, english):
         '<a href="tutorial%s.html" hreflang="%s" lang="%s">%s</a>' % (suffix(code), code, code, html.escape(c["language"]))
         for code, c in langs.items() if code != lang)
     translated = cat.get("steps", {})
+    menu = menu_texts(lang)
     steps = []
     for step in english["steps"]:
         s = dict(step)
         s.update(translated.get(step["id"], {}))
+        # Steps in the player menu wait for the menu's text in this language
+        if "detect_menu" in s:
+            s["detect"] = menu_detect(menu[s.pop("detect_menu")])
         steps.append(s)
 
     items = []

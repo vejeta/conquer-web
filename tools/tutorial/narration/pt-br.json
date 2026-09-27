@@ -1,0 +1,109 @@
+{
+ "language": "pt-br",
+ "voice": {
+  "engine": "qwen-clone",
+  "language": "Portuguese",
+  "design": "A warm, deep male voice of a native Brazilian Portuguese documentary narrator from São Paulo, about forty years old. Calm, professional and evocative, with clear diction and an unhurried pace.",
+  "reference": "Outubro de mil novecentos e oitenta e sete. Um jogo de estratégia se espalha pelo mundo, uma mensagem de cada vez, pela Usenet."
+ },
+ "captions": {
+  "keys": "Teclas",
+  "look": "só observe",
+  "intro_title": "Seu primeiro turno",
+  "intro_sub": "Usenet, 1987 · seu navegador, hoje",
+  "outro_title": "Sua nação está esperando",
+  "outro_sub": "Peça uma nação · jogue seu primeiro turno hoje à noite",
+  "password": "senha",
+  "space": "Espaço"
+ },
+ "segments": [
+  {
+   "screen": "intro",
+   "text": "Outubro de mil novecentos e oitenta e sete. Um jogo de estratégia se espalha pelo mundo, uma mensagem de cada vez, pela Usenet. Estudantes o compilam nos computadores da universidade e governam nações em terminais de tela verde. Quarenta anos depois, Conquer está de volta. Sem instalar nada. Sem conta no servidor. Só o seu navegador. Este é o seu primeiro turno."
+  },
+  {
+   "screen": "menu",
+   "text": "Entre com sua conta de jogador. O menu sabe quem você é e qual é a sua nação. Aperte um para jogar.",
+   "title": "Entre e abra o menu"
+  },
+  {
+   "screen": "password",
+   "text": "Digite a senha da sua nação. Nada aparece enquanto você digita. É de propósito.",
+   "title": "Digite a senha da sua nação"
+  },
+  {
+   "screen": "title",
+   "text": "A tela de título, exatamente como os jogadores a viam em mil novecentos e oitenta e oito. Aperte qualquer tecla.",
+   "title": "A tela de título"
+  },
+  {
+   "screen": "map",
+   "text": "Este é o seu reino. À esquerda, o mapa. O C é a sua capital, e cada letra destacada é terra sua. Por enquanto, só a capital. No alto à direita, suas unidades. Embaixo, o setor sob o cursor. E na última linha: o turno, o seu tesouro e a estação do ano.",
+   "title": "Leia a tela principal"
+  },
+  {
+   "screen": "mail",
+   "text": "Você tem correio. Aperte o erre maiúsculo para ler. Qualquer tecla passa para a próxima mensagem.",
+   "title": "Leia seu correio"
+  },
+  {
+   "screen": "budget",
+   "text": "O bê maiúsculo abre o orçamento. Seu povo paga impostos. Seus soldados custam dinheiro. E fique de olho no celeiro: uma capital sozinha não produz comida.",
+   "title": "Confira o orçamento"
+  },
+  {
+   "screen": "armies",
+   "text": "O á minúsculo mostra seus exércitos. O exército zero é a guarnição: nunca sai de casa. O rei e seus barões são os líderes. Seus exércitos de campo estão prontos para marchar.",
+   "title": "Conheça seus exércitos"
+  },
+  {
+   "screen": "select",
+   "text": "Aperte o ó para escolher uma unidade. O asterisco marca a sua escolha: o exército vinte. Cento e doze soldados.",
+   "title": "Escolha um exército de campo"
+  },
+  {
+   "screen": "move",
+   "text": "Aperte o eme para mover, e depois uma direção: agá, jota, cá e ele, e para as diagonais, ípsilon, u, bê e ene. Aqui, o jota: para o sul.",
+   "title": "Saia para conquistar terras"
+  },
+  {
+   "screen": "moved",
+   "text": "A barra de espaço encerra a marcha, e a terra é sua. Guarde esta regra: para conquistar, o exército precisa de soldados suficientes. No começo, uns cem.",
+   "title": "Termine o movimento"
+  },
+  {
+   "screen": "draft",
+   "text": "De volta à capital, o dê maiúsculo recruta tropas novas. O i, infantaria. Cinquenta homens.",
+   "title": "Recrute tropas novas"
+  },
+  {
+   "screen": "drafted",
+   "text": "Recrute-os como um exército novo. Se juntar a um exército em marcha, ele não se move mais neste turno.",
+   "title": "Como um exército novo"
+  },
+  {
+   "screen": "diplomacy",
+   "text": "O esse maiúsculo mostra todas as nações do mundo. Você ainda não conhece ninguém. Mas vai conhecer.",
+   "title": "Veja as outras nações"
+  },
+  {
+   "screen": "quit",
+   "text": "Aperte o quê para salvar e sair. O menu faz uma pergunta: suas ordens estão prontas?",
+   "title": "Salve e saia"
+  },
+  {
+   "screen": "done",
+   "text": "Responda que sim. Quando todos os governantes estão prontos, o turno roda na hora. Sem esperar até domingo.",
+   "title": "Marque suas ordens como prontas"
+  },
+  {
+   "screen": "newturn",
+   "text": "Começa uma nova estação. Leia as notícias. Dê suas ordens. Saia, e espere o mundo se mover. Esse é o ritmo de Conquer.",
+   "title": "Uma nova estação"
+  },
+  {
+   "screen": "outro",
+   "text": "Sua nação está esperando. Peça um lugar na próxima temporada, e jogue seu primeiro turno hoje à noite."
+  }
+ ]
+}

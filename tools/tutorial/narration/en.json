@@ -1,0 +1,93 @@
+{
+ "language": "en",
+ "voice": {
+  "engine": "qwen-custom",
+  "speaker": "Ryan",
+  "language": "English",
+  "instruct": "A warm, calm, professional documentary narrator. Unhurried, clear and inviting."
+ },
+ "captions": {
+  "keys": "Keys",
+  "look": "just look",
+  "intro_title": "Your first turn",
+  "intro_sub": "Usenet, 1987 · your browser, today",
+  "outro_title": "Your nation is waiting",
+  "outro_sub": "Ask for a nation · play your first turn tonight",
+  "password": "password",
+  "space": "Space"
+ },
+ "segments": [
+  {
+   "screen": "intro",
+   "text": "October, nineteen eighty-seven. A strategy game spreads across the world, one Usenet post at a time. Students compile it on university machines, and rule nations from green-screen terminals. Forty years later, Conquer is back. No installation. No shell account. Just your browser. This is your first turn."
+  },
+  {
+   "screen": "menu",
+   "text": "Sign in with your player account. The menu knows your name, and your nation. Press one, to play."
+  },
+  {
+   "screen": "password",
+   "text": "Type your nation's password. Nothing appears as you type. That is by design."
+  },
+  {
+   "screen": "title",
+   "text": "The title screen, exactly as players saw it in nineteen eighty-eight. Press any key."
+  },
+  {
+   "screen": "map",
+   "text": "This is your kingdom. On the left, the map. C is your capital, and every letter in reverse video is land you own. For now, that is only the capital. Top right, your units. Bottom right, the sector under your cursor. And along the bottom: the turn, your treasury, and the season."
+  },
+  {
+   "screen": "mail",
+   "text": "You have Conquer mail. Press capital R to read it. Any key shows the next message."
+  },
+  {
+   "screen": "budget",
+   "text": "Capital B opens the budget. Your people pay taxes. Your soldiers cost money. And watch the granary: a capital alone grows no food."
+  },
+  {
+   "screen": "armies",
+   "text": "Lower-case a shows your armies. Army zero is the garrison. It never leaves home. The King and his Barons lead. Your field armies are ready to march."
+  },
+  {
+   "screen": "select",
+   "text": "Press o to pick a unit. The star marks your choice: army twenty. One hundred and twelve soldiers."
+  },
+  {
+   "screen": "move",
+   "text": "Press m to move, then a direction: h, j, k and l, and y, u, b and n for the diagonals. Here, j. South."
+  },
+  {
+   "screen": "moved",
+   "text": "Space ends the march, and the land is yours. Remember this rule: an army needs enough soldiers to take land. At the start, about a hundred."
+  },
+  {
+   "screen": "draft",
+   "text": "Back at the capital, capital D drafts new troops. I, for infantry. Fifty men."
+  },
+  {
+   "screen": "drafted",
+   "text": "Raise them as a new army. Add them to an army on the march, and it will not move again this turn."
+  },
+  {
+   "screen": "diplomacy",
+   "text": "Capital S lists every nation in the world. You have not met anyone yet. You will."
+  },
+  {
+   "screen": "quit",
+   "text": "Press q to save and quit. The menu asks one question: are your orders done?"
+  },
+  {
+   "screen": "done",
+   "text": "Answer yes. When every ruler is ready, the turn runs at once. No waiting until Sunday."
+  },
+  {
+   "screen": "newturn",
+   "text": "A new season begins. Read the news. Give your orders. Quit, and wait for the world to move. That is the rhythm of Conquer."
+  },
+  {
+   "screen": "outro",
+   "text": "Your nation is waiting. Ask for a seat in the next season, and play your first turn tonight."
+  }
+ ]
+}

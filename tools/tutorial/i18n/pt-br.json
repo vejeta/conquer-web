@@ -1,0 +1,117 @@
+{
+ "language": "Português (Brasil)",
+ "page": {
+  "head_title": "<title>Conquer: seu primeiro turno</title>",
+  "meta_desc": "content=\"Aprenda Conquer, o jogo de estratégia da Usenet de 1987, uma tecla de cada vez: um primeiro turno gravado com todas as telas, da entrada até a atualização do turno.\"",
+  "og_title": "content=\"Conquer: seu primeiro turno\"",
+  "og_desc": "content=\"O jogo de estratégia da Usenet de 1987, de volta no seu navegador. Aprenda uma tecla de cada vez.\"",
+  "crumbs": "<a href=\"index.html?lang=pt-br\">Conquer</a> / <a href=\"guide.html\">Guia do jogador</a> (em inglês) / Primeiro turno",
+  "eyebrow": "Tutorial · 10 minutos",
+  "h1": "<h1>Seu primeiro turno</h1>",
+  "lede": "Um primeiro turno de verdade de uma nação nova, tecla por tecla: entrar, ler os relatórios, sair para conquistar terras, recrutar tropas e entregar suas ordens. Todas as telas abaixo vêm do próprio jogo.",
+  "player_note": "A gravação acima é o terminal de verdade: pause quando quiser, e selecione e copie o texto dele.",
+  "h_map": "<h2>Como ler o mapa</h2>",
+  "l_capital": "<dd>sua capital</dd>",
+  "l_reverse": "<dt>destacadas</dt><dd>letras em vídeo reverso são setores seus</dd>",
+  "l_water": "<dd>água</dd>",
+  "l_flat": "<dd>planície</dd>",
+  "l_hills": "<dd>colinas</dd>",
+  "l_mount": "<dd>montanhas</dd>",
+  "l_peaks": "<dd>picos</dd>",
+  "l_design": "<dd>fazenda, cidade, vila, mina, mina de ouro</dd>",
+  "l_star": "<dd>na lista de unidades: a unidade selecionada</dd>",
+  "map_d": "Pressione <kbd>d</kbd> no jogo para mudar o mapa para vegetação, população, comida e mais.",
+  "h_steps": "<h2 class=\"section\">Passo a passo</h2>",
+  "h_rules": "Quatro regras que salvam seu primeiro ano",
+  "r1": "<strong>Grande o bastante para conquistar.</strong> Um exército só toma terra vazia com pelo menos 75 soldados e um para cada 350 habitantes da sua nação. Mande seu maior exército de campo.",
+  "r2": "<strong>Recrutar imobiliza o exército.</strong> Tropas adicionadas a um exército gastam o movimento dele no turno. Recrute-as como um exército novo.",
+  "r3": "<strong>Comida em primeiro lugar.</strong> Uma capital sozinha não produz comida. Tome planícies com boa vegetação e transforme-as em fazendas (<kbd>r</kbd> em um setor seu).",
+  "r4": "<strong>Saia quando terminar.</strong> O turno não pode rodar enquanto você está no jogo. Pressione <kbd>q</kbd> e marque suas ordens como prontas.",
+  "h_practice": "<h2>Treine sem risco</h2>",
+  "p_practice": "A opção <kbd>7</kbd> do menu abre seu próprio mundo de treino: o mesmo jogo, sem mais ninguém. Teste o que quiser, rode você mesmo o próximo turno e recomece quando quiser. O treinador (botão <strong>Coach</strong> acima do jogo) guia você por este mesmo turno dentro do terminal.",
+  "cta_play": ">Jogar com o treinador</a>",
+  "cta_try": ">Ou experimente no seu navegador, sem conta</a>",
+  "cta_guide": ">Ir para o guia do jogador (em inglês)</a>",
+  "footer": "Gravado com Conquer 4.12 neste servidor. O reprodutor de terminal é",
+  "key_space": "Espaço",
+  "key_password": "sua senha",
+  "just_look": "só observe",
+  "veterans": "Veteranos:",
+  "screen_label": "Tela do jogo",
+  "coach_link": "game.html?coach&amp;lang=pt-br",
+  "try_link": "try/?lang=pt-br",
+  "guide_link": "guide.html"
+ },
+ "title": "Seu primeiro turno",
+ "steps": {
+  "menu": {
+   "title": "Entre e abra o menu",
+   "text": "<p>Clique em <strong>Jogar agora</strong> na página inicial e entre com sua conta de jogador. O menu mostra quem você é e qual é a sua nação. Pressione <kbd>1</kbd> para jogar.</p>",
+   "veteran": "Sem linha de comando, sem <code>conquer -n</code>: o menu inicia o jogo para você."
+  },
+  "password": {
+   "title": "Digite a senha da sua nação",
+   "text": "<p>Sua nação se abre direto. Digite a <strong>senha da nação</strong> (até 7 caracteres) e pressione <kbd>Enter</kbd>. Nada aparece enquanto você digita; é normal.</p>"
+  },
+  "title": {
+   "title": "A tela de título",
+   "text": "<p>A mesma tela de título que os jogadores viam em 1988. As telas do jogo são as originais, em inglês: quando ele disser <em>PRESS ANY KEY</em>, pressione qualquer tecla; o normal é <kbd>Space</kbd>.</p>"
+  },
+  "map": {
+   "title": "Leia a tela principal",
+   "text": "<p>É aqui que você passa a partida. Ela tem quatro partes:</p><ul><li><strong>O mapa</strong>, à esquerda. <code>C</code> é sua capital. Letras em vídeo reverso são setores seus. As outras mostram o terreno: <code>~</code> água, <code>-</code> planície, <code>%</code> colinas, <code>^</code> montanhas, <code>#</code> picos.</li><li><strong>Suas unidades</strong>, no alto à direita. <code>*</code> marca a selecionada e <code>&gt;</code> as outras do mesmo setor. <em>mv</em> é quanto cada uma ainda pode se mover neste turno; <em>st</em>, suas ordens.</li><li><strong>O setor sob o cursor</strong>, embaixo à direita: dono, uso, vegetação, terreno e população.</li><li><strong>A linha de status</strong>, bem embaixo: turno, tesouro em talentos de ouro, estação e <em>You have Conquer Mail</em> quando há mensagens.</li></ul><p>Você começa só com a sua capital. Todo o resto precisa ser conquistado.</p>"
+  },
+  "mail": {
+   "title": "Leia seu correio",
+   "text": "<p>Pressione <kbd>R</kbd>. As mensagens vêm do jogo, do administrador e de outros governantes. Qualquer tecla mostra a próxima; <kbd>Enter</kbd> apaga a mensagem que você está lendo.</p>"
+  },
+  "mail2": {
+   "title": "A próxima mensagem",
+   "text": "<p>O aviso de fundação da sua nação. Pressione <kbd>Space</kbd> de novo para voltar ao mapa.</p>"
+  },
+  "budget": {
+   "title": "Confira o orçamento",
+   "text": "<p>Pressione <kbd>B</kbd>. Seu povo paga impostos (aqui, 330.000 talentos de 33.000 habitantes na capital) e suas tropas custam dinheiro (100.000 por 2.000 soldados). A última linha é o tesouro da próxima estação.</p><p>Olhe também o <strong>celeiro</strong>. Só com a capital você não produz comida, e uma nação sem fazendas passa fome em poucas estações.</p>"
+  },
+  "armies": {
+   "title": "Conheça seus exércitos",
+   "text": "<p>Pressione <kbd>Space</kbd> para sair do orçamento e depois <kbd>a</kbd>. O exército 0 é a <strong>guarnição</strong>: 250 soldados que nunca saem da capital. O rei e os barões são <strong>líderes</strong>. Mais à direita (pressione qualquer tecla que não seja <kbd>Space</kbd> para avançar) estão seus <strong>exércitos de campo</strong>, que podem marchar. Pressione <kbd>Space</kbd> ao terminar.</p>"
+  },
+  "select": {
+   "title": "Escolha um exército de campo",
+   "text": "<p><kbd>p</kbd> seleciona a próxima unidade e <kbd>o</kbd> a anterior. Pressione <kbd>o</kbd> até o <code>*</code> ficar em um exército de campo com movimento sobrando: aqui, o <strong>exército 20</strong>, 112 soldados de infantaria e 10 de movimento.</p>"
+  },
+  "move": {
+   "title": "Saia para conquistar terras",
+   "text": "<p>Pressione <kbd>m</kbd> e depois uma direção:</p><pre class=\"dirs\">y k u\n h l\nb j n</pre><p>Cada passo gasta pontos de movimento; colinas e florestas custam mais. Se o jogo disser <em>Can't Move Here</em> (em geral, água), pressione uma tecla e tente outra direção.</p>"
+  },
+  "moved": {
+   "title": "Termine o movimento",
+   "text": "<p>Pressione <kbd>Space</kbd> para parar. O setor agora é seu: o relatório diz <em>owner: tidewater</em>.</p><p class=\"rule\">Um exército só toma terra vazia se for grande o bastante: pelo menos 75 soldados, e pelo menos um para cada 350 habitantes da sua nação (uns 95 para uma nação nova). O exército 21, com 70 soldados, é pequeno demais sozinho.</p>"
+  },
+  "draft": {
+   "title": "Recrute tropas novas",
+   "text": "<p>Volte com o cursor para a capital (<kbd>k</kbd>) e pressione <kbd>D</kbd> para recrutar, <kbd>I</kbd> para infantaria, digite <kbd>50</kbd> e pressione <kbd>Enter</kbd>. Tropas são recrutadas nas cidades e na capital, e custam talentos e metal.</p>"
+  },
+  "drafted": {
+   "title": "Como um exército novo",
+   "text": "<p>Responda <kbd>y</kbd> para formar um exército novo. Se responder não, as tropas se juntam ao exército do setor, e <strong>esse exército perde o movimento neste turno</strong>. De qualquer forma, tropas novas só podem marchar no próximo turno, então deixe-as defendendo a capital.</p>"
+  },
+  "diplomacy": {
+   "title": "Veja as outras nações",
+   "text": "<p>Pressione <kbd>S</kbd>. Todas as nações começam como <em>UNMET</em> (sem contato). Quando você conhecer uma, <kbd>Enter</kbd> permite definir sua postura (aliado, neutro, hostil, guerra…). Para escrever a outro governante, pressione <kbd>W</kbd> no mapa. Pressione <kbd>Space</kbd> para sair.</p>"
+  },
+  "quit": {
+   "title": "Salve e saia",
+   "text": "<p>Pressione <kbd>q</kbd>. Suas ordens ficam salvas, e o menu pergunta se você terminou este turno.</p>"
+  },
+  "done": {
+   "title": "Marque suas ordens como prontas",
+   "text": "<p>Responda <kbd>y</kbd>. Quando todas as nações tiverem feito o mesmo, a atualização do turno roda na hora; se não, roda no horário programado. Até lá, você pode voltar e mudar suas ordens.</p>"
+  },
+  "newturn": {
+   "title": "Uma nova estação",
+   "text": "<p>Nesta partida, tidewater era o único jogador, então a atualização rodou na hora. Jogue de novo para ver a nova estação: seu setor novo, o jornal (<kbd>N</kbd>) e seu correio. Esse é todo o ritmo de Conquer: ler, dar ordens, sair e esperar as notícias.</p>"
+  }
+ }
+}

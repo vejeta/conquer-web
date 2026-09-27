@@ -1,0 +1,117 @@
+{
+ "language": "Deutsch",
+ "page": {
+  "head_title": "<title>Conquer: dein erster Zug</title>",
+  "meta_desc": "content=\"Lerne Conquer, das Usenet-Strategiespiel von 1987, Taste für Taste: ein aufgezeichneter erster Zug mit allen Bildschirmen, von der Anmeldung bis zur Zugauswertung.\"",
+  "og_title": "content=\"Conquer: dein erster Zug\"",
+  "og_desc": "content=\"Das Usenet-Strategiespiel von 1987, zurück in deinem Browser. Lerne es Taste für Taste.\"",
+  "crumbs": "<a href=\"index.html?lang=de\">Conquer</a> / <a href=\"guide.html\">Spielerhandbuch (englisch)</a> / Erster Zug",
+  "eyebrow": "Tutorial · 10 Minuten",
+  "h1": "<h1>Dein erster Zug</h1>",
+  "lede": "Ein echter erster Zug einer neuen Nation, Taste für Taste: anmelden, die Berichte lesen, ausrücken und Land nehmen, Truppen ausheben und die Befehle abgeben. Alle Bildschirme unten stammen aus dem Spiel selbst und sind, wie 1987, auf Englisch.",
+  "player_note": "Die Aufnahme oben ist das echte Terminal: Halte sie jederzeit an, und markiere und kopiere ihren Text.",
+  "h_map": "<h2>So liest du die Karte</h2>",
+  "l_capital": "<dd>deine Hauptstadt</dd>",
+  "l_reverse": "<dt>invertiert</dt><dd>invertiert dargestellte Zeichen sind Sektoren, die dir gehören</dd>",
+  "l_water": "<dd>Wasser</dd>",
+  "l_flat": "<dd>Flachland</dd>",
+  "l_hills": "<dd>Hügel</dd>",
+  "l_mount": "<dd>Berge</dd>",
+  "l_peaks": "<dd>Gipfel</dd>",
+  "l_design": "<dd>Bauernhof, Großstadt, Stadt, Mine, Goldmine</dd>",
+  "l_star": "<dd>in der Einheitenliste: die gewählte Einheit</dd>",
+  "map_d": "Drücke im Spiel <kbd>d</kbd>, um die Karte auf Vegetation, Bevölkerung, Nahrung und mehr umzuschalten.",
+  "h_steps": "<h2 class=\"section\">Schritt für Schritt</h2>",
+  "h_rules": "Vier Regeln, die dein erstes Jahr retten",
+  "r1": "<strong>Groß genug zum Erobern.</strong> Eine Armee nimmt leeres Land nur mit mindestens 75 Soldaten und einem Soldaten je 350 Einwohner deines Reichs. Schick deine größte Feldarmee.",
+  "r2": "<strong>Ausheben hält eine Armee an.</strong> Truppen, die einer Armee hinzugefügt werden, verbrauchen ihre Bewegung für diesen Zug. Heb sie als neue Armee aus.",
+  "r3": "<strong>Zuerst die Nahrung.</strong> Eine Hauptstadt allein erzeugt keine Nahrung. Nimm Flachland mit guter Vegetation und mach Bauernhöfe daraus (<kbd>r</kbd> auf einem eigenen Sektor).",
+  "r4": "<strong>Verlass das Spiel, wenn du fertig bist.</strong> Der Zug kann nicht ausgewertet werden, solange du im Spiel bist. Drücke <kbd>q</kbd> und markiere deine Befehle als fertig.",
+  "h_practice": "<h2>Üben ohne Risiko</h2>",
+  "p_practice": "Option <kbd>7</kbd> im Spielmenü öffnet deine eigene Übungswelt: dasselbe Spiel, nur ohne andere Spieler. Probier alles aus, starte den nächsten Zug selbst und fang neu an, wann immer du willst. Der Coach (Knopf <strong>Coach</strong> über dem Spiel) führt dich direkt im Terminal durch genau diesen Zug.",
+  "cta_play": ">Mit dem Coach spielen</a>",
+  "cta_try": ">Oder im Browser ausprobieren, ohne Konto</a>",
+  "cta_guide": ">Zum Spielerhandbuch (englisch)</a>",
+  "footer": "Aufgezeichnet mit Conquer 4.12 auf diesem Server. Der Terminal-Player ist",
+  "key_space": "Leertaste",
+  "key_password": "dein Passwort",
+  "just_look": "nur schauen",
+  "veterans": "Veteranen:",
+  "screen_label": "Spielbildschirm",
+  "coach_link": "game.html?coach&amp;lang=de",
+  "try_link": "try/?lang=de",
+  "guide_link": "guide.html"
+ },
+ "title": "Dein erster Zug",
+ "steps": {
+  "menu": {
+   "title": "Anmelden und das Menü öffnen",
+   "text": "<p>Klicke auf der Startseite auf <strong>Jetzt spielen</strong> und melde dich mit deinem Spielerkonto an. Das Menü zeigt, wer du bist und welche Nation dir gehört. Drücke <kbd>1</kbd>, um zu spielen.</p>",
+   "veteran": "Keine Shell, kein <code>conquer -n</code>: Das Menü startet das Spiel für dich."
+  },
+  "password": {
+   "title": "Das Passwort deiner Nation eingeben",
+   "text": "<p>Deine Nation öffnet sich direkt. Gib das <strong>Nationspasswort</strong> ein (bis zu 7 Zeichen) und drücke <kbd>Enter</kbd>. Beim Tippen erscheint nichts; das ist normal.</p>"
+  },
+  "title": {
+   "title": "Der Titelbildschirm",
+   "text": "<p>Derselbe Titelbildschirm, den die Spieler 1988 sahen. Die Bildschirme des Spiels sind auf Englisch: Wenn dort <em>PRESS ANY KEY</em> steht, drücke eine beliebige Taste, meist die <kbd>Leertaste</kbd>.</p>"
+  },
+  "map": {
+   "title": "Den Hauptbildschirm lesen",
+   "text": "<p>Hier verbringst du das Spiel. Er hat vier Teile:</p><ul><li><strong>Die Karte</strong>, links. <code>C</code> ist deine Hauptstadt. Invertiert dargestellte Zeichen sind Sektoren, die dir gehören. Die übrigen zeigen das Gelände: <code>~</code> Wasser, <code>-</code> Flachland, <code>%</code> Hügel, <code>^</code> Berge, <code>#</code> Gipfel.</li><li><strong>Deine Einheiten</strong>, oben rechts. <code>*</code> markiert die gewählte, <code>&gt;</code> die anderen im selben Sektor. <em>mv</em> gibt an, wie weit sich jede in diesem Zug noch bewegen kann, <em>st</em> ihren Befehl.</li><li><strong>Der Sektor unter dem Cursor</strong>, unten rechts: Besitzer, Nutzung, Vegetation, Gelände, Bevölkerung.</li><li><strong>Die Statuszeile</strong>, ganz unten: Zug, Schatzkammer in Gold-Talons, Jahreszeit und <em>You have Conquer Mail</em>, wenn Nachrichten da sind.</li></ul><p>Du beginnst nur mit deiner Hauptstadt. Alles andere musst du dir nehmen.</p>"
+  },
+  "mail": {
+   "title": "Deine Post lesen",
+   "text": "<p>Drücke <kbd>R</kbd>. Nachrichten kommen vom Spiel, vom Spielleiter und von anderen Herrschern. Jede Taste zeigt die nächste; <kbd>Enter</kbd> löscht die Nachricht, die du gerade liest.</p>"
+  },
+  "mail2": {
+   "title": "Die nächste Nachricht",
+   "text": "<p>Die Gründungsurkunde deiner Nation. Drücke noch einmal die <kbd>Leertaste</kbd>, um zur Karte zurückzukehren.</p>"
+  },
+  "budget": {
+   "title": "Den Haushalt prüfen",
+   "text": "<p>Drücke <kbd>B</kbd>. Dein Volk zahlt Steuern (hier 330.000 Talons von 33.000 Einwohnern der Hauptstadt), und deine Truppen kosten Geld (100.000 für 2.000 Soldaten). Die letzte Zeile ist die Schatzkammer der nächsten Jahreszeit.</p><p>Wirf auch einen Blick auf den <strong>Kornspeicher</strong>. Mit nur einer Hauptstadt erzeugst du keine Nahrung, und eine Nation ohne Bauernhöfe hungert nach wenigen Jahreszeiten.</p>"
+  },
+  "armies": {
+   "title": "Deine Armeen kennenlernen",
+   "text": "<p>Drücke die <kbd>Leertaste</kbd>, um den Haushalt zu verlassen, dann <kbd>a</kbd>. Armee 0 ist die <strong>Garnison</strong>: 250 Soldaten, die die Hauptstadt nie verlassen. Der König und die Barone sind <strong>Anführer</strong>. Weiter rechts (jede Taste außer der <kbd>Leertaste</kbd> blättert weiter) stehen deine <strong>Feldarmeen</strong>, die marschieren können. Drücke die <kbd>Leertaste</kbd>, wenn du fertig bist.</p>"
+  },
+  "select": {
+   "title": "Eine Feldarmee wählen",
+   "text": "<p><kbd>p</kbd> wählt die nächste Einheit, <kbd>o</kbd> die vorige. Drücke <kbd>o</kbd>, bis der <code>*</code> auf einer Feldarmee mit restlicher Bewegung steht: hier <strong>Armee 20</strong>, 112 Infanteristen, 10 Bewegungspunkte.</p>"
+  },
+  "move": {
+   "title": "Ausrücken und Land nehmen",
+   "text": "<p>Drücke <kbd>m</kbd>, dann eine Richtung:</p><pre class=\"dirs\">y k u\n h l\nb j n</pre><p>Auf deutschen QWERTZ-Tastaturen sind y und z vertauscht: Die Taste <kbd>y</kbd> des Spiels ist die Taste mit der Aufschrift Y. Jeder Schritt kostet Bewegungspunkte; Hügel und Wälder kosten mehr. Meldet das Spiel <em>Can't Move Here</em> (meist Wasser), drücke eine Taste und versuch eine andere Richtung.</p>"
+  },
+  "moved": {
+   "title": "Die Bewegung beenden",
+   "text": "<p>Drücke die <kbd>Leertaste</kbd>, um anzuhalten. Der Sektor gehört jetzt dir: Der Bericht zeigt <em>owner: tidewater</em>.</p><p class=\"rule\">Eine Armee nimmt leeres Land nur, wenn sie groß genug ist: mindestens 75 Soldaten und mindestens einer je 350 Einwohner deines Reichs (bei einer neuen Nation etwa 95). Armee 21 ist mit 70 Soldaten allein zu klein.</p>"
+  },
+  "draft": {
+   "title": "Neue Truppen ausheben",
+   "text": "<p>Setz den Cursor zurück auf die Hauptstadt (<kbd>k</kbd>), dann drücke <kbd>D</kbd> zum Ausheben, <kbd>I</kbd> für Infanterie, tippe <kbd>50</kbd> und drücke <kbd>Enter</kbd>. Truppen werden in Städten und in der Hauptstadt ausgehoben und kosten Talons und Metall.</p>"
+  },
+  "drafted": {
+   "title": "Als neue Armee",
+   "text": "<p>Antworte mit <kbd>y</kbd>, um eine neue Armee zu bilden. Antwortest du mit Nein, schließen sich die Truppen der Armee im Sektor an, und <strong>diese Armee verliert ihre Bewegung für diesen Zug</strong>. Neue Truppen können ohnehin erst im nächsten Zug marschieren, also lass sie die Hauptstadt bewachen.</p>"
+  },
+  "diplomacy": {
+   "title": "Die anderen Nationen ansehen",
+   "text": "<p>Drücke <kbd>S</kbd>. Jede Nation beginnt als <em>UNMET</em> (noch nicht begegnet). Sobald du einer begegnet bist, legst du mit <kbd>Enter</kbd> deine Haltung fest (verbündet, neutral, feindselig, Krieg…). Um einem anderen Herrscher zu schreiben, drücke auf der Karte <kbd>W</kbd>. Mit der <kbd>Leertaste</kbd> gehst du zurück.</p>"
+  },
+  "quit": {
+   "title": "Speichern und beenden",
+   "text": "<p>Drücke <kbd>q</kbd>. Deine Befehle werden gespeichert, und das Menü fragt, ob du mit diesem Zug fertig bist.</p>"
+  },
+  "done": {
+   "title": "Befehle als fertig markieren",
+   "text": "<p>Antworte mit <kbd>y</kbd>. Wenn alle Nationen das getan haben, läuft die Zugauswertung sofort, sonst zur geplanten Zeit. Bis dahin kannst du zurückkommen und deine Befehle ändern.</p>"
+  },
+  "newturn": {
+   "title": "Eine neue Jahreszeit",
+   "text": "<p>In dieser Partie war tidewater der einzige Spieler, also lief die Auswertung sofort. Spiel wieder, um die neue Jahreszeit zu sehen: deinen neuen Sektor, die Zeitung (<kbd>N</kbd>) und deine Post. Das ist der ganze Rhythmus von Conquer: lesen, befehlen, beenden, auf die Neuigkeiten warten.</p>"
+  }
+ }
+}

@@ -8,7 +8,7 @@
     "1"
    ],
    "text": "<p>Press <strong>Play now</strong> on the home page and sign in with your player account. The menu says who you are and which nation is yours. Press <kbd>1</kbd> to play.</p>",
-   "detect": "Choose an option"
+   "detect": "Choose\\ an\\ option:"
   },
   {
    "id": "password",
@@ -143,7 +143,7 @@
     "q"
    ],
    "text": "<p>Press <kbd>q</kbd>. Your orders are saved, and the menu asks whether you have finished this turn.</p>",
-   "detect": "orders for this turn done"
+   "detect": "Are\\ your\\ orders\\ for\\ this\\ turn\\ done\\?\\ \\[y/N\\]"
   },
   {
    "id": "done",
@@ -152,7 +152,7 @@
     "y"
    ],
    "text": "<p>Answer <kbd>y</kbd>. When every nation has done the same, the turn update runs straight away; otherwise it runs at the scheduled time. You can come back and change your orders until then.</p>",
-   "detect": "Orders marked as done"
+   "detect": "Orders\\ marked\\ as\\ done\\.\\ You\\ can\\ still\\ change\\ them\\ until\\ the\\ update\\."
   },
   {
    "id": "newturn",
@@ -161,7 +161,7 @@
     "Space"
    ],
    "text": "<p>In this game tidewater was the only player, so the update ran at once. Play again to see the new season: your new sector, the newspaper (<kbd>N</kbd>) and your mail. That is the whole rhythm of Conquer: read, order, quit, wait for the news.</p>",
-   "detect": "Last turn update"
+   "detect": "Last\\ turn\\ update:\\ .*"
   }
  ]
 }

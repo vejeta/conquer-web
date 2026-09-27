@@ -8,7 +8,7 @@
     "1"
    ],
    "text": "<p>Pulsa <strong>Jugar</strong> en la página principal y entra con tu cuenta de jugador. El menú dice quién eres y cuál es tu nación. Pulsa <kbd>1</kbd> para jugar.</p>",
-   "detect": "Choose an option"
+   "detect": "Elige\\ una\\ opción:"
   },
   {
    "id": "password",
@@ -143,7 +143,7 @@
     "q"
    ],
    "text": "<p>Pulsa <kbd>q</kbd>. Tus órdenes quedan guardadas y el menú te pregunta si has terminado este turno.</p>",
-   "detect": "orders for this turn done"
+   "detect": "¿Has\\ terminado\\ tus\\ órdenes\\ de\\ este\\ turno\\?\\ \\[s/N\\]"
   },
   {
    "id": "done",
@@ -152,7 +152,7 @@
     "y"
    ],
    "text": "<p>Responde <kbd>y</kbd>. Cuando todas las naciones hayan hecho lo mismo, el turno se procesa en el acto; si no, a la hora programada. Hasta entonces puedes volver y cambiar tus órdenes.</p>",
-   "detect": "Orders marked as done"
+   "detect": "Órdenes\\ marcadas\\ como\\ terminadas\\.\\ Puedes\\ cambiarlas\\ hasta\\ la\\ actualización\\."
   },
   {
    "id": "newturn",
@@ -161,7 +161,7 @@
     "Space"
    ],
    "text": "<p>En esta partida tidewater era el único jugador, así que el turno se procesó enseguida. Vuelve a jugar para ver la nueva estación: tu nuevo sector, el periódico (<kbd>N</kbd>) y tu correo. Ese es todo el ritmo de Conquer: leer, dar órdenes, salir y esperar las noticias.</p>",
-   "detect": "Last turn update"
+   "detect": "Último\\ turno:\\ \\ \\ \\ \\ .*"
   }
  ]
 }

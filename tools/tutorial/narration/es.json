@@ -1,0 +1,109 @@
+{
+ "language": "es",
+ "voice": {
+  "engine": "qwen-clone",
+  "language": "Spanish",
+  "design": "A warm, deep male voice of a native Castilian Spanish documentary narrator from Spain, about forty years old. Calm, professional and evocative, with clear diction and an unhurried pace.",
+  "reference": "Octubre de mil novecientos ochenta y siete. Un juego de estrategia recorre el mundo, mensaje a mensaje, por Usenet. Los estudiantes lo compilan en las máquinas de la universidad y gobiernan naciones desde terminales de fósforo verde."
+ },
+ "captions": {
+  "keys": "Teclas",
+  "look": "solo mira",
+  "intro_title": "Tu primer turno",
+  "intro_sub": "Usenet, 1987 · tu navegador, hoy",
+  "outro_title": "Tu nación te espera",
+  "outro_sub": "Pide una nación · juega tu primer turno esta noche",
+  "password": "contraseña",
+  "space": "Espacio"
+ },
+ "segments": [
+  {
+   "screen": "intro",
+   "text": "Octubre de mil novecientos ochenta y siete. Un juego de estrategia recorre el mundo, mensaje a mensaje, por Usenet. Los estudiantes lo compilan en las máquinas de la universidad y gobiernan naciones desde terminales de fósforo verde. Cuarenta años después, Conquer vuelve. Sin instalar nada. Sin cuentas de Unix. Solo tu navegador. Este es tu primer turno."
+  },
+  {
+   "screen": "menu",
+   "text": "Entra con tu cuenta de jugador. El menú sabe quién eres y cuál es tu nación. Pulsa uno para jugar.",
+   "title": "Entra y abre el menú"
+  },
+  {
+   "screen": "password",
+   "text": "Escribe la contraseña de tu nación. No verás nada mientras escribes. Es a propósito.",
+   "title": "Escribe la contraseña de tu nación"
+  },
+  {
+   "screen": "title",
+   "text": "La pantalla de título, tal y como la vieron los jugadores en mil novecientos ochenta y ocho. Pulsa cualquier tecla.",
+   "title": "La pantalla de título"
+  },
+  {
+   "screen": "map",
+   "text": "Este es tu reino. A la izquierda, el mapa. La C es tu capital, y cada letra resaltada es tierra tuya. De momento, solo la capital. Arriba a la derecha, tus unidades. Abajo, el sector bajo el cursor. Y en la última línea: el turno, tu tesoro y la estación del año.",
+   "title": "Lee la pantalla principal"
+  },
+  {
+   "screen": "mail",
+   "text": "Tienes correo. Pulsa la erre mayúscula para leerlo. Cualquier tecla pasa al siguiente mensaje.",
+   "title": "Lee tu correo"
+  },
+  {
+   "screen": "budget",
+   "text": "La be mayúscula abre el presupuesto. Tu pueblo paga impuestos. Tus soldados cuestan dinero. Y vigila el granero: una capital sola no produce comida.",
+   "title": "Revisa el presupuesto"
+  },
+  {
+   "screen": "armies",
+   "text": "La a minúscula muestra tus ejércitos. El ejército cero es la guarnición: nunca sale de casa. El rey y sus barones son los líderes. Tus ejércitos de campaña están listos para marchar.",
+   "title": "Conoce a tus ejércitos"
+  },
+  {
+   "screen": "select",
+   "text": "Pulsa la o para elegir una unidad. El asterisco marca tu elección: el ejército veinte. Ciento doce soldados.",
+   "title": "Elige un ejército de campaña"
+  },
+  {
+   "screen": "move",
+   "text": "Pulsa la eme para mover, y luego una dirección: hache, jota, ka y ele, y para las diagonales, i griega, u, be y ene. Aquí, la jota: hacia el sur.",
+   "title": "Marcha a conquistar tierra"
+  },
+  {
+   "screen": "moved",
+   "text": "Con la barra espaciadora terminas la marcha, y la tierra es tuya. Recuerda esta regla: para conquistar hacen falta soldados suficientes. Al principio, unos cien.",
+   "title": "Termina el movimiento"
+  },
+  {
+   "screen": "draft",
+   "text": "De vuelta en la capital, la de mayúscula recluta tropas. La i, infantería. Cincuenta hombres.",
+   "title": "Recluta tropas nuevas"
+  },
+  {
+   "screen": "drafted",
+   "text": "Reclútalos como un ejército nuevo. Si los sumas a un ejército en marcha, no podrá moverse más en este turno.",
+   "title": "Como un ejército nuevo"
+  },
+  {
+   "screen": "diplomacy",
+   "text": "La ese mayúscula muestra todas las naciones del mundo. Aún no conoces a nadie. Ya llegará.",
+   "title": "Mira a las demás naciones"
+  },
+  {
+   "screen": "quit",
+   "text": "Pulsa la cu para guardar y salir. El menú te hace una pregunta: ¿has terminado tus órdenes?",
+   "title": "Guarda y sal"
+  },
+  {
+   "screen": "done",
+   "text": "Responde que sí. Cuando todos los gobernantes están listos, el turno se resuelve en ese momento. Sin esperar al domingo.",
+   "title": "Marca tus órdenes como listas"
+  },
+  {
+   "screen": "newturn",
+   "text": "Empieza una nueva estación. Lee las noticias. Da tus órdenes. Sal, y espera a que el mundo se mueva. Ese es el ritmo de Conquer.",
+   "title": "Una nueva estación"
+  },
+  {
+   "screen": "outro",
+   "text": "Tu nación te espera. Pide un sitio en la próxima temporada, y juega tu primer turno esta misma noche."
+  }
+ ]
+}

@@ -13,6 +13,8 @@ coach) are generated from a real game session.
 | `i18n/<language>.json` | The page's texts in each language and, but in English, the steps' title, text and veteran note by step id |
 | `record.py` | Plays the steps in the running game container and records the session |
 | `build.py` | Writes the page and the coach steps |
+| `narration/<language>.json` | What the narrator says over each shot, the words on the frames, and the voice |
+| `narration/voices/<language>.wav` | The designed narrator of a language (see *Voices*) |
 | `video.py` | Renders the narrated videos (MP4 + captions) |
 
 To record again, on a world at turn 1 with a new nation `tidewater`
@@ -31,22 +33,84 @@ the capital with water to the south: pick another direction in the steps).
 
 ## Narrated videos
 
-`video.py` turns the recording into `web/tutorial/first-turn.en.mp4` and
-`first-turn.es.mp4`, with captions (`.vtt`). The narration is in
-`narration.json`, one segment per step plus an opening and a closing; each
-shot holds the step's screen for as long as the narrator speaks. The voices
-(`bm_george` in English, `em_alex` in Spanish) come from Kokoro, an
-Apache-2.0 neural text-to-speech model that runs offline; `narration.json`
-also sets their speed.
+`video.py` turns the recording into one video per language,
+`web/tutorial/first-turn.<language>.mp4`, with captions (`.vtt`). The
+tutorial page of each language plays its own video; a language without one
+shows the terminal recording instead.
+
+### What a video is made of
+
+- **The shots:** one per narration segment (an opening, one per step, a
+  closing). Each shows the recorded 80x24 game screen of that step
+  (`first-turn.screens.json`) with the step's number, title and keys,
+  rendered as a 1280x720 frame by Chromium (`frames.js`), and is held for as
+  long as the narrator speaks.
+- **The narration:** `narration/<language>.json`:
+  - `segments`: the spoken `text` of each shot (numbers and keys written the
+    way they are said, e.g. "capital R") and, for the steps, the `title`
+    shown on screen (if missing, the tutorial's own title);
+  - `captions`: the words on the frames ("Keys", the opening and closing
+    titles...);
+  - `voice`: the text-to-speech engine and voice (below).
+- **The captions (`.vtt`):** the spoken text, timed to the audio.
+
+### Voices
+
+Every engine runs offline and has a license that allows publishing the audio
+(see `docs/languages.md` for the comparison):
+
+| `engine` | Model | Voice settings |
+|----------|-------|----------------|
+| `qwen-custom` | Qwen3-TTS 1.7B CustomVoice (Apache-2.0) | `speaker` (Ryan, Aiden, Uncle_Fu, Vivian, Serena, Dylan, Eric, Ono_Anna, Sohee), `language`, optional `instruct` (the tone) |
+| `qwen-clone` | Qwen3-TTS 1.7B Base (Apache-2.0) | `language`, `design` (a description of the narrator) and `reference` (a sentence in the language) |
+| `voxcpm` | VoxCPM2 (Apache-2.0), for languages Qwen3-TTS lacks (Polish, Turkish, Arabic, Hindi...) | `design` and `reference`, as for `qwen-clone` |
+| `kokoro` | Kokoro-82M (Apache-2.0) | `voice`, `lang`, `speed` |
+
+Qwen3-TTS speaks Chinese, English, French, German, Italian, Japanese,
+Korean, Portuguese, Russian and Spanish; other languages use `voxcpm`.
+
+A `qwen-clone` or `voxcpm` voice is designed once: the first render asks Qwen3-TTS
+VoiceDesign to read `reference` with a voice matching `design`, and saves
+it as `narration/voices/<language>.wav`. Every segment is then spoken in
+that voice, and later renders reuse the file, so the narrator stays the
+same. To choose another narrator, change `design` and delete the `.wav`.
+
+Today: English uses `qwen-custom` Ryan, Chinese `qwen-custom` Uncle_Fu, and
+Spanish, German, Portuguese (Brazil) and Russian `qwen-clone` narrators
+designed as native speakers.
+
+### Generating the videos
+
+Needs Python 3.10 or later, `ffmpeg`, and node with `playwright` (Chromium)
+for the frames. In a virtual environment:
 
 ```bash
-python3 -m pip install kokoro-onnx soundfile   # once; the model (~350 MB)
-                                               # downloads on first use
-python3 tools/tutorial/video.py en es          # needs ffmpeg and node + playwright
+python3 -m venv ~/.venv/conquer-tts
+~/.venv/conquer-tts/bin/pip install qwen-tts soundfile   # Qwen3-TTS voices
+~/.venv/conquer-tts/bin/pip install kokoro-onnx          # only for kokoro voices
+python3 -m venv ~/.venv/conquer-voxcpm                   # voxcpm voices, apart:
+~/.venv/conquer-voxcpm/bin/pip install voxcpm soundfile  # other dependencies
+npm install -g playwright                                # if node lacks it
+
+~/.venv/conquer-tts/bin/python tools/tutorial/video.py            # every language
+~/.venv/conquer-tts/bin/python tools/tutorial/video.py es de      # some of them
+~/.venv/conquer-voxcpm/bin/python tools/tutorial/video.py pl      # voxcpm ones
 ```
 
+- The Qwen3-TTS models (about 4.5 GB each: CustomVoice, Base and, to design
+  a voice, VoiceDesign; VoxCPM2 about 5 GB) download from Hugging Face on first use, to
+  `~/.cache/huggingface`. The machine needs to reach `huggingface.co` and
+  `*.hf.co`. Kokoro's files come from GitHub, to `~/.cache/conquer-tts`.
+- On a GPU a video takes a minute or two. On a 4-core CPU with 16 GB of RAM
+  it takes about 15 minutes (the speech is generated about 6 times slower
+  than it plays).
+- `FFMPEG=/path/to/ffmpeg` picks the ffmpeg binary.
+- Qwen3-TTS samples its speech: two renders of the same text differ
+  slightly. Listen to each video before publishing it, and render a
+  language again if a sentence sounds wrong.
+
 To use a human voice instead, record one audio file per segment with the
-same text and replace the synthesis in `render()`.
+same text and replace `tts.speak()` in `render()` with reading those files.
 
 ## Another language
 
@@ -60,6 +124,9 @@ say French (`fr`):
    the others.
 2. The rest of the site: see `web/i18n/README.md` (the language list in
    `web/site.js`, where `pages` gets `tutorial`).
-3. The narrated video: an `"fr"` text (and `title_fr`) in every segment of
-   `narration.json` and a voice under `voices`, the video's captions in
-   `TEXT` in `video.py`, then `python3 tools/tutorial/video.py fr`.
+3. The narrated video: `narration/fr.json`, a copy of `narration/es.json`
+   with the spoken texts, titles and captions in French and a `voice` for
+   the language (for `qwen-clone`, a `design` describing a native narrator
+   and a `reference` sentence in French). Then
+   `python3 tools/tutorial/video.py fr` (see *Generating the videos*), and
+   commit the video, its captions and the designed voice.

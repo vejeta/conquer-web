@@ -1,0 +1,117 @@
+{
+ "language": "简体中文",
+ "page": {
+  "head_title": "<title>Conquer：你的第一个回合</title>",
+  "meta_desc": "content=\"一键一键学会 Conquer 这款 1987 年的 Usenet 策略游戏：录制好的第一个回合，从登录到回合结算，每个画面都在这里。\"",
+  "og_title": "content=\"Conquer：你的第一个回合\"",
+  "og_desc": "content=\"1987 年的 Usenet 策略游戏，重返你的浏览器。一键一键学会它。\"",
+  "crumbs": "<a href=\"index.html?lang=zh\">Conquer</a> / <a href=\"guide.html\">玩家指南（英文）</a> / 第一个回合",
+  "eyebrow": "教程 · 10 分钟",
+  "h1": "<h1>你的第一个回合</h1>",
+  "lede": "一个新国家真实的第一个回合，逐键演示：登录、阅读报告、出兵占领土地、征兵，然后提交指令。下面的每个画面都直接来自游戏本身（游戏画面为英文原版）。",
+  "player_note": "上面的录像就是真实的终端：可以随时暂停，也可以选中并复制其中的文字。",
+  "h_map": "<h2>看懂地图</h2>",
+  "l_capital": "<dd>你的首都</dd>",
+  "l_reverse": "<dt>反白</dt><dd>反白显示的字母是你拥有的地块</dd>",
+  "l_water": "<dd>水域</dd>",
+  "l_flat": "<dd>平地</dd>",
+  "l_hills": "<dd>丘陵</dd>",
+  "l_mount": "<dd>山地</dd>",
+  "l_peaks": "<dd>高峰</dd>",
+  "l_design": "<dd>农场、城市、城镇、矿场、金矿</dd>",
+  "l_star": "<dd>在单位列表中：当前选中的单位</dd>",
+  "map_d": "在游戏中按 <kbd>d</kbd>，可以把地图切换为植被、人口、粮食等视图。",
+  "h_steps": "<h2 class=\"section\">分步讲解</h2>",
+  "h_rules": "助你撑过第一年的四条规则",
+  "r1": "<strong>兵力够多才能占领。</strong>军队至少要有 75 名士兵，并且你的人口每 350 人至少对应 1 名士兵，才能占领无主土地。派出你最大的野战军。",
+  "r2": "<strong>征兵会让军队停下。</strong>补充进某支军队的新兵会耗尽这支军队本回合的移动力。请把新兵编成一支新军队。",
+  "r3": "<strong>粮食优先。</strong>只有首都是种不出粮食的。占领植被良好的平地，把它们改成农场（在你拥有的地块上按 <kbd>r</kbd>）。",
+  "r4": "<strong>完成后就退出。</strong>你在游戏中时，回合无法结算。按 <kbd>q</kbd>，并把指令标记为完成。",
+  "h_practice": "<h2>零风险练习</h2>",
+  "p_practice": "游戏菜单中的选项 <kbd>7</kbd> 会打开你专属的练习世界：同样的游戏，只有你一个人。随便尝试，自己推进下一回合，想重来就重来。教练（游戏上方的 <strong>Coach</strong> 按钮）会在终端中带你走完同样的这个回合。",
+  "cta_play": ">跟着教练玩</a>",
+  "cta_try": ">或者直接在浏览器中试玩，无需账号</a>",
+  "cta_guide": ">返回玩家指南（英文）</a>",
+  "footer": "录制于本服务器上的 Conquer 4.12。终端播放器为",
+  "key_space": "空格",
+  "key_password": "你的密码",
+  "just_look": "只需观看",
+  "veterans": "老玩家：",
+  "screen_label": "游戏画面",
+  "coach_link": "game.html?coach&amp;lang=zh",
+  "try_link": "try/?lang=zh",
+  "guide_link": "guide.html"
+ },
+ "title": "你的第一个回合",
+ "steps": {
+  "menu": {
+   "title": "登录并打开菜单",
+   "text": "<p>在首页点击<strong>开始游戏</strong>，用你的玩家账号登录。菜单会显示你是谁、你的国家是哪一个。按 <kbd>1</kbd> 进入游戏。</p>",
+   "veteran": "没有 shell 提示符，也不用 <code>conquer -n</code>：菜单会替你启动游戏。"
+  },
+  "password": {
+   "title": "输入国家密码",
+   "text": "<p>你的国家会直接打开。输入<strong>国家密码</strong>（最多 7 个字符），然后按 <kbd>Enter</kbd>。输入时屏幕上不会显示任何字符，这是正常的。</p>"
+  },
+  "title": {
+   "title": "标题画面",
+   "text": "<p>和 1988 年的玩家看到的标题画面一模一样。游戏画面保持英文原貌：当它显示 <em>PRESS ANY KEY</em>（按任意键）时，随便按一个键即可，通常按 <kbd>空格</kbd>。</p>"
+  },
+  "map": {
+   "title": "看懂主画面",
+   "text": "<p>整局游戏你都会在这里度过。它分为四个部分：</p><ul><li><strong>地图</strong>，在左侧。<code>C</code> 是你的首都。反白显示的字母是你拥有的地块，其余字母表示地形：<code>~</code> 水域，<code>-</code> 平地，<code>%</code> 丘陵，<code>^</code> 山地，<code>#</code> 高峰。</li><li><strong>你的单位</strong>，在右上方。<code>*</code> 标出选中的单位，<code>&gt;</code> 标出同一地块上的其他单位。<em>mv</em> 是每个单位本回合还能移动多远，<em>st</em> 是它的指令状态。</li><li><strong>光标所在的地块</strong>，在右下方：所有者、用途、植被、地形、人口。</li><li><strong>状态栏</strong>，在最底部：回合数、国库（单位是金币 talon）、季节，有消息时还会显示 <em>You have Conquer Mail</em>。</li></ul><p>一开始你只有首都。其他一切都要靠自己去夺取。</p>"
+  },
+  "mail": {
+   "title": "阅读邮件",
+   "text": "<p>按 <kbd>R</kbd>。消息可能来自游戏、管理员或其他统治者。按任意键显示下一条；按 <kbd>Enter</kbd> 删除正在阅读的消息。</p>"
+  },
+  "mail2": {
+   "title": "下一条消息",
+   "text": "<p>这是你的国家的建国通知。再按一次 <kbd>空格</kbd> 返回地图。</p>"
+  },
+  "budget": {
+   "title": "查看预算",
+   "text": "<p>按 <kbd>B</kbd>。你的人民要缴税（这里是首都 33,000 人口缴纳的 330,000 金币），你的军队要花钱（2,000 名士兵花费 100,000）。最后一行是下个季节的国库。</p><p>也要看看<strong>粮仓</strong>。只有一座首都时你不产粮食，没有农场的国家几个季节之内就会闹饥荒。</p>"
+  },
+  "armies": {
+   "title": "认识你的军队",
+   "text": "<p>按 <kbd>空格</kbd> 离开预算画面，然后按 <kbd>a</kbd>。0 号军队是<strong>驻军</strong>：250 名永不离开首都的士兵。国王和男爵们是<strong>将领</strong>。再往右（按 <kbd>空格</kbd> 以外的任意键翻页）是你的<strong>野战军</strong>，可以出征。看完后按 <kbd>空格</kbd>。</p>"
+  },
+  "select": {
+   "title": "选择一支野战军",
+   "text": "<p><kbd>p</kbd> 选择下一个单位，<kbd>o</kbd> 选择上一个。一直按 <kbd>o</kbd>，直到 <code>*</code> 落在一支还有移动力的野战军上：这里是 <strong>20 号军队</strong>，112 名步兵，移动力 10。</p>"
+  },
+  "move": {
+   "title": "出兵占领土地",
+   "text": "<p>按 <kbd>m</kbd>，再按一个方向键：</p><pre class=\"dirs\">y k u\n h l\nb j n</pre><p>每走一步都要消耗移动点数；丘陵和森林消耗更多。如果游戏显示 <em>Can't Move Here</em>（无法移动到此处，通常是水域），按任意键后换个方向再试。</p>"
+  },
+  "moved": {
+   "title": "结束移动",
+   "text": "<p>按 <kbd>空格</kbd> 停下。这个地块现在归你了：报告显示 <em>owner: tidewater</em>。</p><p class=\"rule\">军队必须足够强大才能占领无主土地：至少 75 名士兵，并且你的国家人口每 350 人至少对应 1 名士兵（新国家大约需要 95 名）。21 号军队只有 70 名士兵，单独出动兵力不足。</p>"
+  },
+  "draft": {
+   "title": "征召新兵",
+   "text": "<p>把光标移回首都（<kbd>k</kbd>），然后按 <kbd>D</kbd> 征兵，按 <kbd>I</kbd> 选择步兵，输入 <kbd>50</kbd> 并按 <kbd>Enter</kbd>。只有城市和首都能征兵，征兵要花费金币和金属。</p>"
+  },
+  "drafted": {
+   "title": "编成一支新军队",
+   "text": "<p>回答 <kbd>y</kbd>，组建一支新军队。如果回答否，新兵会并入该地块上已有的军队，<strong>那支军队本回合将失去移动力</strong>。反正新兵要到下回合才能出征，就让他们留守首都吧。</p>"
+  },
+  "diplomacy": {
+   "title": "看看其他国家",
+   "text": "<p>按 <kbd>S</kbd>。所有国家一开始都是 <em>UNMET</em>（尚未接触）。遇到某个国家后，按 <kbd>Enter</kbd> 可以设定你对它的态度（同盟、中立、敌对、战争……）。要给其他统治者写信，在地图上按 <kbd>W</kbd>。按 <kbd>空格</kbd> 离开。</p>"
+  },
+  "quit": {
+   "title": "保存并退出",
+   "text": "<p>按 <kbd>q</kbd>。你的指令会被保存，菜单会询问你本回合是否已经完成。</p>"
+  },
+  "done": {
+   "title": "把指令标记为完成",
+   "text": "<p>回答 <kbd>y</kbd>。当所有国家都这样做了，回合结算会立即进行；否则就在预定时间进行。在那之前，你随时可以回来修改指令。</p>"
+  },
+  "newturn": {
+   "title": "新的季节",
+   "text": "<p>在这局游戏里 tidewater 是唯一的玩家，所以回合立即结算了。再次进入游戏，看看新的季节：你新占领的地块、报纸（<kbd>N</kbd>）和你的邮件。这就是 Conquer 的全部节奏：阅读、下令、退出，然后等待消息。</p>"
+  }
+ }
+}

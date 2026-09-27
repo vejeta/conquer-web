@@ -3,18 +3,35 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Render the narrated first-turn videos (one per language).
 
-Each narration segment (narration.json) becomes one shot: the recorded game
-screen of that step (first-turn.screens.json) with its title and keys, held
-for as long as the narrator speaks. The voice is Kokoro, a neural
-text-to-speech model that runs offline.
+Each narration segment (narration/<language>.json) becomes one shot: the
+recorded game screen of that step (first-turn.screens.json) with its title
+and keys, held for as long as the narrator speaks. The voices come from
+offline neural text-to-speech models whose licenses allow publishing the
+audio; each language's file says which one ("voice"):
 
-Needs: python3 -m pip install kokoro-onnx soundfile; ffmpeg; node with
-playwright (for the frames). The Kokoro model files (about 350 MB) are
-downloaded to ~/.cache/conquer-tts on first use.
+  kokoro        Kokoro-82M (Apache-2.0): a built-in voice
+  qwen-custom   Qwen3-TTS 1.7B CustomVoice (Apache-2.0): a built-in speaker,
+                with an optional style instruction
+  qwen-clone    Qwen3-TTS 1.7B Base (Apache-2.0) speaking with the voice of
+                narration/voices/<language>.wav. That reference is designed
+                once from a description with Qwen3-TTS VoiceDesign and kept
+                in the repository, so the narrator stays the same.
+  voxcpm        VoxCPM2 (Apache-2.0), for languages Qwen3-TTS does not
+                speak (Polish...): a voice designed and kept the same way
 
-usage: video.py [en|es ...]     (default: en es)
-Writes web/tutorial/first-turn.<lang>.mp4 and .vtt
+Needs ffmpeg, node with playwright (for the frames) and, per engine:
+  kokoro:  python3 -m pip install kokoro-onnx soundfile   (model files,
+           about 350 MB, go to ~/.cache/conquer-tts on first use)
+  qwen-*:  python3 -m pip install qwen-tts soundfile      (models, about
+           4.5 GB each, go to ~/.cache/huggingface on first use; a GPU
+           helps, on a 4-core CPU a video takes about 15 minutes)
+  voxcpm:  python3 -m pip install voxcpm soundfile        (in its own
+           virtual environment: its dependencies differ from qwen-tts)
+
+usage: video.py [LANGUAGE ...]     (default: every file in narration/)
+Writes web/tutorial/first-turn.<language>.mp4 and .vtt
 """
+import glob
 import html
 import json
 import os
@@ -31,16 +48,6 @@ MODEL_URL = "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model
 FFMPEG = os.environ.get("FFMPEG", shutil.which("ffmpeg") or "ffmpeg")
 GAP = 0.45          # silence after each sentence group, seconds
 W, H = 1280, 720
-
-TEXT = {
-    "en": {"keys": "Keys", "look": "just look", "intro_title": "Your first turn",
-           "intro_sub": "Usenet, 1987 · your browser, today", "outro_title": "Your nation is waiting",
-           "outro_sub": "Ask for a nation · play your first turn tonight", "password": "password"},
-    "es": {"keys": "Teclas", "look": "solo mira", "intro_title": "Tu primer turno",
-           "intro_sub": "Usenet, 1987 · tu navegador, hoy", "outro_title": "Tu nación te espera",
-           "outro_sub": "Pide una nación · juega tu primer turno esta noche", "password": "contraseña"},
-}
-
 
 def model_files():
     os.makedirs(CACHE, exist_ok=True)
@@ -68,7 +75,7 @@ def screen_html(lines):
 
 
 FRAME = """<!doctype html><html><head><meta charset="utf-8"><style>
-html,body{margin:0;width:%(w)dpx;height:%(h)dpx;background:#0d1117;color:#e6edf3;font-family:"DejaVu Sans",system-ui,sans-serif;overflow:hidden}
+html,body{margin:0;width:%(w)dpx;height:%(h)dpx;background:#0d1117;color:#e6edf3;font-family:"DejaVu Sans","WenQuanYi Zen Hei",system-ui,sans-serif;overflow:hidden}
 .wrap{display:grid;grid-template-columns:auto 1fr;gap:36px;align-items:center;height:100%%;padding:0 48px;box-sizing:border-box}
 pre{margin:0;width:80ch;height:calc(24 * 1.3em);background:#1c1c1c;color:#d7d7d7;border:1px solid #30363d;border-radius:10px;padding:14px 16px;font:14.5px/1.3 "DejaVu Sans Mono",monospace;box-shadow:0 20px 60px rgba(0,0,0,.45)}
 pre .rev{background:#d7d7d7;color:#1c1c1c} pre .b{font-weight:bold;color:#fff}
@@ -88,9 +95,16 @@ kbd.wide{font-size:20px;font-style:italic}
 </style></head><body>%(body)s</body></html>"""
 
 
-def frames(lang, content, screens, segments, outdir):
-    t = TEXT[lang]
-    steps = {s["id"]: (i, s) for i, s in enumerate(content["steps"], 1)}
+def tutorial_steps(lang, content):
+    """The tutorial's steps with their titles in this language (English
+    where the tutorial is not translated)."""
+    path = os.path.join(HERE, "i18n", lang + ".json")
+    translated = json.load(open(path)).get("steps", {}) if os.path.exists(path) else {}
+    return [dict(s, **{k: v for k, v in translated.get(s["id"], {}).items() if k == "title"}) for s in content["steps"]]
+
+
+def frames(t, steps_list, screens, segments, outdir):
+    steps = {s["id"]: (i, s) for i, s in enumerate(steps_list, 1)}
     pages = []
     for n, seg in enumerate(segments):
         sid = seg["screen"]
@@ -103,13 +117,14 @@ def frames(lang, content, screens, segments, outdir):
         else:
             i, step = steps[sid]
             keys = "".join('<kbd class="wide">%s</kbd>' % t["password"] if k == "password"
-                           else "<kbd>%s</kbd>" % html.escape(k) for k in step["keys"])
+                           else "<kbd>%s</kbd>" % html.escape(t.get("space", k) if k == "Space" else k)
+                           for k in step["keys"])
             keys = keys or '<span class="none">%s</span>' % t["look"]
-            title = seg.get("title_" + lang, step["title"])
+            title = seg.get("title", step["title"])
             body = ('<div class="wrap"><pre>%s</pre><div class="side"><div class="num">%02d / %02d</div>'
                     '<h1>%s</h1><div class="keys"><span class="label">%s</span>%s</div></div></div>'
                     '<div class="brand">CONQUER</div>') % (
-                screen_html(screens[sid]), i, len(content["steps"]), html.escape(title), t["keys"], keys)
+                screen_html(screens[sid]), i, len(steps_list), html.escape(title), t["keys"], keys)
         path = os.path.join(outdir, "frame%02d.html" % n)
         with open(path, "w") as f:
             f.write(FRAME % {"w": W, "h": H, "body": body})
@@ -122,24 +137,106 @@ def vtt_time(s):
     return "%02d:%02d:%06.3f" % (s // 3600, s % 3600 // 60, s % 60)
 
 
-def render(lang, kokoro):
+class Kokoro:
+    def __init__(self):
+        from kokoro_onnx import Kokoro as Model
+        self.model = Model(*model_files())
+
+    def speak(self, text, voice):
+        return self.model.create(text, voice=voice["voice"], speed=voice["speed"], lang=voice["lang"])
+
+
+def qwen_model(name):
+    import torch
+    from qwen_tts import Qwen3TTSModel
+    torch.set_num_threads(os.cpu_count() or 4)
+    device = "cuda:0" if torch.cuda.is_available() else "cpu"
+    return Qwen3TTSModel.from_pretrained(name, device_map=device, dtype=torch.bfloat16 if device != "cpu" else torch.float32)
+
+
+class QwenCustom:
+    def __init__(self):
+        self.model = qwen_model("Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice")
+
+    def speak(self, text, voice):
+        wavs, sr = self.model.generate_custom_voice(text=text, speaker=voice["speaker"], language=voice["language"],
+                                                    instruct=voice.get("instruct"))
+        return wavs[0], sr
+
+
+class QwenClone:
+    """The voice of narration/voices/<language>.wav, designed on first use."""
+    def __init__(self, lang, voice):
+        import soundfile as sf
+        self.ref = os.path.join(HERE, "narration", "voices", lang + ".wav")
+        if not os.path.exists(self.ref):
+            design = qwen_model("Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign")
+            wavs, sr = design.generate_voice_design(text=voice["reference"], instruct=voice["design"],
+                                                    language=voice["language"])
+            os.makedirs(os.path.dirname(self.ref), exist_ok=True)
+            sf.write(self.ref, wavs[0], sr)
+            print("designed the voice in", os.path.relpath(self.ref, HERE))
+            del design
+        self.model = qwen_model("Qwen/Qwen3-TTS-12Hz-1.7B-Base")
+        self.prompt = self.model.create_voice_clone_prompt(ref_audio=self.ref, ref_text=voice["reference"])
+
+    def speak(self, text, voice):
+        wavs, sr = self.model.generate_voice_clone(text=text, language=voice["language"], voice_clone_prompt=self.prompt)
+        return wavs[0], sr
+
+
+class VoxCPM:
+    """VoxCPM2 (Apache-2.0, 30 languages) with the voice of
+    narration/voices/<language>.wav, designed on first use."""
+    def __init__(self, lang, voice):
+        import soundfile as sf
+        from voxcpm import VoxCPM as Model
+        self.model = Model.from_pretrained("openbmb/VoxCPM2", load_denoiser=False)
+        self.sr = self.model.tts_model.sample_rate
+        self.ref = os.path.join(HERE, "narration", "voices", lang + ".wav")
+        if not os.path.exists(self.ref):
+            wav = self.model.generate(text="(%s)%s" % (voice["design"], voice["reference"]))
+            os.makedirs(os.path.dirname(self.ref), exist_ok=True)
+            sf.write(self.ref, wav, self.sr)
+            print("designed the voice in", os.path.relpath(self.ref, HERE))
+
+    def speak(self, text, voice):
+        return self.model.generate(text=text, prompt_wav_path=self.ref, prompt_text=voice["reference"]), self.sr
+
+
+def engine(lang, voice):
+    kind = voice["engine"]
+    if kind == "kokoro":
+        return Kokoro()
+    if kind == "qwen-custom":
+        return QwenCustom()
+    if kind == "qwen-clone":
+        return QwenClone(lang, voice)
+    if kind == "voxcpm":
+        return VoxCPM(lang, voice)
+    raise SystemExit("unknown voice engine %r in narration/%s.json" % (kind, lang))
+
+
+def render(lang):
     import soundfile as sf
     import numpy as np
+    narration = json.load(open(os.path.join(HERE, "narration", lang + ".json")))
     content = json.load(open(os.path.join(HERE, "first-turn.content.json")))
     screens = {s["id"]: s["screen"] for s in json.load(open(os.path.join(HERE, "first-turn.screens.json")))}
-    narration = json.load(open(os.path.join(HERE, "narration.json")))
-    voice = narration["voices"][lang]
-    segments = narration["segments"]
+    voice, segments = narration["voice"], narration["segments"]
     tmp = tempfile.mkdtemp(prefix="conquer-video-")
-    images = frames(lang, content, screens, segments, tmp)
+    images = frames(narration["captions"], tutorial_steps(lang, content), screens, segments, tmp)
 
+    tts = engine(lang, voice)
     audio, cues, t0, sr = [], [], 0.0, 24000
-    for seg in segments:
-        samples, sr = kokoro.create(seg[lang], voice=voice["voice"], speed=voice["speed"], lang=voice["lang"])
+    for n, seg in enumerate(segments, 1):
+        samples, sr = tts.speak(seg["text"], voice)
+        samples = np.asarray(samples, dtype=np.float32)
         dur = len(samples) / sr + GAP
-        audio.append(np.concatenate([samples, np.zeros(int(GAP * sr), dtype=samples.dtype)]))
-        cues.append((t0, t0 + dur - GAP / 2, seg[lang], dur))
+        audio.append(np.concatenate([samples, np.zeros(int(GAP * sr), dtype=np.float32)]))
+        cues.append((t0, t0 + dur - GAP / 2, seg["text"], dur))
         t0 += dur
+        print("  %s %d/%d: %.1f s" % (lang, n, len(segments), dur), flush=True)
     wav = os.path.join(tmp, "voice.wav")
     sf.write(wav, np.concatenate(audio), sr)
 
@@ -162,10 +259,9 @@ def render(lang, kokoro):
 
 
 def main():
-    from kokoro_onnx import Kokoro
-    kokoro = Kokoro(*model_files())
-    for lang in sys.argv[1:] or ["en", "es"]:
-        render(lang, kokoro)
+    langs = sys.argv[1:] or sorted(os.path.basename(p)[:-5] for p in glob.glob(os.path.join(HERE, "narration", "*.json")))
+    for lang in langs:
+        render(lang)
 
 
 if __name__ == "__main__":

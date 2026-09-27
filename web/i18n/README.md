@@ -17,7 +17,7 @@ English.
 | First-turn tutorial and coach steps | `tools/tutorial/i18n/<language>.json`, built into `tutorial.<language>.html` and `tutorial/first-turn.<language>.json` |
 | Player's guide | a page per language: `guide.<language>.html` |
 | Terminal menu and join wizard | `conquer/i18n/<language>.sh` |
-| Narrated video | `tools/tutorial/narration.json` (see `tools/tutorial/README.md`) |
+| Narrated video | `tools/tutorial/narration/<language>.json` (see `tools/tutorial/README.md`) |
 
 In the pages, `data-i18n="index.tagline"` takes its content from the
 catalog, `data-i18n-title` its tooltip, `data-i18n-page="guide"` links to
