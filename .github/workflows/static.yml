@@ -49,10 +49,11 @@ jobs:
           cp -r web _site
           # The game terminal only works on the game server (it embeds /play/)
           rm -f _site/game.html
-          # Where the game server lives (empty: the site shows no live status)
+          # Where the game server lives (empty: the site shows no live status).
+          # Named server.js: the VPS vhost refuses paths containing "config"
           server="${CONQUER_SERVER_URL%/}"
           printf 'window.CONQUER_CONFIG = { server: %s };\n' \
-            "$(jq -Rn --arg s "$server" '$s')" > _site/config.js
+            "$(jq -Rn --arg s "$server" '$s')" > _site/server.js
           # Serve files as they are (no Jekyll processing)
           touch _site/.nojekyll
           echo "Game server: ${server:-(not set)}"
