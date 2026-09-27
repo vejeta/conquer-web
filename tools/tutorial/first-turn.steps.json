@@ -1,0 +1,187 @@
+{
+ "cmd": "env TTYD_USER=maren CONQUER_PREFIX=/opt/conquer conquer-menu",
+ "title": "Conquer: your first turn",
+ "start_wait": 3,
+ "steps": [
+  {
+   "id": "menu",
+   "keys": [],
+   "caption": "The player menu",
+   "expect": [
+    "maren",
+    "tidewater"
+   ]
+  },
+  {
+   "id": "password",
+   "keys": [
+    "1"
+   ],
+   "caption": "1) Play: type your nation password",
+   "wait": 2.5,
+   "expect": [
+    "Password"
+   ]
+  },
+  {
+   "id": "title",
+   "keys": [
+    "tide123\n"
+   ],
+   "caption": "The title screen",
+   "wait": 3,
+   "expect": [
+    "PRESS ANY KEY"
+   ]
+  },
+  {
+   "id": "map",
+   "keys": [
+    " "
+   ],
+   "caption": "Your capital and your units",
+   "wait": 2.5,
+   "expect": [
+    "nation...tidewater"
+   ]
+  },
+  {
+   "id": "mail",
+   "keys": [
+    "R"
+   ],
+   "caption": "R: read your mail",
+   "expect": [
+    "Message from"
+   ]
+  },
+  {
+   "id": "mail2",
+   "keys": [
+    " "
+   ],
+   "caption": "Any key: the next message",
+   "expect": [
+    "Message from"
+   ]
+  },
+  {
+   "id": "budget",
+   "keys": [
+    " ",
+    "B"
+   ],
+   "caption": "B: next season's budget",
+   "wait": 2,
+   "expect": [
+    "BUDGET"
+   ]
+  },
+  {
+   "id": "armies",
+   "keys": [
+    " ",
+    "a"
+   ],
+   "caption": "a: your armies",
+   "wait": 2,
+   "expect": [
+    "ARMY STATS"
+   ]
+  },
+  {
+   "id": "select",
+   "keys": [
+    " ",
+    "o",
+    "o"
+   ],
+   "caption": "o: pick your field army (army 20)",
+   "expect": [
+    "*army 20"
+   ]
+  },
+  {
+   "id": "move",
+   "keys": [
+    "m",
+    "j"
+   ],
+   "caption": "m, then a direction: march south",
+   "expect": [
+    "move left"
+   ]
+  },
+  {
+   "id": "moved",
+   "keys": [
+    " "
+   ],
+   "caption": "Space: the move is done",
+   "expect": [
+    "mv:"
+   ]
+  },
+  {
+   "id": "draft",
+   "keys": [
+    "k",
+    "D",
+    "I",
+    "50\n"
+   ],
+   "caption": "k back to the capital, then D: draft 50 infantry",
+   "expect": [
+    "new army"
+   ]
+  },
+  {
+   "id": "drafted",
+   "keys": [
+    "y"
+   ],
+   "caption": "y: as a new army that guards the capital",
+   "wait": 2
+  },
+  {
+   "id": "diplomacy",
+   "keys": [
+    " ",
+    "S"
+   ],
+   "caption": "S: diplomacy with the other nations",
+   "wait": 2,
+   "expect": [
+    "DIPLOMACY"
+   ]
+  },
+  {
+   "id": "quit",
+   "keys": [
+    " ",
+    "q"
+   ],
+   "caption": "q: save and quit",
+   "wait": 3,
+   "expect": [
+    "orders for this turn done"
+   ]
+  },
+  {
+   "id": "done",
+   "keys": [
+    "y"
+   ],
+   "caption": "y: your orders are done; the turn can run",
+   "wait": 6
+  },
+  {
+   "id": "newturn",
+   "keys": [
+    " "
+   ],
+   "caption": "Back in the menu: a new season",
+   "wait": 2
+  }
+ ]
+}

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 // Links to the game server, for pages served by the game server itself or
-// from another site (GitHub Pages). Load config.js first.
+// from another site (GitHub Pages). Load server.js first.
 (function () {
   var cfg = window.CONQUER_CONFIG || {};
   var server = (cfg.server || '').replace(/\/+$/, '');

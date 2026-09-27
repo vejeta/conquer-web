@@ -1,0 +1,126 @@
+{
+  "title": "Your first turn",
+  "nation": "tidewater",
+  "steps": [
+    {
+      "id": "menu",
+      "title": "Sign in and open the menu",
+      "keys": ["1"],
+      "detect": "Choose an option",
+      "text": "<p>Press <strong>Play now</strong> on the home page and sign in with your player account. The menu says who you are and which nation is yours. Press <kbd>1</kbd> to play.</p>",
+      "veteran": "No shell prompt, no <code>conquer -n</code>: the menu starts the game for you."
+    },
+    {
+      "id": "password",
+      "title": "Type your nation password",
+      "keys": ["password", "Enter"],
+      "detect": "Nation's Password",
+      "text": "<p>Your nation opens directly. Type the <strong>nation password</strong> (up to 7 characters) and press <kbd>Enter</kbd>. Nothing appears while you type; that is normal.</p>"
+    },
+    {
+      "id": "title",
+      "title": "The title screen",
+      "keys": ["Space"],
+      "detect": "PRESS ANY KEY",
+      "text": "<p>The same title screen players saw in 1988. When the game says <em>PRESS ANY KEY</em>, press any key; <kbd>Space</kbd> is the usual choice.</p>"
+    },
+    {
+      "id": "map",
+      "title": "Read the main screen",
+      "keys": [],
+      "detect": "nation\\.\\.\\.",
+      "text": "<p>This is where you spend the game. It has four parts:</p><ul><li><strong>The map</strong>, left. <code>C</code> is your capital. Letters in reverse video are sectors you own. The others show the land: <code>~</code> water, <code>-</code> flat, <code>%</code> hills, <code>^</code> mountains, <code>#</code> peaks.</li><li><strong>Your units</strong>, top right. <code>*</code> marks the selected one, <code>&gt;</code> the others in the same sector. <em>mv</em> is how far each one can still move this turn, <em>st</em> its orders.</li><li><strong>The sector under the cursor</strong>, bottom right: owner, what it is used for, vegetation, terrain, people.</li><li><strong>The status line</strong>, bottom: turn, treasury in gold talons, season, and <em>You have Conquer Mail</em> when there are messages.</li></ul><p>You start with only your capital. Everything else has to be taken.</p>"
+    },
+    {
+      "id": "mail",
+      "title": "Read your mail",
+      "keys": ["R"],
+      "detect": "Message from",
+      "text": "<p>Press <kbd>R</kbd>. Messages come from the game, the administrator and other rulers. Any key shows the next one; <kbd>Enter</kbd> deletes the message you are reading.</p>"
+    },
+    {
+      "id": "mail2",
+      "title": "The next message",
+      "keys": ["Space"],
+      "detect": "Message from",
+      "text": "<p>Your nation's founding notice. Press <kbd>Space</kbd> again to go back to the map.</p>"
+    },
+    {
+      "id": "budget",
+      "title": "Check the budget",
+      "keys": ["B"],
+      "detect": "BUDGET ESTIMATES",
+      "text": "<p>Press <kbd>B</kbd>. Your people pay taxes (here 330,000 talons from 33,000 people in the capital) and your troops cost money (100,000 for 2,000 soldiers). The last line is next season's treasury.</p><p>Look at the <strong>granary</strong> too. With only a capital you grow no food, and a nation without farms starves within a few seasons.</p>"
+    },
+    {
+      "id": "armies",
+      "title": "Meet your armies",
+      "keys": ["Space", "a"],
+      "detect": "ARMY STATS SUMMARY",
+      "text": "<p>Press <kbd>Space</kbd> to leave the budget, then <kbd>a</kbd>. Army 0 is the <strong>garrison</strong>: 250 soldiers that never leave the capital. The King and the Barons are <strong>leaders</strong>. Further right (press any key other than <kbd>Space</kbd> to scroll) are your <strong>field armies</strong>, which can march. Press <kbd>Space</kbd> when you are done.</p>"
+    },
+    {
+      "id": "select",
+      "title": "Pick a field army",
+      "keys": ["Space", "o", "o"],
+      "detect": "\\*army [1-9][0-9]*: [0-9]+ Inf",
+      "text": "<p><kbd>p</kbd> selects the next unit and <kbd>o</kbd> the previous one. Press <kbd>o</kbd> until the <code>*</code> is on a field army with movement left: here <strong>army 20</strong>, 112 infantry, 10 moves.</p>"
+    },
+    {
+      "id": "move",
+      "title": "March out to take land",
+      "keys": ["m", "j"],
+      "detect": "MOVE(MENT )?SCREEN",
+      "text": "<p>Press <kbd>m</kbd>, then a direction:</p><pre class=\"dirs\">y k u\n h l\nb j n</pre><p>Each step spends move points; hills and forests cost more. If the game says <em>Can't Move Here</em> (water, usually), press a key and try another direction.</p>"
+    },
+    {
+      "id": "moved",
+      "title": "Finish the move",
+      "keys": ["Space"],
+      "detect": "nation\\.\\.\\.",
+      "text": "<p>Press <kbd>Space</kbd> to stop. The sector now belongs to you: the report says <em>owner: tidewater</em>.</p><p class=\"rule\">An army takes empty land only if it is big enough: at least 75 soldiers, and at least one for every 350 of your people (about 95 for a new nation). Army 21, with 70 soldiers, is too small on its own.</p>"
+    },
+    {
+      "id": "draft",
+      "title": "Draft new troops",
+      "keys": ["k", "D", "I", "50", "Enter"],
+      "detect": "raise a new army",
+      "text": "<p>Move the cursor back to the capital (<kbd>k</kbd>), then press <kbd>D</kbd> to draft, <kbd>I</kbd> for infantry, type <kbd>50</kbd> and press <kbd>Enter</kbd>. Troops are raised in cities and in the capital, and cost talons and metal.</p>"
+    },
+    {
+      "id": "drafted",
+      "title": "As a new army",
+      "keys": ["y"],
+      "detect": "nation\\.\\.\\.",
+      "text": "<p>Answer <kbd>y</kbd> to form a new army. If you answer no, the troops join the army in the sector, and <strong>that army loses its movement for this turn</strong>. New troops cannot march until next turn anyway, so let them guard the capital.</p>"
+    },
+    {
+      "id": "diplomacy",
+      "title": "Look at the other nations",
+      "keys": ["Space", "S"],
+      "detect": "DIPLOMACY SUMMARY",
+      "text": "<p>Press <kbd>S</kbd>. Every nation starts as <em>UNMET</em>. Once you meet one, <kbd>Enter</kbd> lets you set your status (allied, neutral, hostile, war…). To write to another ruler, press <kbd>W</kbd> on the map. Press <kbd>Space</kbd> to leave.</p>"
+    },
+    {
+      "id": "quit",
+      "title": "Save and quit",
+      "keys": ["Space", "q"],
+      "detect": "orders for this turn done",
+      "text": "<p>Press <kbd>q</kbd>. Your orders are saved, and the menu asks whether you have finished this turn.</p>"
+    },
+    {
+      "id": "done",
+      "title": "Mark your orders done",
+      "keys": ["y"],
+      "detect": "Orders marked as done",
+      "text": "<p>Answer <kbd>y</kbd>. When every nation has done the same, the turn update runs straight away; otherwise it runs at the scheduled time. You can come back and change your orders until then.</p>"
+    },
+    {
+      "id": "newturn",
+      "title": "A new season",
+      "keys": ["Space"],
+      "detect": "Last turn update",
+      "text": "<p>In this game tidewater was the only player, so the update ran at once. Play again to see the new season: your new sector, the newspaper (<kbd>N</kbd>) and your mail. That is the whole rhythm of Conquer: read, order, quit, wait for the news.</p>"
+    }
+  ]
+}
