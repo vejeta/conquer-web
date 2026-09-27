@@ -1,0 +1,594 @@
+<!doctype html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conquer Player's Guide</title>
+  <meta name="description" content="How to play Conquer in your browser: its history since 1987, a step-by-step tutorial with screenshots, advice for your first seasons and the tournament formats of the 2026-2027 seasons.">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d1117;
+      --panel: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #3fb950;
+      --accent-text: #0d1117;
+      --warn: #d29922;
+      --term: #2b2b2b;
+    }
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) {
+        color-scheme: light;
+        --bg: #f6f8fa;
+        --panel: #ffffff;
+        --border: #d0d7de;
+        --text: #1f2328;
+        --muted: #57606a;
+        --accent: #1a7f37;
+        --accent-text: #ffffff;
+        --warn: #9a6700;
+        --term: #2b2b2b;
+      }
+    }
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f6f8fa;
+      --panel: #ffffff;
+      --border: #d0d7de;
+      --text: #1f2328;
+      --muted: #57606a;
+      --accent: #1a7f37;
+      --accent-text: #ffffff;
+      --warn: #9a6700;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 17px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    main { max-width: 880px; margin: 0 auto; padding: 32px 16px 64px; }
+    .mono { font-family: ui-monospace, "DejaVu Sans Mono", Menlo, monospace; }
+    a { color: var(--accent); }
+    h1, h2, h3 { text-wrap: balance; line-height: 1.25; }
+    h2 { font-size: 1.5rem; margin: 0 0 16px; }
+    h3 { font-size: 1.1rem; margin: 28px 0 8px; }
+    p { margin: 0 0 14px; max-width: 68ch; }
+    ul, ol { padding-left: 1.3em; margin: 0 0 14px; }
+    li { max-width: 66ch; }
+    li + li { margin-top: 6px; }
+    kbd {
+      font: 0.85em ui-monospace, "DejaVu Sans Mono", monospace;
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      padding: 1px 6px;
+      white-space: nowrap;
+    }
+    code { font: 0.9em ui-monospace, "DejaVu Sans Mono", monospace; }
+    pre {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 14px;
+      overflow-x: auto;
+      font: 0.85rem/1.5 ui-monospace, "DejaVu Sans Mono", monospace;
+      margin: 0 0 14px;
+    }
+
+    /* Opening: the game's own boot line, then the invitation */
+    .hero { padding-block: 24px 40px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+    .boot { color: var(--muted); font-size: 0.85rem; margin: 0 0 18px; }
+    .boot span { color: var(--accent); }
+    .logo {
+      margin: 0 0 12px;
+      color: var(--accent);
+      font: bold clamp(2.4rem, 10vw, 4.2rem)/1 ui-monospace, "DejaVu Sans Mono", monospace;
+      letter-spacing: 0.3em;
+    }
+    .hero .lede { font-size: 1.25rem; max-width: 36ch; margin-bottom: 24px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .play {
+      display: inline-block;
+      padding: 12px 32px;
+      border-radius: 8px;
+      background: var(--accent);
+      color: var(--accent-text);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .play:hover, .play:focus-visible { filter: brightness(1.1); }
+    .secondary { color: var(--text); }
+
+    nav.toc { margin: 0 0 40px; }
+    nav.toc ol { columns: 2 16rem; column-gap: 32px; }
+    nav.toc li { break-inside: avoid; }
+
+    section { margin-bottom: 56px; scroll-margin-top: 16px; }
+    .eyebrow {
+      color: var(--muted);
+      font: 600 0.75rem ui-monospace, "DejaVu Sans Mono", monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 0 0 6px;
+    }
+
+    /* Timeline: years in the terminal face, events beside them */
+    .timeline { list-style: none; padding: 0; margin: 0; border-left: 2px solid var(--border); }
+    .timeline li { display: grid; grid-template-columns: 7.5rem 1fr; gap: 16px; padding: 0 0 18px 16px; max-width: none; }
+    .timeline li + li { margin-top: 0; }
+    .timeline .when { font: 600 0.9rem/1.8 ui-monospace, "DejaVu Sans Mono", monospace; color: var(--accent); }
+    .timeline p { margin: 0; }
+    @media (max-width: 560px) { .timeline li { grid-template-columns: 1fr; gap: 0; } }
+
+    /* The turn cycle */
+    .cycle { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 0 0 16px; padding: 0; list-style: none; counter-reset: cycle; }
+    .cycle li { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin: 0; max-width: none; counter-increment: cycle; }
+    .cycle li::before { content: counter(cycle); display: block; font: 700 0.8rem ui-monospace, monospace; color: var(--accent); margin-bottom: 4px; }
+    .cycle strong { display: block; }
+    .cycle span { color: var(--muted); font-size: 0.92rem; }
+
+    /* Tutorial steps with screenshots */
+    .steps { list-style: none; padding: 0; margin: 0; counter-reset: step; }
+    .steps > li { counter-increment: step; margin: 0 0 40px; max-width: none; }
+    .steps > li > h3 { margin-top: 0; display: flex; gap: 12px; align-items: baseline; }
+    .steps > li > h3::before {
+      content: "Step " counter(step);
+      flex: none;
+      font: 600 0.75rem ui-monospace, "DejaVu Sans Mono", monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent-text);
+      background: var(--accent);
+      border-radius: 4px;
+      padding: 2px 8px;
+    }
+    figure { margin: 0 0 16px; }
+    figure img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--term);
+    }
+    figcaption { color: var(--muted); font-size: 0.88rem; margin-top: 6px; }
+    .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; align-items: start; }
+    .phone img { max-width: 300px; margin-inline: auto; }
+    .phone figcaption { text-align: center; }
+
+    .note { border-left: 3px solid var(--warn); padding: 2px 0 2px 12px; color: var(--muted); }
+    .note strong { color: var(--text); }
+
+    /* Formats */
+    .formats { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
+    .format { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+    .format h3 { margin: 0; }
+    .format p { margin: 0; font-size: 0.95rem; }
+    .format dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; font-size: 0.88rem; }
+    .format dt { color: var(--muted); }
+    .format dd { margin: 0; }
+    .format code { font-size: 0.82rem; }
+
+    .table-wrap { overflow-x: auto; margin-bottom: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
+    th, td { text-align: left; vertical-align: top; padding: 8px; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 500; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    td:first-child { white-space: nowrap; font-family: ui-monospace, "DejaVu Sans Mono", monospace; font-size: 0.85rem; color: var(--accent); }
+
+    .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+    details { border-top: 1px solid var(--border); padding: 10px 0; }
+    details summary { cursor: pointer; font-weight: 600; }
+    details p { margin: 8px 0 0; }
+
+    .closing { border-top: 1px solid var(--border); padding-top: 32px; }
+    footer { color: var(--muted); font-size: 0.85rem; margin-top: 40px; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  </style>
+</head>
+<body>
+<main>
+
+  <header class="hero">
+    <p class="boot mono">conquer 4.12: Copyright (c) 1988 Edward M Barlow<br><span>GPL v3 licensed version (c) 2025</span></p>
+    <p class="logo">CONQUER</p>
+    <p class="lede">Rule a nation in a shared fantasy world, one turn at a time. Players have been doing it since 1987. Your seat is open.</p>
+    <div class="actions">
+      <a class="play" href="/game.html">Play now</a>
+      <a class="secondary" href="#tutorial">Read the step-by-step tutorial</a>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Contents">
+    <p class="eyebrow">In this guide</p>
+    <ol>
+      <li><a href="#invitation">An invitation</a></li>
+      <li><a href="#history">From Usenet to your browser</a></li>
+      <li><a href="#turns">How a turn works</a></li>
+      <li><a href="#tutorial">Step-by-step tutorial</a></li>
+      <li><a href="#advice">Advice for your first seasons</a></li>
+      <li><a href="#veterans">For veterans of the 80s and 90s</a></li>
+      <li><a href="#formats">Tournaments and seasons</a></li>
+      <li><a href="#plan">The road to the 40th anniversary</a></li>
+      <li><a href="#organisers">For organisers</a></li>
+      <li><a href="#faq">Questions</a></li>
+    </ol>
+  </nav>
+
+  <section id="invitation">
+    <p class="eyebrow">An invitation</p>
+    <h2>A game you play a few minutes a day, for months</h2>
+    <p>In Conquer you are the ruler of a nation of humans, elves, dwarves or orcs. You settle land, feed and tax your people, raise armies, learn magic, trade and sign treaties with the other rulers of the world. Some of them are players like you. Others are run by the computer: rival kingdoms, pirates, nomads, savages and dragons.</p>
+    <p>Nobody has to be online at the same time. You log in when it suits you, give your orders and log out. At the turn update every order in the world is resolved at once, the season changes and a newspaper tells everyone what happened. Then you read the news, and plan again.</p>
+    <p>You need no installation and no account elsewhere. The game runs in your browser, on a computer or a phone.</p>
+  </section>
+
+  <section id="history">
+    <p class="eyebrow">History</p>
+    <h2>From Usenet to your browser</h2>
+    <ol class="timeline">
+      <li><span class="when">Oct 26, 1987</span><p>Ed Barlow posts <em>conquest, a middle earth multi-player game</em> to the <span class="mono">comp.sources.games</span> newsgroup, in five parts. Players assemble the source code from the posts and compile it on their university Unix machines.</p></li>
+      <li><span class="when">Jan 1988</span><p>Adam Bryant sends his first message about the game. He becomes its co-author and later its maintainer.</p></li>
+      <li><span class="when">Jun 16, 1988</span><p>Conquer version 3 is posted, now in eight parts.</p></li>
+      <li><span class="when">1988–1989</span><p>Version 4, the one you play here, is released and patched up to patch level 12. Games run on shared Unix systems, often with a turn update from <span class="mono">cron</span> every night and players logging in from terminals.</p></li>
+      <li><span class="when">1989</span><p>Martin Forssen writes PostScript utilities to print world maps, and Richard Caley at the University of Edinburgh writes a map drawing tool.</p></li>
+      <li><span class="when">1990s</span><p>Conquer spreads across university networks. Newsletters and discussions continue on <span class="mono">rec.games.empire</span>.</p></li>
+      <li><span class="when">2006</span><p>Juan Manuel Méndez Rey (Vejeta) starts asking the authors to release the game as free software, with the help of the Debian legal list and GNU Savannah.</p></li>
+      <li><span class="when">2011 – 2025</span><p>Adam Bryant (2011), Ed Barlow (2016) and Martin Forssen (2025) give written permission. Conquer 4 is released under the GPL version 3 in 2025.</p></li>
+      <li><span class="when">2026</span><p>Conquer Web brings the game to the browser: player accounts, scheduled turns, a public newspaper and scoreboard, a phone key bar, and turns that run early once every ruler is ready.</p></li>
+      <li><span class="when">Oct 26, 2027</span><p>Conquer turns 40. We intend to celebrate it with a championship season (see <a href="#plan">the plan</a>).</p></li>
+    </ol>
+  </section>
+
+  <section id="turns">
+    <p class="eyebrow">The rhythm of the game</p>
+    <h2>How a turn works</h2>
+    <ol class="cycle">
+      <li><strong>Read the news</strong><span>Your mail and the world newspaper tell you what happened last turn.</span></li>
+      <li><strong>Give orders</strong><span>Move armies, draft troops, build, redesignate land, negotiate. Log in as often as you like.</span></li>
+      <li><strong>Mark your orders done</strong><span>When you quit, the menu asks whether you are finished for this turn.</span></li>
+      <li><strong>Turn update</strong><span>At the scheduled time, or earlier once every nation is done. The season advances.</span></li>
+    </ol>
+    <p>Each turn is one season. Four turns make a year. During the test phase the update runs <strong>weekly, on Sundays at 20:00 (Madrid time)</strong>; the landing page and the game menu always show the exact time and a countdown.</p>
+  </section>
+
+  <section id="tutorial">
+    <p class="eyebrow">Tutorial</p>
+    <h2>Your first turn, step by step</h2>
+    <p>The screenshots come from a real game on this site, played by the elven nation <em>avalon</em>.</p>
+
+    <ol class="steps">
+      <li>
+        <h3>Ask for a nation</h3>
+        <p>During the test phase the game administrator creates the nations. Send them:</p>
+        <ul>
+          <li>a <strong>nation name</strong>, up to 9 letters or digits (for example <span class="mono">avalon</span>);</li>
+          <li>a <strong>race</strong>: human, elf, dwarf or orc;</li>
+          <li>if you like, a <strong>class</strong> (king, emperor, wizard, priest, trader, warlord…) and an <strong>alignment</strong> (good, neutral or evil). The administrator can advise you.</li>
+        </ul>
+        <p>You get back two things: a <strong>player account</strong> for this site (name and password), linked to your nation, and your <strong>nation password</strong>, up to 7 characters, which the game itself asks for.</p>
+      </li>
+
+      <li>
+        <h3>Look at the current game</h3>
+        <p>The home page shows the turn, the season, the schedule with a countdown to the next update, how many nations have finished their orders, the scores and the latest world news.</p>
+        <figure><img src="guide/landing.png" width="1280" height="800" alt="The Conquer home page with the Play now button and the current game: turn 4, Winter of Year 1, weekly schedule, 0 of 3 nations done and the next update in 14 hours." loading="lazy"><figcaption>The home page. It is also available in Spanish (ES button).</figcaption></figure>
+        <div class="shots">
+          <figure><img src="guide/world-news.png" width="788" height="400" alt="The world news section with the newspaper of the last turns." loading="lazy"><figcaption>The world newspaper of the last three turns.</figcaption></figure>
+          <figure class="phone"><img src="guide/landing-phone-es.png" width="780" height="1688" alt="The home page on a phone, in Spanish and in dark mode." loading="lazy"><figcaption>On a phone, in Spanish.</figcaption></figure>
+        </div>
+      </li>
+
+      <li>
+        <h3>Sign in and meet the menu</h3>
+        <p>Press <strong>Play now</strong>. Your browser asks for your player account; you can let it remember it. The game menu then shows who you are, your nation, when the last and next turn updates are and how many nations are done.</p>
+        <figure><img src="guide/menu.png" width="1000" height="640" alt="The game menu: signed in as elowen, nation avalon, last and next turn update, orders done 0 of 3, and options 1 to 6." loading="lazy"><figcaption>The menu. Press a number to choose.</figcaption></figure>
+        <div class="shots">
+          <figure><img src="guide/how-to-join.png" width="1000" height="640" alt="Option 2: how to join and how turns work." loading="lazy"><figcaption>Option 2 explains how turns work.</figcaption></figure>
+          <figure><img src="guide/key-reference.png" width="1000" height="640" alt="Option 3: the quick key reference." loading="lazy"><figcaption>Option 3 is a key reference to keep at hand.</figcaption></figure>
+        </div>
+      </li>
+
+      <li>
+        <h3>Enter your nation</h3>
+        <p>Choose <kbd>1</kbd> Play. Your nation opens directly: type your nation password and press <kbd>Enter</kbd>. Press any key on the title screen.</p>
+        <div class="shots">
+          <figure><img src="guide/nation-password.png" width="1000" height="640" alt="The game asks: What is your Nation's Password?" loading="lazy"><figcaption>Only the nation password is asked.</figcaption></figure>
+          <figure><img src="guide/title-screen.png" width="1000" height="640" alt="The Conquer 4.12 title screen with the original copyright and the GPL notice." loading="lazy"><figcaption>The title screen, unchanged since 1988.</figcaption></figure>
+        </div>
+      </li>
+
+      <li>
+        <h3>Read the map</h3>
+        <p>The map shows the land around your capital. The top right lists the units in the selected sector; the bottom right describes the sector under the cursor: owner, designation, vegetation, people, move cost and defences. Move the cursor with <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd> and the diagonals <kbd>y</kbd> <kbd>u</kbd> <kbd>b</kbd> <kbd>n</kbd>.</p>
+        <figure><img src="guide/map.png" width="1000" height="640" alt="The main map around the capital of avalon, with the army list at the top right and the sector report at the bottom right." loading="lazy"><figcaption>The capital of avalon, marked C. Highlighted letters are your sectors: f farms, s and b other designations, $ a gold mine. Press <kbd>d</kbd> to change what the map shows.</figcaption></figure>
+        <p class="note"><strong>Tip.</strong> The bottom line says <em>You have Conquer Mail</em>: press <kbd>R</kbd> to read messages from other rulers and from the game.</p>
+      </li>
+
+      <li>
+        <h3>Check your armies, budget and the news</h3>
+        <div class="shots">
+          <figure><img src="guide/army-report.png" width="1000" height="640" alt="The army stats summary: soldiers, location, movement, status, unit type and cost per turn of each army." loading="lazy"><figcaption><kbd>a</kbd> lists every army with its size, position, status and cost per turn.</figcaption></figure>
+          <figure><img src="guide/budget.png" width="1000" height="640" alt="Next season's budget estimates: people in mines, farms and cities, income, troop costs, charity, inflation and next season's treasury." loading="lazy"><figcaption><kbd>B</kbd> estimates next season's income, expenses and treasury.</figcaption></figure>
+        </div>
+        <figure><img src="guide/newspaper.png" width="1000" height="640" alt="The world newspaper: civilian and combat powers gained by nations, dragon raids and lost food." loading="lazy"><figcaption><kbd>N</kbd> opens the newspaper: dragon raids, new powers, battles and treaties.</figcaption></figure>
+      </li>
+
+      <li>
+        <h3>Give your orders</h3>
+        <p>These are the commands you use most. Press <kbd>?</kbd> in the game for the full help.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Key</th><th>What it does</th></tr></thead>
+            <tbody>
+              <tr><td>p</td><td>Select the next unit (army, leader or navy).</td></tr>
+              <tr><td>m</td><td>Move the selected unit.</td></tr>
+              <tr><td>D</td><td>Draft troops in a town or city.</td></tr>
+              <tr><td>r</td><td>Redesignate a sector: farm, mine, town, city…</td></tr>
+              <tr><td>C</td><td>Construct fortifications, roads or ships.</td></tr>
+              <tr><td>S</td><td>Diplomacy: set your status towards each nation.</td></tr>
+              <tr><td>W</td><td>Write a message to another ruler.</td></tr>
+              <tr><td>M</td><td>Magic: the powers of your nation.</td></tr>
+              <tr><td>P</td><td>Production report.</td></tr>
+              <tr><td>Ctrl-L</td><td>Redraw the screen if it looks garbled.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </li>
+
+      <li>
+        <h3>Quit and mark your orders done</h3>
+        <p>Press <kbd>q</kbd> to save and quit. The menu asks whether your orders for this turn are done. Answer <kbd>y</kbd> if you have finished; you can still log in and change your orders until the update, and option <kbd>6</kbd> in the menu undoes the mark.</p>
+        <div class="shots">
+          <figure><img src="guide/orders-done-question.png" width="1000" height="640" alt="After quitting the game the menu asks: Are your orders for this turn done? y or N." loading="lazy"><figcaption>After you quit.</figcaption></figure>
+          <figure><img src="guide/menu-orders-done.png" width="1000" height="640" alt="The menu now shows Orders done: 1 of 3 nations (yours: done)." loading="lazy"><figcaption>Back in the menu: 1 of 3 nations done, yours included.</figcaption></figure>
+        </div>
+        <p class="note"><strong>Please quit when you finish.</strong> The update cannot run while someone is in the game. Players still inside are warned on screen and disconnected a few minutes before it; their orders are saved.</p>
+      </li>
+
+      <li>
+        <h3>The turn update</h3>
+        <p>When the last nation marks its orders done, the turn runs at once instead of waiting for Sunday. Otherwise it runs at the scheduled time. A few moments later the menu, the scores and the newspaper show the new season.</p>
+        <div class="shots">
+          <figure><img src="guide/early-turn.png" width="1000" height="640" alt="The last player marks their orders done: Every nation is ready, the turn update starts now." loading="lazy"><figcaption>The last ruler to finish starts the update.</figcaption></figure>
+          <figure><img src="guide/menu-new-turn.png" width="1000" height="640" alt="The menu after the update: a new last update time and orders done back to 0 of 3." loading="lazy"><figcaption>The new turn: the count starts again at 0.</figcaption></figure>
+        </div>
+        <figure><img src="guide/status-new-turn.png" width="788" height="1058" alt="The current game on the home page after the update: turn 5, Spring of Year 2, and the updated scores." loading="lazy"><figcaption>The home page after the update: turn 5, Spring of Year 2.</figcaption></figure>
+      </li>
+
+      <li>
+        <h3>Play from a phone</h3>
+        <p>On a phone or tablet a key bar appears under the game with the movement keys, <kbd>Esc</kbd>, <kbd>Enter</kbd>, <kbd>Space</kbd> and the most used commands. Press <strong>Keyboard</strong> to type names and passwords, and <strong>Keys</strong> to hide or show the bar. Turning the phone sideways puts the keys in a column beside the map.</p>
+        <figure class="phone"><img src="guide/phone-map.png" width="1082" height="2202" alt="The game on a phone: the map of the dwarven nation ironhold with the on-screen key bar below it." loading="lazy"><figcaption>The dwarves of ironhold, played on a phone.</figcaption></figure>
+      </li>
+    </ol>
+  </section>
+
+  <section id="advice">
+    <p class="eyebrow">Advice</p>
+    <h2>Advice for your first seasons</h2>
+    <div class="two">
+      <div>
+        <h3>Every turn</h3>
+        <ul>
+          <li>Read your mail (<kbd>R</kbd>) and the newspaper (<kbd>N</kbd>) before anything else.</li>
+          <li>Open the budget (<kbd>B</kbd>). If next season's treasury is falling, you have too many troops or too few workers.</li>
+          <li>Keep an eye on food. A granary that shrinks every season ends in starvation and revolt.</li>
+          <li>Finish, quit with <kbd>q</kbd> and mark your orders done, so nobody waits for you.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Your first year</h3>
+        <ul>
+          <li>Grow before you fight. Take the empty land around your capital and give it a use: farms feed people, cities and mines pay.</li>
+          <li>Armies cost gold every turn (the <em>cost/turn</em> line of <kbd>a</kbd>). Draft what you need to defend and to expand, no more.</li>
+          <li>Leave a garrison in your capital. Monsters and pirates do raid.</li>
+          <li>Know your race. Each starts with a power: dwarves are miners, elves are magically cloaked (the VOID power), orcs command minor monsters and humans fight as warriors.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Diplomacy</h3>
+        <ul>
+          <li>Write to your neighbours early (<kbd>W</kbd>). A treaty signed in year 1 is cheaper than a war in year 3.</li>
+          <li>Set your diplomatic status (<kbd>S</kbd>) to match your words.</li>
+          <li>Computer-run nations follow their own logic. Judge them by what they do, not by what you write to them.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Learning the game</h3>
+        <ul>
+          <li>The in-game help (<kbd>?</kbd>, or option 5 in the menu) is the original manual, and it is good.</li>
+          <li>Ask the veterans. Most of them learned by losing a nation or two in 1989.</li>
+          <li>Your first nation is for learning. The second one is for winning.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="veterans">
+    <p class="eyebrow">Welcome back</p>
+    <h2>For veterans of the 80s and 90s</h2>
+    <p>The game is the one you remember: Conquer 4, patch level 12, with the same map, races, classes, magic and newspaper. The engine only received fixes for crashes and oversized maps. What changed is everything around it:</p>
+    <ul>
+      <li>No telnet, no shell account and no <span class="mono">.cshrc</span>: you play in a browser tab, from anywhere.</li>
+      <li>Turns are scheduled by the administrator, weekly for now, and <strong>run early when every nation is done</strong>, so a fast group of players can play several turns a week.</li>
+      <li>The scores and the newspaper are public on the home page, so friends can follow the war without playing.</li>
+      <li>Every world is backed up before each turn.</li>
+      <li>The code is free software (GPL v3). You can read it, fix it and host your own world.</li>
+    </ul>
+  </section>
+
+  <section id="formats">
+    <p class="eyebrow">Tournaments</p>
+    <h2>Tournaments and seasons</h2>
+    <p>A season is one world played from turn 1 to an agreed end. These are the formats we plan to run. Each one sets how often turns run, how long the season lasts and how a winner is decided.</p>
+    <div class="formats">
+      <article class="format">
+        <h3>The Long Campaign</h3>
+        <p>The classic game: a large world, weekly turns, alliances that last months.</p>
+        <dl>
+          <dt>Turns</dt><dd>Weekly, early when all are done</dd>
+          <dt>Length</dt><dd>12 to 16 weeks, or 3 game years</dd>
+          <dt>Players</dt><dd>8 to 20</dd>
+          <dt>Winner</dt><dd>Highest score at the last turn</dd>
+          <dt>For</dt><dd>Veterans and busy people</dd>
+        </dl>
+      </article>
+      <article class="format">
+        <h3>Daily Blitz</h3>
+        <p>A turn every evening. Fast growth, fast wars, a season in a month.</p>
+        <dl>
+          <dt>Turns</dt><dd>Daily at 20:00, early when all are done</dd>
+          <dt>Length</dt><dd>4 weeks, about 28 turns</dd>
+          <dt>Players</dt><dd>6 to 12</dd>
+          <dt>Winner</dt><dd>Highest score</dd>
+          <dt>For</dt><dd>Players who know the keys</dd>
+        </dl>
+      </article>
+      <article class="format">
+        <h3>Weekend Rush</h3>
+        <p>A live event: turns every two hours on a Saturday, everyone in the same chat room.</p>
+        <dl>
+          <dt>Turns</dt><dd>Every 2 hours, 10:00 to 22:00, early when all are done</dd>
+          <dt>Length</dt><dd>One day, 7 or more turns</dd>
+          <dt>Players</dt><dd>4 to 8, all online</dd>
+          <dt>Winner</dt><dd>Highest score, or the most sectors</dd>
+          <dt>For</dt><dd>Launch parties and anniversaries</dd>
+        </dl>
+      </article>
+      <article class="format">
+        <h3>Newcomers' Academy</h3>
+        <p>A small world for new players only. Veterans join as mentors and answer questions, but do not rule a nation.</p>
+        <dl>
+          <dt>Turns</dt><dd>Twice a week</dd>
+          <dt>Length</dt><dd>6 to 8 weeks</dd>
+          <dt>Players</dt><dd>4 to 10 new players</dd>
+          <dt>Winner</dt><dd>No ranking; a certificate for every survivor</dd>
+          <dt>For</dt><dd>First-time rulers</dd>
+        </dl>
+      </article>
+      <article class="format">
+        <h3>War of Alignments</h3>
+        <p>Team play: good against evil, with neutral nations free to pick a side. Teams share a chat channel.</p>
+        <dl>
+          <dt>Turns</dt><dd>Weekly or twice a week</dd>
+          <dt>Length</dt><dd>2 game years</dd>
+          <dt>Players</dt><dd>2 teams of 3 to 6</dd>
+          <dt>Winner</dt><dd>The team with the highest total score</dd>
+          <dt>For</dt><dd>Friends and clubs</dd>
+        </dl>
+      </article>
+      <article class="format">
+        <h3>Veterans' Classic</h3>
+        <p>1988 rules. No hints and no mentors.</p>
+        <dl>
+          <dt>Turns</dt><dd>Nightly, as on the university machines; no early turns</dd>
+          <dt>Length</dt><dd>Until one nation dominates, or 4 game years</dd>
+          <dt>Players</dt><dd>Anyone who played before 2000, or thinks they can</dd>
+          <dt>Winner</dt><dd>Last ruler standing, or the highest score</dd>
+          <dt>For</dt><dd>Bragging rights</dd>
+        </dl>
+      </article>
+    </div>
+    <h3>Fair play, in every format</h3>
+    <ul>
+      <li>One nation per person. Alliances are welcome, but shared or puppet nations are not.</li>
+      <li>Diplomacy happens in the game and in the season's chat room. Treaties can be broken; that is part of the game.</li>
+      <li>A nation whose ruler stops playing keeps running; the newspaper shows it as moved by the computer. After two missed weeks the administrator can hand it to a new player.</li>
+      <li>Bugs and exploits go to the administrator, not into your strategy.</li>
+    </ul>
+  </section>
+
+  <section id="plan">
+    <p class="eyebrow">The plan</p>
+    <h2>The road to the 40th anniversary</h2>
+    <p>The seasons build towards 26 October 2027, forty years after the first Usenet post. Newcomers get a gentle entry and veterans a reason to come back.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>When</th><th>Season</th><th>Who it is for</th></tr></thead>
+        <tbody>
+          <tr><td>Oct – Dec 2026</td><td><strong>Season 0, closed test.</strong> Weekly turns with 4 to 8 invited players. We polish the site, the guide and the rules.</td><td>Friends and early testers</td></tr>
+          <tr><td>Jan – Mar 2027</td><td><strong>Season 1, the Long Campaign: “Return of the Usenet generals”.</strong> The first open season, weekly with early turns.</td><td>Veterans, plus newcomers who finished the tutorial</td></tr>
+          <tr><td>Apr 2027</td><td><strong>Daily Blitz.</strong> Four weeks, a turn every evening.</td><td>Season 1 players who want more</td></tr>
+          <tr><td>May – Jun 2027</td><td><strong>Newcomers' Academy</strong>, with veterans as mentors.</td><td>New players</td></tr>
+          <tr><td>Jul 2027</td><td><strong>Weekend Rush.</strong> A one-day live event.</td><td>Everyone</td></tr>
+          <tr><td>Sep – Oct 2027</td><td><strong>40th Anniversary Championship</strong>, a Long Campaign with a Weekend Rush final on Saturday 23 October and the result announced on Tuesday 26 October.</td><td>The best of the year</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>How we will find players</h3>
+    <div class="two">
+      <div>
+        <p><strong>Veterans</strong> read the places where Unix and retro-gaming people gather: retrocomputing forums, Mastodon, Lobsters, Hacker News and the free software communities that helped relicense the game. The history of the relicensing is a good story to tell there.</p>
+      </div>
+      <div>
+        <p><strong>Newcomers</strong> come from strategy and 4X communities, board-game clubs and friends of current players. This guide, the Academy and short Blitz seasons are for them.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="organisers">
+    <p class="eyebrow">For organisers</p>
+    <h2>Running a season</h2>
+    <p>Each installation runs one world at a time, so seasons run one after another. The turn rhythm is set in <code>config/production.env</code> (or <code>config/local.env</code>) and applied with <code>./rebuild.sh --quick</code>. The schedule is a cron expression in the time zone <code>TZ</code>.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Format</th><th>TURN_SCHEDULE</th><th>TURN_EARLY</th></tr></thead>
+        <tbody>
+          <tr><td>Long Campaign</td><td><code>0 20 * * 0</code> (Sundays 20:00)</td><td><code>on</code></td></tr>
+          <tr><td>Daily Blitz</td><td><code>0 20 * * *</code> (every day 20:00)</td><td><code>on</code></td></tr>
+          <tr><td>Weekend Rush</td><td><code>0 10-22/2 * * 6</code> (Saturdays, every 2 hours)</td><td><code>on</code></td></tr>
+          <tr><td>Academy</td><td><code>0 20 * * 3,0</code> (Wednesdays and Sundays)</td><td><code>on</code></td></tr>
+          <tr><td>Veterans' Classic</td><td><code>0 4 * * *</code> (every night at 04:00)</td><td><code>off</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Set <code>TURN_SCHEDULE_LABEL</code> to the same rhythm in words, since players read it in the menu and on the home page. For a Weekend Rush, lower <code>TURN_GRACE_MINUTES</code> to 1 or 2.</p>
+    <h3>Before the first turn</h3>
+    <pre>./generate-world.sh                             # a fresh world (maps up to 256x256)
+./add-nation.sh                                 # once per player: nation + linked account
+./manage-players.sh add mentor1 --admin         # mentors and co-organisers
+./manage-players.sh list                        # check every account has its nation</pre>
+    <h3>During the season</h3>
+    <ul>
+      <li>Open a chat room for the season and set <code>TURN_WEBHOOK_URL</code> so it announces every turn (Slack, Mattermost and Discord work).</li>
+      <li>Fill in <code>ADMIN_CONTACT</code> so players know where to ask for a nation.</li>
+      <li>Backups are taken before every turn in <code>data/backups/</code>; <code>./restore-world.sh</code> brings one back if a turn goes wrong.</li>
+      <li>At the end, announce the winner from the final scores and keep the last backup as the season's archive.</li>
+    </ul>
+  </section>
+
+  <section id="faq">
+    <p class="eyebrow">Questions</p>
+    <h2>Questions</h2>
+    <details><summary>Do I have to be online at a particular time?</summary><p>No. Log in whenever you like before the update. The only rule is to quit the game when you finish, so the update can run.</p></details>
+    <details><summary>What happens if I miss a turn?</summary><p>Your nation keeps living: people work, armies stay where they are and the computer handles the basics. You lose the chance to give orders that turn.</p></details>
+    <details><summary>I forgot my nation password.</summary><p>Ask the administrator. Your player account and your nation password are separate, and each can be reset.</p></details>
+    <details><summary>The screen looks wrong or too small.</summary><p>The game needs at least 80 columns by 24 rows. Enlarge the window or zoom out with <kbd>Ctrl</kbd> and <kbd>-</kbd>, and press <kbd>Ctrl-L</kbd> to redraw.</p></details>
+    <details><summary>Is it really the original game?</summary><p>Yes: Conquer 4.12 by Ed Barlow and Adam Bryant, compiled from the GPL release, with fixes for crashes only. The web interface is a separate project around it.</p></details>
+    <details><summary>Can I host my own world?</summary><p>Yes. Conquer Web and the game are free software; the <a href="https://github.com/vejeta/conquer-web">conquer-web repository</a> explains how to run it with Docker.</p></details>
+  </section>
+
+  <section class="closing">
+    <h2>Your nation is waiting</h2>
+    <p>Pick a race, choose a name of up to nine letters and ask the administrator for a seat in the next season. The world has been turning since 1987.</p>
+    <div class="actions">
+      <a class="play" href="/game.html">Play now</a>
+      <a class="secondary" href="/">Current game and scores</a>
+    </div>
+  </section>
+
+  <footer>
+    Conquer is free software (GPL-3.0-or-later). Code: <a href="https://github.com/vejeta/conquer">game</a> · <a href="https://github.com/vejeta/conquer-web">web server</a>.
+    History sources: the <span class="mono">HISTORY.md</span> and relicensing records of the game repository.
+  </footer>
+</main>
+</body>
+</html>
