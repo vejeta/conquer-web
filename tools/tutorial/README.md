@@ -104,6 +104,10 @@ npm install -g playwright                                # if node lacks it
 - On a GPU a video takes a minute or two. On a 4-core CPU with 16 GB of RAM
   it takes about 15 minutes (the speech is generated about 6 times slower
   than it plays).
+- Disk: the three Qwen3-TTS models take about 13 GB, VoxCPM2 about 5 GB,
+  and each virtual environment (with PyTorch) about 6 GB. With little room,
+  render the Qwen3-TTS languages, delete `~/.cache/huggingface`, then
+  render the `voxcpm` ones.
 - `FFMPEG=/path/to/ffmpeg` picks the ffmpeg binary.
 - Qwen3-TTS samples its speech: two renders of the same text differ
   slightly. Listen to each video before publishing it, and render a
