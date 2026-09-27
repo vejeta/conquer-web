@@ -231,8 +231,9 @@ build_container() {
     # Source environment variables
     source config/production.env
 
-    # Build container
-    docker build -t conquer-game ./conquer
+    # Build the image the service runs (docker-compose names it after the
+    # project), so a deployment of new code does not keep the old image
+    docker-compose -f docker-compose.vps.yml build --pull conquer
 
     echo "✅ Docker container built"
 }
