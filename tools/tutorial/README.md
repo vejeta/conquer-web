@@ -26,3 +26,22 @@ python3 tools/tutorial/build.py
 `record.py` needs the `pyte` Python module and stops with an error when a
 screen is not the expected one (for example, when a random start places
 the capital with water to the south: pick another direction in the steps).
+
+## Narrated videos
+
+`video.py` turns the recording into `web/tutorial/first-turn.en.mp4` and
+`first-turn.es.mp4`, with captions (`.vtt`). The narration is in
+`narration.json`, one segment per step plus an opening and a closing; each
+shot holds the step's screen for as long as the narrator speaks. The voices
+(`bm_george` in English, `em_alex` in Spanish) come from Kokoro, an
+Apache-2.0 neural text-to-speech model that runs offline; `narration.json`
+also sets their speed.
+
+```bash
+python3 -m pip install kokoro-onnx soundfile   # once; the model (~350 MB)
+                                               # downloads on first use
+python3 tools/tutorial/video.py en es          # needs ffmpeg and node + playwright
+```
+
+To use a human voice instead, record one audio file per segment with the
+same text and replace the synthesis in `render()`.
