@@ -145,7 +145,7 @@ jobs:
           menu es | grep -q ') Jugar'
           # Only a known language is taken from the browser
           menu es-ES | grep -q ') Play'
-          docker exec conquer-local ps -o args= -C ttyd | grep -q -- '--url-arg'
+          docker exec conquer-local cat /proc/1/cmdline | tr '\0' ' ' | grep -q -- '--url-arg'
 
       - name: Game runs as an unprivileged user
         run: |
