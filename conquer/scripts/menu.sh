@@ -142,6 +142,8 @@ maybe_run_early_turn() {
 # Ask whether the orders are done after a game session
 ask_orders_done() {
     local nation="$1" answer
+    # The game leaves its login text behind on the screen
+    clear
     echo
     read -r -s -n 1 -p "  Are your orders for this turn done? [y/N] " answer
     echo
