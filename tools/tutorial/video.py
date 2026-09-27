@@ -217,6 +217,17 @@ def engine(lang, voice):
     raise SystemExit("unknown voice engine %r in narration/%s.json" % (kind, lang))
 
 
+def trim(samples, sr, threshold=0.01, margin=0.08):
+    """Cut the silence some voices leave before and after a sentence, so
+    every pause between shots is GAP long."""
+    import numpy as np
+    loud = np.flatnonzero(np.abs(samples) > threshold)
+    if not len(loud):
+        return samples
+    pad = int(margin * sr)
+    return samples[max(0, loud[0] - pad):min(len(samples), loud[-1] + pad)]
+
+
 def render(lang):
     import soundfile as sf
     import numpy as np
@@ -231,7 +242,7 @@ def render(lang):
     audio, cues, t0, sr = [], [], 0.0, 24000
     for n, seg in enumerate(segments, 1):
         samples, sr = tts.speak(seg["text"], voice)
-        samples = np.asarray(samples, dtype=np.float32)
+        samples = trim(np.asarray(samples, dtype=np.float32), sr)
         dur = len(samples) / sr + GAP
         audio.append(np.concatenate([samples, np.zeros(int(GAP * sr), dtype=np.float32)]))
         cues.append((t0, t0 + dur - GAP / 2, seg["text"], dur))
