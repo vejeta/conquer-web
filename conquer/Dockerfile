@@ -29,9 +29,24 @@ RUN useradd -m -u "${CONQUER_UID}" -s /bin/bash conquer
 ARG CONQUER_REPO=https://github.com/vejeta/conquer.git
 ARG CONQUER_REF=
 WORKDIR /src
+
+# Engine fixes not yet in the game repository (patches/README.md). A patch
+# that is already upstream is skipped; one that no longer applies fails the
+# build, so it is noticed and refreshed.
+COPY patches/ /src/patches/
 RUN git clone "${CONQUER_REPO}" conquer && \
     if [ -n "${CONQUER_REF}" ]; then git -C conquer checkout "${CONQUER_REF}"; fi && \
     git -C conquer log -1 --format='Conquer sources: %H %s' && \
+    for p in /src/patches/*.patch; do \
+        [ -e "$p" ] || continue; \
+        if git -C conquer apply --whitespace=nowarn --check "$p" 2>/dev/null; then \
+            git -C conquer apply --whitespace=nowarn "$p" && echo "Applied $(basename "$p")"; \
+        elif git -C conquer apply --whitespace=nowarn -R --check "$p" 2>/dev/null; then \
+            echo "Already in the sources: $(basename "$p")"; \
+        else \
+            echo "Patch does not apply: $(basename "$p")" >&2; exit 1; \
+        fi; \
+    done && \
     chown -R conquer:conquer conquer
 
 WORKDIR /src/conquer/gpl-release

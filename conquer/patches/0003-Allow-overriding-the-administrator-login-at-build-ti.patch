@@ -1,0 +1,33 @@
+From cd77a42f9a27d4e4a6fd2ff635dde5a67eb07d6e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Juan=20Manuel=20M=C3=A9ndez=20Rey?= <vejeta@gmail.com>
+Date: Sat, 26 Sep 2026 20:49:52 +0000
+Subject: [PATCH 3/3] Allow overriding the administrator login at build time
+
+LOGIN (the account that may create worlds and run turn updates) was
+always the user running make. Make it a variable defaulting to that
+user, so packages and containers can build for another account, e.g.
+'make LOGIN=games', without building as that user.
+---
+ gpl-release/Makefile | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/gpl-release/Makefile b/gpl-release/Makefile
+index d5c1879..65f10db 100644
+--- a/gpl-release/Makefile
++++ b/gpl-release/Makefile
+@@ -50,7 +50,11 @@ EXEDIR = $(PREFIX)/bin
+ # Base compiler definitions
+ CDEFS = -DDEFAULTDIR=\"$(DEFAULT)\" -DEXEDIR=\"$(EXEDIR)\"
+ CDEFS += -DVERSION=\"$(VERSION)\" -DPATCHLEVEL=\"$(PATCHLEVEL)\"
+-CDEFS += -DLOGIN=\"$(shell whoami)\"
++# LOGIN is the game administrator's login (may create worlds and run turn
++# updates). Defaults to the user running make; override it when building for
++# another account, e.g. "make LOGIN=games" or in a package or container.
++LOGIN ?= $(shell whoami)
++CDEFS += -DLOGIN=\"$(LOGIN)\"
+ 
+ # Platform-specific library detection
+ ifeq ($(UNAME_S),Linux)
+-- 
+2.43.0
+
