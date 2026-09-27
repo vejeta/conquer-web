@@ -139,6 +139,8 @@ install_landing_page() {
 
     mkdir -p "/var/www/$DOMAIN_NAME"
     cp -r "$PROJECT_DIR/web/." "/var/www/$DOMAIN_NAME/"
+    # Link previews (og:url, og:image) point at this server
+    sed -i "s|https://conquer.vejeta.com/|https://$DOMAIN_NAME/|g" "/var/www/$DOMAIN_NAME/index.html"
     chmod -R a+rX "/var/www/$DOMAIN_NAME"
 
     # Live world data directory (seeded by the container on first start)

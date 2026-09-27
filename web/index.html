@@ -7,8 +7,20 @@ SPDX-License-Identifier: GPL-3.0-or-later
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Conquer Web</title>
-  <meta name="description" content="Play Conquer, the classic multiplayer turn-based strategy game, in your browser.">
+  <title>Conquer 4.12: the 1987 multiplayer strategy game</title>
+  <meta name="description" content="Rule a nation, raise armies, sign treaties and break them. Conquer, the 1987 multiplayer strategy game, live again in your browser.">
+  <!-- Link previews. deploy-to-vps.sh writes the server's own address here -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Conquer">
+  <meta property="og:title" content="Conquer 4.12: the 1987 multiplayer strategy game, live again">
+  <meta property="og:description" content="Rule a nation, raise armies, sign treaties and break them. Play in your browser, or try a practice world without an account.">
+  <meta property="og:url" content="https://conquer.vejeta.com/">
+  <meta property="og:image" content="https://conquer.vejeta.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Conquer world map on an amber terminal, with a battle and the dispatch: sahara changes status with darboth to WAR">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preload" href="fonts/vt323-latin.woff2" as="font" type="font/woff2" crossorigin>
   <style>
     :root {
       --bg: #0d1117;
@@ -46,32 +58,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     }
     main { max-width: 820px; margin: 0 auto; padding: 32px 16px 48px; }
     header { text-align: center; margin-bottom: 32px; }
-    .logo {
-      margin: 0 0 8px;
-      color: var(--accent);
-      font: bold clamp(2.2rem, 9vw, 3.6rem)/1.1 ui-monospace, "DejaVu Sans Mono", monospace;
-      letter-spacing: 0.3em;
-      padding-left: 0.3em;
-    }
-    h1 { font-size: 1.1rem; font-weight: 500; color: var(--muted); margin: 0 0 24px; }
     h2 { font-size: 1.2rem; margin: 0 0 12px; }
-    .play {
-      display: inline-block;
-      padding: 14px 40px;
-      border-radius: 8px;
-      background: var(--accent);
-      color: var(--accent-text);
-      font-size: 1.15rem;
-      font-weight: 600;
-      text-decoration: none;
-    }
-    .play:hover, .play:focus-visible { filter: brightness(1.1); }
-    .hint { color: var(--muted); font-size: 0.9rem; margin-top: 10px; }
-    .try { display: inline-block; margin-left: 10px; padding: 13px 22px; border-radius: 8px; border: 1px solid var(--accent); color: var(--accent); font-weight: 600; text-decoration: none; }
-    .try:hover, .try:focus-visible { background: var(--panel); }
-    @media (max-width: 560px) { .try { margin: 10px 0 0; } }
-    .join { margin: 12px auto 0; max-width: 34em; padding: 8px 14px; border: 1px dashed var(--accent); border-radius: 8px; font-size: 0.95rem; }
-    .join code { font: 600 1em ui-monospace, "DejaVu Sans Mono", monospace; color: var(--accent); user-select: all; }
     section {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -129,28 +116,154 @@ SPDX-License-Identifier: GPL-3.0-or-later
     td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
     [hidden] { display: none !important; }
     @media (max-width: 560px) { .optional { display: none; } }
-    header { position: relative; }
-    .lang { position: absolute; top: -16px; right: 0; display: flex; gap: 4px; }
-    .lang select {
-      font: 600 0.8rem system-ui, sans-serif; color: var(--muted); background: var(--bg);
-      border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px; cursor: pointer;
+    /* The war terminal: an amber monitor of 1987, in both themes */
+    @font-face {
+      font-family: "VT323"; font-display: swap;
+      src: url(fonts/vt323-latin.woff2) format("woff2");
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
     }
-    @media (max-width: 560px) { .lang { position: static; justify-content: flex-end; margin: -16px 0 8px; } }
+    @font-face {
+      font-family: "VT323"; font-display: swap;
+      src: url(fonts/vt323-latin-ext.woff2) format("woff2");
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face {
+      font-family: "IM Fell English SC"; font-display: swap;
+      src: url(fonts/im-fell-english-sc-latin.woff2) format("woff2");
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122;
+    }
+    .hero {
+      --crt: #110b04; --crt-2: #1a1107; --amber: #ffb340; --amber-mid: #c7862b;
+      --amber-dim: #80581f; --amber-faint: #33230d; --war: #ff5540; --parchment: #f4e7c9;
+      --term: "VT323", ui-monospace, "DejaVu Sans Mono", monospace;
+      --display: "IM Fell English SC", "Iowan Old Style", Georgia, serif;
+      position: relative; overflow: hidden;
+      background: var(--crt); color: var(--amber);
+      border-bottom: 1px solid var(--amber-faint);
+      color-scheme: dark;
+    }
+    #map { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    /* Scanlines, the curved glass, and a darker side for the text */
+    .hero::before, .hero::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+    .hero::before { background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0 2px, rgba(0,0,0,.28) 2px 3px); z-index: 2; }
+    .hero::after {
+      background:
+        radial-gradient(ellipse at 72% 45%, rgba(0,0,0,0) 0 38%, rgba(0,0,0,.55) 80%),
+        linear-gradient(to right, rgba(17,11,4,.94) 0 30%, rgba(17,11,4,.55) 52%, rgba(17,11,4,0) 70%);
+      z-index: 1;
+    }
+    .hero-inner {
+      position: relative; z-index: 3;
+      max-width: 1120px; margin: 0 auto; padding: 24px 16px 32px;
+      display: grid; grid-template-columns: minmax(0, 470px) minmax(0, 1fr); gap: 24px;
+      min-height: 600px;
+    }
+    .topline { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
+    .topline select {
+      max-width: 60%; font: 18px/1 var(--term); color: var(--amber); background: var(--crt-2);
+      border: 1px solid var(--amber-dim); border-radius: 3px; padding: 3px 6px; cursor: pointer;
+    }
+    .pitch { display: flex; flex-direction: column; gap: 18px; align-self: center; }
+    .version { font: 20px/1 var(--term); color: var(--amber-mid); display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; }
+    .version b { color: var(--amber); font-weight: 400; }
+    .logo {
+      margin: 0; font: 400 clamp(3.2rem, 10vw, 5.6rem)/0.9 var(--display); color: var(--parchment);
+      letter-spacing: .04em; text-shadow: 0 0 18px rgba(255,179,64,.35), 0 0 2px rgba(255,179,64,.6);
+    }
+    .tagline { margin: 0; font: 400 1.25rem/1.4 var(--display); color: var(--amber); text-wrap: balance; max-width: 26em; }
+    .ctas { display: grid; grid-template-columns: repeat(2, minmax(0, max-content)); gap: 14px 16px; }
+    .cta { display: flex; flex-direction: column; gap: 6px; }
+    .cta a {
+      display: inline-block; text-align: center; padding: 12px 22px; border-radius: 3px;
+      font: 26px/1 var(--term); letter-spacing: .05em; text-decoration: none; white-space: nowrap;
+    }
+    .cta.primary a { background: var(--amber); color: var(--crt); box-shadow: 0 0 22px rgba(255,179,64,.35); }
+    .cta.secondary a { border: 1px solid var(--amber); color: var(--amber); background: rgba(17,11,4,.6); }
+    .cta a:hover, .cta a:focus-visible { filter: brightness(1.12); outline: 2px solid var(--parchment); outline-offset: 2px; }
+    .cta small { font-size: .82rem; color: var(--amber-mid); line-height: 1.35; max-width: 17em; }
+    .join { margin: 0; padding: 8px 12px; border: 1px dashed var(--amber-dim); font-size: .92rem; color: var(--parchment); background: rgba(17,11,4,.7); }
+    .join code { font: 1.15em var(--term); color: var(--amber); user-select: all; }
+    .links { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .92rem; }
+    .hero a.text { color: var(--parchment); text-decoration-color: var(--amber-dim); text-underline-offset: 3px; }
+    .story { display: flex; gap: 10px; align-items: baseline; border-top: 1px solid var(--amber-faint); padding-top: 12px; font-size: .95rem; }
+    .story span { color: var(--amber); font: 20px/1 var(--term); }
+    .wire {
+      align-self: end; justify-self: end; width: min(100%, 470px);
+      background: rgba(17,11,4,.84); border: 1px solid var(--amber-dim);
+      box-shadow: 0 0 0 1px rgba(0,0,0,.6), 0 12px 40px rgba(0,0,0,.5);
+      font: 21px/1.2 var(--term);
+    }
+    .wire h2 {
+      display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 10px; margin: 0;
+      padding: 6px 12px; background: var(--amber); color: var(--crt); font: inherit; letter-spacing: .06em;
+    }
+    .wire ol { list-style: none; margin: 0; padding: 10px 12px 12px; min-height: 8.6em; display: flex; flex-direction: column; gap: 4px; }
+    .wire li { color: var(--amber); overflow-wrap: anywhere; }
+    .wire li.old { color: var(--amber-mid); }
+    .wire li.older { color: var(--amber-dim); }
+    .wire .hot { color: var(--war); text-shadow: 0 0 8px rgba(255,85,64,.55); }
+    .wire .caret { display: inline-block; width: .55em; height: .95em; background: var(--amber); vertical-align: -0.12em; margin-left: 2px; animation: blink 1s steps(1) infinite; }
+    .wire p { margin: 0; padding: 0 12px 8px; font-size: 17px; color: var(--amber-dim); }
+    @keyframes blink { 50% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .wire .caret { animation: none; } }
+    @media (max-width: 820px) {
+      .hero-inner { grid-template-columns: minmax(0, 1fr); min-height: 0; padding-bottom: 20px; }
+      .hero::after { background: linear-gradient(to bottom, rgba(17,11,4,.92) 0 46%, rgba(17,11,4,.35) 70%, rgba(17,11,4,.7) 100%); }
+      .wire { justify-self: stretch; width: 100%; margin-top: 150px; }
+    }
+    @media (max-width: 420px) {
+      .ctas { grid-template-columns: minmax(0, 1fr); }
+      .cta a { width: 100%; }
+    }
+    /* How to join: the administrator's address and the two passwords */
+    .contact { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 14px; padding: 10px 14px; border: 1px dashed var(--accent); border-radius: 8px; }
+    .contact code { font: 600 1em ui-monospace, "DejaVu Sans Mono", monospace; color: var(--accent); user-select: all; overflow-wrap: anywhere; }
+    .contact button { font: 600 .85rem system-ui, sans-serif; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+    .contact button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .creds { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 14px; }
+    .cred { border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+    .cred strong { display: block; }
+    .cred span { color: var(--muted); font-size: .92rem; }
   </style>
 </head>
 <body>
+<div class="hero" id="hero">
+  <canvas id="map" aria-hidden="true"></canvas>
+  <div class="hero-inner">
+    <nav class="topline"><select id="lang" aria-label="Language" data-i18n-title="index.language"></select></nav>
+
+    <div class="pitch">
+      <p class="version"><b>CONQUER 4.12</b><span>Usenet, 1987</span><span>GPL</span></p>
+      <h1 class="logo">Conquer</h1>
+      <p class="tagline" data-i18n="index.tagline">Rule a nation. Raise armies, sign treaties, break them. The 1987 multiplayer strategy game, live again in your browser.</p>
+      <div class="ctas">
+        <div class="cta primary">
+          <a href="game.html" data-server-link="game.html" data-i18n="index.play">Play now</a>
+          <small data-i18n="index.hint">Sign in with your player account</small>
+        </div>
+        <div class="cta secondary">
+          <a href="try/" data-i18n="index.try">Try it free</a>
+          <small data-i18n="index.try_hint">No account needed: a practice world in your browser</small>
+        </div>
+      </div>
+      <p class="join" id="join" hidden><span data-i18n="index.join">Have an invite code? Press Play now and sign in as</span>
+        <code id="join-account"></code> / <code id="join-password"></code></p>
+      <div class="links">
+        <a class="text" href="tutorial.html" data-i18n-page="tutorial" data-i18n="index.tutorial">New here? Play your first turn step by step</a>
+        <a class="text" href="guide.html" data-i18n-page="guide" data-i18n="index.guide">Player's guide</a>
+        <a class="text" href="hall.html" data-i18n="index.hall">Hall of fame</a>
+      </div>
+      <p class="story"><span aria-hidden="true">&gt;</span><a class="text" href="https://vejeta.com/reviving-classic-unix-games-a-20-year-journey-through-software-archaeology/" data-i18n="index.story">The story behind this revival</a></p>
+    </div>
+
+    <section class="wire" aria-labelledby="wire-title">
+      <h2><span id="wire-title" data-i18n="index.wire_title">WORLD NEWS</span><span id="wire-turn"></span></h2>
+      <ol id="wire"></ol>
+      <p id="wire-note" data-i18n="index.wire_example">Example dispatches: the real news of the game appear here once turns are played.</p>
+    </section>
+  </div>
+</div>
 <main>
-  <header>
-    <nav class="lang"><select id="lang" aria-label="Language" data-i18n-title="index.language"></select></nav>
-<p class="logo">CONQUER</p>
-    <h1 data-i18n="index.tagline">The classic multiplayer strategy game, in your browser</h1>
-    <a class="play" href="game.html" data-server-link="game.html" data-i18n="index.play">Play now</a>
-    <a class="try" href="try/" data-i18n="index.try">Try it now: no account needed</a>
-    <p class="hint" data-i18n="index.hint">You will be asked for your player account first.</p>
-    <p class="join" id="join" hidden><span data-i18n="index.join">Have an invite code? Press Play now and sign in as</span>
-      <code id="join-account"></code> / <code id="join-password"></code></p>
-    <p class="hint"><a href="tutorial.html" data-i18n-page="tutorial" data-i18n="index.tutorial">New here? Play your first turn step by step</a> · <a href="guide.html" data-i18n-page="guide" data-i18n="index.guide">Player's guide</a> · <a href="hall.html" data-i18n="index.hall">Hall of fame</a></p>
-  </header>
 
   <section id="status" hidden>
     <h2 data-i18n="index.h_current">Current game</h2>
@@ -184,27 +297,38 @@ SPDX-License-Identifier: GPL-3.0-or-later
   <section>
     <h2 data-i18n="index.h_what">What is Conquer?</h2>
     <p data-i18n="index.p_what">Conquer is a turn-based fantasy strategy game for many players, first released on Usenet
-      in 1987 by Ed Barlow and Adam Bryant. Each player rules a nation: build cities, raise
-      armies, cast magic, trade and negotiate with other rulers, and expand across a shared world.</p>
+      in 1987 by Ed Barlow and Adam Bryant. This server runs version 4.12 of the original game, now free
+      software under the GPL. Each player rules a nation: build cities, raise armies, cast magic, trade and
+      negotiate with other rulers, and expand across a shared world.</p>
+    <p data-i18n="index.p_story"><a href="https://vejeta.com/reviving-classic-unix-games-a-20-year-journey-through-software-archaeology/">The story behind this revival</a>:
+      how the game was found again, relicensed with its authors' permission and brought to the web.</p>
   </section>
 
-  <section>
+  <section id="how-to-join">
     <h2 data-i18n="index.h_join">How to join</h2>
-    <p class="note" data-i18n="index.note_join">The game is in a test phase: nations are created by the game administrator.</p>
+    <p class="note" data-i18n="index.note_join">The game is in a closed test: new nations join with an invite code.</p>
     <ol>
-      <li data-i18n="index.join1">Ask the administrator for a <strong>nation</strong>. You will get a player account for this site
-        linked to your nation, and your nation's password.</li>
-      <li data-i18n="index.join2">Press <strong>Play now</strong> and sign in with your player account.</li>
-      <li data-i18n="index.join3">In the menu choose <kbd>1</kbd> <strong>Play</strong>: your nation opens and asks for its password.</li>
+      <li data-i18n="index.join1">Write to the game administrator for an <strong>invite code</strong>.</li>
+      <li data-i18n="index.join2">Press <strong>Play now</strong> and sign in with the joining account shown under the button. Enter your code, then choose your own player account and found your nation.</li>
+      <li data-i18n="index.join3">From then on, sign in with your own account and choose <kbd>1</kbd> <strong>Play</strong>: your nation asks for its password.</li>
     </ol>
+    <div class="contact" id="contact" hidden>
+      <span data-i18n="index.contact">Game administrator:</span>
+      <code id="contact-address"></code>
+      <button type="button" id="contact-copy" data-i18n="index.copy">Copy address</button>
+    </div>
+    <div class="creds">
+      <div class="cred"><strong data-i18n="index.cred_account_t">Your player account</strong><span data-i18n="index.cred_account">Opens the game server on this site. One per player.</span></div>
+      <div class="cred"><strong data-i18n="index.cred_nation_t">Your nation's password</strong><span data-i18n="index.cred_nation">Part of the original 1987 game: it guards your nation inside the world, as it did on the Unix machines it was written for.</span></div>
+    </div>
   </section>
 
   <section>
     <h2 data-i18n="index.h_turns">How turns work</h2>
     <ul>
       <li data-i18n="index.turns1">Log in as often as you like to give orders: move armies, draft troops, build, trade, send messages.</li>
-      <li data-i18n="index.turns2">All orders are resolved together at the next <strong>turn update</strong>. During the test phase
-        updates are <strong>weekly</strong>; the in-game menu shows the exact schedule and the last update.</li>
+      <li data-i18n="index.turns2">All orders are resolved together at the next <strong>turn update</strong>, on the schedule shown
+        under <strong>Current game</strong>; the in-game menu shows it too, with the last update.</li>
       <li data-i18n="index.turns3">Before each update, players still in the game are warned and, a few minutes later,
         disconnected; their orders are saved. Press <kbd>q</kbd> to quit the game when you are done.</li>
       <li data-i18n="index.turns4">When you quit, the menu asks whether your orders for the turn are done. Once every
@@ -259,6 +383,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 </main>
 <script src="server.js"></script>
 <script src="site.js"></script>
+<script src="hero.js"></script>
 <script>
   // Texts of the page: i18n/<language>.json, "index" (site.js)
   function m(key, params) { return conquerI18n.t('index.' + key, params); }
@@ -345,6 +470,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
       set('status-ready', m('m_ready', { done: r.done, total: r.total }));
       set('status-ready-note', r.early ? m('m_early') : '');
     }
+    if (d.contact) {
+      set('contact-address', d.contact);
+      document.getElementById('contact').hidden = false;
+    }
+    renderWire(d);
     if (d.join) {
       set('join-account', d.join.account);
       set('join-password', d.join.password);
@@ -463,6 +593,51 @@ SPDX-License-Identifier: GPL-3.0-or-later
     .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
     .then(function (h) { return conquerI18n.ready().then(function () { renderChart(h); }); })
     .catch(function () { /* no history yet */ });
+
+  // The war terminal: the world map and a teletype of world news. Until the
+  // game has news, it prints example dispatches (the game's news is in
+  // English, so these are too)
+  var EXAMPLES = [
+    'sahara changes status with darboth to WAR',
+    'woooo breaks its treaty with darboth: BETRAYAL',
+    'army 7 of sahara marches on the forts of darboth',
+    'BATTLE near the capital of darboth: 1840 soldiers fall',
+    'sahara captures 3 forts of darboth',
+    'edland and anorian sign an alliance',
+    'fung bribes the nomads with 50000 gold',
+    'anorian changes status with edland to HOSTILE'
+  ];
+  var wire = conquerHero.teletype(document.getElementById('wire'));
+  wire.set(EXAMPLES);
+  conquerHero.load().then(function (map) { conquerHero.start(document.getElementById('map'), map); })
+    .catch(function () { /* no map: the hero stays a plain terminal */ });
+  var wireLive = false;
+  function renderWire(d) {
+    var ed = (d.news || [])[0];
+    var items = [];
+    if (ed) ed.sections.forEach(function (sec) { items = items.concat(sec.items); });
+    if (items.length) {
+      document.getElementById('wire-turn').textContent = m('wire_turn', { n: ed.turn });
+      document.getElementById('wire-note').setAttribute('data-i18n', 'index.wire_live');
+      document.getElementById('wire-note').innerHTML = m('wire_live');
+      if (!wireLive) wire.set(items.slice(0, 12));
+      wireLive = true;
+    }
+  }
+
+  document.getElementById('contact-copy').addEventListener('click', function (e) {
+    var button = e.currentTarget, code = document.getElementById('contact-address');
+    function select() {
+      var r = document.createRange(); r.selectNodeContents(code);
+      var sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    }
+    try {
+      navigator.clipboard.writeText(code.textContent).then(function () {
+        button.textContent = m('copied');
+        setTimeout(function () { button.textContent = m('copy'); }, 1600);
+      }, select);
+    } catch (err) { select(); }
+  });
 
   // Public game status published by the game container after every turn
   fetch(conquerServerUrl('status/status.json'), { cache: 'no-store' })
