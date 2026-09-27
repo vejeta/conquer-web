@@ -24,6 +24,7 @@
     { code: 'es', name: 'Español', pages: ['guide', 'tutorial'] },
     { code: 'de', name: 'Deutsch', pages: ['tutorial'] },
     { code: 'pt-br', name: 'Português (Brasil)', pages: ['tutorial'] },
+    { code: 'pl', name: 'Polski', pages: ['tutorial'] },
     { code: 'ru', name: 'Русский', pages: ['tutorial'] },
     { code: 'zh', name: '简体中文', pages: ['tutorial'] }
   ];

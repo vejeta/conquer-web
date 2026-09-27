@@ -1,8 +1,10 @@
 {
  "language": "pl",
  "voice": {
-  "engine": "pending",
-  "language": "Polish"
+  "engine": "voxcpm",
+  "language": "Polish",
+  "design": "A warm, deep male voice of a native Polish documentary narrator from Warsaw, about forty years old. Calm, professional and evocative, with clear diction and an unhurried pace.",
+  "reference": "Październik tysiąc dziewięćset osiemdziesiątego siódmego roku. Pewna gra strategiczna rozchodzi się po całym świecie, post po poście, w Usenecie."
  },
  "captions": {
   "keys": "Klawisze",
