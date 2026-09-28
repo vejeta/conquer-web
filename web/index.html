@@ -171,16 +171,23 @@ SPDX-License-Identifier: GPL-3.0-or-later
       letter-spacing: .04em; text-shadow: 0 0 18px rgba(255,179,64,.35), 0 0 2px rgba(255,179,64,.6);
     }
     .tagline { margin: 0; font: 400 1.25rem/1.4 var(--display); color: var(--amber); text-wrap: balance; max-width: 26em; }
-    .ctas { display: grid; grid-template-columns: repeat(2, minmax(0, max-content)); gap: 14px 16px; }
-    .cta { display: flex; flex-direction: column; gap: 6px; }
+    /* Two buttons of equal width, each with its note below; long labels
+       (German, Russian...) wrap inside the button, and the buttons stack
+       when there is no room for both */
+    .ctas {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+      gap: 6px 16px;
+    }
+    .cta { display: grid; grid-row: span 2; grid-template-rows: subgrid; gap: 6px; align-content: start; }
     .cta a {
-      display: inline-block; text-align: center; padding: 12px 22px; border-radius: 3px;
-      font: 26px/1 var(--term); letter-spacing: .05em; text-decoration: none; white-space: nowrap;
+      display: flex; align-items: center; justify-content: center; min-height: 52px;
+      text-align: center; padding: 10px 16px; border-radius: 3px; overflow-wrap: anywhere;
+      font: 26px/1.05 var(--term); letter-spacing: .05em; text-decoration: none; text-wrap: balance;
     }
     .cta.primary a { background: var(--amber); color: var(--crt); box-shadow: 0 0 22px rgba(255,179,64,.35); }
     .cta.secondary a { border: 1px solid var(--amber); color: var(--amber); background: rgba(17,11,4,.6); }
     .cta a:hover, .cta a:focus-visible { filter: brightness(1.12); outline: 2px solid var(--parchment); outline-offset: 2px; }
-    .cta small { font-size: .82rem; color: var(--amber-mid); line-height: 1.35; max-width: 17em; }
+    .cta small { font-size: .82rem; color: var(--amber-mid); line-height: 1.35; margin-bottom: 8px; }
     .join { margin: 0; padding: 8px 12px; border: 1px dashed var(--amber-dim); font-size: .92rem; color: var(--parchment); background: rgba(17,11,4,.7); }
     .join code { font: 1.15em var(--term); color: var(--amber); user-select: all; }
     .links { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .92rem; }
@@ -210,10 +217,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
       .hero-inner { grid-template-columns: minmax(0, 1fr); min-height: 0; padding-bottom: 20px; }
       .hero::after { background: linear-gradient(to bottom, rgba(17,11,4,.92) 0 46%, rgba(17,11,4,.35) 70%, rgba(17,11,4,.7) 100%); }
       .wire { justify-self: stretch; width: 100%; margin-top: 150px; }
-    }
-    @media (max-width: 420px) {
-      .ctas { grid-template-columns: minmax(0, 1fr); }
-      .cta a { width: 100%; }
     }
     /* How to join: the administrator's address and the two passwords */
     .contact { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 14px; padding: 10px 14px; border: 1px dashed var(--accent); border-radius: 8px; }

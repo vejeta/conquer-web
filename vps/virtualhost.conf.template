@@ -82,6 +82,12 @@
         Options None
         AllowOverride None
         Require all granted
+        # Pages, scripts and texts change with every update: browsers ask
+        # for a newer copy each time (a short "not modified" when there is
+        # none), so nobody sees a new page with old texts
+        <FilesMatch "\.(html|js|css|json)$">
+            Header set Cache-Control "no-cache"
+        </FilesMatch>
     </Directory>
 
     # Public game status, written by the game container
