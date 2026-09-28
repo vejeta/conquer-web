@@ -59,7 +59,7 @@
   var lang = pick();
   var base = (document.currentScript && document.currentScript.src || '').replace(/[^/]*$/, '');
   var texts = {};           // English, with the page's language on top
-  var loaded = null;
+  var loaded = null, loadedLang = null;
 
   function load(code) {
     return fetch(base + 'i18n/' + code + '.json').then(function (r) {
@@ -80,9 +80,12 @@
   // The texts of a page ("index", "game", "coach"...): a key missing in the
   // page's language falls back to English
   function ready() {
-    if (!loaded) {
-      loaded = Promise.all([load('en'), lang === 'en' ? {} : load(lang)]).then(function (both) {
-        texts = merge(merge({}, both[0]), both[1]);
+    if (!loaded || loadedLang !== lang) {
+      var want = loadedLang = lang;
+      loaded = Promise.all([load('en'), want === 'en' ? {} : load(want)]).then(function (both) {
+        // The visitor may have chosen another language while these texts
+        // were loading: only the latest choice sets the page's texts
+        if (want === lang) texts = merge(merge({}, both[0]), both[1]);
         return texts;
       });
     }
@@ -132,8 +135,11 @@
     if (!language(code)) return Promise.resolve(texts);
     try { localStorage.setItem(STORE, code); } catch (e) {}
     lang = code;
-    loaded = null;
-    return ready().then(function () { apply(); return texts; });
+    return ready().then(function () {
+      // A language chosen after this one wins; its own call applies it
+      if (code === lang) apply();
+      return texts;
+    });
   }
 
   // Links to the game server, carrying the language: the game server may
