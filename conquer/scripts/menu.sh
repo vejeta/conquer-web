@@ -357,7 +357,10 @@ practice_menu() {
 
 show_scores() {
     clear
-    (cd "$WORLD_DIR" && "$PREFIX/bin/conquer" -s 2>/dev/null) | less -R -P "$(tr_raw menu_scores_prompt)"
+    # LESSSECURE: no shell (!), editor (v) or other files (:e) from the
+    # pager, or a player would get a shell inside the game container
+    (cd "$WORLD_DIR" && "$PREFIX/bin/conquer" -s 2>/dev/null) \
+        | LESSSECURE=1 LESSKEY=/dev/null less -R -P "$(tr_raw menu_scores_prompt)"
 }
 
 play() {
