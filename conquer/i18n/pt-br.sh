@@ -127,7 +127,9 @@ MSG[join_title]="${bold}${green}Entre no Conquer${reset}"
 MSG[join_closed]="No momento, este servidor não está aceitando novos jogadores."
 MSG[join_welcome]="Bem-vindo! Você precisa de um ${bold}código de convite${reset} do administrador do jogo."
 MSG[join_code]="  Código de convite: "
-MSG[join_bad_code]="Esse código de convite não é válido ou já foi usado."
+MSG[join_bad_code]="Esse código de convite não é válido ou já foi usado.
+  Um código de convite tem esta forma: ${bold}K7QM-3XPA${reset}. O administrador o envia
+  para você; não é a senha da conta de ingresso."
 MSG[join_too_late]="A partida está no turno %s: depois do turno 5, as nações novas são
   criadas pelo administrador. Seu código continua válido; peça a ele
   que adicione sua nação."

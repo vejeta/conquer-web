@@ -122,7 +122,9 @@ MSG[join_title]="${bold}${green}加入 Conquer${reset}"
 MSG[join_closed]="本服务器目前不开放加入。"
 MSG[join_welcome]="欢迎。你需要游戏管理员提供的${bold}邀请码${reset}。"
 MSG[join_code]="  邀请码："
-MSG[join_bad_code]="该邀请码无效，或已被使用。"
+MSG[join_bad_code]="该邀请码无效，或已被使用。
+  邀请码的格式类似 ${bold}K7QM-3XPA${reset}，由管理员发给你；
+  它不是加入账号的密码。"
 MSG[join_too_late]="本局游戏已进行到第 %s 回合：第 5 回合之后，新国家需由管理员加入。
   你的邀请码仍然有效，请让管理员帮你添加国家。"
 MSG[join_choose_account]="请选择你在本网站登录用的${bold}玩家账号${reset}

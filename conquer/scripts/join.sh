@@ -87,6 +87,8 @@ join() {
     echo
     read -r -p "$(t join_code)" code
     code=$(printf '%s' "$code" | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
+    # Also without the dash: K7QM3XPA
+    [[ "$code" =~ ^[A-Z0-9]{8}$ ]] && code="${code:0:4}-${code:4:4}"
     if [ -z "$code" ] || ! grep -qx -- "$code" "$INVITES_FILE" 2>/dev/null; then
         fail "$(t join_bad_code)"
         return

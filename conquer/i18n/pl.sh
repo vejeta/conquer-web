@@ -126,7 +126,9 @@ MSG[join_title]="${bold}${green}Dołącz do Conquer${reset}"
 MSG[join_closed]="Na tym serwerze nie można teraz dołączyć do gry."
 MSG[join_welcome]="Witaj. Potrzebujesz ${bold}kodu zaproszenia${reset} od administratora gry."
 MSG[join_code]="  Kod zaproszenia: "
-MSG[join_bad_code]="Ten kod zaproszenia jest nieważny albo został już użyty."
+MSG[join_bad_code]="Ten kod zaproszenia jest nieważny albo został już użyty.
+  Kod zaproszenia wygląda tak: ${bold}K7QM-3XPA${reset}. Wysyła go administrator;
+  to nie jest hasło konta do dołączania."
 MSG[join_too_late]="Ta rozgrywka jest w turze %s: po turze 5 nowe narody zakłada
   administrator. Kod pozostaje ważny; poproś go o dodanie narodu."
 MSG[join_choose_account]="Wybierz ${bold}konto gracza${reset}, na które będziesz logować się na tej stronie

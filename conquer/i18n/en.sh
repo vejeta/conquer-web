@@ -127,7 +127,9 @@ MSG[join_title]="${bold}${green}Join Conquer${reset}"
 MSG[join_closed]="Joining is not available on this server right now."
 MSG[join_welcome]="Welcome. You need an ${bold}invite code${reset} from the game administrator."
 MSG[join_code]="  Invite code: "
-MSG[join_bad_code]="That invite code is not valid, or it has been used already."
+MSG[join_bad_code]="That invite code is not valid, or it has been used already.
+  An invite code looks like ${bold}K7QM-3XPA${reset}: the administrator sends it to you. It is
+  not the password of the joining account."
 MSG[join_too_late]="This game is at turn %s: after turn 5 new nations need the administrator. Your code stays valid; ask them to add your nation."
 MSG[join_choose_account]="Choose the ${bold}player account${reset} you will sign in with on this site
   ${dim}(letters, digits, . _ - ; up to 32 characters)${reset}"

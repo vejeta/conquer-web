@@ -126,7 +126,9 @@ MSG[join_title]="${bold}${green}Bei Conquer mitmachen${reset}"
 MSG[join_closed]="Auf diesem Server ist ein Beitritt gerade nicht möglich."
 MSG[join_welcome]="Willkommen. Du brauchst einen ${bold}Einladungscode${reset} vom Spielleiter."
 MSG[join_code]="  Einladungscode: "
-MSG[join_bad_code]="Dieser Einladungscode ist ungültig oder wurde schon benutzt."
+MSG[join_bad_code]="Dieser Einladungscode ist ungültig oder wurde schon benutzt.
+  Ein Einladungscode sieht so aus: ${bold}K7QM-3XPA${reset}. Du bekommst ihn vom
+  Spielleiter; er ist nicht das Passwort des Beitrittskontos."
 MSG[join_too_late]="Diese Partie ist bei Zug %s: Nach Zug 5 legt der Spielleiter neue
   Nationen an. Dein Code bleibt gültig; bitte ihn, deine Nation anzulegen."
 MSG[join_choose_account]="Wähle das ${bold}Spielerkonto${reset}, mit dem du dich auf dieser Seite anmeldest
