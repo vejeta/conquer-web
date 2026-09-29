@@ -224,24 +224,50 @@ cmd_invites() {
     cat "$INVITES_FILE"
 }
 
+# Set KEY=VALUE in an environment file, replacing an earlier line; the file
+# keeps its owner and permissions (it may hold passwords)
+set_env() {
+    local file="$1" key="$2" value="$3" tmp
+    tmp=$(mktemp)
+    grep -v "^$key=" "$file" > "$tmp" || true
+    printf '%s=%s\n' "$key" "$value" >> "$tmp"
+    cat "$tmp" > "$file"
+    rm -f "$tmp"
+}
+
 cmd_join_account() {
-    local name="${1:-join}" password
+    local name="${1:-join}" password env_file restart
     valid_name "$name" || { echo "❌ Invalid name"; exit 1; }
+    if [ "$HTPASSWD_FILE" = /etc/apache2/conquer-web.htpasswd ]; then
+        env_file="$SCRIPT_DIR/config/production.env"
+        restart="sudo systemctl restart conquer-web"
+    else
+        env_file="$SCRIPT_DIR/config/local.env"
+        restart="./rebuild.sh --quick"
+    fi
     password=$(openssl rand -base64 9 | tr -d '/+=' | cut -c1-10)
     printf '%s\n' "$password" | cmd_add "$name" --password-stdin > /dev/null
     remove_line "$PLAYERS_FILE" "$name"
-    cat <<EOF
-✅ Join account created. Anyone may use it: it only opens the join wizard,
-   and joining needs an invite code (./manage-players.sh invite).
-   Add these lines to the environment file (config/production.env on the
-   VPS, config/local.env locally) and restart the game: on the VPS
-   sudo systemctl restart conquer-web, locally ./rebuild.sh --quick
+    if [ -f "$env_file" ]; then
+        set_env "$env_file" JOIN_ACCOUNT "$name"
+        set_env "$env_file" JOIN_PASSWORD "$password"
+        cat <<EOF
+✅ Join account '$name' created and set in ${env_file#"$SCRIPT_DIR"/}.
+   Anyone may use it: it only opens the join wizard, and joining needs an
+   invite code (./manage-players.sh invite). The home page shows it to
+   visitors once the game restarts:
+
+   $restart
+EOF
+    else
+        cat <<EOF
+✅ Join account created. Add these lines to the environment file and
+   restart the game ($restart):
 
 JOIN_ACCOUNT=$name
 JOIN_PASSWORD=$password
-
-   The landing page then shows this account and password to visitors.
 EOF
+    fi
 }
 
 case "${1:-}" in

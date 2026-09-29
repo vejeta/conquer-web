@@ -7,7 +7,20 @@ players (in the browser). The full explanations are in [README.md](README.md),
 ## Administrator
 
 Run these on the server, in the project directory (`/home/conquer/conquer-web`
-on the VPS), with `sudo`.
+on the VPS).
+
+**Who needs `sudo`.** The game itself runs as an unprivileged user inside its
+container; `sudo` is only for the server's side of the administration:
+
+- `update-vps.sh`, `manage-players.sh`, `add-nation.sh` and
+  `check-web-login.sh` write files the web server owns
+  (`/etc/apache2/conquer-web.htpasswd`, `/var/www/…`) or restart services:
+  they need `sudo`.
+- The rest only talk to the game container (`docker exec`): they work with
+  `sudo` or as a user in the `docker` group. Membership of that group is
+  as powerful as root, so giving it to your everyday account saves typing,
+  not risk; `sudo` keeps a trace of each command.
+- Players never run anything: they play in the browser.
 
 ### Keep the server up to date
 
@@ -16,8 +29,8 @@ on the VPS), with `sudo`.
 | `sudo ./update-vps.sh` | Saves a copy of accounts, settings and world, pulls the code, rebuilds the game when it changed, installs the web pages, checks the result |
 | `sudo ./update-vps.sh --rebuild` | The same, always rebuilding the game |
 | `sudo systemctl restart conquer-web` | Restarts the game, for example after changing `config/production.env` |
-| `./health-check.sh` | Checks Docker, the game container and the site |
-| `./logs.sh` | Follows the game container's log |
+| `sudo ./health-check.sh` | Checks Docker, the game container and the site |
+| `sudo ./logs.sh` | Follows the game container's log |
 
 Passwords (web accounts, nations) and the world survive all of these.
 
@@ -27,9 +40,9 @@ Passwords (web accounts, nations) and the world survive all of these.
 new nations can join until turn 5):
 
 ```bash
-sudo ./manage-players.sh join-account   # once: prints JOIN_ACCOUNT and JOIN_PASSWORD;
-                                        # add them to config/production.env, then
-sudo systemctl restart conquer-web      # the home page shows that account
+sudo ./manage-players.sh join-account   # once: creates the shared joining account
+                                        # and sets it in config/production.env
+sudo systemctl restart conquer-web      # then the home page shows it
 sudo ./manage-players.sh invite         # a single-use code for one player
 sudo ./manage-players.sh invites        # the codes not used yet
 ```
@@ -67,7 +80,7 @@ Nation passwords keep at most 7 characters (god needs at least 4).
 
 | Command | What it does |
 |---------|--------------|
-| `./run-turn.sh` | Runs the turn update now (refused while players are in the game) |
+| `sudo ./run-turn.sh` | Runs the turn update now (refused while players are in the game) |
 | `TURN_SCHEDULE=0 20 * * *` | In `config/production.env`: when turns run (cron format, here every day at 20:00); restart the game after changing it |
 | `TURN_SCHEDULE_LABEL=Daily at 20:00 UTC` | How the schedule is shown to players |
 | `TURN_EARLY=on` | The update runs as soon as every nation marks its orders done |
@@ -78,17 +91,20 @@ A copy of the world is taken before every update (`data/backups/`).
 
 | Command | What it does |
 |---------|--------------|
-| `./backup-world.sh` | A copy of the world now |
-| `./restore-world.sh` | Lists the copies and restores one |
-| `./season-end.sh "Season 1: …"` | Keeps the final scores of a season in the hall of fame |
-| `./generate-world.sh` | Makes a new world (see README.md, "The default world") |
+| `sudo ./backup-world.sh` | A copy of the world now |
+| `sudo ./restore-world.sh` | Lists the copies and restores one |
+| `sudo ./season-end.sh "Season 1: …"` | Keeps the final scores of a season in the hall of fame |
+| `sudo ./generate-world.sh` | Makes a new world (see README.md, "The default world") |
 
 ### Other settings in `config/production.env`
 
 | Setting | What it does |
 |---------|--------------|
 | `ADMIN_CONTACT=` | Your address, shown under "How to join" on the home page and in the menu |
-| `JOIN_ACCOUNT=`, `JOIN_PASSWORD=` | The shared account for players with an invite code |
+| `JOIN_ACCOUNT=`, `JOIN_PASSWORD=` | The shared account for players with an invite code (set by `manage-players.sh join-account`) |
+
+After changing this file, `sudo systemctl restart conquer-web`: the game
+reads it when it starts, and the home page shows the new values then.
 
 ## Players
 
