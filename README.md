@@ -130,6 +130,21 @@ After the nation, the script asks for its name and creates the player's web
 account linked to it (see below). Give the player that account and the nation
 password.
 
+### Nation passwords, god's included
+
+The game asks each nation for its own password; god's is the game
+administrator's. To set one without knowing the old one (a forgotten god
+password, a player who lost theirs):
+
+```bash
+./set-nation-password.sh god
+./set-nation-password.sh sahara
+```
+
+Conquer keeps at most 7 characters of a password (god needs at least 4). The
+new password works at once. God's password is also asked by `add-nation.sh`
+once the game is past turn 5.
+
 ### Player accounts
 
 Players sign in to `/play/` with their own account. Apache checks it and

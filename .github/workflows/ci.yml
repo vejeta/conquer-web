@@ -86,6 +86,16 @@ jobs:
             exit 1
           fi
 
+      - name: Nation password tool (on a copy of the world)
+        run: |
+          docker exec -u conquer conquer-local sh -c '
+            mkdir -p /tmp/pw && cp /opt/conquer/lib/data /tmp/pw/ &&
+            printf "abcd12\n" | conqpasswd -d /tmp/pw god &&
+            printf "zz12\n" | conqpasswd -d /tmp/pw sahara &&
+            ! printf "abc\n" | conqpasswd -d /tmp/pw god 2>/dev/null &&
+            ! printf "abcd\n" | conqpasswd -d /tmp/pw nosuchnation 2>/dev/null &&
+            test "$(cmp -l /opt/conquer/lib/data /tmp/pw/data | wc -l)" -gt 0'
+
       - name: Default world, owner fix and public status
         run: |
           test "$(docker exec conquer-local conqowner)" = 1000

@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Conquer hardcodes its data (DEFAULTDIR) and binary (EXEDIR) paths at
 # compile time. Build with a fixed prefix so help files and conqsort are found:
-#   /opt/conquer/bin  -> conquer, conqrun, conqsort, conqowner
+#   /opt/conquer/bin  -> conquer, conqrun, conqsort, conqowner, conqpasswd
 #   /opt/conquer/lib  -> live world data (mounted as a volume)
 ENV CONQUER_PREFIX=/opt/conquer
 
@@ -64,6 +64,14 @@ RUN gcc -std=gnu99 -D_GNU_SOURCE -O2 -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 \
         -DDEFAULTDIR=\"${CONQUER_PREFIX}/lib\" -DEXEDIR=\"${CONQUER_PREFIX}/bin\" \
         -DVERSION=\"4\" -DPATCHLEVEL=\"12\" -DLOGIN=\"conquer\" -DADMIN -DCONQUER \
         -I. -o ${CONQUER_PREFIX}/bin/conqowner /src/conqowner.c
+
+# conqpasswd: sets a nation's password, god's included, without the old one
+# (set-nation-password.sh)
+COPY tools/conqpasswd.c /src/conqpasswd.c
+RUN gcc -std=gnu99 -D_GNU_SOURCE -O2 -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 \
+        -DDEFAULTDIR=\"${CONQUER_PREFIX}/lib\" -DEXEDIR=\"${CONQUER_PREFIX}/bin\" \
+        -DVERSION=\"4\" -DPATCHLEVEL=\"12\" -DLOGIN=\"conquer\" -DADMIN -DCONQUER \
+        -I. -o ${CONQUER_PREFIX}/bin/conqpasswd /src/conqpasswd.c -lcrypt
 
 # ttyd: official static release binary, pinned and checksum-verified.
 # The checksums belong to this version; update both together.

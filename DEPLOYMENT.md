@@ -288,15 +288,16 @@ docker stats conquer-vps
 
 ### Update procedure
 ```bash
-#!/bin/bash
-# update-conquer.sh
-
 cd /home/conquer/conquer-web
-git pull
-sudo systemctl stop conquer-web
-docker build -t conquer-game ./conquer
-sudo systemctl start conquer-web
+sudo ./update-vps.sh            # rebuilds the game only when it changed
+sudo ./update-vps.sh --rebuild  # always rebuilds it
 ```
+
+It saves a copy of the web accounts, `config/production.env` and the world
+in `/root/conquer-backups/` (the last 10), pulls the branch, rebuilds the
+game container under the service's docker-compose project (`conquer-vps`)
+when `conquer/` changed, installs the web pages and checks the result.
+Passwords and the world are not changed.
 
 This deployment method leverages your existing Apache installation while running the game in a Docker container for easy management and isolation.
 
