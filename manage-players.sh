@@ -233,8 +233,9 @@ cmd_join_account() {
     cat <<EOF
 ✅ Join account created. Anyone may use it: it only opens the join wizard,
    and joining needs an invite code (./manage-players.sh invite).
-   Add these lines to the environment file (config/local.env or
-   config/production.env) and restart with ./rebuild.sh --quick:
+   Add these lines to the environment file (config/production.env on the
+   VPS, config/local.env locally) and restart the game: on the VPS
+   sudo systemctl restart conquer-web, locally ./rebuild.sh --quick
 
 JOIN_ACCOUNT=$name
 JOIN_PASSWORD=$password

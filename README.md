@@ -7,6 +7,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 A secure, web-based implementation of the classic Conquer strategy game using Docker containers, ttyd (terminal over HTTP), and Apache as a reverse proxy with SSL termination.
 
+
+> **Everyday commands** for the administrator and players: [QUICK-REFERENCE.md](QUICK-REFERENCE.md).
+
 ## 🎮 Overview
 
 This setup allows multiple players to access the same Conquer game instance through their web browsers, with proper authentication, rate limiting, and security features for safe public deployment.

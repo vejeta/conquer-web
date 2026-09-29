@@ -257,7 +257,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
       <li><strong>Marca tus órdenes como terminadas</strong><span>Al salir, el menú te pregunta si has acabado este turno.</span></li>
       <li><strong>Actualización del turno</strong><span>A la hora programada, o antes si todas las naciones han terminado. Avanza la estación.</span></li>
     </ol>
-    <p>Cada turno es una estación, y cuatro turnos hacen un año. Durante la fase de pruebas la actualización es <strong>semanal, los domingos a las 20:00 (hora de Madrid)</strong>; la página principal y el menú del juego muestran siempre la hora exacta y una cuenta atrás.</p>
+    <p>Cada turno es una estación, y cuatro turnos hacen un año. El administrador fija el calendario (diario durante la prueba cerrada); la página principal y el menú del juego muestran siempre la hora exacta de la próxima actualización y una cuenta atrás.</p>
   </section>
 
   <section id="tutorial">
@@ -267,20 +267,21 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
     <ol class="steps">
       <li>
-        <h3>Pide una nación</h3>
-        <p>Durante la fase de pruebas, las naciones las crea el administrador de la partida. Envíale:</p>
-        <ul>
-          <li>un <strong>nombre de nación</strong> de hasta 9 letras o cifras (por ejemplo, <span class="mono">avalon</span>);</li>
-          <li>una <strong>raza</strong>: humanos, elfos, enanos u orcos;</li>
-          <li>si quieres, una <strong>clase</strong> (rey, emperador, mago, sacerdote, comerciante, señor de la guerra…) y un <strong>alineamiento</strong> (bueno, neutral o malvado). El administrador puede aconsejarte.</li>
-        </ul>
-        <p>A cambio recibes dos cosas: una <strong>cuenta de jugador</strong> para este sitio (nombre y contraseña), vinculada a tu nación, y la <strong>contraseña de tu nación</strong>, de hasta 7 caracteres, que es la que te pide el propio juego.</p>
+        <h3>Consigue un código de invitación y funda tu nación</h3>
+        <p>Escribe al administrador de la partida (su dirección está en <strong>Cómo unirse</strong>, en la página principal) y pídele un <strong>código de invitación</strong>. Después:</p>
+        <ol>
+          <li>pulsa <strong>Jugar</strong> y entra con la <strong>cuenta de ingreso</strong> que aparece en la página principal, bajo los botones;</li>
+          <li>escribe tu código y elige tu propia <strong>cuenta de jugador</strong> para este sitio: un nombre y una contraseña de al menos 8 caracteres;</li>
+          <li>crea tu nación con el constructor de naciones del juego: un <strong>nombre de nación</strong> de hasta 9 letras (por ejemplo, <span class="mono">avalon</span>), una <strong>contraseña de nación</strong> de hasta 7 caracteres, una <strong>raza</strong> (humanos, elfos, enanos u orcos), una <strong>clase</strong> y un <strong>alineamiento</strong>. La pantalla explica cómo repartir los puntos; compra 2 o 3 puntos de tesoro.</li>
+          <li>cierra la pestaña del navegador (o abre el sitio en una ventana privada) y vuelve a entrar con <strong>tu propia cuenta</strong>.</li>
+        </ol>
+        <p>Así que tienes dos contraseñas: tu <strong>cuenta de jugador</strong> abre el juego en este sitio, y la <strong>contraseña de tu nación</strong> es la que pide el propio juego de 1987. Las naciones nuevas pueden entrar hasta el turno 5; después las añade el administrador.</p>
       </li>
 
       <li>
         <h3>Echa un vistazo a la partida en curso</h3>
         <p>La página principal muestra el turno, la estación, el calendario con una cuenta atrás hasta la próxima actualización, cuántas naciones han terminado sus órdenes, la clasificación y las últimas noticias del mundo.</p>
-        <figure><img src="guide/landing.png" width="1280" height="800" alt="La página principal de Conquer con el botón para jugar y la partida en curso: turno 4, invierno del año 1, calendario semanal, 0 de 3 naciones listas y la próxima actualización en 14 horas." loading="lazy"><figcaption>La página principal. También está en español (botón ES).</figcaption></figure>
+        <figure><img src="guide/landing.png" width="1280" height="800" alt="La página principal de Conquer con el botón para jugar y la partida en curso: turno 4, invierno del año 1, calendario semanal, 0 de 3 naciones listas y la próxima actualización en 14 horas." loading="lazy"><figcaption>La página principal. El menú de arriba cambia el idioma.</figcaption></figure>
         <div class="shots">
           <figure><img src="guide/world-news.png" width="788" height="400" alt="La sección de noticias del mundo con el periódico de los últimos turnos." loading="lazy"><figcaption>El periódico del mundo de los tres últimos turnos.</figcaption></figure>
           <figure class="phone"><img src="guide/landing-phone-es.png" width="780" height="1688" alt="La página principal en un móvil, en español y en modo oscuro." loading="lazy"><figcaption>En el móvil, en español.</figcaption></figure>
@@ -419,7 +420,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <p>El juego es el que recuerdas: Conquer 4, nivel de parche 12, con el mismo mapa, las mismas razas, clases y magia, y el mismo periódico. El motor solo ha recibido correcciones para cuelgues y mapas demasiado grandes. Lo que ha cambiado es todo lo demás:</p>
     <ul>
       <li>Nada de telnet, cuentas de shell ni <span class="mono">.cshrc</span>: juegas en una pestaña del navegador, desde donde quieras.</li>
-      <li>El administrador programa los turnos, de momento semanales, y <strong>se adelantan cuando todas las naciones han terminado</strong>, así que un grupo rápido puede jugar varios turnos a la semana.</li>
+      <li>El administrador programa los turnos y <strong>se adelantan cuando todas las naciones han terminado</strong>, así que un grupo rápido puede jugar varios turnos a la semana.</li>
       <li>La clasificación y el periódico son públicos en la página principal, para que tus amigos sigan la guerra sin jugar.</li>
       <li>Antes de cada turno se hace una copia de seguridad de todo el mundo.</li>
       <li>El código es software libre (GPL v3). Puedes leerlo, arreglarlo y alojar tu propio mundo.</li>
@@ -580,7 +581,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
   <section class="closing">
     <h2>Tu nación te espera</h2>
-    <p>Elige una raza, escoge un nombre de hasta nueve letras y pide al administrador una plaza en la próxima temporada. El mundo lleva girando desde 1987.</p>
+    <p>Elige una raza, escoge un nombre de hasta nueve letras y pide al administrador un código de invitación. El mundo lleva girando desde 1987.</p>
     <div class="actions">
       <a class="play" href="game.html?lang=es" data-server-link="game.html?lang=es">Jugar</a>
       <a class="secondary" href="index.html?lang=es">Partida en curso y clasificación</a>

@@ -57,12 +57,16 @@ else
     exit 1
 fi
 
+# On the VPS the systemd service runs docker-compose as project conquer-vps:
+# the same name here, or the build makes an image the service never runs
 if [ "$ENV_NAME" = "vps" ]; then
     ENV_FILE=config/production.env
     COMPOSE_FILE=docker-compose.vps.yml
+    PROJECT=(-p conquer-vps)
 else
     ENV_FILE=config/local.env
     COMPOSE_FILE=docker-compose.local.yml
+    PROJECT=()
 fi
 
 if [ ! -f "$ENV_FILE" ]; then
@@ -85,7 +89,7 @@ echo "   Environment: $ENV_NAME ($COMPOSE_FILE, $ENV_FILE)"
 
 if [ "$QUICK_RESTART" = true ]; then
     # "up" recreates containers whose configuration changed; "restart" would not
-    docker-compose -f "$COMPOSE_FILE" up -d --force-recreate
+    docker-compose "${PROJECT[@]}" -f "$COMPOSE_FILE" up -d --force-recreate
     echo ""
     echo "⚡ Quick restart completed - containers recreated without rebuilding"
     exit 0
@@ -97,9 +101,9 @@ if [ "$FORCE_REBUILD" = true ]; then
 fi
 
 echo "   Rebuilding containers..."
-docker-compose -f "$COMPOSE_FILE" build $BUILD_FLAGS
+docker-compose "${PROJECT[@]}" -f "$COMPOSE_FILE" build $BUILD_FLAGS
 echo "   Starting containers..."
-docker-compose -f "$COMPOSE_FILE" up -d
+docker-compose "${PROJECT[@]}" -f "$COMPOSE_FILE" up -d
 echo "✅ $ENV_NAME environment rebuilt and restarted!"
 echo "   World data in data/lib is preserved"
 
