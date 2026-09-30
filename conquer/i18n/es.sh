@@ -102,6 +102,8 @@ MSG[menu_updating_try_later]="  ${yellow}Se está procesando el turno.${reset} I
 MSG[menu_unassigned]="  ${yellow}Tu cuenta%s aún no tiene nación asignada.${reset}
   Pide una al administrador (mira \"Cómo unirse\" en el menú)."
 MSG[menu_opening]="Abriendo tu nación ${bold}%s${reset}."
+MSG[menu_nations]="Naciones de este mundo: %s"
+MSG[menu_nations_hint]="Escribe una de ellas (o god) cuando el juego pregunte \"What nation would you like to be\"."
 MSG[menu_disconnected]="${yellow}Se te ha desconectado para procesar el turno.${reset}
 Tus órdenes están guardadas. Vuelve en unos minutos para el nuevo turno."
 MSG[menu_cannot_enter]="${yellow}No se pudo entrar en el juego.${reset}

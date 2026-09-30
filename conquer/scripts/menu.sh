@@ -385,6 +385,12 @@ play() {
         found_nation
         return
     elif [ "$nation" = "*" ]; then
+        # Administrators choose the nation at the game's own prompt: say
+        # which nations there are (player nations, not the monsters)
+        t menu_nations "$( (cd "$WORLD_DIR" && "$PREFIX/bin/conquer" -s 2>/dev/null) \
+            | awk '$1 ~ /^[0-9]+$/ && $1 < 31 { printf "%s%s", sep, $2; sep = ", " }')"; echo
+        t menu_nations_hint; echo
+        echo
         run_game
     else
         t menu_opening "$nation"; echo

@@ -103,6 +103,8 @@ MSG[menu_updating_try_later]="  ${yellow}Trwa rozliczenie tury.${reset} Spróbuj
 MSG[menu_unassigned]="  ${yellow}Do twojego konta%s nie przydzielono jeszcze narodu.${reset}
   Poproś o niego administratora gry (zobacz \"Jak dołączyć\" w menu)."
 MSG[menu_opening]="Otwieram twój naród ${bold}%s${reset}."
+MSG[menu_nations]="Narody tego świata: %s"
+MSG[menu_nations_hint]="Wpisz jeden z nich (albo god), gdy gra zapyta \"What nation would you like to be\"."
 MSG[menu_disconnected]="${yellow}Rozłączono cię na czas rozliczenia tury.${reset}
 Twoje rozkazy zostały zapisane. Wróć za kilka minut na nową turę."
 MSG[menu_cannot_enter]="${yellow}Nie udało się wejść do gry.${reset}

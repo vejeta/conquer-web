@@ -106,6 +106,8 @@ MSG[menu_updating_try_later]="  ${yellow}Идёт обработка хода.${
 MSG[menu_unassigned]="  ${yellow}К твоему аккаунту%s пока не привязана нация.${reset}
   Попроси её у администратора игры (см. \"Как присоединиться\" в меню)."
 MSG[menu_opening]="Открываю твою нацию ${bold}%s${reset}."
+MSG[menu_nations]="Народы этого мира: %s"
+MSG[menu_nations_hint]="Введи один из них (или god), когда игра спросит «What nation would you like to be»."
 MSG[menu_disconnected]="${yellow}Тебя отключили на время обработки хода.${reset}
 Твои приказы сохранены. Загляни через несколько минут: будет новый ход."
 MSG[menu_cannot_enter]="${yellow}Не удалось войти в игру.${reset}

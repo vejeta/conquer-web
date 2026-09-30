@@ -104,6 +104,8 @@ MSG[menu_updating_try_later]="  ${yellow}A turn update is in progress.${reset} P
 MSG[menu_unassigned]="  ${yellow}No nation is assigned to your account%s yet.${reset}
   Ask the game administrator for one (see \"How to join\" in the menu)."
 MSG[menu_opening]="Opening your nation ${bold}%s${reset}."
+MSG[menu_nations]="Nations of this world: %s"
+MSG[menu_nations_hint]="Type one of them (or god) when the game asks \"What nation would you like to be\"."
 MSG[menu_disconnected]="${yellow}You were disconnected for the turn update.${reset}
 Your orders were saved. Come back in a few minutes for the new turn."
 MSG[menu_cannot_enter]="${yellow}Could not enter the game.${reset}

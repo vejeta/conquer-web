@@ -203,10 +203,14 @@ SPDX-License-Identifier: GPL-3.0-or-later
         document.getElementById('done-account').textContent = res.account;
         var lang = conquerI18n.lang();
         document.getElementById('play').href = 'game.html' + (lang !== 'en' ? '?lang=' + lang : '');
+        // Done: the next steps replace the explanation, at the top
+        document.querySelector('.keys').hidden = true;
+        document.querySelector('.lede').hidden = true;
         document.getElementById('form-panel').hidden = true;
         document.getElementById('nocode').hidden = true;
         document.getElementById('done').hidden = false;
-        document.getElementById('play').focus();
+        window.scrollTo(0, 0);
+        document.getElementById('play').focus({ preventScroll: true });
       }).catch(function () {
         submit.disabled = false;
         show('network');

@@ -98,6 +98,8 @@ MSG[menu_updating_try_later]="  ${yellow}回合结算正在进行中。${reset}�
 MSG[menu_unassigned]="  ${yellow}还没有国家分配给你的账号%s。${reset}
   请向游戏管理员申请一个（见菜单中的“如何加入”）。"
 MSG[menu_opening]="正在打开你的国家 ${bold}%s${reset}。"
+MSG[menu_nations]="本世界的国家：%s"
+MSG[menu_nations_hint]="当游戏询问 \"What nation would you like to be\" 时，输入其中一个（或 god）。"
 MSG[menu_disconnected]="${yellow}因回合结算，你已被断开连接。${reset}
 你的指令已保存。几分钟后再回来，迎接新的回合。"
 MSG[menu_cannot_enter]="${yellow}无法进入游戏。${reset}

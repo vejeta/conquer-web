@@ -102,6 +102,8 @@ MSG[menu_updating_try_later]="  ${yellow}Eine Zugauswertung läuft gerade.${rese
 MSG[menu_unassigned]="  ${yellow}Deinem Konto%s ist noch keine Nation zugewiesen.${reset}
   Bitte den Spielleiter um eine (siehe \"So machst du mit\" im Menü)."
 MSG[menu_opening]="Deine Nation ${bold}%s${reset} wird geöffnet."
+MSG[menu_nations]="Nationen dieser Welt: %s"
+MSG[menu_nations_hint]="Gib eine davon (oder god) ein, wenn das Spiel \"What nation would you like to be\" fragt."
 MSG[menu_disconnected]="${yellow}Du wurdest für die Zugauswertung getrennt.${reset}
 Deine Befehle sind gespeichert. Schau in ein paar Minuten für den neuen Zug
 wieder vorbei."
