@@ -41,6 +41,19 @@ jobs:
           docker build --check ./conquer
           docker build --check ./apache
 
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Chromium for the browser tests
+        run: |
+          python3 -m pip install --quiet pytest playwright
+          python3 -m playwright install --with-deps chromium
+
+      - name: Tests in the browser (coach, key bar, terminal size, sign-up video)
+        run: python3 -m pytest -m browser
+
   smoke:
     needs: lint
     runs-on: ubuntu-latest
