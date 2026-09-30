@@ -16,8 +16,6 @@
 #   ./manage-players.sh list                list accounts and their nations
 #   ./manage-players.sh invite [COUNT]      create invite codes (default 1)
 #   ./manage-players.sh invites             list the unused invite codes
-#   ./manage-players.sh join-account [NAME] create the public account that
-#                                           players with an invite code use
 #
 # Without an assignment an account opens the nation with the same name, if
 # there is one. The account file is data/auth/htpasswd for the local setup
@@ -194,12 +192,13 @@ cmd_list() {
         {
             n = ($1 in nation) ? nation[$1] : "-"
             if (n == "*") n = "* (administrator)"
+            if (n == "+") n = "+ (signed up, nation not founded yet)"
             printf "%-32s %s\n", $1, n
         }'
 }
 
-# Invite codes: players type one in the join wizard (sign in with the
-# join account) to build their nation and create their own account
+# Invite codes: players type one on the sign-up page (join.html) to create
+# their account; the game then has them found their nation
 cmd_invite() {
     local count="${1:-1}" i code
     [[ "$count" =~ ^[0-9]+$ ]] && [ "$count" -ge 1 ] && [ "$count" -le 100 ] || usage
@@ -224,50 +223,18 @@ cmd_invites() {
     cat "$INVITES_FILE"
 }
 
-# Set KEY=VALUE in an environment file, replacing an earlier line; the file
-# keeps its owner and permissions (it may hold passwords)
-set_env() {
-    local file="$1" key="$2" value="$3" tmp
-    tmp=$(mktemp)
-    grep -v "^$key=" "$file" > "$tmp" || true
-    printf '%s=%s\n' "$key" "$value" >> "$tmp"
-    cat "$tmp" > "$file"
-    rm -f "$tmp"
-}
-
+# The shared joining account of earlier versions is gone: players create
+# their own account on the sign-up page
 cmd_join_account() {
-    local name="${1:-join}" password env_file restart
-    valid_name "$name" || { echo "❌ Invalid name"; exit 1; }
-    if [ "$HTPASSWD_FILE" = /etc/apache2/conquer-web.htpasswd ]; then
-        env_file="$SCRIPT_DIR/config/production.env"
-        restart="sudo systemctl restart conquer-web"
-    else
-        env_file="$SCRIPT_DIR/config/local.env"
-        restart="./rebuild.sh --quick"
-    fi
-    password=$(openssl rand -base64 9 | tr -d '/+=' | cut -c1-10)
-    printf '%s\n' "$password" | cmd_add "$name" --password-stdin > /dev/null
-    remove_line "$PLAYERS_FILE" "$name"
-    if [ -f "$env_file" ]; then
-        set_env "$env_file" JOIN_ACCOUNT "$name"
-        set_env "$env_file" JOIN_PASSWORD "$password"
-        cat <<EOF
-✅ Join account '$name' created and set in ${env_file#"$SCRIPT_DIR"/}.
-   Anyone may use it: it only opens the join wizard, and joining needs an
-   invite code (./manage-players.sh invite). The home page shows it to
-   visitors once the game restarts:
+    cat <<EOF
+The shared joining account is no longer used: players with an invite code
+create their own account on the site's sign-up page (join.html).
+If an earlier version created it, remove it:
 
-   $restart
-EOF
-    else
-        cat <<EOF
-✅ Join account created. Add these lines to the environment file and
-   restart the game ($restart):
+   sudo ./manage-players.sh remove join
 
-JOIN_ACCOUNT=$name
-JOIN_PASSWORD=$password
+and delete JOIN_ACCOUNT and JOIN_PASSWORD from the environment file.
 EOF
-    fi
 }
 
 case "${1:-}" in

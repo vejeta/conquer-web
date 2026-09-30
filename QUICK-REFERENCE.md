@@ -36,19 +36,16 @@ Passwords (web accounts, nations) and the world survive all of these.
 
 ### Let a player in
 
-**With an invite code** (the player creates their own account and nation;
-new nations can join until turn 5):
+**With an invite code** (the player creates their own account on the site,
+then founds their nation; new nations can join until turn 5):
 
 ```bash
-sudo ./manage-players.sh join-account   # once: creates the shared joining account
-                                        # and sets it in config/production.env
-sudo systemctl restart conquer-web      # then the home page shows it
 sudo ./manage-players.sh invite         # a single-use code for one player
 sudo ./manage-players.sh invites        # the codes not used yet
 ```
 
-Send the player the code and the address of the site. They follow "How to
-join" on the home page.
+Send the player the code, or the link `https://YOUR-SITE/join.html?code=THE-CODE`.
+They choose **Create your account**, then **Play now** with that account.
 
 **Or create the nation yourself**:
 
@@ -101,7 +98,7 @@ A copy of the world is taken before every update (`data/backups/`).
 | Setting | What it does |
 |---------|--------------|
 | `ADMIN_CONTACT=` | Your address, shown under "How to join" on the home page and in the menu |
-| `JOIN_ACCOUNT=`, `JOIN_PASSWORD=` | The shared account for players with an invite code (set by `manage-players.sh join-account`) |
+| `SIGNUP=on` | Sign-up with invite codes on the site (`off` closes it) |
 
 After changing this file, `sudo systemctl restart conquer-web`: the game
 reads it when it starts, and the home page shows the new values then.
@@ -111,9 +108,9 @@ reads it when it starts, and the home page shows the new values then.
 Everything happens in the browser, at the address of the site.
 
 1. **Join**: ask the administrator (address under "How to join") for an
-   invite code. Press **Play now**, sign in with the joining account shown on
-   the home page, type the code, choose your own player account and build
-   your nation. Then close the tab and sign in again with your own account.
+   invite code. Choose **Create your account** on the home page, type the
+   code and choose your account name and password. Then **Play now** with
+   that account: the game has you found your nation.
 2. **Play**: **Play now**, your account, option **1** of the menu, your
    nation password.
 3. **Learn**: **Try it free** on the home page (a practice world, no account),

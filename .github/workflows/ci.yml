@@ -160,6 +160,25 @@ jobs:
           menu es-ES | grep -q ') Play'
           docker exec conquer-local cat /proc/1/cmdline | tr '\0' ' ' | grep -q -- '--url-arg'
 
+      - name: Sign-up with an invite code
+        run: |
+          signup() { curl -sk -H 'Content-Type: application/json' -d "$1" https://localhost/join/api/signup; }
+          test "$(curl -sk https://localhost/status/status.json | jq .signup)" = true
+          code=$(sudo ./manage-players.sh invite 1 2>/dev/null)
+          # A wrong code creates nothing
+          signup '{"code":"ZZZZ-9999","account":"newbie","password":"newbie-pass"}' | jq -e '.error == "bad_code"'
+          signup "{\"code\":\"$code\",\"account\":\"$TTYD_USERNAME\",\"password\":\"newbie-pass\"}" | jq -e '.error == "account_taken"'
+          signup "{\"code\":\"$code\",\"account\":\"newbie\",\"password\":\"newbie-pass\"}" | jq -e '.ok'
+          # The code works once
+          signup "{\"code\":\"$code\",\"account\":\"newbie2\",\"password\":\"newbie-pass\"}" | jq -e '.error == "bad_code"'
+          sudo grep -qx 'newbie:+' data/lib/.players
+          ! sudo grep -q "$code" data/lib/.invites
+          # The new account signs in, and the game has it found its nation
+          test "$(curl -sk -o /dev/null -w '%{http_code}' -u newbie:newbie-pass https://localhost/play/)" = 200
+          out=$(timeout 30 docker exec -u conquer -e TTYD_USER=newbie conquer-local bash -c "printf 'xx' | conquer-menu" || true)
+          grep -q 'Found your nation' <<< "$out" || { echo "no nation builder for a new account: $out" >&2; exit 1; }
+          sudo ./manage-players.sh remove newbie
+
       - name: Game runs as an unprivileged user
         run: |
           test "$(docker exec conquer-local stat -c %U /proc/1)" = conquer

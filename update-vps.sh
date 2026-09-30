@@ -76,6 +76,12 @@ if [ -f "$vhost" ] && ! grep -q 'FilesMatch "\\.(html|js|css|json)' "$vhost"; th
     echo "⚠️  $vhost does not ask browsers to check for new pages (Cache-Control)."
     echo "   Visitors may see old texts after updates: see vps/virtualhost.conf.template"
 fi
+if [ -f "$vhost" ] && ! grep -q '/join/api/' "$vhost"; then
+    echo "⚠️  $vhost does not pass the sign-up page to the game (/join/api/)."
+    echo "   Add these lines next to \"ProxyPass /play/\", then: apache2ctl configtest && systemctl reload apache2"
+    echo "     ProxyPass /join/api/ http://127.0.0.1:7682/join/api/"
+    echo "     ProxyPassReverse /join/api/ http://127.0.0.1:7682/join/api/"
+fi
 sleep 3
 if docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
     if docker exec "$CONTAINER" cat /proc/1/cmdline | tr '\0' ' ' | grep -q -- '-H X-WEBAUTH-USER'; then

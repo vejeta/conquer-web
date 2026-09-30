@@ -47,13 +47,13 @@ MSG[menu_update_failed]="  ${yellow}${bold}The last turn update failed${reset} (
   The administrator has been notified; your orders are kept for the next update."
 MSG[menu_how_to_join]="${bold}How to join the game${reset}
 
-During the test phase new nations are created by the game administrator.
+Joining is by invitation.
 
-  1. Ask the administrator for a nation. You will receive:
-       - a player account for this site, linked to your nation
-       - your nation password
-  2. Sign in with your player account and choose \"Play\" in this menu.
-  3. Your nation opens directly: type your nation password.
+  1. Ask the game administrator for an invite code.
+  2. On the home page, choose \"Create your account\", type the code and
+     choose your account name and password.
+  3. Sign in with that account and choose \"Play\": the game has you found
+     your nation, and from then on opens it directly.
 
 ${bold}How turns work${reset}
 
@@ -122,24 +122,9 @@ MSG[menu_goodbye]="Goodbye, commander."
 
 # Join wizard (join.sh)
 MSG[join_questions]="Questions: ${bold}%s${reset}"
-MSG[join_again]="  Press any key to start again..."
-MSG[join_title]="${bold}${green}Join Conquer${reset}"
-MSG[join_closed]="Joining is not available on this server right now."
-MSG[join_welcome]="Welcome. You need an ${bold}invite code${reset} from the game administrator."
-MSG[join_code]="  Invite code: "
-MSG[join_bad_code]="That invite code is not valid, or it has been used already.
-  An invite code looks like ${bold}K7QM-3XPA${reset}: the administrator sends it to you. It is
-  not the password of the joining account."
-MSG[join_too_late]="This game is at turn %s: after turn 5 new nations need the administrator. Your code stays valid; ask them to add your nation."
-MSG[join_choose_account]="Choose the ${bold}player account${reset} you will sign in with on this site
-  ${dim}(letters, digits, . _ - ; up to 32 characters)${reset}"
-MSG[join_account]="  Account name: "
-MSG[join_bad_account]="Please use only letters, digits, dots, dashes and underscores."
-MSG[join_account_exists]="The account '%s' already exists. Choose another name."
-MSG[join_password]="  Password (at least 8 characters): "
-MSG[join_password_again]="  Repeat the password: "
-MSG[join_password_mismatch]="The passwords do not match."
-MSG[join_password_short]="Use at least 8 characters."
+MSG[join_title]="${bold}${green}Found your nation${reset}"
+MSG[join_welcome]="Welcome, ${bold}%s${reset}. Your account is ready: now found your nation."
+MSG[join_too_late]="This game is at turn %s: after turn 5 new nations need the administrator. Ask them to add yours."
 MSG[join_builder]="
   ${bold}Now build your nation${reset} with the game's nation builder.
 
@@ -155,21 +140,15 @@ MSG[join_builder]="
   then answer ${bold}y${reset} to save.
 "
 MSG[join_open_builder]="  Press any key to open the nation builder..."
-MSG[join_no_nation]="No nation was created, so no account either. Your invite code is still valid."
-MSG[join_code_used]="That invite code was used meanwhile. Ask the administrator about nation %s."
-MSG[join_not_saved]="Your nation %s was created, but the account could not be saved. Tell the administrator."
+MSG[join_no_nation]="No nation was created. Choose 1 in the menu to try again."
+MSG[join_not_saved]="Your nation %s was created, but it could not be linked to your account. Tell the administrator."
 MSG[join_done]="
   ${bold}${green}Welcome to the game, ruler of %s!${reset}
 
-  Your player account ${bold}%s${reset} is ready.
-
-  To play, sign in again with it: close this browser tab (or open the site
-  in a private window), press ${bold}Play now${reset} and use ${bold}%s${reset} and your
-  password. Your nation opens directly; its password is the one you gave
-  in the nation builder.
+  From now on, choose ${bold}1${reset} in the menu to rule your nation: the game asks
+  for the nation password you just chose.
 
   New to Conquer? Option 7 in the menu is a practice world, and the Coach
   button walks you through your first turn.
 "
-MSG[join_finish]="  Press any key to finish..."
-MSG[join_goodbye]="  Goodbye, and see you on the map."
+MSG[join_finish]="  Press any key to continue..."

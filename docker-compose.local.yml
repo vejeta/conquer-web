@@ -23,8 +23,7 @@ services:
       - TURN_BACKUPS=${TURN_BACKUPS:-10}
       - TURN_WEBHOOK_URL=${TURN_WEBHOOK_URL:-}
       - TURN_EARLY=${TURN_EARLY:-on}
-      - JOIN_ACCOUNT=${JOIN_ACCOUNT:-}
-      - JOIN_PASSWORD=${JOIN_PASSWORD:-}
+      - SIGNUP=${SIGNUP:-on}
       - ADMIN_CONTACT=${ADMIN_CONTACT:-}
     volumes:
       # Live world data: persists across rebuilds, seeded on first start

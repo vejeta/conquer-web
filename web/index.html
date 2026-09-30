@@ -249,8 +249,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
           <small data-i18n="index.try_hint">No account needed: a practice world in your browser</small>
         </div>
       </div>
-      <p class="join" id="join" hidden><span data-i18n="index.join">Have an invite code? Press Play now and sign in as</span>
-        <code id="join-account"></code> / <code id="join-password"></code></p>
+      <p class="join" id="join" hidden><span data-i18n="index.join">Have an invite code?</span>
+        <a class="text" href="join.html" data-server-link="join.html" data-i18n="index.join_link">Create your account</a></p>
       <div class="links">
         <a class="text" href="tutorial.html" data-i18n-page="tutorial" data-i18n="index.tutorial">New here? Play your first turn step by step</a>
         <a class="text" href="guide.html" data-i18n-page="guide" data-i18n="index.guide">Player's guide</a>
@@ -312,8 +312,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <p class="note" data-i18n="index.note_join">The game is in a closed test: new nations join with an invite code.</p>
     <ol>
       <li data-i18n="index.join1">Write to the game administrator for an <strong>invite code</strong>.</li>
-      <li data-i18n="index.join2">Press <strong>Play now</strong> and sign in with the joining account shown under the button. Enter your code, then choose your own player account and found your nation.</li>
-      <li data-i18n="index.join3">From then on, sign in with your own account and choose <kbd>1</kbd> <strong>Play</strong>: your nation asks for its password.</li>
+      <li data-i18n="index.join2">Choose <strong>Create your account</strong> (under the buttons at the top), type your code and choose your account name and password.</li>
+      <li data-i18n="index.join3">Press <strong>Play now</strong> and sign in with that account: the game has you found your nation, and from then on opens it directly.</li>
     </ol>
     <div class="contact" id="contact" hidden>
       <span data-i18n="index.contact">Game administrator:</span>
@@ -478,11 +478,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
       document.getElementById('contact').hidden = false;
     }
     renderWire(d);
-    if (d.join) {
-      set('join-account', d.join.account);
-      set('join-password', d.join.password);
-      document.getElementById('join').hidden = false;
-    }
+    // Players with an invite code create their account on join.html
+    document.getElementById('join').hidden = !d.signup;
     renderNews(d.news || []);
     var ts = d.turn_state || {};
     var w = document.getElementById('status-warning');

@@ -72,6 +72,10 @@
 
     # Regular HTTP proxy
     ProxyPreserveHost On
+    # Sign-up with invite codes (web/join.html): conquer-gate checks the
+    # code and creates the account; it is open, like the sign-up page
+    ProxyPass /join/api/ http://127.0.0.1:7682/join/api/
+    ProxyPassReverse /join/api/ http://127.0.0.1:7682/join/api/
     ProxyPass /play/ http://127.0.0.1:7681/play/
     ProxyPassReverse /play/ http://127.0.0.1:7681/play/
 

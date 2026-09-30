@@ -26,8 +26,7 @@ services:
       - TURN_BACKUPS=${TURN_BACKUPS:-10}
       - TURN_WEBHOOK_URL=${TURN_WEBHOOK_URL:-}
       - TURN_EARLY=${TURN_EARLY:-on}
-      - JOIN_ACCOUNT=${JOIN_ACCOUNT:-}
-      - JOIN_PASSWORD=${JOIN_PASSWORD:-}
+      - SIGNUP=${SIGNUP:-on}
       - ADMIN_CONTACT=${ADMIN_CONTACT:-}
     volumes:
       # Live world data: persists across rebuilds, seeded on first start
@@ -44,6 +43,7 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:7681:7681"  # Only bind to localhost for security
+      - "127.0.0.1:7682:7682"  # Sign-up service, for Apache only
     logging:
       driver: "json-file"
       options:

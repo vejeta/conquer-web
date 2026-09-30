@@ -26,15 +26,8 @@ TURN_SCHEDULE=""
 TURN_SCHEDULE_LABEL=""
 ADMIN_CONTACT=""
 TURN_EARLY=""
-JOIN_ACCOUNT=""
 # shellcheck source=/dev/null
 [ -f /etc/conquer-web.env ] && . /etc/conquer-web.env
-
-# The public join account only gets the join wizard (invite codes), in
-# the language the game page asked for
-if [ -n "$JOIN_ACCOUNT" ] && [ "$PLAYER" = "$JOIN_ACCOUNT" ]; then
-    exec /usr/local/bin/conquer-join "${1:-}"
-fi
 
 bold=$(tput bold 2>/dev/null)
 dim=$(tput dim 2>/dev/null)
@@ -46,6 +39,7 @@ reset=$(tput sgr0 2>/dev/null)
 # shellcheck source=i18n.sh
 . /usr/local/lib/conquer-i18n.sh
 load_texts "${1:-}"
+LANG_ARG="${1:-}"
 
 # "Yes" to a question: the language's own key or y
 is_yes() {
@@ -133,11 +127,18 @@ player_nation() {
     echo "*"
 }
 
-# Nation whose orders this account can mark as done (not administrators)
+# Nation whose orders this account can mark as done (not administrators,
+# not a new account still without a nation)
 own_nation() {
     local nation
     [ -f "$PLAYERS_FILE" ] || return 1
-    nation=$(player_nation) && [ "$nation" != "*" ] && echo "$nation"
+    nation=$(player_nation) && [ "$nation" != "*" ] && [ "$nation" != "+" ] && echo "$nation"
+}
+
+# An account created on the sign-up page has no nation yet ("+" in the
+# assignments): found it with the game's nation builder
+found_nation() {
+    /usr/local/bin/conquer-join "$LANG_ARG"
 }
 
 # Line for the banner: how many nations have finished their orders
@@ -380,7 +381,10 @@ play() {
         pause
         return
     fi
-    if [ "$nation" = "*" ]; then
+    if [ "$nation" = "+" ]; then
+        found_nation
+        return
+    elif [ "$nation" = "*" ]; then
         run_game
     else
         t menu_opening "$nation"; echo
@@ -400,6 +404,9 @@ play() {
         ask_orders_done "$nation"
     fi
 }
+
+# A new player goes straight to founding their nation
+[ "$(player_nation)" = "+" ] && found_nation
 
 while true; do
     show_banner

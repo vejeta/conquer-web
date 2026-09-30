@@ -167,22 +167,29 @@ Administrator accounts may open any nation, god included.
 
 #### Joining with an invite code
 
-Players can also create their own account and nation. The administrator
-creates a public *join* account once and hands out invite codes:
+Players create their own account with an invite code; nobody without one
+can create an account or reach the game terminal. The administrator hands
+out the codes:
 
 ```bash
-./manage-players.sh join-account      # prints JOIN_ACCOUNT/JOIN_PASSWORD for
-                                      # the environment file
-./manage-players.sh invite 5          # five single-use codes
-./manage-players.sh invites           # the codes not used yet
+sudo ./manage-players.sh invite 5     # five single-use codes
+sudo ./manage-players.sh invites      # the codes not used yet
 ```
 
-The landing page shows the join account to visitors. Signing in with it
-opens a wizard in the terminal instead of the menu: the player types the
-invite code, chooses an account and password, and builds their nation with
-the game's nation builder. The account is created, linked to the new nation
-and the code is used up. After turn 5 the game only lets the administrator
-add nations, so the wizard then asks players to contact them.
+1. The player opens **Create your account** on the home page (`join.html`,
+   or `join.html?code=K7QM-3XPA` to fill the code in), types the code and
+   chooses an account name and a password. `conquer-gate`, a small service
+   in the game container, checks the code, creates the account and uses the
+   code up; it slows down anyone who keeps trying wrong codes.
+2. The player presses **Play now** and signs in with that account. The game
+   has them found their nation with its nation builder, links it to the
+   account, and from then on opens it directly.
+
+The page shows `ADMIN_CONTACT` to visitors without a code. After turn 5 the
+game only lets the administrator add nations, so sign-up then asks players
+to write to them. `SIGNUP=off` in the environment file closes it.
+`sudo ./manage-players.sh list` shows new accounts that have not founded
+their nation yet with `+`.
 
 Assignments are stored with the world, in `data/lib/.players`
 (`account:nation`, `*` for administrators), so backups and restores keep them.

@@ -42,13 +42,13 @@ MSG[menu_update_failed]="  ${yellow}${bold}Ostatnie rozliczenie tury się nie ud
   Administrator został powiadomiony; twoje rozkazy czekają na następne."
 MSG[menu_how_to_join]="${bold}Jak dołączyć do gry${reset}
 
-W fazie testów nowe narody zakłada administrator gry.
+Dołącza się na zaproszenie.
 
-  1. Poproś administratora o naród. Dostaniesz:
-       - konto gracza na tej stronie, powiązane z twoim narodem
-       - hasło twojego narodu
-  2. Zaloguj się na konto gracza i wybierz w tym menu \"Graj\".
-  3. Twój naród otworzy się od razu: wpisz jego hasło.
+  1. Poproś administratora gry o kod zaproszenia.
+  2. Na stronie głównej wybierz \"Załóż konto\", wpisz kod i wybierz
+     nazwę konta oraz hasło.
+  3. Zaloguj się na to konto i wybierz \"Graj\": gra poprosi cię o
+     założenie narodu, a potem będzie go otwierać od razu.
 
 ${bold}Jak działają tury${reset}
 
@@ -121,25 +121,9 @@ MSG[menu_goodbye]="Do zobaczenia, dowódco."
 
 # Kreator dołączania (join.sh)
 MSG[join_questions]="Pytania: ${bold}%s${reset}"
-MSG[join_again]="  Naciśnij dowolny klawisz, aby zacząć od nowa..."
-MSG[join_title]="${bold}${green}Dołącz do Conquer${reset}"
-MSG[join_closed]="Na tym serwerze nie można teraz dołączyć do gry."
-MSG[join_welcome]="Witaj. Potrzebujesz ${bold}kodu zaproszenia${reset} od administratora gry."
-MSG[join_code]="  Kod zaproszenia: "
-MSG[join_bad_code]="Ten kod zaproszenia jest nieważny albo został już użyty.
-  Kod zaproszenia wygląda tak: ${bold}K7QM-3XPA${reset}. Wysyła go administrator;
-  to nie jest hasło konta do dołączania."
-MSG[join_too_late]="Ta rozgrywka jest w turze %s: po turze 5 nowe narody zakłada
-  administrator. Kod pozostaje ważny; poproś go o dodanie narodu."
-MSG[join_choose_account]="Wybierz ${bold}konto gracza${reset}, na które będziesz logować się na tej stronie
-  ${dim}(litery, cyfry, . _ - ; do 32 znaków)${reset}"
-MSG[join_account]="  Nazwa konta: "
-MSG[join_bad_account]="Używaj tylko liter, cyfr, kropek, łączników i podkreśleń."
-MSG[join_account_exists]="Konto '%s' już istnieje. Wybierz inną nazwę."
-MSG[join_password]="  Hasło (co najmniej 8 znaków): "
-MSG[join_password_again]="  Powtórz hasło: "
-MSG[join_password_mismatch]="Hasła się nie zgadzają."
-MSG[join_password_short]="Użyj co najmniej 8 znaków."
+MSG[join_title]="${bold}${green}Załóż swój naród${reset}"
+MSG[join_welcome]="Witaj, ${bold}%s${reset}. Twoje konto jest gotowe: teraz załóż swój naród."
+MSG[join_too_late]="Gra jest w turze %s: po turze 5 nowe narody dodaje administrator. Poproś go o dodanie twojego."
 MSG[join_builder]="
   ${bold}Teraz zbuduj swój naród${reset} w kreatorze narodów gry
   (jego ekrany są po angielsku).
@@ -157,24 +141,15 @@ MSG[join_builder]="
   na ludność), a potem odpowiedz ${bold}y${reset}, aby zapisać.
 "
 MSG[join_open_builder]="  Naciśnij dowolny klawisz, aby otworzyć kreator narodów..."
-MSG[join_no_nation]="Nie utworzono narodu, więc nie powstało też konto.
-  Twój kod zaproszenia pozostaje ważny."
-MSG[join_code_used]="Ten kod zaproszenia został w międzyczasie użyty.
-  Zapytaj administratora o naród %s."
-MSG[join_not_saved]="Twój naród %s został utworzony, ale nie udało się zapisać konta.
-  Powiadom administratora."
+MSG[join_no_nation]="Nie utworzono narodu. Wybierz 1 w menu, aby spróbować ponownie."
+MSG[join_not_saved]="Twój naród %s został utworzony, ale nie udało się go powiązać z kontem. Powiadom administratora."
 MSG[join_done]="
-  ${bold}${green}Witaj w grze, władco narodu %s!${reset}
+  ${bold}${green}Witaj w grze, władco %s!${reset}
 
-  Twoje konto gracza ${bold}%s${reset} jest gotowe.
+  Od teraz wybieraj ${bold}1${reset} w menu, aby rządzić swoim narodem: gra zapyta
+  o hasło narodu, które przed chwilą wybrałeś.
 
-  Aby grać, zaloguj się na nie ponownie: zamknij tę kartę przeglądarki
-  (albo otwórz stronę w oknie prywatnym), kliknij ${bold}Graj teraz${reset}
-  i podaj ${bold}%s${reset} oraz swoje hasło. Twój naród otworzy się od razu;
-  jego hasło to to, które podano w kreatorze narodów.
-
-  Pierwszy raz w Conquer? Opcja 7 w menu to świat treningowy,
-  a przycisk Coach poprowadzi cię przez pierwszą turę.
+  Pierwszy raz w Conquer? Opcja 7 w menu to świat treningowy, a przycisk
+  Coach przeprowadzi cię przez pierwszą turę.
 "
-MSG[join_finish]="  Naciśnij dowolny klawisz, aby zakończyć..."
-MSG[join_goodbye]="  Do zobaczenia na mapie."
+MSG[join_finish]="  Naciśnij dowolny klawisz, aby kontynuować..."

@@ -41,13 +41,12 @@ MSG[menu_update_failed]="  ${yellow}${bold}上次回合结算失败${reset}（%s
   已通知管理员；你的指令会保留到下一次结算。"
 MSG[menu_how_to_join]="${bold}如何加入游戏${reset}
 
-测试阶段期间，新国家由游戏管理员创建。
+加入需要邀请。
 
-  1. 向管理员申请一个国家。你会收到：
-       - 本网站的玩家账号，已与你的国家绑定
-       - 你的国家密码
-  2. 用玩家账号登录，然后在本菜单中选择“进入游戏”。
-  3. 你的国家会直接打开：输入国家密码即可。
+  1. 向游戏管理员索取邀请码。
+  2. 在主页选择\"创建账号\"，输入邀请码，并设置账号名和密码。
+  3. 用这个账号登录并选择\"游戏\"：游戏会让你建立国家，
+     之后会直接打开它。
 
 ${bold}回合如何进行${reset}
 
@@ -117,25 +116,9 @@ MSG[menu_goodbye]="再见，指挥官。"
 
 # 加入向导 (join.sh)
 MSG[join_questions]="有疑问请联系：${bold}%s${reset}"
-MSG[join_again]="  按任意键重新开始..."
-MSG[join_title]="${bold}${green}加入 Conquer${reset}"
-MSG[join_closed]="本服务器目前不开放加入。"
-MSG[join_welcome]="欢迎。你需要游戏管理员提供的${bold}邀请码${reset}。"
-MSG[join_code]="  邀请码："
-MSG[join_bad_code]="该邀请码无效，或已被使用。
-  邀请码的格式类似 ${bold}K7QM-3XPA${reset}，由管理员发给你；
-  它不是加入账号的密码。"
-MSG[join_too_late]="本局游戏已进行到第 %s 回合：第 5 回合之后，新国家需由管理员加入。
-  你的邀请码仍然有效，请让管理员帮你添加国家。"
-MSG[join_choose_account]="请选择你在本网站登录用的${bold}玩家账号${reset}
-  ${dim}（字母、数字、. _ -；最多 32 个字符）${reset}"
-MSG[join_account]="  账号名："
-MSG[join_bad_account]="只能使用字母、数字、点、短横线和下划线。"
-MSG[join_account_exists]="账号 '%s' 已存在，请换一个名字。"
-MSG[join_password]="  密码（至少 8 个字符）："
-MSG[join_password_again]="  再次输入密码："
-MSG[join_password_mismatch]="两次输入的密码不一致。"
-MSG[join_password_short]="请至少使用 8 个字符。"
+MSG[join_title]="${bold}${green}建立你的国家${reset}"
+MSG[join_welcome]="欢迎，${bold}%s${reset}。你的账号已就绪：现在来建立你的国家。"
+MSG[join_too_late]="本局已进行到第 %s 回合：第 5 回合之后，新国家需由管理员添加。请联系管理员添加你的国家。"
 MSG[join_builder]="
   ${bold}现在用游戏的国家创建器建立你的国家${reset}（其画面为英文）。
 
@@ -151,20 +134,15 @@ MSG[join_builder]="
   然后回答 ${bold}y${reset} 保存。
 "
 MSG[join_open_builder]="  按任意键打开国家创建器..."
-MSG[join_no_nation]="没有创建国家，因此也没有创建账号。你的邀请码仍然有效。"
-MSG[join_code_used]="该邀请码刚刚已被使用。请向管理员询问国家 %s 的情况。"
-MSG[join_not_saved]="你的国家 %s 已创建，但账号未能保存。请告知管理员。"
+MSG[join_no_nation]="没有建立国家。在菜单中选择 1 再试一次。"
+MSG[join_not_saved]="你的国家 %s 已建立，但无法与你的账号关联。请告知管理员。"
 MSG[join_done]="
   ${bold}${green}欢迎加入游戏，%s 的统治者！${reset}
 
-  你的玩家账号 ${bold}%s${reset} 已准备就绪。
+  从现在起，在菜单中选择 ${bold}1${reset} 来统治你的国家：游戏会要求输入
+  你刚设置的国家密码。
 
-  要开始游戏，请用它重新登录：关闭此浏览器标签页（或在隐私窗口中
-  打开本站），点击${bold}开始游戏${reset}，使用 ${bold}%s${reset} 和你的密码登录。
-  你的国家会直接打开；国家密码就是你在国家创建器中设置的那个。
-
-  第一次玩 Conquer？菜单中的选项 7 是练习世界，
-  Coach（教练）按钮会带你走完第一个回合。
+  第一次玩 Conquer？菜单中的选项 7 是练习世界，Coach 按钮会带你
+  完成第一个回合。
 "
-MSG[join_finish]="  按任意键结束..."
-MSG[join_goodbye]="  再见，地图上见。"
+MSG[join_finish]="  按任意键继续..."

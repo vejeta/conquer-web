@@ -89,6 +89,14 @@ RUN arch="${TARGETARCH:-$(dpkg --print-architecture)}" && \
     chmod 755 /usr/local/bin/ttyd
 
 # -----------------------------------------------------------------------------
+# Gate: the sign-up service (Go, standard library only; see gate/main.go)
+# -----------------------------------------------------------------------------
+FROM golang:1.24-bookworm AS gate
+WORKDIR /src
+COPY gate/ ./
+RUN CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o /conquer-gate .
+
+# -----------------------------------------------------------------------------
 # Runtime stage: only what the game, the menu and the turn scheduler need
 # -----------------------------------------------------------------------------
 FROM debian:${DEBIAN_TAG}
@@ -113,6 +121,7 @@ RUN useradd -m -u "${CONQUER_UID}" -s /bin/bash conquer
 
 COPY --from=build /usr/local/bin/ttyd /usr/local/bin/ttyd
 COPY --from=build ${CONQUER_PREFIX} ${CONQUER_PREFIX}
+COPY --from=gate /conquer-gate /usr/local/bin/conquer-gate
 
 # Default world shipped with the image. It is copied into the data volume
 # on first start only, so player progress survives rebuilds.
@@ -130,18 +139,21 @@ COPY scripts/status.sh /usr/local/bin/conquer-status
 COPY scripts/next-turn.sh /usr/local/bin/conquer-next-turn
 COPY scripts/ready.sh /usr/local/bin/conquer-ready
 COPY scripts/join.sh /usr/local/bin/conquer-join
-# Texts of the menu and the join wizard, one file per language
+COPY scripts/signup.sh /usr/local/bin/conquer-signup
+# Texts of the menu and the nation founding, one file per language
 COPY scripts/i18n.sh /usr/local/lib/conquer-i18n.sh
 COPY i18n/ /usr/local/share/conquer-web/i18n/
 RUN chmod 644 /usr/local/lib/conquer-i18n.sh /usr/local/share/conquer-web/i18n/*
 RUN chmod 755 /usr/local/bin/conquer-entrypoint /usr/local/bin/conquer-menu \
     /usr/local/bin/conquer-turn /usr/local/bin/conquer-status /usr/local/bin/conquer-next-turn \
-    /usr/local/bin/conquer-ready /usr/local/bin/conquer-join
+    /usr/local/bin/conquer-ready /usr/local/bin/conquer-join /usr/local/bin/conquer-signup
 
 VOLUME ["/opt/conquer/lib", "/opt/conquer/public", "/opt/conquer/backups", "/opt/conquer/practice"]
 
 # ttyd listens here; Apache proxies /play/ to it
 EXPOSE 7681
+# conquer-gate (sign-up with invite codes); Apache proxies /join/api/ to it
+EXPOSE 7682
 
 # ttyd trusts the proxy's identity header and answers 407 without it
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \

@@ -41,13 +41,13 @@ MSG[menu_update_failed]="  ${yellow}${bold}Falló la última actualización del 
   El administrador está avisado; tus órdenes se guardan para la próxima."
 MSG[menu_how_to_join]="${bold}Cómo unirse a la partida${reset}
 
-Durante la fase de pruebas, el administrador crea las naciones nuevas.
+Se entra por invitación.
 
-  1. Pide una nación al administrador. Recibirás:
-       - una cuenta de jugador para este sitio, vinculada a tu nación
-       - la contraseña de tu nación
-  2. Entra con tu cuenta de jugador y elige \"Jugar\" en este menú.
-  3. Tu nación se abre directamente: escribe su contraseña.
+  1. Pide un código de invitación al administrador del juego.
+  2. En la página principal, elige \"Crea tu cuenta\", escribe el código y
+     elige tu nombre de cuenta y tu contraseña.
+  3. Entra con esa cuenta y elige \"Jugar\": el juego te pide fundar tu
+     nación, y desde entonces la abre directamente.
 
 ${bold}Cómo funcionan los turnos${reset}
 
@@ -120,24 +120,9 @@ MSG[menu_goodbye]="Hasta pronto, comandante."
 
 # Asistente de alta (join.sh)
 MSG[join_questions]="Dudas: ${bold}%s${reset}"
-MSG[join_again]="  Pulsa una tecla para empezar de nuevo..."
-MSG[join_title]="${bold}${green}Únete a Conquer${reset}"
-MSG[join_closed]="Ahora mismo no se admiten altas en este servidor."
-MSG[join_welcome]="Bienvenido. Necesitas un ${bold}código de invitación${reset} del administrador del juego."
-MSG[join_code]="  Código de invitación: "
-MSG[join_bad_code]="Ese código no es válido o ya se ha usado.
-  Un código de invitación tiene esta forma: ${bold}K7QM-3XPA${reset}. Te lo envía el
-  administrador; no es la contraseña de la cuenta de ingreso."
-MSG[join_too_late]="La partida va por el turno %s: desde el turno 5 las naciones nuevas las crea el administrador. Tu código sigue siendo válido; pídele que añada tu nación."
-MSG[join_choose_account]="Elige la ${bold}cuenta de jugador${reset} con la que entrarás en este sitio
-  ${dim}(letras, números, . _ - ; hasta 32 caracteres)${reset}"
-MSG[join_account]="  Nombre de la cuenta: "
-MSG[join_bad_account]="Usa solo letras, números, puntos, guiones y guiones bajos."
-MSG[join_account_exists]="La cuenta '%s' ya existe. Elige otro nombre."
-MSG[join_password]="  Contraseña (al menos 8 caracteres): "
-MSG[join_password_again]="  Repite la contraseña: "
-MSG[join_password_mismatch]="Las contraseñas no coinciden."
-MSG[join_password_short]="Usa al menos 8 caracteres."
+MSG[join_title]="${bold}${green}Funda tu nación${reset}"
+MSG[join_welcome]="Bienvenido, ${bold}%s${reset}. Tu cuenta está lista: ahora funda tu nación."
+MSG[join_too_late]="La partida va por el turno %s: después del turno 5 las naciones nuevas las añade el administrador. Pídele que añada la tuya."
 MSG[join_builder]="
   ${bold}Ahora crea tu nación${reset} con el constructor de naciones del juego
   (sus pantallas están en inglés).
@@ -154,21 +139,15 @@ MSG[join_builder]="
   va a población) y responde ${bold}y${reset} para guardar.
 "
 MSG[join_open_builder]="  Pulsa una tecla para abrir el constructor de naciones..."
-MSG[join_no_nation]="No se creó ninguna nación, así que tampoco la cuenta. Tu código sigue siendo válido."
-MSG[join_code_used]="Ese código se usó mientras tanto. Pregunta al administrador por la nación %s."
-MSG[join_not_saved]="Tu nación %s se creó, pero la cuenta no se pudo guardar. Avisa al administrador."
+MSG[join_no_nation]="No se ha creado ninguna nación. Elige 1 en el menú para intentarlo de nuevo."
+MSG[join_not_saved]="Tu nación %s se ha creado, pero no se ha podido vincular a tu cuenta. Avisa al administrador."
 MSG[join_done]="
   ${bold}${green}¡Bienvenido a la partida, soberano de %s!${reset}
 
-  Tu cuenta de jugador ${bold}%s${reset} está lista.
+  A partir de ahora, elige ${bold}1${reset} en el menú para gobernar tu nación: el juego
+  te pedirá la contraseña de nación que acabas de elegir.
 
-  Para jugar, vuelve a entrar con ella: cierra esta pestaña (o abre el sitio
-  en una ventana privada), pulsa ${bold}Jugar${reset} y usa ${bold}%s${reset} y tu
-  contraseña. Tu nación se abre directamente; su contraseña es la que diste
-  en el constructor de naciones.
-
-  ¿Nuevo en Conquer? La opción 7 del menú es un mundo de práctica, y el
-  botón Coach te guía por tu primer turno.
+  ¿Eres nuevo en Conquer? La opción 7 del menú es un mundo de práctica, y el
+  botón Coach te guía en tu primer turno.
 "
-MSG[join_finish]="  Pulsa una tecla para terminar..."
-MSG[join_goodbye]="  Hasta pronto, nos vemos en el mapa."
+MSG[join_finish]="  Pulsa una tecla para continuar..."

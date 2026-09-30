@@ -41,13 +41,13 @@ MSG[menu_update_failed]="  ${yellow}${bold}Die letzte Zugauswertung ist fehlgesc
   Der Spielleiter ist informiert; deine Befehle bleiben erhalten."
 MSG[menu_how_to_join]="${bold}So machst du mit${reset}
 
-In der Testphase legt der Spielleiter neue Nationen an.
+Man tritt auf Einladung bei.
 
-  1. Bitte den Spielleiter um eine Nation. Du bekommst:
-       - ein Spielerkonto für diese Seite, verknüpft mit deiner Nation
-       - das Passwort deiner Nation
-  2. Melde dich mit deinem Spielerkonto an und wähle \"Spielen\" im Menü.
-  3. Deine Nation öffnet sich direkt: Gib ihr Passwort ein.
+  1. Bitte den Spielleiter um einen Einladungscode.
+  2. Wähle auf der Startseite \"Konto erstellen\", gib den Code ein und
+     wähle Kontoname und Passwort.
+  3. Melde dich mit diesem Konto an und wähle \"Spielen\": Das Spiel lässt
+     dich deine Nation gründen und öffnet sie danach direkt.
 
 ${bold}So funktionieren die Züge${reset}
 
@@ -121,25 +121,9 @@ MSG[menu_goodbye]="Leb wohl, Feldherr."
 
 # Beitritts-Assistent (join.sh)
 MSG[join_questions]="Fragen: ${bold}%s${reset}"
-MSG[join_again]="  Drücke eine Taste, um neu anzufangen..."
-MSG[join_title]="${bold}${green}Bei Conquer mitmachen${reset}"
-MSG[join_closed]="Auf diesem Server ist ein Beitritt gerade nicht möglich."
-MSG[join_welcome]="Willkommen. Du brauchst einen ${bold}Einladungscode${reset} vom Spielleiter."
-MSG[join_code]="  Einladungscode: "
-MSG[join_bad_code]="Dieser Einladungscode ist ungültig oder wurde schon benutzt.
-  Ein Einladungscode sieht so aus: ${bold}K7QM-3XPA${reset}. Du bekommst ihn vom
-  Spielleiter; er ist nicht das Passwort des Beitrittskontos."
-MSG[join_too_late]="Diese Partie ist bei Zug %s: Nach Zug 5 legt der Spielleiter neue
-  Nationen an. Dein Code bleibt gültig; bitte ihn, deine Nation anzulegen."
-MSG[join_choose_account]="Wähle das ${bold}Spielerkonto${reset}, mit dem du dich auf dieser Seite anmeldest
-  ${dim}(Buchstaben, Ziffern, . _ - ; bis zu 32 Zeichen)${reset}"
-MSG[join_account]="  Kontoname: "
-MSG[join_bad_account]="Bitte nur Buchstaben, Ziffern, Punkte, Binde- und Unterstriche verwenden."
-MSG[join_account_exists]="Das Konto '%s' gibt es schon. Wähle einen anderen Namen."
-MSG[join_password]="  Passwort (mindestens 8 Zeichen): "
-MSG[join_password_again]="  Passwort wiederholen: "
-MSG[join_password_mismatch]="Die Passwörter stimmen nicht überein."
-MSG[join_password_short]="Verwende mindestens 8 Zeichen."
+MSG[join_title]="${bold}${green}Gründe deine Nation${reset}"
+MSG[join_welcome]="Willkommen, ${bold}%s${reset}. Dein Konto ist bereit: Gründe jetzt deine Nation."
+MSG[join_too_late]="Die Partie ist bei Zug %s: Nach Zug 5 fügt der Spielleiter neue Nationen hinzu. Bitte ihn, deine hinzuzufügen."
 MSG[join_builder]="
   ${bold}Jetzt baust du deine Nation${reset} mit dem Nationenbaukasten des Spiels
   (seine Bildschirme sind auf Englisch).
@@ -157,24 +141,15 @@ MSG[join_builder]="
   (der Rest geht an die Bevölkerung), dann mit ${bold}y${reset} speichern.
 "
 MSG[join_open_builder]="  Drücke eine Taste, um den Nationenbaukasten zu öffnen..."
-MSG[join_no_nation]="Es wurde keine Nation angelegt, also auch kein Konto.
-  Dein Einladungscode bleibt gültig."
-MSG[join_code_used]="Dieser Einladungscode wurde inzwischen benutzt.
-  Frag den Spielleiter nach der Nation %s."
-MSG[join_not_saved]="Deine Nation %s wurde angelegt, aber das Konto konnte nicht
-  gespeichert werden. Sag dem Spielleiter Bescheid."
+MSG[join_no_nation]="Es wurde keine Nation gegründet. Wähle 1 im Menü, um es noch einmal zu versuchen."
+MSG[join_not_saved]="Deine Nation %s wurde gegründet, konnte aber nicht mit deinem Konto verknüpft werden. Sag dem Spielleiter Bescheid."
 MSG[join_done]="
   ${bold}${green}Willkommen im Spiel, Herrscher von %s!${reset}
 
-  Dein Spielerkonto ${bold}%s${reset} ist bereit.
-
-  Um zu spielen, melde dich damit neu an: Schließ diesen Browser-Tab (oder
-  öffne die Seite in einem privaten Fenster), klicke auf ${bold}Jetzt spielen${reset}
-  und nutze ${bold}%s${reset} und dein Passwort. Deine Nation öffnet sich direkt;
-  ihr Passwort ist das, das du im Nationenbaukasten vergeben hast.
+  Von nun an wählst du ${bold}1${reset} im Menü, um deine Nation zu regieren: Das Spiel
+  fragt nach dem Nationspasswort, das du gerade gewählt hast.
 
   Neu bei Conquer? Option 7 im Menü ist eine Übungswelt, und der Knopf
   Coach führt dich durch deinen ersten Zug.
 "
-MSG[join_finish]="  Drücke eine Taste zum Beenden..."
-MSG[join_goodbye]="  Leb wohl, wir sehen uns auf der Karte."
+MSG[join_finish]="  Drück eine Taste, um fortzufahren..."
