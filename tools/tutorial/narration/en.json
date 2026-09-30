@@ -12,14 +12,14 @@
   "intro_title": "Your first turn",
   "intro_sub": "Usenet, 1987 · your browser, today",
   "outro_title": "Your nation is waiting",
-  "outro_sub": "Ask for a nation · play your first turn tonight",
+  "outro_sub": "Ask for an invite · play your first turn tonight",
   "password": "password",
   "space": "Space"
  },
  "segments": [
   {
    "screen": "intro",
-   "text": "October, nineteen eighty-seven. A strategy game spreads across the world, one Usenet post at a time. Students compile it on university machines, and rule nations from green-screen terminals. Forty years later, Conquer is back. No installation. No shell account. Just your browser. This is your first turn."
+   "text": "October, nineteen eighty-seven. A strategy game spreads across the world, one Usenet post at a time. In the computer centres of the universities, students compile it, and rule kingdoms of elves, dwarves, orcs and humans from green-screen terminals. It is no board game: it is a world of epic fantasy, with magic, heroes and monsters. Forty years later, Conquer is back. No installation. No shell account. Just your browser. This is your first turn."
   },
   {
    "screen": "menu",
@@ -55,7 +55,7 @@
   },
   {
    "screen": "move",
-   "text": "Press m to move, then a direction: h, j, k and l, and y, u, b and n for the diagonals. Here, j. South."
+   "text": "Press m to move, then a direction: h, j, k and l, and y, u, b and n for the diagonals. They surround your right hand on the keyboard. The number pad works too and, on this site, the arrow keys. Here, j. South."
   },
   {
    "screen": "moved",
@@ -71,7 +71,7 @@
   },
   {
    "screen": "diplomacy",
-   "text": "Capital S lists every nation in the world. You have not met anyone yet. You will."
+   "text": "Capital S lists every nation in the world: kingdoms of other players, and pirates, nomads and savages ruled by the computer. You have not met anyone yet. You will."
   },
   {
    "screen": "quit",
@@ -79,7 +79,7 @@
   },
   {
    "screen": "done",
-   "text": "Answer yes. When every ruler is ready, the turn runs at once. No waiting until Sunday."
+   "text": "Answer yes. When every ruler is ready, the turn runs at once, without waiting for the update time."
   },
   {
    "screen": "newturn",
@@ -87,7 +87,7 @@
   },
   {
    "screen": "outro",
-   "text": "Your nation is waiting. Ask for a seat in the next season, and play your first turn tonight."
+   "text": "Your nation is waiting. Ask for an invite code, found your nation, and play your first turn tonight."
   }
  ]
 }

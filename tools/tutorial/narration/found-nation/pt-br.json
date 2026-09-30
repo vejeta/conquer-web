@@ -14,7 +14,7 @@
  "segments": [
   {
    "screen": "intro",
-   "text": "Antes do seu primeiro turno, você funda a sua nação. Na primeira vez que joga, o jogo abre o seu próprio construtor de nações, o mesmo que os jogadores conheceram em mil novecentos e oitenta e sete. Leva dois minutos. É assim."
+   "text": "Antes do seu primeiro turno, você funda a sua nação: um reino num mundo de fantasia épica. Na primeira vez que joga, o jogo abre o seu próprio construtor de nações, o mesmo que os jogadores conheceram em mil novecentos e oitenta e sete. Leva dois minutos. É assim."
   },
   {
    "screen": "name",
@@ -48,7 +48,7 @@
   },
   {
    "screen": "race",
-   "text": "Escolha uma raça com uma letra: anões, elfos, humanos ou orcs. Os humanos são equilibrados, os mais fáceis para começar."
+   "text": "Escolha o seu povo com uma letra: anões, elfos, humanos ou orcs. Os anões são mineiros e guerreiros; os elfos, defensores e magos; os orcs se multiplicam e lutam em massa. Os humanos são equilibrados, os mais fáceis para começar."
   },
   {
    "screen": "class",
@@ -60,7 +60,7 @@
   },
   {
    "screen": "alignment",
-   "text": "Bom, neutro ou mau. Isso define como as nações do computador veem você."
+   "text": "Bom, neutro ou mau. Isso define como os outros reinos do mundo veem você."
   },
   {
    "screen": "mark",
@@ -109,7 +109,7 @@
   },
   {
    "screen": "added",
-   "text": "A sua nação está no mundo. De agora em diante, Jogar leva você direto a ela, e o jogo pede a senha dela.",
+   "text": "A sua nação está no mundo, ao lado dos outros reinos. De agora em diante, Jogar leva você direto a ela, e o jogo pede a senha dela.",
    "keys": [
     "Space"
    ]

@@ -14,7 +14,7 @@
  "segments": [
   {
    "screen": "intro",
-   "text": "Vor deinem ersten Zug gründest du deine Nation. Beim ersten Spiel öffnet das Spiel seinen eigenen Nationen-Baukasten, denselben, den die Spieler neunzehnhundertsiebenundachtzig kannten. Das dauert zwei Minuten. So geht es."
+   "text": "Vor deinem ersten Zug gründest du deine Nation: ein Königreich in einer Welt epischer Fantasy. Beim ersten Spiel öffnet das Spiel seinen eigenen Nationen-Baukasten, denselben, den die Spieler neunzehnhundertsiebenundachtzig kannten. Das dauert zwei Minuten. So geht es."
   },
   {
    "screen": "name",
@@ -48,7 +48,7 @@
   },
   {
    "screen": "race",
-   "text": "Wähle ein Volk mit einem Buchstaben: Zwerge, Elfen, Menschen oder Orks. Menschen sind ausgewogen und am leichtesten für den Anfang."
+   "text": "Wähle dein Volk mit einem Buchstaben: Zwerge, Elfen, Menschen oder Orks. Zwerge sind Bergleute und Krieger, Elfen Verteidiger und Magier, Orks vermehren sich schnell und kämpfen in Massen. Menschen sind ausgewogen und am leichtesten für den Anfang."
   },
   {
    "screen": "class",
@@ -60,7 +60,7 @@
   },
   {
    "screen": "alignment",
-   "text": "Gut, neutral oder böse. Das bestimmt, wie dich die Nationen des Computers sehen."
+   "text": "Gut, neutral oder böse. Das bestimmt, wie dich die anderen Königreiche der Welt sehen."
   },
   {
    "screen": "mark",
@@ -109,7 +109,7 @@
   },
   {
    "screen": "added",
-   "text": "Deine Nation ist in der Welt. Von jetzt an führt dich Spielen direkt zu ihr, und das Spiel fragt nach ihrem Passwort.",
+   "text": "Deine Nation ist in der Welt, neben den anderen Königreichen. Von jetzt an führt dich Spielen direkt zu ihr, und das Spiel fragt nach ihrem Passwort.",
    "keys": [
     "Space"
    ]

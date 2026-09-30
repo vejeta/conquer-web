@@ -14,7 +14,7 @@
  "segments": [
   {
    "screen": "intro",
-   "text": "Antes de tu primer turno, fundas tu nación. La primera vez que juegas, el juego abre su propio constructor de naciones, el mismo que conocieron los jugadores en mil novecientos ochenta y siete. Son dos minutos. Así se hace."
+   "text": "Antes de tu primer turno, fundas tu nación: un reino de un mundo de fantasía épica. La primera vez que juegas, el juego abre su propio constructor de naciones, el mismo que conocieron los jugadores en mil novecientos ochenta y siete. Son dos minutos. Así se hace."
   },
   {
    "screen": "name",
@@ -48,7 +48,7 @@
   },
   {
    "screen": "race",
-   "text": "Elige una raza con una letra: enanos, elfos, humanos u orcos. Los humanos son equilibrados, los más fáciles para empezar."
+   "text": "Elige tu pueblo con una letra: enanos, elfos, humanos u orcos. Los enanos son mineros y guerreros; los elfos, defensores y magos; los orcos se multiplican y luchan en masa. Los humanos son equilibrados, los más fáciles para empezar."
   },
   {
    "screen": "class",
@@ -60,7 +60,7 @@
   },
   {
    "screen": "alignment",
-   "text": "Bueno, neutral o malvado. Decide cómo te ven las naciones del ordenador."
+   "text": "Bueno, neutral o malvado. Decide cómo te ven los demás reinos del mundo."
   },
   {
    "screen": "mark",
@@ -109,7 +109,7 @@
   },
   {
    "screen": "added",
-   "text": "Tu nación ya está en el mundo. Desde ahora, Jugar te lleva directamente a ella, y el juego te pide su contraseña.",
+   "text": "Tu nación ya está en el mundo, junto a los demás reinos. Desde ahora, Jugar te lleva directamente a ella, y el juego te pide su contraseña.",
    "keys": [
     "Space"
    ]

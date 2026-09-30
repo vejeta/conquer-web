@@ -12,14 +12,14 @@
   "intro_title": "Twoja pierwsza tura",
   "intro_sub": "Usenet, 1987 · twoja przeglądarka, dziś",
   "outro_title": "Twój naród czeka",
-  "outro_sub": "Poproś o naród · rozegraj pierwszą turę jeszcze dziś wieczorem",
+  "outro_sub": "Poproś o zaproszenie · rozegraj pierwszą turę dziś wieczorem",
   "password": "Hasło",
   "space": "Spacja"
  },
  "segments": [
   {
    "screen": "intro",
-   "text": "Październik tysiąc dziewięćset osiemdziesiątego siódmego roku. Pewna gra strategiczna rozchodzi się po całym świecie, post po poście, w Usenecie. Studenci kompilują ją na uczelnianych komputerach i władają narodami przed zielono świecącymi terminalami. Czterdzieści lat później Conquer wraca. Bez instalacji. Bez dostępu do shella. Tylko twoja przeglądarka. Oto twoja pierwsza tura."
+   "text": "Październik tysiąc dziewięćset osiemdziesiątego siódmego roku. Pewna gra strategiczna rozchodzi się po całym świecie, post po poście, w Usenecie. W uczelnianych ośrodkach obliczeniowych studenci ją kompilują i przed zielono świecącymi terminalami władają królestwami elfów, krasnoludów, orków i ludzi. To nie gra planszowa: to świat epickiej fantasy, z magią, bohaterami i potworami. Czterdzieści lat później Conquer wraca. Bez instalacji. Bez dostępu do shella. Tylko twoja przeglądarka. Oto twoja pierwsza tura."
   },
   {
    "screen": "menu",
@@ -63,7 +63,7 @@
   },
   {
    "screen": "move",
-   "text": "Naciśnij M, aby ruszyć, a potem kierunek: H, J, K i L, a na ukos Y, U, B i N. Tutaj J. Na południe.",
+   "text": "Naciśnij M, aby ruszyć, a potem kierunek: H, J, K i L, a na ukos Y, U, B i N. Otaczają twoją prawą dłoń na klawiaturze. Działa też klawiatura numeryczna, a na tej stronie strzałki. Tutaj J. Na południe.",
    "title": "Wymaszeruj po nowe ziemie"
   },
   {
@@ -83,7 +83,7 @@
   },
   {
    "screen": "diplomacy",
-   "text": "Wielkie S wymienia wszystkie narody świata. Nie znasz jeszcze nikogo. Spotkania dopiero przed tobą.",
+   "text": "Wielkie S wymienia wszystkie narody świata: królestwa innych graczy, a także piratów, koczowników i dzikich, którymi kieruje komputer. Nie znasz jeszcze nikogo. Spotkania dopiero przed tobą.",
    "title": "Przyjrzyj się innym narodom"
   },
   {
@@ -93,7 +93,7 @@
   },
   {
    "screen": "done",
-   "text": "Odpowiedz tak. Gdy wszyscy władcy są gotowi, tura rusza od razu. Bez czekania do niedzieli.",
+   "text": "Odpowiedz tak. Gdy wszyscy władcy są gotowi, tura rusza od razu, bez czekania na godzinę aktualizacji.",
    "title": "Oznacz rozkazy jako gotowe"
   },
   {
@@ -103,7 +103,7 @@
   },
   {
    "screen": "outro",
-   "text": "Twój naród czeka. Poproś o miejsce w następnym sezonie i rozegraj pierwszą turę jeszcze dziś wieczorem."
+   "text": "Twój naród czeka. Poproś o kod zaproszenia, załóż swój naród i rozegraj pierwszą turę jeszcze dziś wieczorem."
   }
  ]
 }

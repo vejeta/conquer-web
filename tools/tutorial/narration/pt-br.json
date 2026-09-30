@@ -12,14 +12,14 @@
   "intro_title": "Seu primeiro turno",
   "intro_sub": "Usenet, 1987 · seu navegador, hoje",
   "outro_title": "Sua nação está esperando",
-  "outro_sub": "Peça uma nação · jogue seu primeiro turno hoje à noite",
+  "outro_sub": "Peça um convite · jogue seu primeiro turno hoje à noite",
   "password": "senha",
   "space": "Espaço"
  },
  "segments": [
   {
    "screen": "intro",
-   "text": "Outubro de mil novecentos e oitenta e sete. Um jogo de estratégia se espalha pelo mundo, uma mensagem de cada vez, pela Usenet. Estudantes o compilam nos computadores da universidade e governam nações em terminais de tela verde. Quarenta anos depois, Conquer está de volta. Sem instalar nada. Sem conta no servidor. Só o seu navegador. Este é o seu primeiro turno."
+   "text": "Outubro de mil novecentos e oitenta e sete. Um jogo de estratégia se espalha pelo mundo, uma mensagem de cada vez, pela Usenet. Nos centros de computação das universidades, estudantes o compilam e governam reinos de elfos, anões, orcs e humanos em terminais de tela verde. Não é um jogo de tabuleiro: é um mundo de fantasia épica, com magia, heróis e monstros. Quarenta anos depois, Conquer está de volta. Sem instalar nada. Sem conta no servidor. Só o seu navegador. Este é o seu primeiro turno."
   },
   {
    "screen": "menu",
@@ -63,7 +63,7 @@
   },
   {
    "screen": "move",
-   "text": "Aperte o eme para mover, e depois uma direção: agá, jota, cá e ele, e para as diagonais, ípsilon, u, bê e ene. Aqui, o jota: para o sul.",
+   "text": "Aperte o eme para mover, e depois uma direção: agá, jota, cá e ele, e para as diagonais, ípsilon, u, bê e ene. Elas cercam a sua mão direita no teclado. O teclado numérico também funciona e, neste site, as setas. Aqui, o jota: para o sul.",
    "title": "Saia para conquistar terras"
   },
   {
@@ -83,7 +83,7 @@
   },
   {
    "screen": "diplomacy",
-   "text": "O esse maiúsculo mostra todas as nações do mundo. Você ainda não conhece ninguém. Mas vai conhecer.",
+   "text": "O esse maiúsculo mostra todas as nações do mundo: reinos de outros jogadores, e também piratas, nômades e selvagens comandados pelo computador. Você ainda não conhece ninguém. Mas vai conhecer.",
    "title": "Veja as outras nações"
   },
   {
@@ -93,7 +93,7 @@
   },
   {
    "screen": "done",
-   "text": "Responda que sim. Quando todos os governantes estão prontos, o turno roda na hora. Sem esperar até domingo.",
+   "text": "Responda que sim. Quando todos os governantes estão prontos, o turno roda na hora, sem esperar o horário da atualização.",
    "title": "Marque suas ordens como prontas"
   },
   {
@@ -103,7 +103,7 @@
   },
   {
    "screen": "outro",
-   "text": "Sua nação está esperando. Peça um lugar na próxima temporada, e jogue seu primeiro turno hoje à noite."
+   "text": "Sua nação está esperando. Peça um código de convite, funde sua nação, e jogue seu primeiro turno hoje à noite."
   }
  ]
 }

@@ -3,8 +3,8 @@
  "voice": {
   "engine": "qwen-clone",
   "language": "Spanish",
-  "design": "A warm, deep male voice of a native Castilian Spanish documentary narrator from Spain, about forty years old. Calm, professional and evocative, with clear diction and an unhurried pace.",
-  "reference": "Octubre de mil novecientos ochenta y siete. Un juego de estrategia recorre el mundo, mensaje a mensaje, por Usenet. Los estudiantes lo compilan en las máquinas de la universidad y gobiernan naciones desde terminales de fósforo verde."
+  "design": "Native speaker of European Spanish from Madrid, Spain (castellano peninsular), NOT Latin American. He uses the Castilian distinción: 'c' before e or i and every 'z' are pronounced as the English 'th' in 'think' (nación = na-THION, cruzaría = cru-THA-ría), never as 's'. Crisp Castilian 's', strong Spanish 'j' as in Spain. A clear, friendly male voice in his thirties, like a Spanish radio presenter from Madrid. Natural, confident, moderately paced.",
+  "reference": "Octubre de mil novecientos ochenta y siete. En las universidades de España, a la luz de terminales de fósforo verde, empezaba una guerra de naciones que cruzaría el mundo entero."
  },
  "captions": {
   "keys": "Teclas",
@@ -12,14 +12,14 @@
   "intro_title": "Tu primer turno",
   "intro_sub": "Usenet, 1987 · tu navegador, hoy",
   "outro_title": "Tu nación te espera",
-  "outro_sub": "Pide una nación · juega tu primer turno esta noche",
+  "outro_sub": "Pide una invitación · juega tu primer turno esta noche",
   "password": "contraseña",
   "space": "Espacio"
  },
  "segments": [
   {
    "screen": "intro",
-   "text": "Octubre de mil novecientos ochenta y siete. Un juego de estrategia recorre el mundo, mensaje a mensaje, por Usenet. Los estudiantes lo compilan en las máquinas de la universidad y gobiernan naciones desde terminales de fósforo verde. Cuarenta años después, Conquer vuelve. Sin instalar nada. Sin cuentas de Unix. Solo tu navegador. Este es tu primer turno."
+   "text": "Octubre de mil novecientos ochenta y siete. Un juego de estrategia recorre el mundo, mensaje a mensaje, por Usenet. En los centros de cálculo de las universidades, los estudiantes lo compilan y gobiernan reinos de elfos, enanos, orcos y humanos desde terminales de fósforo verde. No es un juego de tablero: es un mundo de fantasía épica, con magia, héroes y monstruos. Cuarenta años después, Conquer vuelve. Sin instalar nada. Sin cuentas de Unix. Solo tu navegador. Este es tu primer turno."
   },
   {
    "screen": "menu",
@@ -63,7 +63,7 @@
   },
   {
    "screen": "move",
-   "text": "Pulsa la eme para mover, y luego una dirección: hache, jota, ka y ele, y para las diagonales, i griega, u, be y ene. Aquí, la jota: hacia el sur.",
+   "text": "Pulsa la eme para mover, y luego una dirección: hache, jota, ka y ele, y para las diagonales, i griega, u, be y ene. Rodean tu mano derecha en el teclado. También valen el teclado numérico y, en esta web, las flechas. Aquí, la jota: hacia el sur.",
    "title": "Marcha a conquistar tierra"
   },
   {
@@ -83,7 +83,7 @@
   },
   {
    "screen": "diplomacy",
-   "text": "La ese mayúscula muestra todas las naciones del mundo. Aún no conoces a nadie. Ya llegará.",
+   "text": "La ese mayúscula muestra todas las naciones del mundo: reinos de otros jugadores, y también piratas, nómadas y bárbaros que gobierna el ordenador. Aún no conoces a nadie. Ya llegará.",
    "title": "Mira a las demás naciones"
   },
   {
@@ -93,7 +93,7 @@
   },
   {
    "screen": "done",
-   "text": "Responde que sí. Cuando todos los gobernantes están listos, el turno se resuelve en ese momento. Sin esperar al domingo.",
+   "text": "Responde que sí. Cuando todos los gobernantes están listos, el turno se resuelve en ese momento, sin esperar a la hora de la actualización.",
    "title": "Marca tus órdenes como listas"
   },
   {
@@ -103,7 +103,7 @@
   },
   {
    "screen": "outro",
-   "text": "Tu nación te espera. Pide un sitio en la próxima temporada, y juega tu primer turno esta misma noche."
+   "text": "Tu nación te espera. Pide un código de invitación, funda tu nación, y juega tu primer turno esta misma noche."
   }
  ]
 }

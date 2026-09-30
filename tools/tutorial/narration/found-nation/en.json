@@ -14,7 +14,7 @@
  "segments": [
   {
    "screen": "intro",
-   "text": "Before your first turn, you found your nation. The first time you play, the game opens its own nation builder, the same one players met in nineteen eighty-seven. It takes two minutes. Here is how."
+   "text": "Before your first turn, you found your nation: a kingdom in a world of epic fantasy. The first time you play, the game opens its own nation builder, the same one players met in nineteen eighty-seven. It takes two minutes. Here is how."
   },
   {
    "screen": "name",
@@ -48,7 +48,7 @@
   },
   {
    "screen": "race",
-   "text": "Choose a race with one letter: dwarves, elves, humans or orcs. Humans are balanced, the easiest to begin with."
+   "text": "Choose your people with one letter: dwarves, elves, humans or orcs. Dwarves are miners and warriors; elves, defenders and mages; orcs breed fast and fight in numbers. Humans are balanced, the easiest to begin with."
   },
   {
    "screen": "class",
@@ -60,7 +60,7 @@
   },
   {
    "screen": "alignment",
-   "text": "Good, neutral or evil. It shapes how the nations of the computer see you."
+   "text": "Good, neutral or evil. It shapes how the other kingdoms of the world see you."
   },
   {
    "screen": "mark",
@@ -109,7 +109,7 @@
   },
   {
    "screen": "added",
-   "text": "Your nation is in the world. From now on, Play takes you straight to it, and the game asks for its password.",
+   "text": "Your nation is in the world, among the other kingdoms. From now on, Play takes you straight to it, and the game asks for its password.",
    "keys": [
     "Space"
    ]

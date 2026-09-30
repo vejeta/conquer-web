@@ -14,7 +14,7 @@
  "segments": [
   {
    "screen": "intro",
-   "text": "Przed pierwszą turą zakładasz swój naród. Gdy grasz po raz pierwszy, gra otwiera własny kreator narodów, ten sam, który gracze poznali w tysiąc dziewięćset osiemdziesiątym siódmym roku. To zajmuje dwie minuty. Oto jak."
+   "text": "Przed pierwszą turą zakładasz swój naród: królestwo w świecie epickiej fantasy. Gdy grasz po raz pierwszy, gra otwiera własny kreator narodów, ten sam, który gracze poznali w tysiąc dziewięćset osiemdziesiątym siódmym roku. To zajmuje dwie minuty. Oto jak."
   },
   {
    "screen": "name",
@@ -48,7 +48,7 @@
   },
   {
    "screen": "race",
-   "text": "Wybierz rasę jedną literą: krasnoludy, elfy, ludzie albo orki. Ludzie są zrównoważeni i najłatwiejsi na początek."
+   "text": "Wybierz swój lud jedną literą: krasnoludy, elfy, ludzie albo orki. Krasnoludy to górnicy i wojownicy, elfy to obrońcy i magowie, orki szybko się mnożą i walczą masą. Ludzie są zrównoważeni i najłatwiejsi na początek."
   },
   {
    "screen": "class",
@@ -60,7 +60,7 @@
   },
   {
    "screen": "alignment",
-   "text": "Dobry, neutralny albo zły. To decyduje, jak widzą cię narody komputera."
+   "text": "Dobry, neutralny albo zły. To decyduje, jak widzą cię inne królestwa świata."
   },
   {
    "screen": "mark",
@@ -109,7 +109,7 @@
   },
   {
    "screen": "added",
-   "text": "Twój naród jest już w świecie. Od teraz Graj prowadzi cię prosto do niego, a gra pyta o jego hasło.",
+   "text": "Twój naród jest już w świecie, obok innych królestw. Od teraz Graj prowadzi cię prosto do niego, a gra pyta o jego hasło.",
    "keys": [
     "Space"
    ]

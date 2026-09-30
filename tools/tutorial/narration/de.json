@@ -12,14 +12,14 @@
   "intro_title": "Dein erster Zug",
   "intro_sub": "Usenet, 1987 · dein Browser, heute",
   "outro_title": "Deine Nation wartet",
-  "outro_sub": "Bitte um eine Nation · spiel deinen ersten Zug heute Abend",
+  "outro_sub": "Bitte um eine Einladung · spiel deinen ersten Zug heute Abend",
   "password": "Passwort",
   "space": "Leertaste"
  },
  "segments": [
   {
    "screen": "intro",
-   "text": "Oktober neunzehnhundertsiebenundachtzig. Ein Strategiespiel verbreitet sich über die ganze Welt, Beitrag für Beitrag, im Usenet. Studenten kompilieren es auf den Rechnern der Universität und regieren Nationen an grün leuchtenden Terminals. Vierzig Jahre später ist Conquer zurück. Keine Installation. Kein Shell-Zugang. Nur dein Browser. Das ist dein erster Zug."
+   "text": "Oktober neunzehnhundertsiebenundachtzig. Ein Strategiespiel verbreitet sich über die ganze Welt, Beitrag für Beitrag, im Usenet. In den Rechenzentren der Universitäten kompilieren es Studenten und regieren an grün leuchtenden Terminals Königreiche von Elfen, Zwergen, Orks und Menschen. Es ist kein Brettspiel: Es ist eine Welt epischer Fantasy, mit Magie, Helden und Ungeheuern. Vierzig Jahre später ist Conquer zurück. Keine Installation. Kein Shell-Zugang. Nur dein Browser. Das ist dein erster Zug."
   },
   {
    "screen": "menu",
@@ -63,7 +63,7 @@
   },
   {
    "screen": "move",
-   "text": "Drück das M zum Bewegen, dann eine Richtung: H, J, K und L, und für die Diagonalen Y, U, B und N. Hier das J. Nach Süden.",
+   "text": "Drück das M zum Bewegen, dann eine Richtung: H, J, K und L, und für die Diagonalen Y, U, B und N. Sie liegen rund um deine rechte Hand. Auch der Ziffernblock geht und, auf dieser Seite, die Pfeiltasten. Hier das J. Nach Süden.",
    "title": "Ausrücken und Land nehmen"
   },
   {
@@ -83,7 +83,7 @@
   },
   {
    "screen": "diplomacy",
-   "text": "Das große S listet jede Nation der Welt. Du bist noch niemandem begegnet. Das kommt noch.",
+   "text": "Das große S listet jede Nation der Welt: Königreiche anderer Spieler, dazu Piraten, Nomaden und Wilde, die der Computer lenkt. Du bist noch niemandem begegnet. Das kommt noch.",
    "title": "Die anderen Nationen ansehen"
   },
   {
@@ -93,7 +93,7 @@
   },
   {
    "screen": "done",
-   "text": "Antworte mit Ja. Sobald alle Herrscher bereit sind, läuft der Zug sofort. Kein Warten bis Sonntag.",
+   "text": "Antworte mit Ja. Sobald alle Herrscher bereit sind, läuft der Zug sofort, ohne auf die Zeit der Auswertung zu warten.",
    "title": "Befehle als fertig markieren"
   },
   {
@@ -103,7 +103,7 @@
   },
   {
    "screen": "outro",
-   "text": "Deine Nation wartet. Bitte um einen Platz in der nächsten Saison, und spiel deinen ersten Zug noch heute Abend."
+   "text": "Deine Nation wartet. Bitte um einen Einladungscode, gründe deine Nation, und spiel deinen ersten Zug noch heute Abend."
   }
  ]
 }
