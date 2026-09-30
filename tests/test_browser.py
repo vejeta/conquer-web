@@ -20,8 +20,20 @@ pytestmark = pytest.mark.browser
 playwright = pytest.importorskip("playwright.sync_api")
 
 
+def site_policy():
+    """The Content Security Policy the VPS sends (vps/virtualhost.conf.template)"""
+    for line in (ROOT / "vps" / "virtualhost.conf.template").read_text().splitlines():
+        if "Content-Security-Policy" in line:
+            return line.split('"')[1]
+    raise AssertionError("no Content-Security-Policy in the virtual host template")
+
+
 class Site(http.server.SimpleHTTPRequestHandler):
-    """web/, with the stand-in for ttyd at /play/"""
+    """web/, with the stand-in for ttyd at /play/, and the VPS's security policy"""
+
+    def end_headers(self):
+        self.send_header("Content-Security-Policy", site_policy())
+        super().end_headers()
 
     def translate_path(self, path):
         if path.split("?")[0].rstrip("/") == "/play":
@@ -132,3 +144,35 @@ def test_resizing_keeps_the_game_screen(site, browser):
     sizes = game.evaluate("sizes")
     assert all(c >= 80 and r >= 24 for c, r in sizes), sizes
     ctx.close()
+
+
+def test_arrow_keys_move(site, browser):
+    """The game knows only y k u / h l / b j n: arrows are sent as those."""
+    page = browser.new_page()
+    page.goto(site + "game.html")
+    page.wait_for_function("() => { try { return document.getElementById('game').contentWindow.ready } catch (e) { return false } }")
+    game = next(f for f in page.frames if "/play" in f.url)
+    page.wait_for_timeout(1000)
+    game.click("#t")
+    for key in ("ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Home", "PageUp", "End", "PageDown", "x"):
+        page.keyboard.press(key)
+    assert game.evaluate("sent") == "kjhlyubnx"
+    page.close()
+
+
+def test_practice_game_runs(site, browser):
+    """/try/ runs the game in WebAssembly under the site's security policy,
+    and moves with the arrow keys."""
+    page = browser.new_page()
+    errors = []
+    page.on("console", lambda m: m.type == "error" and errors.append(m.text))
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(site + "try/")
+    page.wait_for_timeout(1500)
+    page.click("#terminal")
+    page.keyboard.press(" ")
+    page.wait_for_function("() => window.term && [...Array(24).keys()].some(y => "
+                           "(term.buffer.active.getLine(y) || {translateToString: () => ''}).translateToString().includes('Password'))",
+                           timeout=20000)
+    assert not [e for e in errors if "Content Security Policy" in e or "CompileError" in e], errors
+    page.close()

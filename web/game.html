@@ -74,6 +74,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
       background: var(--bar);
     }
     .pad { display: grid; grid-template-columns: repeat(3, 40px); gap: 4px; }
+    .pad button { font-size: 1.25em; }
+    .pad small { font-size: 0.55em; opacity: 0.65; margin-left: 2px; }
     .group { display: flex; flex-wrap: wrap; gap: 6px; max-width: 330px; justify-content: center; }
     button {
       min-width: 40px;
@@ -157,15 +159,15 @@ SPDX-License-Identifier: GPL-3.0-or-later
       <button data-key="n">n</button>
     </div>
     <div class="pad" aria-label="Move">
-      <button data-key="y" title="Move north-west" data-i18n-title="game.key_nw_title">y</button>
-      <button data-key="k" title="Move north" data-i18n-title="game.key_n_title">k</button>
-      <button data-key="u" title="Move north-east" data-i18n-title="game.key_ne_title">u</button>
-      <button data-key="h" title="Move west" data-i18n-title="game.key_w_title">h</button>
+      <button data-key="y" title="Move north-west" data-i18n-title="game.key_nw_title">↖<small>y</small></button>
+      <button data-key="k" title="Move north" data-i18n-title="game.key_n_title">↑<small>k</small></button>
+      <button data-key="u" title="Move north-east" data-i18n-title="game.key_ne_title">↗<small>u</small></button>
+      <button data-key="h" title="Move west" data-i18n-title="game.key_w_title">←<small>h</small></button>
       <button data-key="p" title="Pick next unit" data-i18n-title="game.key_pick_title">p</button>
-      <button data-key="l" title="Move east" data-i18n-title="game.key_e_title">l</button>
-      <button data-key="b" title="Move south-west" data-i18n-title="game.key_sw_title">b</button>
-      <button data-key="j" title="Move south" data-i18n-title="game.key_s_title">j</button>
-      <button data-key="n" title="Move south-east" data-i18n-title="game.key_se_title">n</button>
+      <button data-key="l" title="Move east" data-i18n-title="game.key_e_title">→<small>l</small></button>
+      <button data-key="b" title="Move south-west" data-i18n-title="game.key_sw_title">↙<small>b</small></button>
+      <button data-key="j" title="Move south" data-i18n-title="game.key_s_title">↓<small>j</small></button>
+      <button data-key="n" title="Move south-east" data-i18n-title="game.key_se_title">↘<small>n</small></button>
     </div>
     <div class="group">
       <button data-key="\x1b" title="Escape">Esc</button>
@@ -183,6 +185,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 <script src="server.js"></script>
 <script src="site.js"></script>
 <script src="coach.js"></script>
+<script src="arrows.js"></script>
 <script>
   (function () {
     var frame = document.getElementById('game');
@@ -273,6 +276,15 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
     // Keep the terminal sized to the frame when the window changes
     window.addEventListener('resize', function () { setTimeout(fitColumns, 50); });
+
+    // The arrow keys move as the game's letters do (arrows.js), once ttyd
+    // has made the terminal
+    var arrowWait = setInterval(function () {
+      var t = term();
+      if (!t || !t.attachCustomKeyEventHandler) return;
+      conquerArrows(t, function (k) { t.input(k, true); });
+      clearInterval(arrowWait);
+    }, 500);
 
     // Step-by-step coach next to the terminal (coach.js): the first turn,
     // and the game's nation builder while it is on screen

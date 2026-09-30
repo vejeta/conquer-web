@@ -14,7 +14,7 @@ python3 -m pytest -m browser                  # Chromium: python3 -m playwright 
 | `test_narration.py` | Every shot of the narrated videos shows a recorded screen; the languages match English |
 | `test_i18n.py` | `tools/check-i18n.py` passes |
 | `test_game.py` | The game's nation builder, played again in the game container (or `RECORD_LOCAL=1`), shows the screens the coach and the video were made from |
-| `test_browser.py` | `game.html` replays the nation builder recording (`fake/play.html` stands in for ttyd): the coach and key bar follow it, resizing never cuts the game screen; `signup.html` offers the builder video |
+| `test_browser.py` | `game.html` replays the nation builder recording (`fake/play.html` stands in for ttyd): the coach and key bar follow it, resizing never cuts the game screen, arrow keys move; `try/` runs the game under the VPS's security policy; `signup.html` offers the builder video |
 
 The recordings they use come from `tools/tutorial/record.py` (see
 `tools/tutorial/README.md`): record again when the game's screens change.

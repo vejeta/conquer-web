@@ -82,6 +82,21 @@ if [ -f "$vhost" ] && ! grep -q 'FilesMatch "\\.(html|js|css|json)' "$vhost"; th
     echo "⚠️  $vhost does not ask browsers to check for new pages (Cache-Control)."
     echo "   Visitors may see old texts after updates: see vps/virtualhost.conf.template"
 fi
+# The practice game of /try/ runs in WebAssembly, which the site's Content
+# Security Policy must allow ('wasm-unsafe-eval'): add it to the policy that
+# deploy-to-vps.sh wrote, keeping the old file if Apache does not accept it
+if [ -f "$vhost" ] && grep -q "script-src 'self' 'unsafe-inline';" "$vhost"; then
+    cp "$vhost" "$vhost.before-wasm"
+    sed -i "s|script-src 'self' 'unsafe-inline';|script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval';|" "$vhost"
+    if apache2ctl configtest >/dev/null 2>&1; then
+        systemctl reload apache2
+        rm -f "$vhost.before-wasm"
+        echo "✅ The site's security policy now lets the practice game (/try/) run"
+    else
+        mv "$vhost.before-wasm" "$vhost"
+        echo "⚠️  Could not allow WebAssembly in $vhost (Apache refused the change): see vps/virtualhost.conf.template"
+    fi
+fi
 if [ -f "$vhost" ] && ! grep -q '/join/api/' "$vhost"; then
     echo "⚠️  $vhost does not pass the sign-up page to the game (/join/api/)."
     echo "   Add these lines next to \"ProxyPass /play/\", then: apache2ctl configtest && systemctl reload apache2"
