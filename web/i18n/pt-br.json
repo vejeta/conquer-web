@@ -41,9 +41,6 @@
   "before3": "Se a tela ficar bagunçada, pressione <kbd>Ctrl</kbd> + <kbd>L</kbd> para redesenhá-la.",
   "before4": "O jogo em si está em inglês.",
   "h_keys": "Teclas",
-  "k_y": "mover NO / N / NE",
-  "k_h": "mover O / L",
-  "k_b": "mover SO / S / SE",
   "k_help": "telas de ajuda",
   "k_p": "próxima unidade",
   "k_m": "mover a unidade selecionada",
@@ -88,8 +85,7 @@
   "cred_account": "Abre a porta do site: o navegador a pede quando você clica em Jogar. Uma por jogador; não é a sua nação.",
   "cred_nation_t": "A senha da sua nação",
   "cred_nation": "Faz parte do jogo original de 1987: protege a sua nação dentro do mundo, como nas máquinas Unix para as quais ele foi escrito.",
-  "join_link": "Crie a sua conta",
-  "k_arrows": "as setas e o teclado numérico também movem"
+  "join_link": "Crie a sua conta"
  },
  "game": {
   "keyboard_title": "Mostrar o teclado do dispositivo",
@@ -138,7 +134,9 @@
   "confirm": "Apagar meu mundo?",
   "starting": "Criando um novo mundo de treino...",
   "ready": "Um novo mundo de treino está pronto.",
-  "failed": "Não foi possível iniciar:"
+  "failed": "Não foi possível iniciar:",
+  "moves": "Como se mover",
+  "moves_ok": "Entendi"
  },
  "coach": {
   "toggle_title": "Ajuda passo a passo para o seu primeiro turno",
@@ -207,5 +205,15 @@
   "done_private": "Se o navegador não perguntar e entrar com outra conta (ele lembra a última usada neste site), abra o site numa janela privada.",
   "howto": "Veja como se funda uma nação (2 minutos)",
   "howto_note": "O construtor de nações do próprio jogo, como ele aparece na primeira vez que você joga."
+ },
+ "moves": {
+  "title": "Como se mover em Conquer",
+  "sub": "As letras ficam sob a sua mão direita e quase todas apontam para onde vão: <b>y u</b> para cima, <b>b n</b> para baixo, <b>h</b> para a esquerda, <b>l</b> para a direita. No meio, <b>j</b> desce (a perninha pende para baixo) e <b>k</b> sobe.",
+  "keyboard": "Seu teclado",
+  "numpad": "Teclado numérico",
+  "map": "No mapa",
+  "you": "você",
+  "why": "<b>Por que letras?</b> Em 1987 muitos terminais não tinham setas: Conquer, como vi e rogue, se move com as letras sob a mão direita e com os números do teclado numérico. <b>Neste site as setas também funcionam</b>; no celular, o direcional da barra de teclas.",
+  "arrows": "Os números do teclado numérico também funcionam e, neste site, as setas."
  }
 }

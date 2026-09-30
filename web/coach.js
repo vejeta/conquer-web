@@ -51,6 +51,8 @@ function conquerCoach(term, relayout, stepsUrl, builderUrl) {
     document.getElementById('coach-title').textContent = st.title;
     // Step texts are part of this site (tools/tutorial), not user content
     document.getElementById('coach-text').innerHTML = st.text;
+    // The movement figure, where a step shows it (moves.js)
+    if (window.conquerMoves) conquerMoves(document.getElementById('coach-text'));
     var box = document.getElementById('coach-keys');
     box.textContent = '';
     if (st.keys.length) {

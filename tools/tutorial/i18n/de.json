@@ -83,7 +83,7 @@
   },
   "move": {
    "title": "Ausrücken und Land nehmen",
-   "text": "<p>Drücke <kbd>m</kbd>, dann eine Richtung:</p><pre class=\"dirs\">y k u\n h l\nb j n</pre><p>Auf deutschen QWERTZ-Tastaturen sind y und z vertauscht: Die Taste <kbd>y</kbd> des Spiels ist die Taste mit der Aufschrift Y. Jeder Schritt kostet Bewegungspunkte; Hügel und Wälder kosten mehr. Meldet das Spiel <em>Can't Move Here</em> (meist Wasser), drücke eine Taste und versuch eine andere Richtung.</p>"
+   "text": "<p>Drücke <kbd>m</kbd>, dann eine Richtung:</p><div data-moves=\"compact\"></div><p>Auf deutschen QWERTZ-Tastaturen sind y und z vertauscht: Die Taste <kbd>y</kbd> des Spiels ist die Taste mit der Aufschrift Y. Jeder Schritt kostet Bewegungspunkte; Hügel und Wälder kosten mehr. Meldet das Spiel <em>Can't Move Here</em> (meist Wasser), drücke eine Taste und versuch eine andere Richtung.</p>"
   },
   "moved": {
    "title": "Die Bewegung beenden",

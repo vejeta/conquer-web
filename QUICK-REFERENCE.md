@@ -122,7 +122,8 @@ In the game:
 | Keys | What they do |
 |------|--------------|
 | `y k u` / `h l` / `b j n` | Move the cursor (NW N NE / W E / SW S SE) |
-| Arrow keys, number pad | The same moves, in the browser: the page sends them as those letters (with NumLock off, Home, PgUp, End and PgDn are the diagonals) |
+| `7 8 9` / `4 6` / `1 2 3` | The same moves on the number pad (the game has always taken them) |
+| Arrow keys | The same moves, in the browser: the page sends them as those letters (and, with NumLock off, Home, PgUp, End and PgDn as the diagonals) |
 | `p`, `m` | Pick the next unit, move it |
 | `D` | Draft troops |
 | `C`, `r` | Construct, redesignate a sector |

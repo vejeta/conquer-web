@@ -7,10 +7,11 @@
 //     h   l        west               east
 //     b j n        south-west  south  south-east
 //
-// and knows nothing of arrow keys: an arrow reaches it as Esc [ A, and the
-// Esc cancels what the player was doing. So the arrow keys, and the number
-// pad with NumLock off (Home, PageUp, End, PageDown for the diagonals), are
-// sent as those letters. conquerArrows(term, send): send(letter) types it.
+// and with the digits of the number pad (7 8 9 / 4 6 / 1 2 3: main.c and
+// move.c), but knows nothing of arrow keys: an arrow reaches it as Esc [ A,
+// and the Esc cancels what the player was doing. So the arrow keys, and the
+// number pad with NumLock off (Home, PageUp, End, PageDown for the
+// diagonals), are sent as those letters. conquerArrows(term, send): send(letter) types it.
 (function () {
   var MOVE = {
     ArrowUp: 'k', ArrowDown: 'j', ArrowLeft: 'h', ArrowRight: 'l',

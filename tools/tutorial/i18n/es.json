@@ -83,7 +83,7 @@
   },
   "move": {
    "title": "Sal a conquistar tierra",
-   "text": "<p>Pulsa <kbd>m</kbd> y después una dirección:</p><pre class=\"dirs\">y k u\n h l\nb j n</pre><p>Cada paso gasta puntos de movimiento; colinas y bosques cuestan más. Si el juego dice <em>Can't Move Here</em> (normalmente agua), pulsa una tecla y prueba otra dirección.</p>"
+   "text": "<p>Pulsa <kbd>m</kbd> y después una dirección:</p><div data-moves=\"compact\"></div><p>Cada paso gasta puntos de movimiento; colinas y bosques cuestan más. Si el juego dice <em>Can't Move Here</em> (normalmente agua), pulsa una tecla y prueba otra dirección.</p>"
   },
   "moved": {
    "title": "Termina el movimiento",

@@ -91,7 +91,7 @@
     "m",
     "j"
    ],
-   "text": "<p>Pressione <kbd>m</kbd> e depois uma direção:</p><pre class=\"dirs\">y k u\n h l\nb j n</pre><p>Cada passo gasta pontos de movimento; colinas e florestas custam mais. Se o jogo disser <em>Can't Move Here</em> (em geral, água), pressione uma tecla e tente outra direção.</p>",
+   "text": "<p>Pressione <kbd>m</kbd> e depois uma direção:</p><div data-moves=\"compact\"></div><p>Cada passo gasta pontos de movimento; colinas e florestas custam mais. Se o jogo disser <em>Can't Move Here</em> (em geral, água), pressione uma tecla e tente outra direção.</p>",
    "detect": "MOVE(MENT )?SCREEN"
   },
   {

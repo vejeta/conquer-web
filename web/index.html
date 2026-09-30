@@ -76,6 +76,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
       padding: 1px 6px;
       white-space: nowrap;
     }
+    .moves-box { margin: 0 0 18px; }
     .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 6px 24px; }
     .keys div { display: flex; gap: 10px; align-items: baseline; }
     .keys kbd { min-width: 2.2em; text-align: center; }
@@ -354,11 +355,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
   <section>
     <h2 data-i18n="index.h_keys">Key reference</h2>
+    <div class="moves-box" data-moves></div>
     <div class="keys">
-      <div><kbd>y k u</kbd><span data-i18n="index.k_y">move NW / N / NE</span></div>
-      <div><kbd>h &nbsp; l</kbd><span data-i18n="index.k_h">move W / E</span></div>
-      <div><kbd>b j n</kbd><span data-i18n="index.k_b">move SW / S / SE</span></div>
-      <div><kbd>&larr; &uarr; &rarr; &darr;</kbd><span data-i18n="index.k_arrows">the arrow keys and the number pad move too</span></div>
       <div><kbd>?</kbd><span data-i18n="index.k_help">help screens</span></div>
       <div><kbd>p</kbd><span data-i18n="index.k_p">pick next unit</span></div>
       <div><kbd>m</kbd><span data-i18n="index.k_m">move selected unit</span></div>
@@ -387,6 +385,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 </main>
 <script src="server.js"></script>
 <script src="site.js"></script>
+<script src="moves.js"></script>
 <script src="hero.js"></script>
 <script>
   // Texts of the page: i18n/<language>.json, "index" (site.js)

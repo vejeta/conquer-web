@@ -176,3 +176,26 @@ def test_practice_game_runs(site, browser):
                            timeout=20000)
     assert not [e for e in errors if "Content Security Policy" in e or "CompileError" in e], errors
     page.close()
+
+
+def test_movement_figure(site, browser):
+    """The home page draws how to move; /try/ opens it the first time a
+    game starts, and only then."""
+    page = browser.new_page()
+    page.goto(site + "index.html?lang=es")
+    page.wait_for_function("() => document.querySelectorAll('[data-moves] .mv-k.on').length === 16")
+    assert "Cómo te mueves" in page.inner_text("[data-moves]")
+    page.goto(site + "try/")
+    page.wait_for_timeout(1000)
+    page.click("#terminal")
+    page.keyboard.press(" ")
+    page.wait_for_selector("#moves-panel:not([hidden])", timeout=5000)
+    page.click("#moves-ok")
+    assert page.evaluate("document.getElementById('moves-panel').hidden")
+    page.reload()
+    page.wait_for_timeout(1000)
+    page.click("#terminal")
+    page.keyboard.press(" ")
+    page.wait_for_timeout(1500)
+    assert page.evaluate("document.getElementById('moves-panel').hidden")
+    page.close()

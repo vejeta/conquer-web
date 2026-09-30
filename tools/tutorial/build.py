@@ -125,6 +125,8 @@ def build(lang, langs, template, screens, english):
             '</li>' % {"id": step["id"], "n": n, "title": html.escape(step["title"]), "keys": keys,
                        "text": step["text"], "veteran": veteran, "screen": screen_html(screens[step["id"]], ui)})
     page = template.replace("<!--steps-->", "\n".join(items))
+    # The movement figure (web/moves.js) in the language of the page
+    page = page.replace('<div data-moves="compact"></div>', '<div data-moves="compact" data-moves-lang="%s"></div>' % lang)
     page = re.sub(r"\{\{(\w+)\}\}", lambda m: ui[m.group(1)], page)
     page_file = "tutorial%s.html" % suffix(lang)
     with open(os.path.join(WEB, page_file), "w") as f:

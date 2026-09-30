@@ -91,7 +91,7 @@
     "m",
     "j"
    ],
-   "text": "<p>Naciśnij <kbd>m</kbd>, a potem kierunek:</p><pre class=\"dirs\">y k u\n h l\nb j n</pre><p>Każdy krok zużywa punkty ruchu; wzgórza i lasy kosztują więcej. Jeśli gra napisze <em>Can't Move Here</em> (zwykle to woda), naciśnij dowolny klawisz i spróbuj innego kierunku.</p>",
+   "text": "<p>Naciśnij <kbd>m</kbd>, a potem kierunek:</p><div data-moves=\"compact\"></div><p>Każdy krok zużywa punkty ruchu; wzgórza i lasy kosztują więcej. Jeśli gra napisze <em>Can't Move Here</em> (zwykle to woda), naciśnij dowolny klawisz i spróbuj innego kierunku.</p>",
    "detect": "MOVE(MENT )?SCREEN"
   },
   {

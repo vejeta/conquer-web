@@ -22,6 +22,10 @@ SPDX-License-Identifier: GPL-3.0-or-later
     .top .title { font: 700 13px ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: 0.2em; color: var(--accent); }
     .top .note { color: var(--muted); font-size: 12px; }
     .top .spacer { flex: 1; }
+    .moves-panel { position: fixed; inset: 0; z-index: 20; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; padding: 12px; }
+    .moves-panel[hidden] { display: none; }
+    .moves-panel .card { --bg: #0d1117; --panel: #161b22; --border: #30363d; background: #0d1117; border: 1px solid var(--key); border-radius: 12px; padding: 18px 20px; max-width: 760px; max-height: 100%; overflow: auto; box-sizing: border-box; }
+    .moves-panel .ok { margin-top: 14px; }
     button {
       min-width: 40px; height: 32px; padding: 0 10px; border: 0; border-radius: 6px;
       background: var(--key); color: var(--text); font: 600 13px system-ui, sans-serif; cursor: pointer; touch-action: manipulation;
@@ -69,6 +73,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
   </style>
 </head>
 <body>
+  <div class="moves-panel" id="moves-panel" hidden role="dialog" aria-modal="true">
+    <div class="card"><div data-moves></div><button class="ok" id="moves-ok" type="button" data-i18n="try.moves_ok">Got it</button></div>
+  </div>
   <div class="top">
     <a href="../">&larr;</a>
     <span class="title">CONQUER</span>
@@ -77,6 +84,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <button id="coach-toggle" type="button" aria-controls="coach" aria-expanded="false" title="Step-by-step help for your first turn" data-i18n-title="coach.toggle_title">Coach</button>
     <button id="turn" type="button" title="Run the turn update of your practice world" data-i18n-title="try.turn_title" data-i18n="try.turn" hidden>Next turn</button>
     <button id="reset" type="button" title="Delete your practice world and start again" data-i18n-title="try.reset_title" data-i18n="try.reset">Start over</button>
+    <button id="moves-toggle" type="button" aria-controls="moves-panel" data-i18n="try.moves">How to move</button>
     <button id="toggle-keys" type="button" data-i18n="try.toggle_keys">Keys</button>
   </div>
   <div class="stage">
@@ -114,6 +122,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 <script src="../site.js"></script>
 <script src="../coach.js"></script>
 <script src="../arrows.js"></script>
+<script src="../moves.js"></script>
 <script>
   (function () {
     // The world lives in the browser (IndexedDB), under /conquer/lib, where
@@ -246,8 +255,23 @@ SPDX-License-Identifier: GPL-3.0-or-later
       term.focus();
     }
 
+    // How to move (moves.js): opened by itself the first time a game starts
+    var movesPanel = document.getElementById('moves-panel');
+    function showMoves(show) {
+      movesPanel.hidden = !show;
+      if (show) { movesPanel.querySelector('.card').scrollTop = 0; document.getElementById('moves-ok').focus({ preventScroll: true }); }
+      else term.focus();
+    }
+    document.getElementById('moves-toggle').addEventListener('click', function () { showMoves(true); });
+    document.getElementById('moves-ok').addEventListener('click', function () { showMoves(false); });
+    movesPanel.addEventListener('click', function (e) { if (e.target === movesPanel) showMoves(false); });
+    movesPanel.addEventListener('keydown', function (e) { if (e.key === 'Escape') showMoves(false); });
+
     function start() {
       if (running) return;
+      var seen = false;
+      try { seen = localStorage.getItem('conquer-moves-seen') === '1'; localStorage.setItem('conquer-moves-seen', '1'); } catch (e) {}
+      if (!seen) setTimeout(function () { showMoves(true); }, 800);
       term.focus();
       term.write('\x1b[H\x1b[2J');
       launch(createConquer, ['-n', NATION]).then(function () { menu(T('saved')); });

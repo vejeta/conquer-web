@@ -41,9 +41,6 @@
   "before3": "If the screen looks garbled, press <kbd>Ctrl</kbd> + <kbd>L</kbd> to redraw it.",
   "before4": "The game itself is in English.",
   "h_keys": "Key reference",
-  "k_y": "move NW / N / NE",
-  "k_h": "move W / E",
-  "k_b": "move SW / S / SE",
   "k_help": "help screens",
   "k_p": "pick next unit",
   "k_m": "move selected unit",
@@ -88,8 +85,7 @@
   "cred_account": "Opens the door of this site: your browser asks for it when you press Play. One per player; it is not your nation.",
   "cred_nation_t": "Your nation's password",
   "cred_nation": "Part of the original 1987 game: it guards your nation inside the world, as it did on the Unix machines it was written for.",
-  "join_link": "Create your account",
-  "k_arrows": "the arrow keys and the number pad move too"
+  "join_link": "Create your account"
  },
  "game": {
   "keyboard_title": "Show the device keyboard",
@@ -138,7 +134,9 @@
   "confirm": "Delete my world?",
   "starting": "Starting a new practice world...",
   "ready": "A new practice world is ready.",
-  "failed": "Could not start:"
+  "failed": "Could not start:",
+  "moves": "How to move",
+  "moves_ok": "Got it"
  },
  "coach": {
   "toggle_title": "Step-by-step help for your first turn",
@@ -207,5 +205,15 @@
   "done_private": "If the browser does not ask and signs you in as someone else (it remembers the last account used on this site), open this site in a private window.",
   "howto": "Watch how a nation is founded (2 minutes)",
   "howto_note": "The game's own nation builder, as the game shows it the first time you play."
+ },
+ "moves": {
+  "title": "How to move in Conquer",
+  "sub": "The letters sit under your right hand, and most point where they go: <b>y u</b> up, <b>b n</b> down, <b>h</b> left, <b>l</b> right. In the middle, <b>j</b> goes down (its tail hangs) and <b>k</b> up.",
+  "keyboard": "Your keyboard",
+  "numpad": "Number pad",
+  "map": "On the map",
+  "you": "you",
+  "why": "<b>Why letters?</b> In 1987 many terminals had no arrow keys, so Conquer, like vi and rogue, moves with the letters under your right hand, and with the digits of the number pad. <b>On this site the arrow keys work too</b>; on a phone, the pad of the key bar.",
+  "arrows": "The number pad's digits work too and, on this site, the arrow keys."
  }
 }

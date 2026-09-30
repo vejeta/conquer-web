@@ -83,7 +83,7 @@
   },
   "move": {
    "title": "出兵占领土地",
-   "text": "<p>按 <kbd>m</kbd>，再按一个方向键：</p><pre class=\"dirs\">y k u\n h l\nb j n</pre><p>每走一步都要消耗移动点数；丘陵和森林消耗更多。如果游戏显示 <em>Can't Move Here</em>（无法移动到此处，通常是水域），按任意键后换个方向再试。</p>"
+   "text": "<p>按 <kbd>m</kbd>，再按一个方向键：</p><div data-moves=\"compact\"></div><p>每走一步都要消耗移动点数；丘陵和森林消耗更多。如果游戏显示 <em>Can't Move Here</em>（无法移动到此处，通常是水域），按任意键后换个方向再试。</p>"
   },
   "moved": {
    "title": "结束移动",

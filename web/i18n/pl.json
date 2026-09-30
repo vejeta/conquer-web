@@ -41,9 +41,6 @@
   "before3": "Jeśli obraz się rozsypie, naciśnij <kbd>Ctrl</kbd> + <kbd>L</kbd>, aby go odświeżyć.",
   "before4": "Sama gra jest po angielsku.",
   "h_keys": "Ściągawka klawiszy",
-  "k_y": "ruch na NW / N / NE",
-  "k_h": "ruch na W / E",
-  "k_b": "ruch na SW / S / SE",
   "k_help": "ekrany pomocy",
   "k_p": "wybierz następną jednostkę",
   "k_m": "rusz wybraną jednostką",
@@ -88,8 +85,7 @@
   "cred_account": "Otwiera drzwi serwisu: przeglądarka pyta o nie, gdy klikasz Graj. Jedno na gracza; to nie jest twój naród.",
   "cred_nation_t": "Hasło twojego narodu",
   "cred_nation": "Część oryginalnej gry z 1987 roku: chroni twój naród w świecie gry, tak jak na uniksowych maszynach, dla których ją napisano.",
-  "join_link": "Załóż konto",
-  "k_arrows": "strzałki i klawiatura numeryczna też poruszają"
+  "join_link": "Załóż konto"
  },
  "game": {
   "keyboard_title": "Pokaż klawiaturę urządzenia",
@@ -138,7 +134,9 @@
   "confirm": "Usunąć mój świat?",
   "starting": "Zakładam nowy świat treningowy...",
   "ready": "Nowy świat treningowy jest gotowy.",
-  "failed": "Nie udało się uruchomić:"
+  "failed": "Nie udało się uruchomić:",
+  "moves": "Jak się poruszać",
+  "moves_ok": "Rozumiem"
  },
  "coach": {
   "toggle_title": "Pomoc krok po kroku w twojej pierwszej turze",
@@ -207,5 +205,15 @@
   "done_private": "Jeśli przeglądarka nie zapyta i zaloguje cię na inne konto (pamięta ostatnie użyte w tym serwisie), otwórz serwis w oknie prywatnym.",
   "howto": "Zobacz, jak założyć naród (2 minuty)",
   "howto_note": "Kreator narodów samej gry, taki, jaki pojawia się przy pierwszej grze."
+ },
+ "moves": {
+  "title": "Jak poruszać się w Conquer",
+  "sub": "Litery leżą pod prawą ręką i prawie wszystkie wskazują kierunek: <b>y u</b> w górę, <b>b n</b> w dół, <b>h</b> w lewo, <b>l</b> w prawo. W środku <b>j</b> idzie w dół (jej ogonek zwisa), a <b>k</b> w górę.",
+  "keyboard": "Twoja klawiatura",
+  "numpad": "Klawiatura numeryczna",
+  "map": "Na mapie",
+  "you": "ty",
+  "why": "<b>Dlaczego litery?</b> W 1987 roku wiele terminali nie miało strzałek: Conquer, jak vi i rogue, porusza się literami pod prawą ręką i cyframi klawiatury numerycznej. <b>Na tej stronie działają też strzałki</b>; na telefonie krzyżak paska klawiszy.",
+  "arrows": "Działają też cyfry klawiatury numerycznej i, na tej stronie, strzałki."
  }
 }
