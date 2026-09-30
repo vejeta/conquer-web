@@ -61,7 +61,13 @@ set_nation() {
     { [ -n "$rest" ] && printf '%s\n' "$rest"; printf '%s:%s\n' "$1" "$2"; } > "$PLAYERS_FILE"
 }
 
+# Is this account still without a nation ("account:+")?
+pending() {
+    awk -F: -v user="$ACCOUNT" '$1 == user && $2 == "+" { found = 1 } END { exit !found }' "$PLAYERS_FILE"
+}
+
 [ -n "$ACCOUNT" ] || exit 1
+pending || exit 0
 
 clear
 echo
@@ -76,24 +82,41 @@ fi
 
 t join_builder; echo
 read -r -s -n 1 -p "$(t join_open_builder)" || exit 0
-before=$(nations)
+result=/run/conquer/join.$$
 (
-    # One nation builder at a time
+    # One nation builder at a time, and one nation per account: another tab
+    # of the same account may have founded it while this one waited
     flock 9 || exit 1
-    "$PREFIX/bin/conqrun" -a -d "$WORLD_DIR"
+    pending || exit 3
+    before=$(nations)
+    # The game's own nation builder, unchanged. Only what it needs from the
+    # environment, a time limit, and limits on CPU time and file size
+    (
+        ulimit -t 600 -f 65536
+        exec env -i HOME="$HOME" TERM="${TERM:-xterm}" PATH=/usr/bin:/bin LANG=C \
+            timeout --foreground 1800 "$PREFIX/bin/conqrun" -a -d "$WORLD_DIR"
+    )
+    stty sane 2>/dev/null
+    tput sgr0 2>/dev/null
+    after=$(nations)
+    nation=$(comm -13 <(printf '%s\n' "$before") <(printf '%s\n' "$after") | head -n 1)
+    [ -n "$nation" ] || exit 4
+    (
+        flock 8 || exit 1
+        set_nation "$ACCOUNT" "$nation"
+    ) 8> "$LOCK_FILE.accounts" || { echo "$nation" > "$result"; exit 5; }
+    echo "$nation" > "$result"
 ) 9> "$LOCK_FILE"
-stty sane 2>/dev/null
-tput sgr0 2>/dev/null
-after=$(nations)
-nation=$(comm -13 <(printf '%s\n' "$before") <(printf '%s\n' "$after") | head -n 1)
-if [ -z "$nation" ]; then
-    stop "$(t join_no_nation)"
-fi
-
-(
-    flock 9 || exit 1
-    set_nation "$ACCOUNT" "$nation"
-) 9> "$LOCK_FILE.accounts" || stop "$(t join_not_saved "$nation")"
+status=$?
+nation=$(cat "$result" 2>/dev/null)
+rm -f "$result"
+case $status in
+    0) ;;
+    3) exit 0 ;;   # already founded: back to the menu, which opens it
+    4) stop "$(t join_no_nation)" ;;
+    5) stop "$(t join_not_saved "$nation")" ;;
+    *) stop "$(t join_no_nation)" ;;
+esac
 echo "[join] account $ACCOUNT founded the nation $nation" > /run/conquer/log 2>/dev/null &
 
 clear
