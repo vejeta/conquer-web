@@ -54,14 +54,20 @@ else
     g log --oneline "$before..$after" | sed 's/^/     /'
 fi
 
-# 3. The game container, when the game changed
-if [ -n "$REBUILD" ] || ! g diff --quiet "$before" "$after" -- conquer docker-compose.vps.yml; then
+# 3. The game container, when the game changed since the last build this
+# script made (a "git pull" run by hand before it does not hide changes)
+STATE_DIR=/var/lib/conquer-web
+built=$(cat "$STATE_DIR/built-commit" 2>/dev/null || true)
+if [ -n "$REBUILD" ] || [ -z "$built" ] || ! g cat-file -e "$built^{commit}" 2>/dev/null \
+    || ! g diff --quiet "$built" "$after" -- conquer docker-compose.vps.yml; then
     echo "🐳 Rebuilding the game container..."
     docker-compose -p "$PROJECT" -f docker-compose.vps.yml build --pull conquer
     systemctl restart "$SERVICE"
+    mkdir -p "$STATE_DIR"
+    echo "$after" > "$STATE_DIR/built-commit"
     echo "✅ Game container rebuilt and restarted"
 else
-    echo "✅ Game unchanged: container not rebuilt"
+    echo "✅ Game unchanged since the last build ($(g log -1 --format=%h "$built")): container not rebuilt"
 fi
 
 # 4. The web pages (the game status in status/ is written by the container)
@@ -84,7 +90,8 @@ if [ -f "$vhost" ] && ! grep -q '/join/api/' "$vhost"; then
 fi
 sleep 3
 if docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
-    if docker exec "$CONTAINER" cat /proc/1/cmdline | tr '\0' ' ' | grep -q -- '-H X-WEBAUTH-USER'; then
+    if docker exec "$CONTAINER" cat /proc/1/cmdline | tr '\0' ' ' | grep -q -- '-H X-WEBAUTH-USER' \
+        && docker exec "$CONTAINER" test -x /usr/local/bin/conquer-gate; then
         echo "✅ Game container running"
     else
         echo "❌ The game container is not the current version: run $0 --rebuild"
