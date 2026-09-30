@@ -4,7 +4,7 @@
 coach and the video were made from.
 
 Records tools/tutorial/found-nation.steps.json again, on a copy of the
-world (the world itself is not touched), in the game container
+default world at turn 1 (the game's world is not touched), in the game container
 conquer-local, or with RECORD_LOCAL=1 in a local /opt/conquer as the user
 conquer. record.py stops when a screen is not the expected one; the new
 screens must then move the coach step by step as the recorded ones do.
@@ -36,12 +36,17 @@ def game_sh(script):
 
 @pytest.fixture(scope="module")
 def world():
-    if not LOCAL and not shutil.which("docker"):
-        pytest.skip("no docker, and RECORD_LOCAL is not set")
-    run = game_sh("set -e; rm -rf %(w)s; cp -a /opt/conquer/lib %(w)s; rm -f %(w)s/lockadd; "
+    if not LOCAL:
+        up = shutil.which("docker") and subprocess.run(
+            ["docker", "inspect", "-f", "{{.State.Running}}", "conquer-local"], capture_output=True, text=True).stdout
+        if (up or "").strip() != "true":
+            pytest.skip("the game container conquer-local is not running, and RECORD_LOCAL is not set")
+    # The default world as installed, at turn 1 (the game's world may be
+    # later: the builder then adds a screen of points for starting late)
+    run = game_sh("set -e; src=/opt/conquer/default-world; [ -d $src ] || src=/opt/conquer/lib; "
+                  "rm -rf %(w)s; cp -a $src %(w)s; rm -f %(w)s/lockadd; "
                   "conqowner -d %(w)s -s \"$(id -u)\" > /dev/null" % {"w": WORLD})
-    if run.returncode:
-        pytest.skip("no game to play: " + run.stderr.strip())
+    assert run.returncode == 0, "cannot copy the default world: " + run.stderr
     yield WORLD
     game_sh("rm -rf " + WORLD)
 
