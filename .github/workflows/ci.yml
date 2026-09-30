@@ -23,6 +23,11 @@ jobs:
       - name: Translations
         run: python3 tools/check-i18n.py
 
+      - name: Tests (coach, narration, translations)
+        run: |
+          python3 -m pip install --quiet pytest
+          python3 -m pytest -m "not browser and not game"
+
       - name: Game password check is the last <Location> in the Apache configs
         run: |
           for f in apache/local.conf vps/virtualhost.conf.template; do

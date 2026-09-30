@@ -47,3 +47,5 @@ lib/data
 # Live world data (mounted into the game container)
 data/
 __pycache__/
+__pycache__/
+.pytest_cache/
