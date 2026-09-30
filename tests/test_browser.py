@@ -1,0 +1,134 @@
+# SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""The game page replays the nation builder recording in Chromium: the
+coach follows it and the phone key bar switches to the builder's keys.
+The sign-up page offers the builder video.
+
+Needs the Python playwright module and Chromium (python3 -m playwright
+install chromium, or CHROMIUM=/path/to/chrome)."""
+import functools
+import http.server
+import json
+import os
+import threading
+
+import pytest
+
+from conftest import ROOT, WEB, load, recorded_screens, steps_file
+
+pytestmark = pytest.mark.browser
+playwright = pytest.importorskip("playwright.sync_api")
+
+
+class Site(http.server.SimpleHTTPRequestHandler):
+    """web/, with the stand-in for ttyd at /play/"""
+
+    def translate_path(self, path):
+        if path.split("?")[0].rstrip("/") == "/play":
+            return str(ROOT / "tests" / "fake" / "play.html")
+        return super().translate_path(path)
+
+    def log_message(self, *args):
+        pass
+
+
+@pytest.fixture(scope="module")
+def site():
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Site, directory=str(WEB)))
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    yield "http://127.0.0.1:%d/" % server.server_address[1]
+    server.shutdown()
+
+
+@pytest.fixture(scope="module")
+def browser():
+    with playwright.sync_playwright() as p:
+        b = p.chromium.launch(executable_path=os.environ.get("CHROMIUM") or None, args=["--no-proxy-server"])
+        yield b
+        b.close()
+
+
+def coach_state(page):
+    return page.evaluate("""() => ({
+        open: !document.getElementById('coach').hidden,
+        title: document.getElementById('coach-title').innerText,
+        builderKeys: !document.getElementById('builder-keys').hidden,
+    })""")
+
+
+@pytest.mark.parametrize("lang,phone", [("en", False), ("es", True)])
+def test_coach_follows_the_builder(site, browser, lang, phone):
+    ctx = browser.new_context(viewport={"width": 390, "height": 844} if phone else {"width": 1280, "height": 800},
+                              has_touch=phone, is_mobile=phone)
+    page = ctx.new_page()
+    page.goto(site + "game.html?lang=" + lang)
+    page.wait_for_function("() => { try { return document.getElementById('game').contentWindow.ready } catch (e) { return false } }")
+    game = next(f for f in page.frames if "/play" in f.url)
+    titles = {s["id"]: s["title"] for s in load(steps_file("builder", lang))["steps"]}
+    screens = recorded_screens("found-nation")
+    # The recording: the builder's first screen, then one chapter per step
+    game.evaluate("playTo(2)")
+    for n, (sid, _) in enumerate(screens):
+        if n:
+            game.evaluate("playTo(1)")
+        want = titles["points" if sid == "treasury" else sid]
+        # The coach opens by itself the first time the builder shows, at
+        # the step on screen, and the key bar shows the builder's keys
+        expect = {"open": True, "title": want, "builderKeys": True}
+        try:
+            page.wait_for_function("""want => {
+                const c = document.getElementById('coach'), k = document.getElementById('builder-keys');
+                return !c.hidden && !k.hidden && document.getElementById('coach-title').innerText === want;
+            }""", arg=want, timeout=5000)
+        except playwright.TimeoutError:
+            pass
+        assert coach_state(page) == expect, sid
+    # A builder key on the bar reaches the game (on a computer the bar
+    # starts folded)
+    if not phone:
+        page.click("#toggle")
+    page.locator("#builder-keys button[data-key='j']").click()
+    assert game.evaluate("sent") == "j"
+    ctx.close()
+
+
+@pytest.mark.parametrize("lang", ["es", "de"])
+def test_signup_offers_the_builder_video(site, browser, lang):
+    video = WEB / "tutorial" / ("found-nation.%s.mp4" % lang)
+    english = WEB / "tutorial" / "found-nation.en.mp4"
+    page = browser.new_page()
+    page.route("**/join/api/**", lambda r: r.abort())
+    page.goto(site + "signup.html?lang=" + lang)
+    page.wait_for_timeout(1500)
+    src = page.evaluate("document.getElementById('howto-video').getAttribute('src')")
+    hidden = page.evaluate("document.getElementById('howto').hidden")
+    if video.exists():
+        assert src == "tutorial/found-nation.%s.mp4" % lang and not hidden
+    elif english.exists():
+        assert src == "tutorial/found-nation.en.mp4" and not hidden
+    else:
+        assert hidden
+    page.close()
+
+
+def test_resizing_keeps_the_game_screen(site, browser):
+    """Turning a phone, or the coach and key bar changing size, refits the
+    terminal without ever making it smaller than 80x24: text the game draws
+    meanwhile is not cut."""
+    ctx = browser.new_context(viewport={"width": 390, "height": 844}, has_touch=True, is_mobile=True)
+    page = ctx.new_page()
+    page.goto(site + "game.html")
+    page.wait_for_function("() => { try { return document.getElementById('game').contentWindow.ready } catch (e) { return false } }")
+    game = next(f for f in page.frames if "/play" in f.url)
+    game.evaluate("playTo(10)")    # the points screen
+    page.wait_for_timeout(1500)
+    sizes = []
+    game.evaluate("window.sizes = []; term.onResize(e => sizes.push([e.cols, e.rows]))")
+    for viewport in ({"width": 844, "height": 390}, {"width": 390, "height": 844}):
+        page.set_viewport_size(viewport)
+        page.wait_for_timeout(1200)
+        page.click("#coach-toggle") if page.locator("#coach-toggle").count() else None
+        page.wait_for_timeout(800)
+    sizes = game.evaluate("sizes")
+    assert all(c >= 80 and r >= 24 for c, r in sizes), sizes
+    ctx.close()

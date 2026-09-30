@@ -207,18 +207,41 @@ SPDX-License-Identifier: GPL-3.0-or-later
     // Conquer needs an 80x24 screen: on small screens shrink the font until
     // the terminal fits it (down to a minimum size). ttyd applies its own
     // font size once connected, so treat any size we did not set as the base.
+    // Once the game is on screen, never try a size that would make the
+    // terminal smaller than 80x24, even for a moment: what the game draws
+    // meanwhile would be cut. The size is worked out from the last fit
+    // instead (columns and rows go with the frame's size over the font size).
     var MIN_COLS = 80, MIN_ROWS = 24, MIN_FONT = 7;
     function fitColumns() {
       var t = term();
       if (!t || !t.fit || !t.options) return;
-      if (t.options.fontSize !== t._conquerSet) t._conquerBase = t.options.fontSize;
-      t.options.fontSize = t._conquerBase;
+      if (t.options.fontSize !== t._conquerSet) {
+        t._conquerBase = t.options.fontSize;
+        t._conquerLast = null;
+      }
+      var w = frame.clientWidth, h = frame.clientHeight, last = t._conquerLast;
+      // ttyd fits the terminal itself when its window changes: start from that
+      if (last && (t.cols !== last.cols || t.rows !== last.rows)) {
+        last = { size: t.options.fontSize, cols: t.cols, rows: t.rows, w: w, h: h };
+      }
+      if (last && last.w === w && last.h === h && t.cols >= MIN_COLS && t.rows >= MIN_ROWS) return;
+      var size = t._conquerBase;
+      if (last) {
+        // (with a margin: character cells round to whole pixels)
+        var fits = function (f) {
+          return last.cols * last.size / f * w / last.w >= MIN_COLS * 1.05 &&
+                 last.rows * last.size / f * h / last.h >= MIN_ROWS * 1.05;
+        };
+        while (size > MIN_FONT && !fits(size)) size--;
+      }
+      t.options.fontSize = size;
       t.fit();
       while ((t.cols < MIN_COLS || t.rows < MIN_ROWS) && t.options.fontSize > MIN_FONT) {
         t.options.fontSize = t.options.fontSize - 1;
         t.fit();
       }
       t._conquerSet = t.options.fontSize;
+      t._conquerLast = { size: t.options.fontSize, cols: t.cols, rows: t.rows, w: w, h: h };
     }
 
     function showKeys(show) {

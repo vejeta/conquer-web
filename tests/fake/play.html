@@ -1,0 +1,32 @@
+<!doctype html>
+<!-- A stand-in for ttyd at /play/: xterm.js as window.term, replaying a
+     recording (?cast=) up to a chapter marker with playTo(n). Keys the page
+     sends collect in window.sent. -->
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="/vendor/xterm/xterm.css">
+<style>html,body{margin:0;height:100%;background:#000}#t{height:100%}</style></head>
+<body><div id="t"></div>
+<script src="/vendor/xterm/xterm.js"></script><script src="/vendor/xterm/addon-fit.js"></script>
+<script>
+  var term = new Terminal({ cols: 80, rows: 24, fontSize: 15 });
+  var fit = new FitAddon.FitAddon();
+  term.loadAddon(fit);
+  term.open(document.getElementById('t'));
+  term.fit = function () { fit.fit(); };
+  window.sent = '';
+  term.onData(function (d) { window.sent += d; });
+  var cast = new URLSearchParams(parent.location.search).get('cast') || 'tutorial/found-nation.cast';
+  fetch('/' + cast).then(function (r) { return r.text(); }).then(function (t) {
+    var ev = t.trim().split('\n').slice(1).map(JSON.parse), i = 0;
+    // Write the output up to the n-th next chapter marker
+    window.playTo = function (n) {
+      var seen = 0;
+      while (i < ev.length) {
+        var e = ev[i++];
+        if (e[1] === 'o') term.write(e[2]);
+        else if (e[1] === 'm' && ++seen === n) break;
+      }
+    };
+    window.ready = true;
+  });
+</script>
+</body></html>
