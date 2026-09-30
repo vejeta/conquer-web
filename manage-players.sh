@@ -74,7 +74,7 @@ remove_line() {
     rm -f "$tmp"
 }
 
-# Files in data/lib belong to the game user (the join wizard in the game
+# Files in data/lib belong to the game user (the sign-up service in the game
 # container writes them too), also when this script runs with sudo
 match_world_owner() {
     local owner
@@ -223,20 +223,6 @@ cmd_invites() {
     cat "$INVITES_FILE"
 }
 
-# The shared joining account of earlier versions is gone: players create
-# their own account on the sign-up page
-cmd_join_account() {
-    cat <<EOF
-The shared joining account is no longer used: players with an invite code
-create their own account on the site's sign-up page (signup.html).
-If an earlier version created it, remove it:
-
-   sudo ./manage-players.sh remove join
-
-and delete JOIN_ACCOUNT and JOIN_PASSWORD from the environment file.
-EOF
-}
-
 case "${1:-}" in
     add) [ -n "$2" ] || usage; shift; cmd_add "$@" ;;
     assign) [ -n "$3" ] || usage; cmd_assign "$2" "$3" ;;
@@ -244,6 +230,5 @@ case "${1:-}" in
     list) cmd_list ;;
     invite) cmd_invite "${2:-1}" ;;
     invites) cmd_invites ;;
-    join-account) cmd_join_account "${2:-join}" ;;
     *) usage ;;
 esac
