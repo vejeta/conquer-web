@@ -197,6 +197,11 @@ jobs:
           grep -q 'Found your nation' <<< "$out" || { echo "no nation builder for a new account: $out" >&2; exit 1; }
           sudo ./manage-players.sh remove newbie
 
+      - name: The nation builder still shows the coach's screens
+        run: |
+          python3 -m pip install --quiet pytest pyte
+          python3 -m pytest -m game
+
       - name: Game runs as an unprivileged user
         run: |
           test "$(docker exec conquer-local stat -c %U /proc/1)" = conquer
