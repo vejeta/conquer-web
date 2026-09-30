@@ -1,0 +1,129 @@
+{
+ "title": "Found your nation",
+ "steps": [
+  {
+   "id": "name",
+   "title": "Name your nation",
+   "keys": [],
+   "text": "<p>Type your nation's name and press <kbd>Enter</kbd>. <strong>Up to 9 letters</strong>: the field stops at the ninth.</p><p>Every ruler sees this name on the map and in the news. It is not your website account.</p>",
+   "detect": "Enter a Name for your Country"
+  },
+  {
+   "id": "password",
+   "title": "Your nation's password",
+   "keys": [],
+   "text": "<p>Type a password for your nation, <strong>2 to 7 characters</strong>, and press <kbd>Enter</kbd>. Nothing shows while you type.</p><p>The game asks for it every time you play, as it did on the Unix machines of 1987. Keep it: only the administrator can reset it.</p>",
+   "detect": "Enter National Password"
+  },
+  {
+   "id": "password2",
+   "title": "Once more",
+   "keys": [],
+   "text": "<p>Type the same password again and press <kbd>Enter</kbd>.</p>",
+   "detect": "Reenter National Password"
+  },
+  {
+   "id": "leader",
+   "title": "Your ruler",
+   "keys": [],
+   "text": "<p>The name of your nation's leader, <strong>up to 9 letters</strong> (the game's own examples: The Ed, Gandalf, Conan), then <kbd>Enter</kbd>. The news will speak of them.</p>",
+   "detect": "name of your country's leader"
+  },
+  {
+   "id": "race",
+   "title": "Race",
+   "keys": [
+    "D",
+    "E",
+    "H",
+    "O"
+   ],
+   "text": "<p>Press one letter:</p><ul><li><kbd>D</kbd> <strong>Dwarves</strong>: strong fighters and miners.</li><li><kbd>E</kbd> <strong>Elves</strong>: good defenders, at home with magic.</li><li><kbd>H</kbd> <strong>Humans</strong>: balanced, the easiest to start with.</li><li><kbd>O</kbd> <strong>Orcs</strong>: they breed fast and fight in numbers.</li></ul><p>The race decides which classes you may choose next.</p>",
+   "detect": "Enter your Race"
+  },
+  {
+   "id": "class",
+   "title": "Class",
+   "keys": [],
+   "text": "<p>Type the <strong>number</strong> of a class and press <kbd>Enter</kbd>. The list shows which races may take it (D, E, H, O) and the power it starts with.</p><p><strong>King</strong> and <strong>emperor</strong> cost no points and suit a first game; the others start with a power that costs some of your points.</p>",
+   "detect": "Enter the number of your choice"
+  },
+  {
+   "id": "alignment",
+   "title": "Alignment",
+   "keys": [
+    "G",
+    "N",
+    "E"
+   ],
+   "text": "<p>Your nation's character: <kbd>G</kbd> good, <kbd>N</kbd> neutral or <kbd>E</kbd> evil. It shapes how the nations run by the computer see you.</p>",
+   "detect": "Please Enter Alignment"
+  },
+  {
+   "id": "mark",
+   "title": "Your mark on the map",
+   "keys": [],
+   "text": "<p>Press one of the letters listed. It marks your nation's land on everyone's map.</p>",
+   "detect": "Enter National Mark"
+  },
+  {
+   "id": "points",
+   "title": "Spend your points",
+   "keys": [
+    "j",
+    "k",
+    "Space",
+    "Esc"
+   ],
+   "text": "<p>Each line is something your nation can buy; <strong>Points Left</strong> is what you have.</p><ul><li><kbd>j</kbd> moves the marker down, <kbd>k</kbd> up.</li><li><kbd>Space</kbd> buys one more of the marked line.</li><li><kbd>l</kbd> switches to taking back, <kbd>h</kbd> to adding again; <kbd>?</kbd> explains the line.</li></ul><p><strong>Tip:</strong> buy 2 or 3 points of <strong>Treasury</strong>: a nation without gold cannot draft troops in its first turn. Press <kbd>Esc</kbd> when you are done.</p>",
+   "detect": "Points Left:"
+  },
+  {
+   "id": "population",
+   "title": "Points left over",
+   "keys": [
+    "y",
+    "n"
+   ],
+   "text": "<p>Points you did not spend can become people: <kbd>y</kbd> (recommended). <kbd>n</kbd> takes you back to spend them.</p>",
+   "detect": "remaining points for population"
+  },
+  {
+   "id": "civilians",
+   "title": "More people",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>Press any key.</p>",
+   "detect": "more civilians"
+  },
+  {
+   "id": "complete",
+   "title": "Finished?",
+   "keys": [
+    "y",
+    "n"
+   ],
+   "text": "<p><kbd>y</kbd> if your nation is as you want it; <kbd>n</kbd> goes back to the points.</p>",
+   "detect": "Is the modification complete"
+  },
+  {
+   "id": "save",
+   "title": "Save it",
+   "keys": [
+    "y"
+   ],
+   "text": "<p>Press <kbd>y</kbd>. <strong>Any other key deletes the nation you just built</strong>, and you start again.</p>",
+   "detect": "Save this nation"
+  },
+  {
+   "id": "added",
+   "title": "Your nation is in the world",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>Press any key. Your website account is now linked to this nation: from now on <strong>Play</strong> takes you straight to it, and the game asks for its password.</p>",
+   "detect": "Added to the World"
+  }
+ ]
+}

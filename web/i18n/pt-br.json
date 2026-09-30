@@ -112,7 +112,13 @@
   "key_help_title": "Ajuda",
   "key_move_title": "Mover a unidade selecionada",
   "key_army_title": "Relatório de exércitos",
-  "key_quit_title": "Sair do jogo"
+  "key_quit_title": "Sair do jogo",
+  "key_up_title": "Para cima",
+  "key_down_title": "Para baixo",
+  "key_buy_title": "Comprar mais uma",
+  "key_add_title": "Mudar para adicionar",
+  "key_sub_title": "Mudar para devolver",
+  "key_info_title": "Explicar a linha"
  },
  "try": {
   "note": "Mundo de treino no seu dispositivo · nação <b>trainee</b>, senha <b>train1</b>",

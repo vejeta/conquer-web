@@ -112,7 +112,13 @@
   "key_help_title": "Ayuda",
   "key_move_title": "Mover la unidad seleccionada",
   "key_army_title": "Informe de ejércitos",
-  "key_quit_title": "Salir del juego"
+  "key_quit_title": "Salir del juego",
+  "key_up_title": "Arriba",
+  "key_down_title": "Abajo",
+  "key_buy_title": "Comprar una más",
+  "key_add_title": "Pasar a añadir",
+  "key_sub_title": "Pasar a devolver",
+  "key_info_title": "Explicar la línea"
  },
  "try": {
   "note": "Mundo de práctica en tu dispositivo · nación <b>trainee</b>, contraseña <b>train1</b>",

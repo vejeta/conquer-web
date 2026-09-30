@@ -142,6 +142,20 @@ SPDX-License-Identifier: GPL-3.0-or-later
   </div>
 
   <div class="keys" id="keys" hidden>
+    <!-- While the game's nation builder is on screen: its own keys -->
+    <div class="group builder" id="builder-keys" hidden>
+      <button data-key="k" title="Up" data-i18n-title="game.key_up_title">k &uarr;</button>
+      <button data-key="j" title="Down" data-i18n-title="game.key_down_title">j &darr;</button>
+      <button data-key=" " title="Buy one more" data-i18n-title="game.key_buy_title" data-i18n="game.key_space">Space</button>
+      <button data-key="h" title="Switch to adding" data-i18n-title="game.key_add_title">h +</button>
+      <button data-key="l" title="Switch to taking back" data-i18n-title="game.key_sub_title">l &minus;</button>
+      <button data-key="?" title="Explain the line" data-i18n-title="game.key_info_title">?</button>
+      <button data-key="\x1b" title="Escape">Esc</button>
+      <button data-key="\r" title="Enter">Enter</button>
+      <button data-key="\x7f" title="Backspace" data-i18n-title="game.key_backspace_title">&#9003;</button>
+      <button data-key="y">y</button>
+      <button data-key="n">n</button>
+    </div>
     <div class="pad" aria-label="Move">
       <button data-key="y" title="Move north-west" data-i18n-title="game.key_nw_title">y</button>
       <button data-key="k" title="Move north" data-i18n-title="game.key_n_title">k</button>
@@ -237,8 +251,28 @@ SPDX-License-Identifier: GPL-3.0-or-later
     // Keep the terminal sized to the frame when the window changes
     window.addEventListener('resize', function () { setTimeout(fitColumns, 50); });
 
-    // Step-by-step coach next to the terminal (coach.js)
-    conquerCoach(term, fitColumns, 'tutorial/first-turn.json');
+    // Step-by-step coach next to the terminal (coach.js): the first turn,
+    // and the game's nation builder while it is on screen
+    conquerCoach(term, fitColumns, 'tutorial/first-turn.json', 'tutorial/found-nation.json');
+
+    // The key bar follows the screen: the nation builder's keys while it is
+    // open, the map's keys otherwise
+    var builderKeys = document.getElementById('builder-keys');
+    var mapKeys = keys.querySelectorAll('.pad, .group:not(.builder)');
+    setInterval(function () {
+      var t = term();
+      if (!t || !t.buffer) return;
+      var buf = t.buffer.active, text = '';
+      for (var y = 0; y < t.rows; y++) {
+        var line = buf.getLine(buf.viewportY + y);
+        if (line) text += line.translateToString(true) + '\n';
+      }
+      var building = /Nation Builder/.test(text);
+      if (building === !builderKeys.hidden) return;
+      builderKeys.hidden = !building;
+      for (var i = 0; i < mapKeys.length; i++) mapKeys[i].hidden = building;
+      setTimeout(fitColumns, 50);
+    }, 700);
 
     // Keep fitting while ttyd connects and applies its settings
     var tries = 0;

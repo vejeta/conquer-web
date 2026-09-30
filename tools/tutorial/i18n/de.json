@@ -113,5 +113,64 @@
    "title": "Eine neue Jahreszeit",
    "text": "<p>In dieser Partie war tidewater der einzige Spieler, also lief die Auswertung sofort. Spiel wieder, um die neue Jahreszeit zu sehen: deinen neuen Sektor, die Zeitung (<kbd>N</kbd>) und deine Post. Das ist der ganze Rhythmus von Conquer: lesen, befehlen, beenden, auf die Neuigkeiten warten.</p>"
   }
+ },
+ "found_title": "Gründe deine Nation",
+ "found_steps": {
+  "name": {
+   "title": "Benenne deine Nation",
+   "text": "<p>Gib den Namen deiner Nation ein und drück <kbd>Enter</kbd>. <strong>Bis 9 Buchstaben</strong>: Das Feld stoppt beim neunten.</p><p>Alle Herrscher sehen diesen Namen auf der Karte und in den Nachrichten. Es ist nicht dein Konto für die Website.</p>"
+  },
+  "password": {
+   "title": "Das Passwort deiner Nation",
+   "text": "<p>Gib ein Passwort für deine Nation ein, <strong>2 bis 7 Zeichen</strong>, und drück <kbd>Enter</kbd>. Beim Tippen ist nichts zu sehen.</p><p>Das Spiel fragt jedes Mal danach, wie auf den Unix-Rechnern von 1987. Bewahre es gut auf: Nur der Spielleiter kann es zurücksetzen.</p>"
+  },
+  "password2": {
+   "title": "Noch einmal",
+   "text": "<p>Gib dasselbe Passwort noch einmal ein und drück <kbd>Enter</kbd>.</p>"
+  },
+  "leader": {
+   "title": "Dein Herrscher",
+   "text": "<p>Der Name des Herrschers deiner Nation, <strong>bis 9 Buchstaben</strong> (die Beispiele des Spiels: The Ed, Gandalf, Conan), dann <kbd>Enter</kbd>. Die Nachrichten werden von ihm berichten.</p>"
+  },
+  "race": {
+   "title": "Volk",
+   "text": "<p>Drück einen Buchstaben:</p><ul><li><kbd>D</kbd> <strong>Zwerge</strong>: starke Kämpfer und Bergleute.</li><li><kbd>E</kbd> <strong>Elfen</strong>: gute Verteidiger, vertraut mit Magie.</li><li><kbd>H</kbd> <strong>Menschen</strong>: ausgewogen, am leichtesten für den Anfang.</li><li><kbd>O</kbd> <strong>Orks</strong>: vermehren sich schnell und kämpfen in Massen.</li></ul><p>Das Volk bestimmt, welche Klassen du danach wählen kannst.</p>"
+  },
+  "class": {
+   "title": "Klasse",
+   "text": "<p>Gib die <strong>Nummer</strong> einer Klasse ein und drück <kbd>Enter</kbd>. Die Liste zeigt, welche Völker sie wählen dürfen (D, E, H, O) und mit welcher Macht sie beginnt.</p><p><strong>King</strong> (König) und <strong>emperor</strong> (Kaiser) kosten keine Punkte und eignen sich für die erste Partie; die anderen beginnen mit einer Macht, die Punkte kostet.</p>"
+  },
+  "alignment": {
+   "title": "Gesinnung",
+   "text": "<p>Der Charakter deiner Nation: <kbd>G</kbd> gut, <kbd>N</kbd> neutral oder <kbd>E</kbd> böse. Sie beeinflusst, wie dich die vom Computer gesteuerten Nationen sehen.</p>"
+  },
+  "mark": {
+   "title": "Dein Zeichen auf der Karte",
+   "text": "<p>Drück einen der aufgelisteten Buchstaben. Er markiert das Land deiner Nation auf der Karte aller Spieler.</p>"
+  },
+  "points": {
+   "title": "Verteile deine Punkte",
+   "text": "<p>Jede Zeile ist etwas, das deine Nation kaufen kann; <strong>Points Left</strong> sind deine übrigen Punkte.</p><ul><li><kbd>j</kbd> bewegt die Markierung nach unten, <kbd>k</kbd> nach oben.</li><li><kbd>Leertaste</kbd> kauft eine Einheit der markierten Zeile.</li><li><kbd>l</kbd> wechselt zum Zurückgeben, <kbd>h</kbd> wieder zum Hinzufügen; <kbd>?</kbd> erklärt die Zeile.</li></ul><p><strong>Tipp:</strong> Kauf 2 oder 3 Punkte <strong>Treasury</strong> (Schatz): Eine Nation ohne Gold kann im ersten Zug keine Truppen ausheben. Drück <kbd>Esc</kbd>, wenn du fertig bist.</p>"
+  },
+  "population": {
+   "title": "Übrige Punkte",
+   "text": "<p>Nicht ausgegebene Punkte können zu Bevölkerung werden: <kbd>y</kbd> (empfohlen). <kbd>n</kbd> bringt dich zurück, um sie auszugeben.</p>"
+  },
+  "civilians": {
+   "title": "Mehr Bevölkerung",
+   "text": "<p>Drück eine beliebige Taste.</p>"
+  },
+  "complete": {
+   "title": "Fertig?",
+   "text": "<p><kbd>y</kbd>, wenn deine Nation so ist, wie du sie willst; <kbd>n</kbd> bringt dich zurück zu den Punkten.</p>"
+  },
+  "save": {
+   "title": "Speichern",
+   "text": "<p>Drück <kbd>y</kbd>. <strong>Jede andere Taste löscht die eben gebaute Nation</strong>, und du fängst von vorn an.</p>"
+  },
+  "added": {
+   "title": "Deine Nation ist in der Welt",
+   "text": "<p>Drück eine beliebige Taste. Dein Konto für die Website ist jetzt mit dieser Nation verknüpft: Ab jetzt führt dich <strong>Spielen</strong> direkt zu ihr, und das Spiel fragt nach ihrem Passwort.</p>"
+  }
  }
 }

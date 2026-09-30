@@ -140,6 +140,25 @@ def build(lang, langs, template, screens, english):
     print("wrote web/%s and web/tutorial/%s (%d steps)" % (page_file, coach_file, len(items)))
 
 
+def build_found(lang, langs):
+    """The coach of the game's nation builder (found-nation.content.json):
+    web/tutorial/found-nation[.language].json, the steps' title and text in
+    the language ("found_steps" in i18n/), English where it has none."""
+    found = json.load(open(os.path.join(HERE, "found-nation.content.json")))
+    cat = langs[lang]
+    translated = cat.get("found_steps", {})
+    steps = []
+    for step in found["steps"]:
+        s = dict(step)
+        s.update(translated.get(step["id"], {}))
+        steps.append({k: s[k] for k in ("id", "title", "keys", "text", "detect")})
+    name = "found-nation%s.json" % suffix(lang)
+    with open(os.path.join(WEB, "tutorial", name), "w") as f:
+        json.dump({"title": cat.get("found_title", found["title"]), "steps": steps}, f, indent=1, ensure_ascii=False)
+        f.write("\n")
+    print("wrote web/tutorial/%s (%d steps)" % (name, len(steps)))
+
+
 def main():
     english = json.load(open(os.path.join(HERE, "first-turn.content.json")))
     screens = {s["id"]: s["screen"] for s in json.load(open(os.path.join(HERE, "first-turn.screens.json")))}
@@ -147,6 +166,7 @@ def main():
     langs = load_languages()
     for lang in langs:
         build(lang, langs, template, screens, english)
+        build_found(lang, langs)
 
 
 if __name__ == "__main__":

@@ -112,7 +112,13 @@
   "key_help_title": "Hilfe",
   "key_move_title": "Gewählte Einheit bewegen",
   "key_army_title": "Armeebericht",
-  "key_quit_title": "Spiel beenden"
+  "key_quit_title": "Spiel beenden",
+  "key_up_title": "Nach oben",
+  "key_down_title": "Nach unten",
+  "key_buy_title": "Eine mehr kaufen",
+  "key_add_title": "Zum Hinzufügen wechseln",
+  "key_sub_title": "Zum Zurückgeben wechseln",
+  "key_info_title": "Zeile erklären"
  },
  "try": {
   "note": "Übungswelt auf deinem Gerät · Nation <b>trainee</b>, Passwort <b>train1</b>",

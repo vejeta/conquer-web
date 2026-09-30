@@ -112,7 +112,13 @@
   "key_help_title": "帮助",
   "key_move_title": "移动所选单位",
   "key_army_title": "军队报告",
-  "key_quit_title": "退出游戏"
+  "key_quit_title": "退出游戏",
+  "key_up_title": "向上",
+  "key_down_title": "向下",
+  "key_buy_title": "再买一份",
+  "key_add_title": "切换为增加",
+  "key_sub_title": "切换为退回",
+  "key_info_title": "解释该行"
  },
  "try": {
   "note": "在你的设备上运行的练习世界 · 国家 <b>trainee</b>，密码 <b>train1</b>",

@@ -112,7 +112,13 @@
   "key_help_title": "Справка",
   "key_move_title": "Двигать выбранный отряд",
   "key_army_title": "Отчёт об армиях",
-  "key_quit_title": "Выйти из игры"
+  "key_quit_title": "Выйти из игры",
+  "key_up_title": "Вверх",
+  "key_down_title": "Вниз",
+  "key_buy_title": "Купить ещё одну",
+  "key_add_title": "Переключить на добавление",
+  "key_sub_title": "Переключить на возврат",
+  "key_info_title": "Объяснить строку"
  },
  "try": {
   "note": "Тренировочный мир на твоём устройстве · нация <b>trainee</b>, пароль <b>train1</b>",

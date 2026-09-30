@@ -113,5 +113,64 @@
    "title": "Nowa pora roku",
    "text": "<p>W tej rozgrywce tidewater był jedynym graczem, więc rozliczenie ruszyło od razu. Zagraj znowu, aby zobaczyć nową porę roku: twój nowy sektor, gazetę (<kbd>N</kbd>) i pocztę. Tak wygląda cały rytm Conquer: czytaj, rozkazuj, wyjdź, czekaj na wieści.</p>"
   }
+ },
+ "found_title": "Załóż swój naród",
+ "found_steps": {
+  "name": {
+   "title": "Nazwij swój naród",
+   "text": "<p>Wpisz nazwę swojego narodu i naciśnij <kbd>Enter</kbd>. <strong>Do 9 liter</strong>: pole zatrzymuje się na dziewiątej.</p><p>Wszyscy władcy zobaczą tę nazwę na mapie i w wieściach. To nie jest twoje konto w serwisie.</p>"
+  },
+  "password": {
+   "title": "Hasło twojego narodu",
+   "text": "<p>Wpisz hasło narodu, <strong>od 2 do 7 znaków</strong>, i naciśnij <kbd>Enter</kbd>. Podczas pisania nic się nie wyświetla.</p><p>Gra pyta o nie przy każdej grze, jak na uniksowych maszynach z 1987 roku. Zachowaj je: zmienić je może tylko administrator.</p>"
+  },
+  "password2": {
+   "title": "Jeszcze raz",
+   "text": "<p>Wpisz to samo hasło jeszcze raz i naciśnij <kbd>Enter</kbd>.</p>"
+  },
+  "leader": {
+   "title": "Twój władca",
+   "text": "<p>Imię władcy twojego narodu, <strong>do 9 liter</strong> (przykłady z gry: The Ed, Gandalf, Conan), potem <kbd>Enter</kbd>. Wieści będą o nim mówić.</p>"
+  },
+  "race": {
+   "title": "Rasa",
+   "text": "<p>Naciśnij jedną literę:</p><ul><li><kbd>D</kbd> <strong>Krasnoludy</strong>: silni wojownicy i górnicy.</li><li><kbd>E</kbd> <strong>Elfy</strong>: dobrzy obrońcy, obeznani z magią.</li><li><kbd>H</kbd> <strong>Ludzie</strong>: zrównoważeni, najłatwiejsi na początek.</li><li><kbd>O</kbd> <strong>Orkowie</strong>: szybko się mnożą i walczą masą.</li></ul><p>Rasa decyduje, które klasy wybierzesz potem.</p>"
+  },
+  "class": {
+   "title": "Klasa",
+   "text": "<p>Wpisz <strong>numer</strong> klasy i naciśnij <kbd>Enter</kbd>. Lista pokazuje, które rasy mogą ją wybrać (D, E, H, O) i z jaką mocą startuje.</p><p><strong>King</strong> (król) i <strong>emperor</strong> (cesarz) nie kosztują punktów i pasują do pierwszej gry; pozostałe zaczynają z mocą, która kosztuje część punktów.</p>"
+  },
+  "alignment": {
+   "title": "Charakter",
+   "text": "<p>Charakter twojego narodu: <kbd>G</kbd> dobry, <kbd>N</kbd> neutralny lub <kbd>E</kbd> zły. Wpływa na to, jak widzą cię narody sterowane przez komputer.</p>"
+  },
+  "mark": {
+   "title": "Twój znak na mapie",
+   "text": "<p>Naciśnij jedną z wymienionych liter. Oznaczy ziemie twojego narodu na mapie wszystkich graczy.</p>"
+  },
+  "points": {
+   "title": "Rozdziel punkty",
+   "text": "<p>Każdy wiersz to coś, co twój naród może kupić; <strong>Points Left</strong> to pozostałe punkty.</p><ul><li><kbd>j</kbd> przesuwa znacznik w dół, <kbd>k</kbd> w górę.</li><li><kbd>Spacja</kbd> kupuje jeszcze jedną jednostkę zaznaczonego wiersza.</li><li><kbd>l</kbd> przełącza na oddawanie, <kbd>h</kbd> z powrotem na dodawanie; <kbd>?</kbd> objaśnia wiersz.</li></ul><p><strong>Rada:</strong> kup 2 lub 3 punkty <strong>Treasury</strong> (skarbiec): naród bez złota nie może zaciągnąć wojska w pierwszej turze. Naciśnij <kbd>Esc</kbd>, gdy skończysz.</p>"
+  },
+  "population": {
+   "title": "Pozostałe punkty",
+   "text": "<p>Niewydane punkty mogą zmienić się w ludność: <kbd>y</kbd> (zalecane). <kbd>n</kbd> wraca, byś je wydał.</p>"
+  },
+  "civilians": {
+   "title": "Więcej ludności",
+   "text": "<p>Naciśnij dowolny klawisz.</p>"
+  },
+  "complete": {
+   "title": "Gotowe?",
+   "text": "<p><kbd>y</kbd>, jeśli naród jest taki, jak chcesz; <kbd>n</kbd> wraca do punktów.</p>"
+  },
+  "save": {
+   "title": "Zapisz go",
+   "text": "<p>Naciśnij <kbd>y</kbd>. <strong>Każdy inny klawisz usuwa właśnie zbudowany naród</strong> i zaczynasz od nowa.</p>"
+  },
+  "added": {
+   "title": "Twój naród jest w świecie",
+   "text": "<p>Naciśnij dowolny klawisz. Twoje konto w serwisie jest teraz powiązane z tym narodem: od teraz <strong>Graj</strong> prowadzi prosto do niego, a gra pyta o jego hasło.</p>"
+  }
  }
 }

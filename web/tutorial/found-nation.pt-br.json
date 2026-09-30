@@ -1,0 +1,129 @@
+{
+ "title": "Funde a sua nação",
+ "steps": [
+  {
+   "id": "name",
+   "title": "Dê um nome à sua nação",
+   "keys": [],
+   "text": "<p>Digite o nome da sua nação e pressione <kbd>Enter</kbd>. <strong>Até 9 letras</strong>: o campo para na nona.</p><p>Todos os governantes veem esse nome no mapa e nas notícias. Não é a sua conta do site.</p>",
+   "detect": "Enter a Name for your Country"
+  },
+  {
+   "id": "password",
+   "title": "A senha da sua nação",
+   "keys": [],
+   "text": "<p>Digite uma senha para a sua nação, <strong>de 2 a 7 caracteres</strong>, e pressione <kbd>Enter</kbd>. Nada aparece enquanto você digita.</p><p>O jogo a pede sempre que você joga, como nas máquinas Unix de 1987. Guarde-a: só o administrador pode redefini-la.</p>",
+   "detect": "Enter National Password"
+  },
+  {
+   "id": "password2",
+   "title": "Mais uma vez",
+   "keys": [],
+   "text": "<p>Digite a mesma senha de novo e pressione <kbd>Enter</kbd>.</p>",
+   "detect": "Reenter National Password"
+  },
+  {
+   "id": "leader",
+   "title": "O seu governante",
+   "keys": [],
+   "text": "<p>O nome de quem governa a sua nação, <strong>até 9 letras</strong> (os exemplos do próprio jogo: The Ed, Gandalf, Conan), e <kbd>Enter</kbd>. As notícias falarão dele.</p>",
+   "detect": "name of your country's leader"
+  },
+  {
+   "id": "race",
+   "title": "Raça",
+   "keys": [
+    "D",
+    "E",
+    "H",
+    "O"
+   ],
+   "text": "<p>Pressione uma letra:</p><ul><li><kbd>D</kbd> <strong>Anões</strong>: bons guerreiros e mineiros.</li><li><kbd>E</kbd> <strong>Elfos</strong>: bons defensores, à vontade com a magia.</li><li><kbd>H</kbd> <strong>Humanos</strong>: equilibrados, os mais fáceis para começar.</li><li><kbd>O</kbd> <strong>Orcs</strong>: multiplicam-se depressa e lutam em grande número.</li></ul><p>A raça decide quais classes você pode escolher em seguida.</p>",
+   "detect": "Enter your Race"
+  },
+  {
+   "id": "class",
+   "title": "Classe",
+   "keys": [],
+   "text": "<p>Digite o <strong>número</strong> de uma classe e pressione <kbd>Enter</kbd>. A lista mostra quais raças podem escolhê-la (D, E, H, O) e o poder com que ela começa.</p><p><strong>King</strong> (rei) e <strong>emperor</strong> (imperador) não custam pontos e servem bem para a primeira partida; as outras começam com um poder que custa parte dos seus pontos.</p>",
+   "detect": "Enter the number of your choice"
+  },
+  {
+   "id": "alignment",
+   "title": "Alinhamento",
+   "keys": [
+    "G",
+    "N",
+    "E"
+   ],
+   "text": "<p>O caráter da sua nação: <kbd>G</kbd> bom, <kbd>N</kbd> neutro ou <kbd>E</kbd> mau. Influencia como as nações controladas pelo computador veem você.</p>",
+   "detect": "Please Enter Alignment"
+  },
+  {
+   "id": "mark",
+   "title": "A sua marca no mapa",
+   "keys": [],
+   "text": "<p>Pressione uma das letras da lista. Ela marca as terras da sua nação no mapa de todos.</p>",
+   "detect": "Enter National Mark"
+  },
+  {
+   "id": "points",
+   "title": "Distribua os seus pontos",
+   "keys": [
+    "j",
+    "k",
+    "Space",
+    "Esc"
+   ],
+   "text": "<p>Cada linha é algo que a sua nação pode comprar; <strong>Points Left</strong> são os pontos que restam.</p><ul><li><kbd>j</kbd> desce o marcador, <kbd>k</kbd> sobe.</li><li><kbd>Espaço</kbd> compra mais uma unidade da linha marcada.</li><li><kbd>l</kbd> muda para devolver, <kbd>h</kbd> volta a adicionar; <kbd>?</kbd> explica a linha.</li></ul><p><strong>Dica:</strong> compre 2 ou 3 pontos de <strong>Treasury</strong> (tesouro): uma nação sem ouro não pode recrutar tropas no primeiro turno. Pressione <kbd>Esc</kbd> quando terminar.</p>",
+   "detect": "Points Left:"
+  },
+  {
+   "id": "population",
+   "title": "Pontos que sobraram",
+   "keys": [
+    "y",
+    "n"
+   ],
+   "text": "<p>Os pontos não gastos podem virar população: <kbd>y</kbd> (recomendado). <kbd>n</kbd> leva você de volta para gastá-los.</p>",
+   "detect": "remaining points for population"
+  },
+  {
+   "id": "civilians",
+   "title": "Mais população",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>Pressione qualquer tecla.</p>",
+   "detect": "more civilians"
+  },
+  {
+   "id": "complete",
+   "title": "Terminou?",
+   "keys": [
+    "y",
+    "n"
+   ],
+   "text": "<p><kbd>y</kbd> se a sua nação está como você quer; <kbd>n</kbd> volta aos pontos.</p>",
+   "detect": "Is the modification complete"
+  },
+  {
+   "id": "save",
+   "title": "Salve-a",
+   "keys": [
+    "y"
+   ],
+   "text": "<p>Pressione <kbd>y</kbd>. <strong>Qualquer outra tecla apaga a nação que você acabou de criar</strong>, e você começa de novo.</p>",
+   "detect": "Save this nation"
+  },
+  {
+   "id": "added",
+   "title": "A sua nação está no mundo",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>Pressione qualquer tecla. A sua conta do site agora está vinculada a esta nação: a partir de agora <strong>Jogar</strong> leva você direto a ela, e o jogo pede a senha dela.</p>",
+   "detect": "Added to the World"
+  }
+ ]
+}

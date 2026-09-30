@@ -7,10 +7,17 @@ import os, pty, time, select, sys, json, fcntl, termios, struct, subprocess
 import pyte
 spec = json.load(open(sys.argv[1])); cast_out, screens_out = sys.argv[2], sys.argv[3]
 COLS, ROWS = 80, 24
+# In the game container (conquer-local), or with RECORD_LOCAL=1 in a local
+# /opt/conquer as the user conquer (a world copy for recording)
+LOCAL = os.environ.get("RECORD_LOCAL") == "1"
 pid, fd = pty.fork()
 if pid == 0:
+    inner = "stty rows 24 cols 80; cd /opt/conquer/lib; exec " + spec["cmd"]
+    if LOCAL:
+        os.execvp("su", ["su", "conquer", "-s", "/bin/bash", "-c",
+                           "export TERM=xterm-256color PATH=/opt/conquer/bin:$PATH; " + inner])
     os.execvp("docker", ["docker", "exec", "-it", "-u", "conquer", "-e", "TERM=xterm-256color",
-                         "conquer-local", "bash", "-c", "stty rows 24 cols 80; cd /opt/conquer/lib; exec " + spec["cmd"]])
+                         "conquer-local", "bash", "-c", inner])
 fcntl.ioctl(fd, termios.TIOCSWINSZ, struct.pack("HHHH", ROWS, COLS, 0, 0))
 screen = pyte.Screen(COLS, ROWS); stream = pyte.ByteStream(screen)
 events = []; t0 = time.time(); clock = [0.0]
@@ -58,5 +65,5 @@ with open(cast_out, "w") as f:
     for e in events: f.write(json.dumps(e, ensure_ascii=False) + "\n")
 json.dump(out, open(screens_out, "w"))
 os.kill(pid, 9)
-subprocess.run(["docker", "exec", "conquer-local", "sh", "-c",
-    'for p in /proc/[0-9]*; do c=$(cat $p/comm 2>/dev/null); case "$c" in conquer|conqrun) kill -TERM ${p#/proc/};; esac; done; sleep 1'])
+stop = 'for p in /proc/[0-9]*; do c=$(cat $p/comm 2>/dev/null); case "$c" in conquer|conqrun) kill -TERM ${p#/proc/};; esac; done; sleep 1'
+subprocess.run(["sh", "-c", stop] if LOCAL else ["docker", "exec", "conquer-local", "sh", "-c", stop])

@@ -31,6 +31,23 @@ python3 tools/tutorial/build.py
 screen is not the expected one (for example, when a random start places
 the capital with water to the south: pick another direction in the steps).
 
+### The nation builder
+
+The coach also follows the game's own nation builder (`conqrun -a`), which
+a new player meets the first time they play. Its steps are
+`found-nation.content.json` (and `found_title`, `found_steps` in
+`i18n/<language>.json`); `build.py` writes `web/tutorial/found-nation[.language].json`.
+`found-nation.steps.json` records the builder founding `iberia` on a world
+at turn 1 (the builder never asks for an account):
+
+```bash
+python3 tools/tutorial/record.py tools/tutorial/found-nation.steps.json \
+    web/tutorial/found-nation.cast tools/tutorial/found-nation.screens.json
+```
+
+`RECORD_LOCAL=1` records from a game installed in `/opt/conquer` on this
+machine, as the user `conquer`, instead of the container.
+
 ## Narrated videos
 
 `video.py` turns the recording into one video per language,

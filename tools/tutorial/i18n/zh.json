@@ -113,5 +113,64 @@
    "title": "新的季节",
    "text": "<p>在这局游戏里 tidewater 是唯一的玩家，所以回合立即结算了。再次进入游戏，看看新的季节：你新占领的地块、报纸（<kbd>N</kbd>）和你的邮件。这就是 Conquer 的全部节奏：阅读、下令、退出，然后等待消息。</p>"
   }
+ },
+ "found_title": "建立你的国家",
+ "found_steps": {
+  "name": {
+   "title": "为你的国家命名",
+   "text": "<p>输入国家名称并按 <kbd>Enter</kbd>。<strong>最多 9 个字母</strong>：输入到第九个字母就会停止。</p><p>所有统治者都会在地图和新闻中看到这个名字。它不是你的本站账号。</p>"
+  },
+  "password": {
+   "title": "国家密码",
+   "text": "<p>为你的国家设置密码，<strong>2 到 7 个字符</strong>，然后按 <kbd>Enter</kbd>。输入时屏幕上不显示任何内容。</p><p>每次游戏时都会询问这个密码，就像 1987 年的 Unix 机器上一样。请记好：只有管理员能重置它。</p>"
+  },
+  "password2": {
+   "title": "再输入一次",
+   "text": "<p>再次输入同样的密码并按 <kbd>Enter</kbd>。</p>"
+  },
+  "leader": {
+   "title": "你的统治者",
+   "text": "<p>国家统治者的名字，<strong>最多 9 个字母</strong>（游戏自带的例子：The Ed、Gandalf、Conan），然后按 <kbd>Enter</kbd>。新闻会提到他。</p>"
+  },
+  "race": {
+   "title": "种族",
+   "text": "<p>按一个字母：</p><ul><li><kbd>D</kbd> <strong>矮人</strong>：强壮的战士和矿工。</li><li><kbd>E</kbd> <strong>精灵</strong>：善于防守，擅长魔法。</li><li><kbd>H</kbd> <strong>人类</strong>：均衡，最适合新手。</li><li><kbd>O</kbd> <strong>兽人</strong>：繁殖快，以数量取胜。</li></ul><p>种族决定接下来可以选择的职业。</p>"
+  },
+  "class": {
+   "title": "职业",
+   "text": "<p>输入职业的<strong>编号</strong>并按 <kbd>Enter</kbd>。列表显示哪些种族可以选择它（D、E、H、O）以及它的初始能力。</p><p><strong>King</strong>（国王）和 <strong>emperor</strong>（皇帝）不花点数，适合第一局；其他职业自带的能力需要花费部分点数。</p>"
+  },
+  "alignment": {
+   "title": "阵营",
+   "text": "<p>国家的性格：<kbd>G</kbd> 善良、<kbd>N</kbd> 中立或 <kbd>E</kbd> 邪恶。它影响电脑控制的国家如何看待你。</p>"
+  },
+  "mark": {
+   "title": "你在地图上的标记",
+   "text": "<p>按列表中的一个字母。它会在所有人的地图上标记你国家的领土。</p>"
+  },
+  "points": {
+   "title": "分配点数",
+   "text": "<p>每一行都是国家可以购买的东西；<strong>Points Left</strong> 是剩余点数。</p><ul><li><kbd>j</kbd> 向下移动标记，<kbd>k</kbd> 向上。</li><li><kbd>空格</kbd> 为标记的行多买一份。</li><li><kbd>l</kbd> 切换为退回，<kbd>h</kbd> 切换回增加；<kbd>?</kbd> 解释该行。</li></ul><p><strong>建议：</strong>买 2 到 3 点 <strong>Treasury</strong>（国库）：没有金钱的国家在第一回合无法征兵。完成后按 <kbd>Esc</kbd>。</p>"
+  },
+  "population": {
+   "title": "剩余点数",
+   "text": "<p>未用完的点数可以转为人口：<kbd>y</kbd>（推荐）。<kbd>n</kbd> 返回继续分配。</p>"
+  },
+  "civilians": {
+   "title": "更多人口",
+   "text": "<p>按任意键。</p>"
+  },
+  "complete": {
+   "title": "完成了吗？",
+   "text": "<p>如果国家已符合你的想法，按 <kbd>y</kbd>；按 <kbd>n</kbd> 返回点数分配。</p>"
+  },
+  "save": {
+   "title": "保存",
+   "text": "<p>按 <kbd>y</kbd>。<strong>按其他任何键都会删除刚建好的国家</strong>，需要重新开始。</p>"
+  },
+  "added": {
+   "title": "你的国家已加入世界",
+   "text": "<p>按任意键。你的本站账号现在已与这个国家关联：以后点击<strong>开始游戏</strong>会直接进入它，游戏会询问它的密码。</p>"
+  }
  }
 }

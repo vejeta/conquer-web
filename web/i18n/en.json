@@ -112,7 +112,13 @@
   "key_help_title": "Help",
   "key_move_title": "Move selected unit",
   "key_army_title": "Army report",
-  "key_quit_title": "Quit the game"
+  "key_quit_title": "Quit the game",
+  "key_up_title": "Up",
+  "key_down_title": "Down",
+  "key_buy_title": "Buy one more",
+  "key_add_title": "Switch to adding",
+  "key_sub_title": "Switch to taking back",
+  "key_info_title": "Explain the line"
  },
  "try": {
   "note": "Practice world on your device · nation <b>trainee</b>, password <b>train1</b>",

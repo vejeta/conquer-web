@@ -107,6 +107,10 @@ def tutorial():
     en = json.load(open(os.path.join(d, "en.json")))
     english = dict(("page." + k, v) for k, v in en["page"].items())
     english.update(("steps.%s.%s" % (i, k), s[k]) for i, s in steps.items() for k in ("title", "text", "veteran") if k in s)
+    # The coach of the nation builder (found-nation.content.json)
+    found = json.load(open(os.path.join(ROOT, "tools", "tutorial", "found-nation.content.json")))
+    english["found_title"] = found["title"]
+    english.update(("found.%s.%s" % (s["id"], k), s[k]) for s in found["steps"] for k in ("title", "text"))
     missing = {}
     for path in sorted(glob.glob(os.path.join(d, "*.json"))):
         code = os.path.basename(path)[:-5]
@@ -114,6 +118,9 @@ def tutorial():
             other = json.load(open(path))
             texts = dict(("page." + k, v) for k, v in other.get("page", {}).items())
             texts.update(("steps.%s.%s" % (i, k), v) for i, s in other.get("steps", {}).items() for k, v in s.items())
+            if "found_title" in other:
+                texts["found_title"] = other["found_title"]
+            texts.update(("found.%s.%s" % (i, k), v) for i, s in other.get("found_steps", {}).items() for k, v in s.items())
             missing[code] = compare(rel(path), english, texts, lambda s: sorted(re.findall(r"\{\{(\w+)\}\}", s)))
     return missing
 

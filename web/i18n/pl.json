@@ -112,7 +112,13 @@
   "key_help_title": "Pomoc",
   "key_move_title": "Rusz wybraną jednostką",
   "key_army_title": "Raport armii",
-  "key_quit_title": "Wyjdź z gry"
+  "key_quit_title": "Wyjdź z gry",
+  "key_up_title": "W górę",
+  "key_down_title": "W dół",
+  "key_buy_title": "Kup jeszcze jedną",
+  "key_add_title": "Przełącz na dodawanie",
+  "key_sub_title": "Przełącz na oddawanie",
+  "key_info_title": "Objaśnij wiersz"
  },
  "try": {
   "note": "Świat treningowy na twoim urządzeniu · naród <b>trainee</b>, hasło <b>train1</b>",
