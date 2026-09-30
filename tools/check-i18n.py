@@ -95,7 +95,7 @@ def menu():
             missing[code] = compare(rel(path), dict(en, menu_date_format=""), dict(other, **blank), formats)
     for name in ("menu.sh", "join.sh"):
         s = open(os.path.join(ROOT, "conquer", "scripts", name)).read()
-        for k in re.findall(r"\b(?:t|tr_raw) (\w+)", s):
+        for k in re.findall(r"(?:^|[\s($;|&])(?:t|tr_raw) ([a-z]\w*)", s, re.M):
             if k not in en:
                 errors.append("conquer/scripts/%s: text %s is not in conquer/i18n/en.sh" % (name, k))
     return missing
