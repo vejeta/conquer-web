@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // conquer-gate: the site's gate to the game. For now it creates player
-// accounts from invite codes (the sign-up page, web/join.html): a visitor
+// accounts from invite codes (the sign-up page, web/signup.html): a visitor
 // with a valid code gets their own account, and the game opens the nation
 // builder the first time they play. Without a code nothing is created and
 // nobody reaches the game terminal.

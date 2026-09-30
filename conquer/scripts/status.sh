@@ -127,7 +127,7 @@ END {
         printf "\"ready\":null,"
     printf "\"turn_state\":{\"state\":%s,\"time\":%s,\"message\":%s},",
         json(state), json(state_time), json(state_message)
-    # Players with an invite code may create their account (join.html)
+    # Players with an invite code may create their account (signup.html)
     printf "\"signup\":%s,", signup
     # How to reach the administrator, for "How to join" on the landing page
     if (contact != "")

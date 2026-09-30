@@ -250,7 +250,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
         </div>
       </div>
       <p class="join" id="join" hidden><span data-i18n="index.join">Have an invite code?</span>
-        <a class="text" href="join.html" data-server-link="join.html" data-i18n="index.join_link">Create your account</a></p>
+        <a class="text" href="signup.html" data-server-link="signup.html" data-i18n="index.join_link">Create your account</a></p>
       <div class="links">
         <a class="text" href="tutorial.html" data-i18n-page="tutorial" data-i18n="index.tutorial">New here? Play your first turn step by step</a>
         <a class="text" href="guide.html" data-i18n-page="guide" data-i18n="index.guide">Player's guide</a>
@@ -309,11 +309,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
   <section id="how-to-join">
     <h2 data-i18n="index.h_join">How to join</h2>
-    <p class="note" data-i18n="index.note_join">The game is in a closed test: new nations join with an invite code.</p>
+    <p class="note" data-i18n="index.note_join">Joining is by invitation, and takes two steps: an account for this website, then your nation inside the game.</p>
     <ol>
       <li data-i18n="index.join1">Write to the game administrator for an <strong>invite code</strong>.</li>
-      <li data-i18n="index.join2">Choose <strong>Create your account</strong> (under the buttons at the top), type your code and choose your account name and password.</li>
-      <li data-i18n="index.join3">Press <strong>Play now</strong> and sign in with that account: the game has you found your nation, and from then on opens it directly.</li>
+      <li data-i18n="index.join2"><strong>Your account for this website</strong>: choose <strong>Create your account</strong> (under the buttons at the top), type the code and choose a name and a password. It only opens the door of the site; your browser asks for it when you press Play.</li>
+      <li data-i18n="index.join3"><strong>Your nation</strong>: press <strong>Play now</strong> and sign in with that account. The 1987 game asks you to found your nation: its own name (up to 9 letters), race, class and a nation password. From then on, Play now opens it directly.</li>
     </ol>
     <div class="contact" id="contact" hidden>
       <span data-i18n="index.contact">Game administrator:</span>
@@ -321,7 +321,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
       <button type="button" id="contact-copy" data-i18n="index.copy">Copy address</button>
     </div>
     <div class="creds">
-      <div class="cred"><strong data-i18n="index.cred_account_t">Your player account</strong><span data-i18n="index.cred_account">Opens the game server on this site. One per player.</span></div>
+      <div class="cred"><strong data-i18n="index.cred_account_t">Your account for this website</strong><span data-i18n="index.cred_account">Opens the door of this site: your browser asks for it when you press Play. One per player; it is not your nation.</span></div>
       <div class="cred"><strong data-i18n="index.cred_nation_t">Your nation's password</strong><span data-i18n="index.cred_nation">Part of the original 1987 game: it guards your nation inside the world, as it did on the Unix machines it was written for.</span></div>
     </div>
   </section>
@@ -478,7 +478,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
       document.getElementById('contact').hidden = false;
     }
     renderWire(d);
-    // Players with an invite code create their account on join.html
+    // Players with an invite code create their account on signup.html
     document.getElementById('join').hidden = !d.signup;
     renderNews(d.news || []);
     var ts = d.turn_state || {};

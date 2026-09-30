@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 # Found the nation of a new player: shown by the menu the first time an
-# account created on the sign-up page (web/join.html, conquer-signup) plays.
+# account created on the sign-up page (web/signup.html, conquer-signup) plays.
 # Such an account is marked "account:+" in lib/.players.
 #
 #  1. Explain the game's nation builder, then run it (conqrun -a).

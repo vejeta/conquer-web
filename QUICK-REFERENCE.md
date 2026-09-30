@@ -44,7 +44,7 @@ sudo ./manage-players.sh invite         # a single-use code for one player
 sudo ./manage-players.sh invites        # the codes not used yet
 ```
 
-Send the player the code, or the link `https://YOUR-SITE/join.html?code=THE-CODE`.
+Send the player the code, or the link `https://YOUR-SITE/signup.html?code=THE-CODE`.
 They choose **Create your account**, then **Play now** with that account.
 
 **Or create the nation yourself**:

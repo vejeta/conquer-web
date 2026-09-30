@@ -97,7 +97,7 @@ SIGNUP="${SIGNUP:-on}"
 HTPASSWD_FILE="$PREFIX/auth/htpasswd"
 EOF
 
-# Sign-up with invite codes (web/join.html): conquer-gate checks the code
+# Sign-up with invite codes (web/signup.html): conquer-gate checks the code
 # and creates the player's account, so the game user must be able to
 # write the account file Apache reads (the group is kept)
 if [ "${SIGNUP:-on}" != off ]; then

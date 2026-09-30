@@ -197,7 +197,7 @@ cmd_list() {
         }'
 }
 
-# Invite codes: players type one on the sign-up page (join.html) to create
+# Invite codes: players type one on the sign-up page (signup.html) to create
 # their account; the game then has them found their nation
 cmd_invite() {
     local count="${1:-1}" i code
@@ -228,7 +228,7 @@ cmd_invites() {
 cmd_join_account() {
     cat <<EOF
 The shared joining account is no longer used: players with an invite code
-create their own account on the site's sign-up page (join.html).
+create their own account on the site's sign-up page (signup.html).
 If an earlier version created it, remove it:
 
    sudo ./manage-players.sh remove join

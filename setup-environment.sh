@@ -69,7 +69,7 @@ TURN_WEBHOOK_URL=
 # Run the turn update early once every player nation has marked its orders
 # as done in the game menu (on/off); the schedule still applies as deadline
 TURN_EARLY=on
-# Sign-up with invite codes on the site (join.html; codes are made with
+# Sign-up with invite codes on the site (signup.html; codes are made with
 # ./manage-players.sh invite): on/off
 SIGNUP=on
 

@@ -176,8 +176,8 @@ sudo ./manage-players.sh invite 5     # five single-use codes
 sudo ./manage-players.sh invites      # the codes not used yet
 ```
 
-1. The player opens **Create your account** on the home page (`join.html`,
-   or `join.html?code=K7QM-3XPA` to fill the code in), types the code and
+1. The player opens **Create your account** on the home page (`signup.html`,
+   or `signup.html?code=K7QM-3XPA` to fill the code in), types the code and
    chooses an account name and a password. `conquer-gate`, a small service
    in the game container, checks the code, creates the account and uses the
    code up; it slows down anyone who keeps trying wrong codes.
