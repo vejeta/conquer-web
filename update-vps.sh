@@ -84,18 +84,30 @@ if [ -f "$vhost" ] && ! grep -q 'FilesMatch "\\.(html|js|css|json)' "$vhost"; th
 fi
 # The practice game of /try/ runs in WebAssembly, which the site's Content
 # Security Policy must allow ('wasm-unsafe-eval'): add it to the policy that
-# deploy-to-vps.sh wrote, keeping the old file if Apache does not accept it
-if [ -f "$vhost" ] && grep -q "script-src 'self' 'unsafe-inline';" "$vhost"; then
-    cp "$vhost" "$vhost.before-wasm"
-    sed -i "s|script-src 'self' 'unsafe-inline';|script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval';|" "$vhost"
+# deploy-to-vps.sh wrote, in every Apache file that has it (certbot copies the
+# virtual host into a -le-ssl.conf of its own), keeping the old files if
+# Apache does not accept the change
+old_csp="script-src 'self' 'unsafe-inline';"
+# (only this site's files: other sites on the server are left alone)
+csp_files=$(grep -rlF "$old_csp" /etc/apache2/sites-available 2>/dev/null | xargs -r grep -lF "$DOMAIN" || true)
+if [ -n "$csp_files" ]; then
+    for f in $csp_files; do
+        cp "$f" "$f.before-wasm"
+        sed -i "s|$old_csp|script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval';|" "$f"
+    done
     if apache2ctl configtest >/dev/null 2>&1; then
         systemctl reload apache2
-        rm -f "$vhost.before-wasm"
-        echo "✅ The site's security policy now lets the practice game (/try/) run"
+        for f in $csp_files; do rm -f "$f.before-wasm"; done
+        echo "✅ The site's security policy now lets the practice game (/try/) run ($(echo "$csp_files" | xargs -n1 basename | tr '\n' ' '))"
     else
-        mv "$vhost.before-wasm" "$vhost"
-        echo "⚠️  Could not allow WebAssembly in $vhost (Apache refused the change): see vps/virtualhost.conf.template"
+        for f in $csp_files; do mv "$f.before-wasm" "$f"; done
+        echo "⚠️  Could not allow WebAssembly in the Apache configuration (Apache refused the change): see vps/virtualhost.conf.template"
     fi
+fi
+sleep 2
+if curl -sI "https://$DOMAIN/try/" | grep -i '^content-security-policy' | grep -qv 'wasm-unsafe-eval'; then
+    echo "⚠️  https://$DOMAIN/ still blocks WebAssembly: the practice game (/try/) cannot start."
+    echo "   Look for the Content-Security-Policy line: grep -r Content-Security-Policy /etc/apache2/"
 fi
 if [ -f "$vhost" ] && ! grep -q '/join/api/' "$vhost"; then
     echo "⚠️  $vhost does not pass the sign-up page to the game (/join/api/)."
