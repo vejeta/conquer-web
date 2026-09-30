@@ -1,0 +1,39 @@
+{
+ "language": "es",
+ "note": "The trailer: what Conquer is, in 40 seconds, by the narrator of ../es.json (video.py --video trailer)",
+ "captions": {
+  "keys": "Teclas",
+  "look": "solo mira",
+  "intro_title": "Usenet, 1987",
+  "intro_sub": "Un juego de estrategia de fantasía épica",
+  "outro_title": "Conquer vuelve",
+  "outro_sub": "Juega en tu navegador · sin instalar nada",
+  "password": "contraseña",
+  "space": "Espacio"
+ },
+ "segments": [
+  {
+   "screen": "intro",
+   "text": "Octubre de mil novecientos ochenta y siete. Un juego de estrategia recorre el mundo, mensaje a mensaje, por Usenet."
+  },
+  {
+   "screen": "title",
+   "caption": "1988",
+   "text": "En los centros de cálculo de las universidades, los estudiantes lo compilan y gobiernan reinos de elfos, enanos, orcos y humanos desde terminales de fósforo verde."
+  },
+  {
+   "screen": "map",
+   "caption": "Tu reino",
+   "text": "No es un juego de tablero: es un mundo de fantasía épica, con magia, héroes y monstruos. Cada turno, todos los reinos mueven a la vez."
+  },
+  {
+   "screen": "diplomacy",
+   "caption": "Los reinos del mundo",
+   "text": "Cuarenta años después, Conquer vuelve."
+  },
+  {
+   "screen": "outro",
+   "text": "Sin instalar nada. Sin cuentas de Unix. Solo tu navegador. Pruébalo ahora."
+  }
+ ]
+}

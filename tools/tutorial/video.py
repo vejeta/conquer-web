@@ -34,6 +34,8 @@ usage: video.py [--video found-nation] [LANGUAGE ...]
   found-nation: the game's nation builder, narration/found-nation/<language>.json
       (spoken by the voice of narration/<language>.json); writes
       web/tutorial/found-nation.<language>.mp4 and .vtt
+  trailer: 40 seconds on what Conquer is, over screens of the first turn,
+      narration/trailer/<language>.json; writes web/tutorial/trailer.<language>.mp4
 """
 import glob
 import html
@@ -118,6 +120,10 @@ def frames(t, steps_list, screens, segments, outdir):
                     'GPL v3 licensed version (c) 2025</div>') if sid == "intro" else ""
             body = '<div class="card">%s<div class="logo">CONQUER</div><h1>%s</h1><p>%s</p></div>' % (
                 boot, html.escape(title), html.escape(sub))
+        elif "caption" in seg:
+            # A shot of the game with a title only (the trailer: no steps, no keys)
+            body = ('<div class="wrap"><pre>%s</pre><div class="side"><h1>%s</h1></div></div>'
+                    '<div class="brand">CONQUER</div>') % (screen_html(screens[sid]), html.escape(seg["caption"]))
         else:
             i, step = steps[seg.get("step", sid)]
             keys = "".join('<kbd class="wide">%s</kbd>' % t["password"] if k == "password"
@@ -240,11 +246,13 @@ def render(lang, video="first-turn"):
     if video != "first-turn":
         # Another video in the same language: its own words, the same narrator
         narration = json.load(open(os.path.join(HERE, "narration", video, lang + ".json")))
-    content = json.load(open(os.path.join(HERE, video + ".content.json")))
-    screens = {s["id"]: s["screen"] for s in json.load(open(os.path.join(HERE, video + ".screens.json")))}
+    # The trailer shows screens of the first turn
+    source = "first-turn" if video == "trailer" else video
+    content = json.load(open(os.path.join(HERE, source + ".content.json")))
+    screens = {s["id"]: s["screen"] for s in json.load(open(os.path.join(HERE, source + ".screens.json")))}
     segments = narration["segments"]
     tmp = tempfile.mkdtemp(prefix="conquer-video-")
-    key = "steps" if video == "first-turn" else "found_steps"
+    key = "found_steps" if video == "found-nation" else "steps"
     images = frames(narration["captions"], tutorial_steps(lang, content, key), screens, segments, tmp)
 
     tts = engine(lang, voice)
