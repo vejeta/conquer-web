@@ -68,6 +68,10 @@ SPDX-License-Identifier: GPL-3.0-or-later
       border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; cursor: pointer; max-width: 100%; margin-left: auto;
     }
     .top select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .howto { border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
+    .howto summary { cursor: pointer; font-weight: 600; }
+    .howto p { color: var(--muted); font-size: 0.92rem; margin: 8px 0; }
+    .howto video { width: 100%; border-radius: 6px; background: #000; display: block; }
   </style>
 </head>
 <body>
@@ -129,6 +133,12 @@ SPDX-License-Identifier: GPL-3.0-or-later
     </ol>
     <a class="button" href="game.html" id="play" data-i18n="join.play">Play now</a>
   </section>
+
+  <details class="howto" id="howto" hidden>
+    <summary data-i18n="join.howto">Watch how a nation is founded (2 minutes)</summary>
+    <p data-i18n="join.howto_note">The game's own nation builder, as the game shows it the first time you play.</p>
+    <video id="howto-video" controls preload="none" playsinline></video>
+  </details>
 </main>
 <script src="server.js"></script>
 <script src="site.js"></script>
@@ -177,6 +187,32 @@ SPDX-License-Identifier: GPL-3.0-or-later
       error.hidden = true;
       document.getElementById('play').href = 'game.html' + (e.detail !== 'en' ? '?lang=' + e.detail : '');
     });
+
+    // The narrated video of the game's nation builder (tools/tutorial/video.py),
+    // in the page's language or else in English
+    var howto = document.getElementById('howto'), video = document.getElementById('howto-video');
+    function howtoVideo(lang) {
+      var tries = lang === 'en' ? ['en'] : [lang, 'en'];
+      (function next() {
+        var l = tries.shift();
+        if (!l) return;
+        var src = 'tutorial/found-nation.' + l + '.mp4';
+        fetch(src, { method: 'HEAD' }).then(function (r) {
+          if (!r.ok) return next();
+          if (video.getAttribute('src') === src) return;
+          video.pause();
+          video.textContent = '';
+          video.src = src;
+          var track = document.createElement('track');
+          track.kind = 'captions'; track.srclang = l; track.default = true; track.label = l;
+          track.src = 'tutorial/found-nation.' + l + '.vtt';
+          video.appendChild(track);
+          howto.hidden = false;
+        }).catch(function () {});
+      })();
+    }
+    howtoVideo(conquerI18n.lang());
+    document.addEventListener('conquer:lang', function (e) { howtoVideo(e.detail); });
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();

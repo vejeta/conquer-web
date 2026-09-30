@@ -1,0 +1,122 @@
+{
+ "language": "es",
+ "note": "The nation builder video: the same narrator as ../es.json (video.py --video found-nation)",
+ "captions": {
+  "keys": "Teclas",
+  "look": "solo mira",
+  "intro_title": "Así se funda una nación",
+  "intro_sub": "El constructor de naciones del juego, como en 1987",
+  "outro_title": "Tu nación te espera",
+  "outro_sub": "Pide una invitación · funda tu nación esta noche",
+  "password": "contraseña",
+  "space": "Espacio"
+ },
+ "segments": [
+  {
+   "screen": "intro",
+   "text": "Antes de tu primer turno, fundas tu nación. La primera vez que juegas, el juego abre su propio constructor de naciones, el mismo que conocieron los jugadores en mil novecientos ochenta y siete. Son dos minutos. Así se hace."
+  },
+  {
+   "screen": "name",
+   "text": "Primero, el nombre de tu nación, de hasta nueve letras. Todos los gobernantes lo verán en el mapa. Escríbelo y pulsa Intro.",
+   "keys": [
+    "Enter"
+   ]
+  },
+  {
+   "screen": "password",
+   "text": "Ahora una contraseña para tu nación, de hasta siete caracteres. No verás nada mientras escribes. El juego te la pedirá cada vez que juegues, así que guárdala.",
+   "keys": [
+    "password",
+    "Enter"
+   ]
+  },
+  {
+   "screen": "password2",
+   "text": "Escríbela otra vez.",
+   "keys": [
+    "password",
+    "Enter"
+   ]
+  },
+  {
+   "screen": "leader",
+   "text": "El nombre de tu gobernante. Las noticias hablarán de él.",
+   "keys": [
+    "Enter"
+   ]
+  },
+  {
+   "screen": "race",
+   "text": "Elige una raza con una letra: enanos, elfos, humanos u orcos. Los humanos son equilibrados, los más fáciles para empezar."
+  },
+  {
+   "screen": "class",
+   "text": "Tu clase. Escribe su número y pulsa Intro. Rey y emperador no cuestan puntos, y van bien para una primera partida.",
+   "keys": [
+    "1",
+    "Enter"
+   ]
+  },
+  {
+   "screen": "alignment",
+   "text": "Bueno, neutral o malvado. Decide cómo te ven las naciones del ordenador."
+  },
+  {
+   "screen": "mark",
+   "text": "Una letra marca tus tierras en el mapa de todos."
+  },
+  {
+   "screen": "points",
+   "text": "Ahora, los puntos. Cada línea es algo que tu nación puede comprar. La jota baja, la ka sube, y Espacio compra una unidad más de la línea marcada.",
+   "keys": [
+    "j",
+    "k",
+    "Space"
+   ]
+  },
+  {
+   "screen": "treasury",
+   "text": "Un consejo: compra dos puntos de tesoro. Una nación sin oro no puede reclutar tropas en su primer turno. Pulsa Escape cuando termines.",
+   "step": "points",
+   "title": "Compra algo de oro",
+   "keys": [
+    "j",
+    "Space",
+    "Esc"
+   ]
+  },
+  {
+   "screen": "population",
+   "text": "Los puntos que no gastes pueden convertirse en población. Pulsa i griega, y luego cualquier tecla.",
+   "keys": [
+    "y"
+   ]
+  },
+  {
+   "screen": "complete",
+   "text": "¿Está tu nación como la quieres? Pulsa i griega.",
+   "keys": [
+    "y"
+   ]
+  },
+  {
+   "screen": "save",
+   "text": "Guárdala con i griega. Cuidado: cualquier otra tecla borra la nación, y empiezas de nuevo.",
+   "keys": [
+    "y"
+   ]
+  },
+  {
+   "screen": "added",
+   "text": "Tu nación ya está en el mundo. Desde ahora, Jugar te lleva directamente a ella, y el juego te pide su contraseña.",
+   "keys": [
+    "Space"
+   ]
+  },
+  {
+   "screen": "outro",
+   "text": "Eso es todo. Pide un código de invitación, crea tu cuenta y funda tu nación. Después, tu primer turno."
+  }
+ ]
+}

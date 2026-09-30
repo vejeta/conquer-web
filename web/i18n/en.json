@@ -203,6 +203,8 @@
   "step1": "A name and a password that open the door of the site. Your browser asks for them in a small window each time you press Play. It is not your nation: other players never see it.",
   "step2_t": "2. Your nation (next, inside the game)",
   "step2": "Conquer is a game from 1987 that runs in a terminal. After you sign in, it asks you to found your nation: its name (up to 9 letters, it can differ from your account), race, class, and a nation password the game asks for every time you play.",
-  "done_private": "If the browser does not ask and signs you in as someone else (it remembers the last account used on this site), open this site in a private window."
+  "done_private": "If the browser does not ask and signs you in as someone else (it remembers the last account used on this site), open this site in a private window.",
+  "howto": "Watch how a nation is founded (2 minutes)",
+  "howto_note": "The game's own nation builder, as the game shows it the first time you play."
  }
 }

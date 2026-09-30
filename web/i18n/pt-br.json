@@ -203,6 +203,8 @@
   "step1": "Um nome e uma senha que abrem a porta do site. O navegador pede os dois numa janelinha sempre que você clica em Jogar. Não é a sua nação: os outros jogadores nunca a veem.",
   "step2_t": "2. A sua nação (depois, dentro do jogo)",
   "step2": "Conquer é um jogo de 1987 que roda num terminal. Depois de entrar, ele pede que você funde a sua nação: nome (até 9 letras; pode ser diferente do da conta), raça, classe e uma senha de nação que o jogo pedirá sempre que você jogar.",
-  "done_private": "Se o navegador não perguntar e entrar com outra conta (ele lembra a última usada neste site), abra o site numa janela privada."
+  "done_private": "Se o navegador não perguntar e entrar com outra conta (ele lembra a última usada neste site), abra o site numa janela privada.",
+  "howto": "Veja como se funda uma nação (2 minutos)",
+  "howto_note": "O construtor de nações do próprio jogo, como ele aparece na primeira vez que você joga."
  }
 }

@@ -131,6 +131,21 @@ npm install -g playwright                                # if node lacks it
   slightly. Listen to each video before publishing it, and render a
   language again if a sentence sounds wrong.
 
+### The nation builder video
+
+`video.py --video found-nation` renders `web/tutorial/found-nation.<language>.mp4`
+(and `.vtt`) from `found-nation.screens.json`, with the words of
+`narration/found-nation/<language>.json` spoken by the same narrator as the
+first-turn video (the `voice` of `narration/<language>.json`). A segment may
+name the coach `step` whose number and title it shows (when its screen is
+not a step of its own) and the `keys` shown on the frame. The sign-up page
+offers the video in its language, or in English.
+
+```bash
+~/.venv/conquer-tts/bin/python tools/tutorial/video.py --video found-nation en es
+~/.venv/conquer-voxcpm/bin/python tools/tutorial/video.py --video found-nation pl
+```
+
 To use a human voice instead, record one audio file per segment with the
 same text and replace `tts.speak()` in `render()` with reading those files.
 

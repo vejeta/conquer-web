@@ -203,6 +203,8 @@
   "step1": "Ein Name und ein Passwort, die die Tür der Seite öffnen. Dein Browser fragt in einem kleinen Fenster danach, wenn du auf Spielen drückst. Es ist nicht deine Nation: Andere Spieler sehen es nie.",
   "step2_t": "2. Deine Nation (danach, im Spiel)",
   "step2": "Conquer ist ein Spiel von 1987, das in einem Terminal läuft. Nach der Anmeldung lässt es dich deine Nation gründen: Name (bis 9 Buchstaben, darf anders als dein Konto heißen), Volk, Klasse und ein Nationspasswort, nach dem das Spiel jedes Mal fragt.",
-  "done_private": "Wenn der Browser nicht fragt und dich mit einem anderen Konto anmeldet (er merkt sich das zuletzt benutzte), öffne die Seite in einem privaten Fenster."
+  "done_private": "Wenn der Browser nicht fragt und dich mit einem anderen Konto anmeldet (er merkt sich das zuletzt benutzte), öffne die Seite in einem privaten Fenster.",
+  "howto": "Sieh dir an, wie man eine Nation gründet (2 Minuten)",
+  "howto_note": "Der Nationen-Baukasten des Spiels, so wie er beim ersten Spiel erscheint."
  }
 }

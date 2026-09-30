@@ -28,8 +28,12 @@ Needs ffmpeg, node with playwright (for the frames) and, per engine:
   voxcpm:  python3 -m pip install voxcpm soundfile        (in its own
            virtual environment: its dependencies differ from qwen-tts)
 
-usage: video.py [LANGUAGE ...]     (default: every file in narration/)
-Writes web/tutorial/first-turn.<language>.mp4 and .vtt
+usage: video.py [--video found-nation] [LANGUAGE ...]
+  first-turn (the default): narration/<language>.json, every file there by
+      default; writes web/tutorial/first-turn.<language>.mp4 and .vtt
+  found-nation: the game's nation builder, narration/found-nation/<language>.json
+      (spoken by the voice of narration/<language>.json); writes
+      web/tutorial/found-nation.<language>.mp4 and .vtt
 """
 import glob
 import html
@@ -95,11 +99,11 @@ kbd.wide{font-size:20px;font-style:italic}
 </style></head><body>%(body)s</body></html>"""
 
 
-def tutorial_steps(lang, content):
+def tutorial_steps(lang, content, key="steps"):
     """The tutorial's steps with their titles in this language (English
     where the tutorial is not translated)."""
     path = os.path.join(HERE, "i18n", lang + ".json")
-    translated = json.load(open(path)).get("steps", {}) if os.path.exists(path) else {}
+    translated = json.load(open(path)).get(key, {}) if os.path.exists(path) else {}
     return [dict(s, **{k: v for k, v in translated.get(s["id"], {}).items() if k == "title"}) for s in content["steps"]]
 
 
@@ -115,10 +119,10 @@ def frames(t, steps_list, screens, segments, outdir):
             body = '<div class="card">%s<div class="logo">CONQUER</div><h1>%s</h1><p>%s</p></div>' % (
                 boot, html.escape(title), html.escape(sub))
         else:
-            i, step = steps[sid]
+            i, step = steps[seg.get("step", sid)]
             keys = "".join('<kbd class="wide">%s</kbd>' % t["password"] if k == "password"
                            else "<kbd>%s</kbd>" % html.escape(t.get("space", k) if k == "Space" else k)
-                           for k in step["keys"])
+                           for k in seg.get("keys", step["keys"]))
             keys = keys or '<span class="none">%s</span>' % t["look"]
             title = seg.get("title", step["title"])
             body = ('<div class="wrap"><pre>%s</pre><div class="side"><div class="num">%02d / %02d</div>'
@@ -228,15 +232,20 @@ def trim(samples, sr, threshold=0.01, margin=0.08):
     return samples[max(0, loud[0] - pad):min(len(samples), loud[-1] + pad)]
 
 
-def render(lang):
+def render(lang, video="first-turn"):
     import soundfile as sf
     import numpy as np
     narration = json.load(open(os.path.join(HERE, "narration", lang + ".json")))
-    content = json.load(open(os.path.join(HERE, "first-turn.content.json")))
-    screens = {s["id"]: s["screen"] for s in json.load(open(os.path.join(HERE, "first-turn.screens.json")))}
-    voice, segments = narration["voice"], narration["segments"]
+    voice = narration["voice"]
+    if video != "first-turn":
+        # Another video in the same language: its own words, the same narrator
+        narration = json.load(open(os.path.join(HERE, "narration", video, lang + ".json")))
+    content = json.load(open(os.path.join(HERE, video + ".content.json")))
+    screens = {s["id"]: s["screen"] for s in json.load(open(os.path.join(HERE, video + ".screens.json")))}
+    segments = narration["segments"]
     tmp = tempfile.mkdtemp(prefix="conquer-video-")
-    images = frames(narration["captions"], tutorial_steps(lang, content), screens, segments, tmp)
+    key = "steps" if video == "first-turn" else "found_steps"
+    images = frames(narration["captions"], tutorial_steps(lang, content, key), screens, segments, tmp)
 
     tts = engine(lang, voice)
     audio, cues, t0, sr = [], [], 0.0, 24000
@@ -256,12 +265,12 @@ def render(lang):
         for img, cue in zip(images, cues):
             f.write("file '%s'\nduration %.3f\n" % (img, cue[3]))
         f.write("file '%s'\n" % images[-1])
-    out = os.path.join(WEB, "tutorial", "first-turn.%s.mp4" % lang)
+    out = os.path.join(WEB, "tutorial", "%s.%s.mp4" % (video, lang))
     subprocess.run([FFMPEG, "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", concat, "-i", wav,
                     "-vf", "fps=25,format=yuv420p", "-c:v", "libx264", "-preset", "slow", "-crf", "24",
                     "-tune", "stillimage", "-c:a", "aac", "-b:a", "96k", "-shortest",
                     "-movflags", "+faststart", out], check=True)
-    with open(os.path.join(WEB, "tutorial", "first-turn.%s.vtt" % lang), "w") as f:
+    with open(os.path.join(WEB, "tutorial", "%s.%s.vtt" % (video, lang)), "w") as f:
         f.write("WEBVTT\n\n")
         for n, (a, b, text, _) in enumerate(cues, 1):
             f.write("%d\n%s --> %s\n%s\n\n" % (n, vtt_time(a), vtt_time(b), text))
@@ -270,9 +279,13 @@ def render(lang):
 
 
 def main():
-    langs = sys.argv[1:] or sorted(os.path.basename(p)[:-5] for p in glob.glob(os.path.join(HERE, "narration", "*.json")))
+    args, video = sys.argv[1:], "first-turn"
+    if args[:1] == ["--video"]:
+        video, args = args[1], args[2:]
+    folder = os.path.join(HERE, "narration", *([] if video == "first-turn" else [video]))
+    langs = args or sorted(os.path.basename(p)[:-5] for p in glob.glob(os.path.join(folder, "*.json")))
     for lang in langs:
-        render(lang)
+        render(lang, video)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,122 @@
+{
+ "language": "de",
+ "note": "The nation builder video: the same narrator as ../de.json (video.py --video found-nation)",
+ "captions": {
+  "keys": "Tasten",
+  "look": "nur schauen",
+  "intro_title": "So gründest du eine Nation",
+  "intro_sub": "Der Nationen-Baukasten des Spiels, wie 1987",
+  "outro_title": "Deine Nation wartet",
+  "outro_sub": "Bitte um eine Einladung · gründe heute Abend deine Nation",
+  "password": "Passwort",
+  "space": "Leertaste"
+ },
+ "segments": [
+  {
+   "screen": "intro",
+   "text": "Vor deinem ersten Zug gründest du deine Nation. Beim ersten Spiel öffnet das Spiel seinen eigenen Nationen-Baukasten, denselben, den die Spieler neunzehnhundertsiebenundachtzig kannten. Das dauert zwei Minuten. So geht es."
+  },
+  {
+   "screen": "name",
+   "text": "Zuerst der Name deiner Nation, bis zu neun Buchstaben. Jeder Herrscher sieht ihn auf der Karte. Tippe ihn ein und drücke Enter.",
+   "keys": [
+    "Enter"
+   ]
+  },
+  {
+   "screen": "password",
+   "text": "Jetzt ein Passwort für deine Nation, bis zu sieben Zeichen. Beim Tippen erscheint nichts. Das Spiel fragt bei jedem Spiel danach, also bewahre es gut auf.",
+   "keys": [
+    "password",
+    "Enter"
+   ]
+  },
+  {
+   "screen": "password2",
+   "text": "Tippe es noch einmal.",
+   "keys": [
+    "password",
+    "Enter"
+   ]
+  },
+  {
+   "screen": "leader",
+   "text": "Der Name deines Herrschers. Die Nachrichten werden von ihm berichten.",
+   "keys": [
+    "Enter"
+   ]
+  },
+  {
+   "screen": "race",
+   "text": "Wähle ein Volk mit einem Buchstaben: Zwerge, Elfen, Menschen oder Orks. Menschen sind ausgewogen und am leichtesten für den Anfang."
+  },
+  {
+   "screen": "class",
+   "text": "Deine Klasse. Tippe ihre Nummer und drücke Enter. König und Kaiser kosten keine Punkte und passen gut zum ersten Spiel.",
+   "keys": [
+    "1",
+    "Enter"
+   ]
+  },
+  {
+   "screen": "alignment",
+   "text": "Gut, neutral oder böse. Das bestimmt, wie dich die Nationen des Computers sehen."
+  },
+  {
+   "screen": "mark",
+   "text": "Ein Buchstabe markiert dein Land auf der Karte aller Spieler."
+  },
+  {
+   "screen": "points",
+   "text": "Jetzt die Punkte. Jede Zeile ist etwas, das deine Nation kaufen kann. J geht nach unten, K nach oben, und die Leertaste kauft eine Einheit mehr von der markierten Zeile.",
+   "keys": [
+    "j",
+    "k",
+    "Space"
+   ]
+  },
+  {
+   "screen": "treasury",
+   "text": "Ein Tipp: Kauf zwei Punkte Schatzkammer. Eine Nation ohne Gold kann in ihrem ersten Zug keine Truppen ausheben. Drücke Escape, wenn du fertig bist.",
+   "step": "points",
+   "title": "Kauf etwas Gold",
+   "keys": [
+    "j",
+    "Space",
+    "Esc"
+   ]
+  },
+  {
+   "screen": "population",
+   "text": "Punkte, die du nicht ausgibst, können zu Bevölkerung werden. Drücke Y, dann eine beliebige Taste.",
+   "keys": [
+    "y"
+   ]
+  },
+  {
+   "screen": "complete",
+   "text": "Ist deine Nation so, wie du sie willst? Drücke Y.",
+   "keys": [
+    "y"
+   ]
+  },
+  {
+   "screen": "save",
+   "text": "Speichere sie mit Y. Vorsicht: Jede andere Taste löscht die Nation, und du beginnst von vorn.",
+   "keys": [
+    "y"
+   ]
+  },
+  {
+   "screen": "added",
+   "text": "Deine Nation ist in der Welt. Von jetzt an führt dich Spielen direkt zu ihr, und das Spiel fragt nach ihrem Passwort.",
+   "keys": [
+    "Space"
+   ]
+  },
+  {
+   "screen": "outro",
+   "text": "Das ist alles. Bitte um einen Einladungscode, erstelle dein Konto und gründe deine Nation. Dann kommt dein erster Zug."
+  }
+ ]
+}

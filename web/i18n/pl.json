@@ -203,6 +203,8 @@
   "step1": "Nazwa i hasło, które otwierają drzwi serwisu. Przeglądarka pyta o nie w małym okienku przy każdym kliknięciu Graj. To nie jest twój naród: inni gracze nigdy go nie widzą.",
   "step2_t": "2. Twój naród (potem, w grze)",
   "step2": "Conquer to gra z 1987 roku działająca w terminalu. Po zalogowaniu poprosi cię o założenie narodu: nazwa (do 9 liter, może się różnić od nazwy konta), rasa, klasa i hasło narodu, o które gra będzie pytać przy każdej grze.",
-  "done_private": "Jeśli przeglądarka nie zapyta i zaloguje cię na inne konto (pamięta ostatnie użyte w tym serwisie), otwórz serwis w oknie prywatnym."
+  "done_private": "Jeśli przeglądarka nie zapyta i zaloguje cię na inne konto (pamięta ostatnie użyte w tym serwisie), otwórz serwis w oknie prywatnym.",
+  "howto": "Zobacz, jak założyć naród (2 minuty)",
+  "howto_note": "Kreator narodów samej gry, taki, jaki pojawia się przy pierwszej grze."
  }
 }

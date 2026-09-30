@@ -1,0 +1,122 @@
+{
+ "language": "en",
+ "note": "The nation builder video: the same narrator as ../en.json (video.py --video found-nation)",
+ "captions": {
+  "keys": "Keys",
+  "look": "just look",
+  "intro_title": "How to found a nation",
+  "intro_sub": "The game's own nation builder, as in 1987",
+  "outro_title": "Your nation awaits",
+  "outro_sub": "Ask for an invite · found your nation tonight",
+  "password": "password",
+  "space": "Space"
+ },
+ "segments": [
+  {
+   "screen": "intro",
+   "text": "Before your first turn, you found your nation. The first time you play, the game opens its own nation builder, the same one players met in nineteen eighty-seven. It takes two minutes. Here is how."
+  },
+  {
+   "screen": "name",
+   "text": "First, the name of your nation, up to nine letters. Every ruler will see it on the map. Type it and press Enter.",
+   "keys": [
+    "Enter"
+   ]
+  },
+  {
+   "screen": "password",
+   "text": "Now a password for your nation, up to seven characters. Nothing shows while you type. The game asks for it every time you play, so keep it.",
+   "keys": [
+    "password",
+    "Enter"
+   ]
+  },
+  {
+   "screen": "password2",
+   "text": "Type it once more.",
+   "keys": [
+    "password",
+    "Enter"
+   ]
+  },
+  {
+   "screen": "leader",
+   "text": "The name of your ruler. The news will speak of them.",
+   "keys": [
+    "Enter"
+   ]
+  },
+  {
+   "screen": "race",
+   "text": "Choose a race with one letter: dwarves, elves, humans or orcs. Humans are balanced, the easiest to begin with."
+  },
+  {
+   "screen": "class",
+   "text": "Your class. Type its number and press Enter. King and emperor cost no points, and suit a first game.",
+   "keys": [
+    "1",
+    "Enter"
+   ]
+  },
+  {
+   "screen": "alignment",
+   "text": "Good, neutral or evil. It shapes how the nations of the computer see you."
+  },
+  {
+   "screen": "mark",
+   "text": "One letter marks your land on everyone's map."
+  },
+  {
+   "screen": "points",
+   "text": "Now, the points. Each line is something your nation can buy. J moves down, K moves up, and Space buys one more of the marked line.",
+   "keys": [
+    "j",
+    "k",
+    "Space"
+   ]
+  },
+  {
+   "screen": "treasury",
+   "text": "A tip: buy two points of treasury. A nation without gold cannot draft troops in its first turn. Press Escape when you are done.",
+   "step": "points",
+   "title": "Buy some gold",
+   "keys": [
+    "j",
+    "Space",
+    "Esc"
+   ]
+  },
+  {
+   "screen": "population",
+   "text": "The points you did not spend can become people. Press Y, then any key.",
+   "keys": [
+    "y"
+   ]
+  },
+  {
+   "screen": "complete",
+   "text": "Is your nation as you want it? Press Y.",
+   "keys": [
+    "y"
+   ]
+  },
+  {
+   "screen": "save",
+   "text": "Save it with Y. Careful: any other key deletes the nation, and you start again.",
+   "keys": [
+    "y"
+   ]
+  },
+  {
+   "screen": "added",
+   "text": "Your nation is in the world. From now on, Play takes you straight to it, and the game asks for its password.",
+   "keys": [
+    "Space"
+   ]
+  },
+  {
+   "screen": "outro",
+   "text": "That is all. Ask for an invite code, create your account, and found your nation. Then, your first turn."
+  }
+ ]
+}

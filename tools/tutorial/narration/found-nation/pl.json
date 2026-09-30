@@ -1,0 +1,122 @@
+{
+ "language": "pl",
+ "note": "The nation builder video: the same narrator as ../pl.json (video.py --video found-nation)",
+ "captions": {
+  "keys": "Klawisze",
+  "look": "tylko patrz",
+  "intro_title": "Jak założyć naród",
+  "intro_sub": "Kreator narodów samej gry, jak w 1987 roku",
+  "outro_title": "Twój naród czeka",
+  "outro_sub": "Poproś o zaproszenie · załóż swój naród dziś wieczorem",
+  "password": "hasło",
+  "space": "Spacja"
+ },
+ "segments": [
+  {
+   "screen": "intro",
+   "text": "Przed pierwszą turą zakładasz swój naród. Gdy grasz po raz pierwszy, gra otwiera własny kreator narodów, ten sam, który gracze poznali w tysiąc dziewięćset osiemdziesiątym siódmym roku. To zajmuje dwie minuty. Oto jak."
+  },
+  {
+   "screen": "name",
+   "text": "Najpierw nazwa twojego narodu, do dziewięciu liter. Każdy władca zobaczy ją na mapie. Wpisz ją i naciśnij Enter.",
+   "keys": [
+    "Enter"
+   ]
+  },
+  {
+   "screen": "password",
+   "text": "Teraz hasło twojego narodu, do siedmiu znaków. Podczas pisania nic się nie pokazuje. Gra pyta o nie przy każdej grze, więc je zachowaj.",
+   "keys": [
+    "password",
+    "Enter"
+   ]
+  },
+  {
+   "screen": "password2",
+   "text": "Wpisz je jeszcze raz.",
+   "keys": [
+    "password",
+    "Enter"
+   ]
+  },
+  {
+   "screen": "leader",
+   "text": "Imię twojego władcy. Wiadomości będą o nim mówić.",
+   "keys": [
+    "Enter"
+   ]
+  },
+  {
+   "screen": "race",
+   "text": "Wybierz rasę jedną literą: krasnoludy, elfy, ludzie albo orki. Ludzie są zrównoważeni i najłatwiejsi na początek."
+  },
+  {
+   "screen": "class",
+   "text": "Twoja klasa. Wpisz jej numer i naciśnij Enter. Król i cesarz nie kosztują punktów i pasują do pierwszej gry.",
+   "keys": [
+    "1",
+    "Enter"
+   ]
+  },
+  {
+   "screen": "alignment",
+   "text": "Dobry, neutralny albo zły. To decyduje, jak widzą cię narody komputera."
+  },
+  {
+   "screen": "mark",
+   "text": "Jedna litera oznacza twoje ziemie na mapie wszystkich graczy."
+  },
+  {
+   "screen": "points",
+   "text": "Teraz punkty. Każdy wiersz to coś, co twój naród może kupić. J przesuwa w dół, K w górę, a spacja kupuje jedną jednostkę więcej z zaznaczonego wiersza.",
+   "keys": [
+    "j",
+    "k",
+    "Space"
+   ]
+  },
+  {
+   "screen": "treasury",
+   "text": "Rada: kup dwa punkty skarbca. Naród bez złota nie może zaciągnąć wojska w pierwszej turze. Naciśnij Escape, gdy skończysz.",
+   "step": "points",
+   "title": "Kup trochę złota",
+   "keys": [
+    "j",
+    "Space",
+    "Esc"
+   ]
+  },
+  {
+   "screen": "population",
+   "text": "Niewydane punkty mogą stać się ludnością. Naciśnij Y, a potem dowolny klawisz.",
+   "keys": [
+    "y"
+   ]
+  },
+  {
+   "screen": "complete",
+   "text": "Czy twój naród jest taki, jak chcesz? Naciśnij Y.",
+   "keys": [
+    "y"
+   ]
+  },
+  {
+   "screen": "save",
+   "text": "Zapisz go klawiszem Y. Uwaga: każdy inny klawisz usuwa naród i zaczynasz od nowa.",
+   "keys": [
+    "y"
+   ]
+  },
+  {
+   "screen": "added",
+   "text": "Twój naród jest już w świecie. Od teraz Graj prowadzi cię prosto do niego, a gra pyta o jego hasło.",
+   "keys": [
+    "Space"
+   ]
+  },
+  {
+   "screen": "outro",
+   "text": "To wszystko. Poproś o kod zaproszenia, utwórz konto i załóż swój naród. Potem twoja pierwsza tura."
+  }
+ ]
+}
