@@ -51,11 +51,20 @@ SPDX-License-Identifier: GPL-3.0-or-later
     td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
     .table-wrap { overflow-x: auto; }
     .empty { color: var(--muted); }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .top select {
+      font: 600 0.85rem system-ui, sans-serif; color: var(--muted); background: var(--panel);
+      border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; cursor: pointer; max-width: 100%; margin-left: auto;
+    }
+    .top select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   </style>
 </head>
 <body>
 <main>
-  <p class="crumbs"><a href="index.html">Conquer</a> / <span data-i18n="hall.title">Hall of fame</span></p>
+  <div class="top">
+    <p class="crumbs"><a href="index.html">Conquer</a> / <span data-i18n="hall.title">Hall of fame</span></p>
+    <select data-lang-menu aria-label="Language" data-i18n-title="index.language"></select>
+  </div>
   <h1 data-i18n="hall.title">Hall of fame</h1>
   <p class="lede" data-i18n="hall.lede">Every season of Conquer on this server, and the rulers who ended it on top.</p>
   <div id="seasons"><p class="empty" data-i18n="hall.empty">The first season is still being fought. Its winners will be written here.</p></div>
@@ -106,9 +115,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
         if (!list.length) return;
         return Promise.all(list.map(function (s) {
           return fetch(conquerServerUrl('status/seasons/' + encodeURIComponent(s.slug) + '.json')).then(function (r) { return r.json(); });
-        })).then(function (seasons) { box.textContent = ''; seasons.forEach(render); });
+        })).then(function (seasons) { shown = seasons; draw(); });
       })
       .catch(function () { /* no finished season yet */ });
+    // Seasons drawn in the language chosen in the menu
+    var shown = null;
+    function draw() { box.textContent = ''; shown.forEach(render); }
+    document.addEventListener('conquer:lang', function () { if (shown) draw(); });
   })();
 </script>
 </body>

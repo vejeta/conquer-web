@@ -137,7 +137,20 @@
     lang = code;
     return ready().then(function () {
       // A language chosen after this one wins; its own call applies it
-      if (code === lang) apply();
+      if (code === lang) {
+        apply();
+        // The address keeps the choice (?lang= wins over the saved one)
+        try {
+          var url = new URL(location.href);
+          if (url.searchParams.has('lang') || code !== 'en') {
+            url.searchParams.set('lang', code);
+            history.replaceState(null, '', url);
+          }
+        } catch (e) {}
+        document.querySelectorAll('select[data-lang-menu]').forEach(function (sel) { sel.value = code; });
+        // Pages redraw the texts their scripts wrote
+        document.dispatchEvent(new CustomEvent('conquer:lang', { detail: code }));
+      }
       return texts;
     });
   }
@@ -175,9 +188,25 @@
     });
   }
 
+  // <select data-lang-menu> lists every language of the site, each in its
+  // own name, and switches the page to the one chosen
+  function langMenus() {
+    document.querySelectorAll('select[data-lang-menu]').forEach(function (sel) {
+      if (sel.options.length) return;
+      LANGUAGES.forEach(function (l) {
+        var o = document.createElement('option');
+        o.value = l.code; o.lang = l.code; o.textContent = l.name;
+        sel.appendChild(o);
+      });
+      sel.value = lang;
+      sel.addEventListener('change', function () { setLang(sel.value); });
+    });
+  }
+
   function start() {
     fixLinks();
     langLinks();
+    langMenus();
     if (lang !== 'en' || document.querySelector('[data-i18n-page]')) ready().then(function () { apply(); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);

@@ -22,7 +22,9 @@ English.
 In the pages, `data-i18n="index.tagline"` takes its content from the
 catalog, `data-i18n-title` its tooltip, `data-i18n-page="guide"` links to
 that page in the visitor's language, and `data-lang-links="guide"` lists the
-page in the other languages. Scripts use `conquerI18n.t('index.m_ready',
+page in the other languages, and `<select data-lang-menu>` becomes a
+language menu (pages redraw the texts their scripts wrote on the
+`conquer:lang` event). Scripts use `conquerI18n.t('index.m_ready',
 { done: 3, total: 5 })`; `{name}` is filled in by the page. Texts are
 static markup of this site: they may hold `<strong>`, `<kbd>`, `<a>`.
 

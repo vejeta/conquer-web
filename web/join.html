@@ -58,11 +58,20 @@ SPDX-License-Identifier: GPL-3.0-or-later
     .done h2 { margin: 0 0 8px; font-size: 1.3rem; }
     .done ol { margin: 0 0 16px; padding-left: 1.3em; display: flex; flex-direction: column; gap: 6px; }
     .done code { font-weight: 600; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .top select {
+      font: 600 0.85rem system-ui, sans-serif; color: var(--muted); background: var(--panel);
+      border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; cursor: pointer; max-width: 100%; margin-left: auto;
+    }
+    .top select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   </style>
 </head>
 <body>
 <main>
-  <p class="crumbs"><a href="index.html" data-i18n="join.home">Conquer</a> / <span data-i18n="join.title">Create your account</span></p>
+  <div class="top">
+    <p class="crumbs"><a href="index.html" data-i18n="join.home">Conquer</a> / <span data-i18n="join.title">Create your account</span></p>
+    <select data-lang-menu aria-label="Language" data-i18n-title="index.language"></select>
+  </div>
   <h1 data-i18n="join.title">Create your account</h1>
   <p class="lede" data-i18n="join.lede">Joining is by invitation. With your invite code, choose the account you will sign in with; the game then has you found your nation.</p>
 
@@ -145,6 +154,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
       error.hidden = false;
       if (focus) focus.focus();
     }
+
+    // Another language: its texts come from the catalog; the error shown
+    // and the Play link follow it
+    document.addEventListener('conquer:lang', function (e) {
+      error.hidden = true;
+      document.getElementById('play').href = 'game.html' + (e.detail !== 'en' ? '?lang=' + e.detail : '');
+    });
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
