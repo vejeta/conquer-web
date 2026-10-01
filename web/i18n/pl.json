@@ -85,7 +85,9 @@
   "cred_account": "Otwiera drzwi serwisu: przeglądarka pyta o nie, gdy klikasz Graj. Jedno na gracza; to nie jest twój naród.",
   "cred_nation_t": "Hasło twojego narodu",
   "cred_nation": "Część oryginalnej gry z 1987 roku: chroni twój naród w świecie gry, tak jak na uniksowych maszynach, dla których ją napisano.",
-  "join_link": "Załóż konto"
+  "join_link": "Załóż konto",
+  "trailer": "&#9654; Obejrzyj zwiastun (40 s)",
+  "trailer_close": "Zamknij"
  },
  "game": {
   "keyboard_title": "Pokaż klawiaturę urządzenia",

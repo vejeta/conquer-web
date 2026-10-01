@@ -175,6 +175,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
     /* Two buttons of equal width, each with its note below; long labels
        (German, Russian...) wrap inside the button, and the buttons stack
        when there is no room for both */
+    .trailer { padding: 0; border: 1px solid #30363d; border-radius: 10px; background: #000; width: min(960px, 94vw); }
+    .trailer::backdrop { background: rgba(0, 0, 0, .75); }
+    .trailer video { display: block; width: 100%; }
+    .trailer form { text-align: right; padding: 8px; background: #0d1117; }
+    .trailer button { font: 600 .95rem system-ui, sans-serif; color: #e6edf3; background: #30363d; border: 0; border-radius: 6px; padding: 6px 14px; cursor: pointer; }
     .ctas {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
       gap: 6px 16px;
@@ -253,6 +258,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
       <p class="join" id="join" hidden><span data-i18n="index.join">Have an invite code?</span>
         <a class="text" href="signup.html" data-server-link="signup.html" data-i18n="index.join_link">Create your account</a></p>
       <div class="links">
+        <a class="text" href="#trailer" id="trailer-link" hidden data-i18n="index.trailer">&#9654; Watch the trailer (40 s)</a>
         <a class="text" href="tutorial.html" data-i18n-page="tutorial" data-i18n="index.tutorial">New here? Play your first turn step by step</a>
         <a class="text" href="guide.html" data-i18n-page="guide" data-i18n="index.guide">Player's guide</a>
         <a class="text" href="hall.html" data-i18n="index.hall">Hall of fame</a>
@@ -384,8 +390,50 @@ SPDX-License-Identifier: GPL-3.0-or-later
   </footer>
 </main>
 <script src="server.js"></script>
+<dialog class="trailer" id="trailer" aria-label="Conquer">
+  <video id="trailer-video" controls playsinline preload="none"></video>
+  <form method="dialog"><button data-i18n="index.trailer_close">Close</button></form>
+</dialog>
 <script src="site.js"></script>
 <script src="moves.js"></script>
+<script>
+  // The trailer (tools/tutorial/video.py --video trailer) in the page's
+  // language, or in English; the link shows once one exists
+  (function () {
+    var link = document.getElementById('trailer-link'), dialog = document.getElementById('trailer');
+    var video = document.getElementById('trailer-video'), src = null;
+    function find(lang) {
+      var tries = lang === 'en' ? ['en'] : [lang, 'en'];
+      (function next() {
+        var l = tries.shift();
+        if (!l) { link.hidden = true; return; }
+        fetch('tutorial/trailer.' + l + '.mp4', { method: 'HEAD' }).then(function (r) {
+          if (!r.ok) return next();
+          src = l;
+          link.hidden = false;
+        }).catch(next);
+      })();
+    }
+    conquerI18n.ready().then(function () { find(conquerI18n.lang()); });
+    document.addEventListener('conquer:lang', function (e) { find(e.detail); });
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (!src || !dialog.showModal) return;
+      if (video.getAttribute('data-lang') !== src) {
+        video.textContent = '';
+        video.src = 'tutorial/trailer.' + src + '.mp4';
+        var track = document.createElement('track');
+        track.kind = 'captions'; track.srclang = src; track.label = src;
+        track.src = 'tutorial/trailer.' + src + '.vtt';
+        video.appendChild(track);
+        video.setAttribute('data-lang', src);
+      }
+      dialog.showModal();
+      video.play().catch(function () {});
+    });
+    dialog.addEventListener('close', function () { video.pause(); });
+  })();
+</script>
 <script src="hero.js"></script>
 <script>
   // Texts of the page: i18n/<language>.json, "index" (site.js)

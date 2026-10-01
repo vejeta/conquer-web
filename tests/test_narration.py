@@ -7,7 +7,10 @@ from conftest import TRACKS, TUTORIAL, load, steps_file
 
 NARRATION = TUTORIAL / "narration"
 VIDEOS = {"first-turn": sorted(NARRATION.glob("*.json")),
-          "found-nation": sorted((NARRATION / "found-nation").glob("*.json"))}
+          "found-nation": sorted((NARRATION / "found-nation").glob("*.json")),
+          "trailer": sorted((NARRATION / "trailer").glob("*.json"))}
+# The trailer shows screens of the first turn
+SOURCE = {"trailer": "first-turn"}
 CAPTIONS = {"keys", "look", "intro_title", "intro_sub", "outro_title", "outro_sub", "password", "space"}
 
 
@@ -16,14 +19,18 @@ CASES = [pytest.param(video, f, id="%s-%s" % (video, f.stem)) for video, files i
 
 @pytest.mark.parametrize("video,path", CASES)
 def test_segments_show_recorded_screens(video, path):
-    screens = {s["id"] for s in load(TUTORIAL / ("%s.screens.json" % video))}
-    track = next(t for t, v in TRACKS.items() if v == video)
+    source = SOURCE.get(video, video)
+    screens = {s["id"] for s in load(TUTORIAL / ("%s.screens.json" % source))}
+    track = next(t for t, v in TRACKS.items() if v == source)
     steps = {s["id"] for s in load(steps_file(track))["steps"]}
     for seg in load(path)["segments"]:
         if seg["screen"] in ("intro", "outro"):
             continue
         assert seg["screen"] in screens, seg["screen"]
-        assert seg.get("step", seg["screen"]) in steps, seg["screen"]
+        if "caption" in seg:
+            assert seg["caption"].strip()
+        else:
+            assert seg.get("step", seg["screen"]) in steps, seg["screen"]
         assert seg["text"].strip()
 
 
@@ -33,10 +40,11 @@ def test_languages_match_english(video, path):
     narration = load(path)
     assert [s["screen"] for s in narration["segments"]] == [s["screen"] for s in english["segments"]]
     assert [s.get("keys") for s in narration["segments"]] == [s.get("keys") for s in english["segments"]]
+    assert ["caption" in s for s in narration["segments"]] == ["caption" in s for s in english["segments"]]
     assert CAPTIONS <= set(narration["captions"])
 
 
-@pytest.mark.parametrize("path", VIDEOS["found-nation"], ids=lambda p: p.stem)
-def test_builder_video_has_a_narrator(path):
-    """found-nation/<language>.json borrows the voice of <language>.json."""
+@pytest.mark.parametrize("path", VIDEOS["found-nation"] + VIDEOS["trailer"], ids=lambda p: "%s-%s" % (p.parent.name, p.stem))
+def test_other_videos_have_a_narrator(path):
+    """found-nation/ and trailer/<language>.json borrow the voice of <language>.json."""
     assert "voice" in load(NARRATION / path.name)

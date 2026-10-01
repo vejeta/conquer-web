@@ -85,7 +85,9 @@
   "cred_account": "打开本站的大门：点击“开始游戏”时浏览器会要求输入。每位玩家一个，它不是你的国家。",
   "cred_nation_t": "你的国家密码",
   "cred_nation": "这是 1987 年原版游戏的一部分：它在游戏世界中保护你的国家，就像在当年编写它的 Unix 机器上一样。",
-  "join_link": "创建账号"
+  "join_link": "创建账号",
+  "trailer": "&#9654; 观看预告片（40 秒）",
+  "trailer_close": "关闭"
  },
  "game": {
   "keyboard_title": "显示设备键盘",

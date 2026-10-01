@@ -85,7 +85,9 @@
   "cred_account": "Öffnet die Tür der Seite: Der Browser fragt danach, wenn du auf Spielen drückst. Eins pro Spieler; es ist nicht deine Nation.",
   "cred_nation_t": "Das Passwort deiner Nation",
   "cred_nation": "Teil des Originalspiels von 1987: Es schützt deine Nation in der Welt, wie auf den Unix-Rechnern, für die es geschrieben wurde.",
-  "join_link": "Konto erstellen"
+  "join_link": "Konto erstellen",
+  "trailer": "&#9654; Trailer ansehen (40 s)",
+  "trailer_close": "Schließen"
  },
  "game": {
   "keyboard_title": "Bildschirmtastatur des Geräts einblenden",

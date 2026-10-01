@@ -1,0 +1,39 @@
+{
+ "language": "pl",
+ "note": "The trailer: what Conquer is, in 40 seconds, by the narrator of ../pl.json (video.py --video trailer)",
+ "captions": {
+  "keys": "Klawisze",
+  "look": "tylko patrz",
+  "intro_title": "Usenet, 1987",
+  "intro_sub": "Gra strategiczna w świecie epickiej fantasy",
+  "outro_title": "Conquer wraca",
+  "outro_sub": "Graj w przeglądarce · bez instalacji",
+  "password": "hasło",
+  "space": "Spacja"
+ },
+ "segments": [
+  {
+   "screen": "intro",
+   "text": "Październik tysiąc dziewięćset osiemdziesiątego siódmego roku. Pewna gra strategiczna rozchodzi się po całym świecie, post po poście, w Usenecie."
+  },
+  {
+   "screen": "title",
+   "text": "W uczelnianych ośrodkach obliczeniowych studenci ją kompilują i przed zielono świecącymi terminalami władają królestwami elfów, krasnoludów, orków i ludzi.",
+   "caption": "1988"
+  },
+  {
+   "screen": "map",
+   "text": "To nie gra planszowa: to świat epickiej fantasy, z magią, bohaterami i potworami. W każdej turze wszystkie królestwa ruszają naraz.",
+   "caption": "Twoje królestwo"
+  },
+  {
+   "screen": "diplomacy",
+   "text": "Czterdzieści lat później Conquer wraca.",
+   "caption": "Królestwa świata"
+  },
+  {
+   "screen": "outro",
+   "text": "Bez instalacji. Bez dostępu do shella. Tylko twoja przeglądarka. Spróbuj teraz."
+  }
+ ]
+}

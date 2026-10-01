@@ -85,7 +85,9 @@
   "cred_account": "Abre a porta do site: o navegador a pede quando você clica em Jogar. Uma por jogador; não é a sua nação.",
   "cred_nation_t": "A senha da sua nação",
   "cred_nation": "Faz parte do jogo original de 1987: protege a sua nação dentro do mundo, como nas máquinas Unix para as quais ele foi escrito.",
-  "join_link": "Crie a sua conta"
+  "join_link": "Crie a sua conta",
+  "trailer": "&#9654; Ver o trailer (40 s)",
+  "trailer_close": "Fechar"
  },
  "game": {
   "keyboard_title": "Mostrar o teclado do dispositivo",

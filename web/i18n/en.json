@@ -85,7 +85,9 @@
   "cred_account": "Opens the door of this site: your browser asks for it when you press Play. One per player; it is not your nation.",
   "cred_nation_t": "Your nation's password",
   "cred_nation": "Part of the original 1987 game: it guards your nation inside the world, as it did on the Unix machines it was written for.",
-  "join_link": "Create your account"
+  "join_link": "Create your account",
+  "trailer": "&#9654; Watch the trailer (40 s)",
+  "trailer_close": "Close"
  },
  "game": {
   "keyboard_title": "Show the device keyboard",
