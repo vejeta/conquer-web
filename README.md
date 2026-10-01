@@ -67,7 +67,7 @@ sudo ./deploy-to-vps.sh
   Spanish at `guide.es.html`.
 - **`https://your-domain/try/`** – Conquer compiled to WebAssembly, running
   entirely in the visitor's browser: a private practice world with its own
-  turns, no account needed, also on GitHub Pages (see `wasm/README.md`).
+  turns, no account needed; plain static files (see `wasm/README.md`).
 - **`https://your-domain/tutorial.html`** – the first turn of a new nation,
   key by key, with the real screens, a terminal recording and a narrated
   video; in Spanish at `tutorial.es.html`, with the Spanish video (see

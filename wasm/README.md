@@ -3,8 +3,8 @@
 `web/try/` runs Conquer entirely in the visitor's browser: no account, no
 server, nothing installed. It is a private practice world (nation
 `trainee`, password `train1`) kept in the browser's storage (IndexedDB),
-with its own turn updates. Because it is plain static files, it works on
-GitHub Pages too.
+with its own turn updates. Because it is plain static files, any static web
+host can serve it.
 
 The game and its turn update (`conquer` and `conqrun`) are compiled from
 the game sources with [Emscripten](https://emscripten.org). The sources are
