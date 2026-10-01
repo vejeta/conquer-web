@@ -12,6 +12,10 @@
 #                                           create or reset an account
 #   ./manage-players.sh assign NAME NATION  assign a nation to an account
 #   ./manage-players.sh assign NAME --admin let an account open any nation
+#   ./manage-players.sh assign NAME --found the account founds a new nation
+#                                           the next time it plays
+#   ./manage-players.sh rename NAME NEWNAME rename an account (same password,
+#                                           same nation)
 #   ./manage-players.sh remove NAME         delete an account
 #   ./manage-players.sh list                list accounts and their nations
 #   ./manage-players.sh invite [COUNT]      create invite codes (default 1)
@@ -93,10 +97,12 @@ set_nation() {
     match_world_owner "$PLAYERS_FILE"
 }
 
-# Nation argument: --admin or a nation name, printed as stored
+# Nation argument: --admin, --found or a nation name, printed as stored
 nation_arg() {
     if [ "$1" = "--admin" ]; then
         echo "*"
+    elif [ "$1" = "--found" ]; then
+        echo "+"
     elif valid_nation "$1"; then
         echo "$1"
     else
@@ -152,6 +158,8 @@ cmd_add() {
 describe() {
     if [ "$2" = "*" ]; then
         echo "✅ '$1' is an administrator account: it may open any nation"
+    elif [ "$2" = "+" ]; then
+        echo "✅ '$1' founds a new nation in the game's nation builder the next time it plays"
     else
         echo "✅ '$1' opens the nation '$2'"
     fi
@@ -167,13 +175,35 @@ cmd_assign() {
 
 cmd_remove() {
     valid_name "$1" || { echo "❌ Invalid name"; exit 1; }
-    if ! awk -F: -v user="$1" '$1 == user { found = 1 } END { exit !found }' "$HTPASSWD_FILE" 2>/dev/null; then
+    if ! has_account "$1"; then
         echo "❌ No account named '$1'"
         exit 1
     fi
     remove_line "$HTPASSWD_FILE" "$1"
     remove_line "$PLAYERS_FILE" "$1"
     echo "✅ Account '$1' removed"
+}
+
+has_account() {
+    awk -F: -v user="$1" '$1 == user { found = 1 } END { exit !found }' "$HTPASSWD_FILE" 2>/dev/null
+}
+
+# Rename account $1 to $2: the password (its hash does not depend on the
+# name) and the nation go with it
+cmd_rename() {
+    local old="$1" new="$2" tmp
+    valid_name "$old" && valid_name "$new" || { echo "❌ Invalid name: use letters, digits, . _ - (max 32)"; exit 1; }
+    has_account "$old" || { echo "❌ No account named '$old'"; exit 1; }
+    ! has_account "$new" || { echo "❌ There is already an account named '$new'"; exit 1; }
+    for f in "$HTPASSWD_FILE" "$PLAYERS_FILE"; do
+        [ -f "$f" ] || continue
+        tmp=$(mktemp "$f.XXXXXX")
+        awk -F: -v old="$old" -v new="$new" 'BEGIN { OFS = ":" } $1 == old { $1 = new } { print }' "$f" > "$tmp"
+        cat "$tmp" > "$f"
+        rm -f "$tmp"
+    done
+    echo "✅ Account '$old' is now '$new' (same password)"
+    echo "   Browsers remember the old name: sign in again, in a private window if it does not ask"
 }
 
 cmd_list() {
@@ -226,6 +256,7 @@ cmd_invites() {
 case "${1:-}" in
     add) [ -n "$2" ] || usage; shift; cmd_add "$@" ;;
     assign) [ -n "$3" ] || usage; cmd_assign "$2" "$3" ;;
+    rename) [ -n "$3" ] || usage; cmd_rename "$2" "$3" ;;
     remove) [ -n "$2" ] || usage; cmd_remove "$2" ;;
     list) cmd_list ;;
     invite) cmd_invite "${2:-1}" ;;

@@ -66,6 +66,8 @@ by `manage-players.sh`) and the **nation password** (asked by the game).
 | `sudo ./manage-players.sh add NAME --nation NATION` | Creates or resets a web account (Enter at the password prompt generates one) |
 | `sudo ./manage-players.sh add NAME --admin` | An administrator account: opens any nation, god included |
 | `sudo ./manage-players.sh assign NAME NATION` | Links an account to another nation |
+| `sudo ./manage-players.sh assign NAME --found` | The account founds a new nation the next time it plays (its old nation, if any, stays in the world without a player) |
+| `sudo ./manage-players.sh rename NAME NEWNAME` | Renames an account; the password and the nation stay |
 | `sudo ./manage-players.sh remove NAME` | Deletes an account |
 | `sudo ./set-nation-password.sh NATION` | Sets a nation's password without the old one |
 | `sudo ./set-nation-password.sh god` | Sets the god (game administrator) password |
