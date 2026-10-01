@@ -40,6 +40,24 @@ services:
       - ${HTPASSWD_FILE:-/etc/apache2/conquer-web.htpasswd}:/opt/conquer/auth/htpasswd
       # Public game status (status.json) served by Apache under /status/
       - ${STATUS_DIR:-./data/public}:/opt/conquer/public
+    # Least privilege: the entrypoint runs as root only to fix the volumes'
+    # owners, set up cron and drop to the game user (setpriv); the game,
+    # ttyd and the sign-up service never hold these capabilities
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETUID
+      - SETGID
+      - KILL
+      - AUDIT_WRITE
+    security_opt:
+      - no-new-privileges:true
+    # A runaway game or a flood of sessions cannot take the whole server
+    pids_limit: ${CONQUER_PIDS_LIMIT:-512}
+    mem_limit: ${CONQUER_MEM_LIMIT:-1g}
     restart: unless-stopped
     ports:
       - "127.0.0.1:7681:7681"  # Only bind to localhost for security

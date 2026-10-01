@@ -205,6 +205,9 @@ jobs:
       - name: Game runs as an unprivileged user
         run: |
           test "$(docker exec conquer-local stat -c %U /proc/1)" = conquer
+          # Least privilege: no new privileges, and ttyd (pid 1) holds no capability
+          docker inspect -f '{{.HostConfig.SecurityOpt}}' conquer-local | grep -q no-new-privileges
+          test "$(docker exec conquer-local sed -n 's/^CapEff:[[:space:]]*//p' /proc/1/status)" = 0000000000000000
           test "$(stat -c %u data/lib/data)" = 1000
 
       - name: Scheduled turn update through cron

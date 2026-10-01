@@ -122,6 +122,7 @@ directory, for example another disk.
 
 | Setting | What it does |
 |---------|--------------|
+| `CONQUER_MEM_LIMIT=1g`, `CONQUER_PIDS_LIMIT=512` | Most memory and processes the game container may use |
 | `ADMIN_CONTACT=` | Your address, shown under "How to join" on the home page and in the menu |
 | `SIGNUP=on` | Sign-up with invite codes on the site (`off` closes it) |
 
