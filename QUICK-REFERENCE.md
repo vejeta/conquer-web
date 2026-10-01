@@ -96,6 +96,27 @@ A copy of the world is taken before every update (`data/backups/`).
 | `sudo ./season-end.sh "Season 1: …"` | Keeps the final scores of a season in the hall of fame |
 | `sudo ./generate-world.sh` | Makes a new world (see README.md, "The default world") |
 
+### Copies on another machine
+
+The copies above stay on the server. `offsite-backup.sh` sends the world,
+the accounts, the settings and the Apache site to another machine every day:
+
+```bash
+cp config/backup.env.template config/backup.env   # set BACKUP_TARGET=user@host:/path
+sudo ./offsite-backup.sh --setup-key              # prints a line for the other machine's ~/.ssh/authorized_keys
+sudo ./offsite-backup.sh                          # one copy now, to check
+sudo ./offsite-backup.sh --install-cron           # then one every day at 04:17
+```
+
+| Command | What it does |
+|---------|--------------|
+| `sudo ./offsite-backup.sh --decrypt FILE` | Opens an encrypted copy (with `BACKUP_PASSWORD_FILE`) |
+| `tar xzf conquer-*.tar.gz` | Unpacks a copy: `world.tgz` (restore with `restore-world.sh`), the accounts, the settings, the Apache files |
+| `sudo ./offsite-backup.sh --remove-cron` | Stops the daily copies |
+
+The other machine needs SSH and `rsync`. `BACKUP_TARGET` may also be a
+directory, for example another disk.
+
 ### Other settings in `config/production.env`
 
 | Setting | What it does |
