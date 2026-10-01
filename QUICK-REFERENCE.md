@@ -93,6 +93,7 @@ A copy of the world is taken before every update (`data/backups/`).
 |---------|--------------|
 | `sudo ./backup-world.sh` | A copy of the world now |
 | `sudo ./restore-world.sh` | Lists the copies and restores one |
+| `sudo ./new-season.sh "Season 1: …"` | Ends the season and starts the next: hall of fame, a copy of the old world, a new world (`--world FILE.tar.gz` for your own); players keep their accounts and found new nations |
 | `sudo ./season-end.sh "Season 1: …"` | Keeps the final scores of a season in the hall of fame |
 | `sudo ./generate-world.sh` | Makes a new world (see README.md, "The default world") |
 

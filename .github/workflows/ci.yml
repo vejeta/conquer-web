@@ -242,6 +242,17 @@ jobs:
           # Sunday (7) at 20:00 Madrid time
           test "$(date -d "@$next" +%u-%H:%M)" = "7-20:00"
 
+      - name: A new season keeps the accounts and starts a new world
+        run: |
+          test "$(docker exec -u conquer conquer-local conquer -s | sed -n 's/.*, Turn //p')" != 1
+          sudo ./manage-players.sh assign "$TTYD_USERNAME" fung
+          sudo ./new-season.sh "Season CI" --yes
+          test "$(docker exec -u conquer conquer-local conquer -s | sed -n 's/.*, Turn //p')" = 1
+          sudo grep -qx "$TTYD_USERNAME:+" data/lib/.players
+          ! sudo grep -v ':[+*]$' data/lib/.players
+          curl -sk https://localhost/status/seasons/index.json | jq -e '.[0].name == "Season CI"'
+          sudo sh -c 'ls backups/season-end-*/world.tgz'
+
       - name: Container logs
         if: always()
         run: docker compose -f docker-compose.local.yml logs --no-color

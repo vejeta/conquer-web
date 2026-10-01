@@ -140,6 +140,7 @@ COPY scripts/next-turn.sh /usr/local/bin/conquer-next-turn
 COPY scripts/ready.sh /usr/local/bin/conquer-ready
 COPY scripts/join.sh /usr/local/bin/conquer-join
 COPY scripts/signup.sh /usr/local/bin/conquer-signup
+COPY scripts/new-world.sh /usr/local/bin/conquer-new-world
 # Texts of the menu and the nation founding, one file per language
 COPY scripts/i18n.sh /usr/local/lib/conquer-i18n.sh
 COPY i18n/ /usr/local/share/conquer-web/i18n/
