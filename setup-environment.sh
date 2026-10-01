@@ -53,8 +53,10 @@ turn_settings() {
 # Daily at 20:00 would be "0 20 * * *". Use "off" to disable.
 TZ=UTC
 TURN_SCHEDULE="0 20 * * 0"
-# Human-readable schedule shown to players in the game menu
-TURN_SCHEDULE_LABEL="Weekly, Sundays at 20:00 UTC"
+# Optional: the schedule in your own words. Left empty, it is worked out
+# from TURN_SCHEDULE and TZ, and the website shows it in each visitor's
+# language and local time.
+TURN_SCHEDULE_LABEL=
 # The update waits while players are logged in: retry interval and attempts
 TURN_RETRY_MINUTES=10
 TURN_MAX_RETRIES=18

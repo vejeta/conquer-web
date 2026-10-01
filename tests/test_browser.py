@@ -35,7 +35,11 @@ class Site(http.server.SimpleHTTPRequestHandler):
         self.send_header("Content-Security-Policy", site_policy())
         super().end_headers()
 
+    status_file = None   # a fixture for status/status.json, when a test sets one
+
     def translate_path(self, path):
+        if self.status_file and path.split("?")[0] == "/status/status.json":
+            return str(self.status_file)
         if path.split("?")[0].rstrip("/") == "/play":
             return str(ROOT / "tests" / "fake" / "play.html")
         return super().translate_path(path)
@@ -199,3 +203,23 @@ def test_movement_figure(site, browser):
     page.wait_for_timeout(1500)
     assert page.evaluate("document.getElementById('moves-panel').hidden")
     page.close()
+
+
+def test_schedule_in_visitor_time(site, browser, tmp_path):
+    """A schedule worked out from cron shows in the visitor's language and
+    local time: 20:00 in Madrid is 14:00 in New York."""
+    status = tmp_path / "status.json"
+    status.write_text(json.dumps({
+        "turn": 4, "season": "Winter of Year 1", "schedule": "Daily at 20:00 (Europe/Madrid)",
+        "schedule_auto": True, "repeat": "daily", "tz": "Europe/Madrid",
+        "next_turn": 1790877600, "ready": None, "signup": True, "news": [], "nations": []}))
+    Site.status_file = status
+    try:
+        ctx = browser.new_context(timezone_id="America/New_York", locale="es-ES")
+        page = ctx.new_page()
+        page.goto(site + "index.html?lang=es")
+        page.wait_for_function("() => /cada día/.test(document.getElementById('status-schedule').textContent)")
+        assert page.inner_text("#status-schedule") == "cada día a las 14:00, en tu hora"
+        ctx.close()
+    finally:
+        Site.status_file = None

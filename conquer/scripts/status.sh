@@ -14,7 +14,7 @@ fi
 PREFIX="${CONQUER_PREFIX:-/opt/conquer}"
 PUBLIC_DIR="${PUBLIC_DIR:-$PREFIX/public}"
 
-TURN_SCHEDULE="" TURN_SCHEDULE_LABEL="" TURN_EARLY="" SIGNUP="" HTPASSWD_FILE="" ADMIN_CONTACT=""
+TURN_SCHEDULE="" TURN_SCHEDULE_LABEL="" TURN_SCHEDULE_AUTO="" TURN_REPEAT="" TURN_EARLY="" SIGNUP="" HTPASSWD_FILE="" ADMIN_CONTACT=""
 # shellcheck source=/dev/null
 [ -f /etc/conquer-web.env ] && . /etc/conquer-web.env
 
@@ -96,7 +96,8 @@ END { close_edition(); printf "[%s]", out }
 signup=false
 [ "${SIGNUP:-on}" != off ] && [ -n "$HTPASSWD_FILE" ] && [ -w "$HTPASSWD_FILE" ] && signup=true
 
-NEWS_JSON="$news_json" awk -v schedule="$TURN_SCHEDULE_LABEL" -v generated="$(date -u '+%Y-%m-%dT%H:%M:%SZ')" \
+NEWS_JSON="$news_json" awk -v schedule="$TURN_SCHEDULE_LABEL" -v auto="$TURN_SCHEDULE_AUTO" \
+    -v repeat="$TURN_REPEAT" -v tz="${TZ:-UTC}" -v generated="$(date -u '+%Y-%m-%dT%H:%M:%SZ')" \
     -v state="$TURN_STATE" -v state_time="$TURN_STATE_TIME" -v state_message="$TURN_STATE_MESSAGE" \
     -v next_turn="$next_turn" -v ready="${ready_count:-0}" -v ready_total="${ready_total:-0}" \
     -v early="$TURN_EARLY" -v signup="$signup" -v contact="$ADMIN_CONTACT" '
@@ -121,6 +122,10 @@ END {
     printf "{\"generated\":%s,\"season\":%s,\"turn\":%d,\"last_update\":%s,\"schedule\":%s,",
         json(generated), json(season), turn, json(last), json(schedule)
     printf "\"next_turn\":%s,", (next_turn ~ /^[0-9]+$/ ? next_turn : "null")
+    # A schedule worked out from cron (not the words of the administrator):
+    # the pages show it in the language and time of each visitor
+    printf "\"schedule_auto\":%s,\"repeat\":%s,\"tz\":%s,", (auto == "yes" ? "true" : "false"),
+        (repeat != "" ? json(repeat) : "null"), json(tz)
     if (ready_total > 0)
         printf "\"ready\":{\"done\":%d,\"total\":%d,\"early\":%s},", ready, ready_total, (early == "on" ? "true" : "false")
     else

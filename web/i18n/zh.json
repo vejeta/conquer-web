@@ -87,7 +87,9 @@
   "cred_nation": "这是 1987 年原版游戏的一部分：它在游戏世界中保护你的国家，就像在当年编写它的 Unix 机器上一样。",
   "join_link": "创建账号",
   "trailer": "&#9654; 观看预告片（40 秒）",
-  "trailer_close": "关闭"
+  "trailer_close": "关闭",
+  "m_daily": "每天 {time}（你的当地时间）",
+  "m_weekly": "每{day} {time}（你的当地时间）"
  },
  "game": {
   "keyboard_title": "显示设备键盘",

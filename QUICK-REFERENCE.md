@@ -81,7 +81,8 @@ Nation passwords keep at most 7 characters (god needs at least 4).
 |---------|--------------|
 | `sudo ./run-turn.sh` | Runs the turn update now (refused while players are in the game) |
 | `TURN_SCHEDULE=0 20 * * *` | In `config/production.env`: when turns run (cron format, here every day at 20:00); restart the game after changing it |
-| `TURN_SCHEDULE_LABEL=Daily at 20:00 UTC` | How the schedule is shown to players |
+| `TZ=Europe/Madrid` | The time zone of `TURN_SCHEDULE`; the website shows each visitor the turn time in their own time |
+| `TURN_SCHEDULE_LABEL=` | Leave empty: the schedule is worked out from `TURN_SCHEDULE` and `TZ`. Your own words go here only if you want them shown as written |
 | `TURN_EARLY=on` | The update runs as soon as every nation marks its orders done |
 
 A copy of the world is taken before every update (`data/backups/`).

@@ -87,10 +87,36 @@ else
     echo "[entrypoint] Automatic turn updates disabled (TURN_SCHEDULE=off)"
 fi
 
-# Settings shown to players by the menu
+# How players see the schedule: the administrator's TURN_SCHEDULE_LABEL, or
+# worked out from the schedule and the time zone ("0 20 * * *" is daily at
+# 20:00, "0 20 * * 0" weekly on Sundays). The pages show a worked-out
+# schedule in the visitor's own language and time.
+schedule_repeat="" schedule_auto=no schedule_text="${TURN_SCHEDULE_LABEL:-}"
+read -r c_min c_hour c_dom c_mon c_dow c_extra <<< "$TURN_SCHEDULE"
+if [[ "$c_min" =~ ^[0-9]+$ && "$c_hour" =~ ^[0-9]+$ && "$c_dom" = "*" && "$c_mon" = "*" && -z "$c_extra" ]]; then
+    if [ "$c_dow" = "*" ]; then
+        schedule_repeat=daily
+    elif [[ "$c_dow" =~ ^[0-7]$ ]]; then
+        schedule_repeat=weekly
+    fi
+fi
+if [ -z "$schedule_text" ] && [ -n "$schedule_repeat" ]; then
+    schedule_auto=yes
+    at=$(printf '%02d:%02d' $((10#$c_hour)) $((10#$c_min)))
+    if [ "$schedule_repeat" = daily ]; then
+        schedule_text="Daily at $at (${TZ:-UTC})"
+    else
+        days=(Sunday Monday Tuesday Wednesday Thursday Friday Saturday Sunday)
+        schedule_text="Weekly, ${days[$c_dow]}s at $at (${TZ:-UTC})"
+    fi
+fi
+
+# Settings shown to players by the menu and the public status
 cat > /etc/conquer-web.env <<EOF
 TURN_SCHEDULE="$TURN_SCHEDULE"
-TURN_SCHEDULE_LABEL="${TURN_SCHEDULE_LABEL:-Weekly, Sundays at 20:00 ${TZ:-UTC}}"
+TURN_SCHEDULE_LABEL="$schedule_text"
+TURN_SCHEDULE_AUTO="$schedule_auto"
+TURN_REPEAT="$schedule_repeat"
 ADMIN_CONTACT="${ADMIN_CONTACT:-}"
 TURN_EARLY="${TURN_EARLY:-on}"
 SIGNUP="${SIGNUP:-on}"

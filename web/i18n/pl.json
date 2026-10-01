@@ -87,7 +87,9 @@
   "cred_nation": "Część oryginalnej gry z 1987 roku: chroni twój naród w świecie gry, tak jak na uniksowych maszynach, dla których ją napisano.",
   "join_link": "Załóż konto",
   "trailer": "&#9654; Obejrzyj zwiastun (40 s)",
-  "trailer_close": "Zamknij"
+  "trailer_close": "Zamknij",
+  "m_daily": "codziennie o {time}, według twojego czasu",
+  "m_weekly": "w każdy {day} o {time}, według twojego czasu"
  },
  "game": {
   "keyboard_title": "Pokaż klawiaturę urządzenia",

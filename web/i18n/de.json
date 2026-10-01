@@ -87,7 +87,9 @@
   "cred_nation": "Teil des Originalspiels von 1987: Es schützt deine Nation in der Welt, wie auf den Unix-Rechnern, für die es geschrieben wurde.",
   "join_link": "Konto erstellen",
   "trailer": "&#9654; Trailer ansehen (40 s)",
-  "trailer_close": "Schließen"
+  "trailer_close": "Schließen",
+  "m_daily": "täglich um {time}, in deiner Ortszeit",
+  "m_weekly": "jeden {day} um {time}, in deiner Ortszeit"
  },
  "game": {
   "keyboard_title": "Bildschirmtastatur des Geräts einblenden",

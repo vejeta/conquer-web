@@ -500,10 +500,19 @@ SPDX-License-Identifier: GPL-3.0-or-later
     set('status-turn', d.turn);
     set('status-season', d.season || '-');
     set('status-last', d.last_update || m('m_not_yet'));
-    set('status-schedule', d.schedule || m('m_by_admin'));
     if (tickTimer) clearInterval(tickTimer);
-    if (d.next_turn) {
-      var next = new Date(d.next_turn * 1000);
+    var next = d.next_turn ? new Date(d.next_turn * 1000) : null;
+    // A schedule worked out from the server's cron: in the visitor's own
+    // language and time (the administrator's own words are shown as written)
+    var schedule = d.schedule || m('m_by_admin');
+    if (d.schedule_auto && next && d.repeat) {
+      var lang = conquerI18n.lang();
+      var at = next.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+      schedule = d.repeat === 'daily' ? m('m_daily', { time: at })
+        : m('m_weekly', { day: next.toLocaleDateString(lang, { weekday: 'long' }), time: at });
+    }
+    set('status-schedule', schedule);
+    if (next) {
       set('status-next', next.toLocaleString(conquerI18n.lang(), { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }));
       var tick = function () {
         var s = Math.round((next - Date.now()) / 1000);

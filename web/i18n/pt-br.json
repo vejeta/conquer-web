@@ -87,7 +87,9 @@
   "cred_nation": "Faz parte do jogo original de 1987: protege a sua nação dentro do mundo, como nas máquinas Unix para as quais ele foi escrito.",
   "join_link": "Crie a sua conta",
   "trailer": "&#9654; Ver o trailer (40 s)",
-  "trailer_close": "Fechar"
+  "trailer_close": "Fechar",
+  "m_daily": "todos os dias às {time}, no seu horário",
+  "m_weekly": "toda {day} às {time}, no seu horário"
  },
  "game": {
   "keyboard_title": "Mostrar o teclado do dispositivo",

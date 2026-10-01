@@ -116,8 +116,9 @@ the browser; the game page passes the language to the menu (ttyd
 `--url-arg`: `/play/?arg=es`, where the menu accepts only a language it has
 texts for). `web/i18n/README.md` explains how to add a language, and
 `tools/check-i18n.py` (run by CI) finds missing or broken texts. The game's
-own screens are the original English ones. `TURN_SCHEDULE_LABEL` is shown
-as written, so pick its language.
+own screens are the original English ones. A daily or weekly
+`TURN_SCHEDULE` is shown in each visitor's language and local time; a
+`TURN_SCHEDULE_LABEL`, if set, replaces it as written, so pick its language.
 
 ## 👑 Game Administration
 
@@ -217,7 +218,8 @@ the schedule in `config/local.env` or `config/production.env`:
 ```bash
 TZ=Europe/Madrid
 TURN_SCHEDULE="0 20 * * 0"                     # weekly, Sundays at 20:00
-TURN_SCHEDULE_LABEL="Weekly, Sundays at 20:00"  # text shown to players
+# TURN_SCHEDULE_LABEL="..."                    # optional: your own words instead
+                                               # of the worked-out schedule
 # TURN_SCHEDULE="0 20 * * *"                   # daily at 20:00
 # TURN_SCHEDULE=off                             # manual updates only
 ```
