@@ -126,6 +126,9 @@ npm install -g playwright                                # if node lacks it
   and each virtual environment (with PyTorch) about 6 GB. With little room,
   render the Qwen3-TTS languages, delete `~/.cache/huggingface`, then
   render the `voxcpm` ones.
+- Every sentence spoken is kept in `~/.cache/conquer-tts/speech` (by voice and
+  text): a render cut short goes on where it stopped, and changing one sentence
+  speaks only that one again. Delete the folder to speak everything again.
 - `FFMPEG=/path/to/ffmpeg` picks the ffmpeg binary.
 - Qwen3-TTS samples its speech: two renders of the same text differ
   slightly. Listen to each video before publishing it, and render a

@@ -38,6 +38,7 @@ usage: video.py [--video found-nation] [LANGUAGE ...]
       narration/trailer/<language>.json; writes web/tutorial/trailer.<language>.mp4
 """
 import glob
+import hashlib
 import html
 import json
 import os
@@ -255,10 +256,26 @@ def render(lang, video="first-turn"):
     key = "found_steps" if video == "found-nation" else "steps"
     images = frames(narration["captions"], tutorial_steps(lang, content, key), screens, segments, tmp)
 
-    tts = engine(lang, voice)
+    # Every sentence spoken is kept in CACHE/speech (by voice and text), so a
+    # render cut short goes on where it stopped, and an unchanged sentence is
+    # not spoken again; the model loads only when a sentence is missing
+    tts = None
+    speech = os.path.join(CACHE, "speech")
+    os.makedirs(speech, exist_ok=True)
+    reference = os.path.join(HERE, "narration", "voices", lang + ".wav")
+    voice_id = json.dumps(voice, sort_keys=True) + (str(os.path.getmtime(reference)) if os.path.exists(reference) else "")
     audio, cues, t0, sr = [], [], 0.0, 24000
     for n, seg in enumerate(segments, 1):
-        samples, sr = tts.speak(seg["text"], voice)
+        key = hashlib.sha256((voice_id + "\n" + seg["text"]).encode()).hexdigest()[:24]
+        kept = os.path.join(speech, key + ".wav")
+        if os.path.exists(kept):
+            samples, sr = sf.read(kept, dtype="float32")
+        else:
+            if tts is None:
+                tts = engine(lang, voice)
+            samples, sr = tts.speak(seg["text"], voice)
+            sf.write(kept + ".part.wav", np.asarray(samples, dtype=np.float32), sr)
+            os.replace(kept + ".part.wav", kept)
         samples = trim(np.asarray(samples, dtype=np.float32), sr)
         dur = len(samples) / sr + GAP
         audio.append(np.concatenate([samples, np.zeros(int(GAP * sr), dtype=np.float32)]))
