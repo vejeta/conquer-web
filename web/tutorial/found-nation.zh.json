@@ -49,6 +49,15 @@
    "detect": "Enter the number of your choice"
   },
   {
+   "id": "late",
+   "title": "晚加入的补偿点数",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>这个世界已经进行了几个回合，所以游戏会给你的国家一些额外点数来追赶进度。稍后你会和其他点数一起分配它们。</p><p>按任意键。</p>",
+   "detect": "points added for starting late"
+  },
+  {
    "id": "alignment",
    "title": "阵营",
    "keys": [

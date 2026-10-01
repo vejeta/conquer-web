@@ -171,6 +171,10 @@
   "added": {
    "title": "Deine Nation ist in der Welt",
    "text": "<p>Drück eine beliebige Taste. Dein Konto für die Website ist jetzt mit dieser Nation verknüpft: Ab jetzt führt dich <strong>Spielen</strong> direkt zu ihr, und das Spiel fragt nach ihrem Passwort.</p>"
+  },
+  "late": {
+   "title": "Punkte für den späten Einstieg",
+   "text": "<p>Die Welt hat schon einige Züge gespielt, darum gibt das Spiel deiner Nation ein paar Extrapunkte zum Aufholen. Du verteilst sie gleich mit den anderen.</p><p>Drücke eine beliebige Taste.</p>"
   }
  }
 }

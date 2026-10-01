@@ -11,8 +11,14 @@ from conftest import BUILDER, LANGS, TRACKS, WEB, load, recorded_screens, steps_
 SAME_STEP = {("found-nation", "treasury"): "points"}
 
 
+# The recordings of each track: the builder is also recorded on a world past
+# turn 1, where it gives points for starting late (found-nation-late)
+RECORDINGS = {"first-turn": ["first-turn"], "builder": ["found-nation", "found-nation-late"]}
+CASES = [(track, video) for track, videos in RECORDINGS.items() for video in videos]
+
+
 def expected(video, screen_id):
-    return SAME_STEP.get((video, screen_id), screen_id)
+    return SAME_STEP.get((video.replace("-late", ""), screen_id), screen_id)
 
 
 @pytest.mark.parametrize("track", TRACKS)
@@ -31,15 +37,13 @@ def test_every_language_has_the_same_steps(track, lang):
 
 @pytest.mark.parametrize("track", TRACKS)
 def test_every_step_has_a_recorded_screen(track):
-    video = TRACKS[track]
-    screens = {expected(video, sid) for sid, _ in recorded_screens(video)}
+    screens = {expected(video, sid) for video in RECORDINGS[track] for sid, _ in recorded_screens(video)}
     assert [s["id"] for s in load(steps_file(track))["steps"] if s["id"] not in screens] == []
 
 
-@pytest.mark.parametrize("track", TRACKS)
-def test_coach_follows_the_recording(coach, track):
+@pytest.mark.parametrize("track,video", CASES)
+def test_coach_follows_the_recording(coach, track, video):
     """Played in order, each screen moves the coach to its own step."""
-    video = TRACKS[track]
     c = coach(track)
     screens = recorded_screens(video)
     # The first turn opens at its first step; the builder where the player is
@@ -49,17 +53,18 @@ def test_coach_follows_the_recording(coach, track):
         assert c.follow(text) == expected(video, sid), "screen %s" % sid
 
 
-def test_builder_coach_opens_on_any_screen(coach):
+@pytest.mark.parametrize("video", RECORDINGS["builder"])
+def test_builder_coach_opens_on_any_screen(coach, video):
     """The builder track opens where the player already is (a coach opened
     in the middle of the builder, or a page reloaded)."""
-    for sid, text in recorded_screens("found-nation"):
-        assert coach("builder").open_at_screen(text) == expected("found-nation", sid), "screen %s" % sid
-
-
-@pytest.mark.parametrize("video", TRACKS.values())
-def test_builder_is_recognised_only_in_the_builder(video):
     for sid, text in recorded_screens(video):
-        assert bool(BUILDER.search(text)) == (video == "found-nation"), "screen %s" % sid
+        assert coach("builder").open_at_screen(text) == expected(video, sid), "screen %s" % sid
+
+
+@pytest.mark.parametrize("track,video", CASES)
+def test_builder_is_recognised_only_in_the_builder(track, video):
+    for sid, text in recorded_screens(video):
+        assert bool(BUILDER.search(text)) == (track == "builder"), "screen %s" % sid
 
 
 def test_coach_and_page_use_the_same_builder_pattern():

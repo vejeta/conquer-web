@@ -171,6 +171,10 @@
   "added": {
    "title": "Twój naród jest w świecie",
    "text": "<p>Naciśnij dowolny klawisz. Twoje konto w serwisie jest teraz powiązane z tym narodem: od teraz <strong>Graj</strong> prowadzi prosto do niego, a gra pyta o jego hasło.</p>"
+  },
+  "late": {
+   "title": "Punkty za późne dołączenie",
+   "text": "<p>Świat rozegrał już kilka tur, więc gra daje twojemu narodowi kilka dodatkowych punktów na nadrobienie strat. Za chwilę wydasz je razem z pozostałymi.</p><p>Naciśnij dowolny klawisz.</p>"
   }
  }
 }

@@ -50,6 +50,15 @@
    "text": "<p>Type the <strong>number</strong> of a class and press <kbd>Enter</kbd>. The list shows which races may take it (D, E, H, O) and the power it starts with.</p><p><strong>King</strong> and <strong>emperor</strong> cost no points and suit a first game; the others start with a power that costs some of your points.</p>"
   },
   {
+   "id": "late",
+   "title": "Points for starting late",
+   "keys": [
+    "Space"
+   ],
+   "detect": "points added for starting late",
+   "text": "<p>The world has already played some turns, so the game gives your nation a few extra points to catch up. You will spend them with the others in a moment.</p><p>Press any key.</p>"
+  },
+  {
    "id": "alignment",
    "title": "Alignment",
    "keys": [

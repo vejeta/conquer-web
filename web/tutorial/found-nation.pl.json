@@ -49,6 +49,15 @@
    "detect": "Enter the number of your choice"
   },
   {
+   "id": "late",
+   "title": "Punkty za późne dołączenie",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>Świat rozegrał już kilka tur, więc gra daje twojemu narodowi kilka dodatkowych punktów na nadrobienie strat. Za chwilę wydasz je razem z pozostałymi.</p><p>Naciśnij dowolny klawisz.</p>",
+   "detect": "points added for starting late"
+  },
+  {
    "id": "alignment",
    "title": "Charakter",
    "keys": [

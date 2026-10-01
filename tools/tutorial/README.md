@@ -48,6 +48,11 @@ python3 tools/tutorial/record.py tools/tutorial/found-nation.steps.json \
 `RECORD_LOCAL=1` records from a game installed in `/opt/conquer` on this
 machine, as the user `conquer`, instead of the container.
 
+On a world past turn 1 the builder shows one more screen after the class:
+points for starting late. `found-nation-late.steps.json` records it (on a
+world advanced with `conqrun -x`) into `found-nation-late.screens.json`,
+which the tests use with the main recording.
+
 ## Narrated videos
 
 `video.py` turns the recording into one video per language,

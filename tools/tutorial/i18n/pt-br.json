@@ -171,6 +171,10 @@
   "added": {
    "title": "A sua nação está no mundo",
    "text": "<p>Pressione qualquer tecla. A sua conta do site agora está vinculada a esta nação: a partir de agora <strong>Jogar</strong> leva você direto a ela, e o jogo pede a senha dela.</p>"
+  },
+  "late": {
+   "title": "Pontos por chegar tarde",
+   "text": "<p>O mundo já jogou alguns turnos, então o jogo dá à sua nação alguns pontos extras para recuperar o atraso. Você vai gastá-los com os outros daqui a pouco.</p><p>Pressione qualquer tecla.</p>"
   }
  }
 }

@@ -1,0 +1,88 @@
+{
+ "cmd": "conqrun -a -d /opt/conquer/lib",
+ "title": "Conquer: found your nation after turn 1",
+ "start_wait": 2.5,
+ "note": "The builder on a world past turn 1: after the class it gives points for starting late. Record on a world at turn 2 or later.",
+ "steps": [
+  {
+   "id": "name",
+   "keys": [],
+   "caption": "Name your nation",
+   "expect": [
+    "Enter a Name for your Country"
+   ]
+  },
+  {
+   "id": "password",
+   "keys": [
+    "iberia\\r"
+   ],
+   "caption": "iberia: up to 9 letters",
+   "expect": [
+    "Enter National Password"
+   ]
+  },
+  {
+   "id": "password2",
+   "keys": [
+    "tide123\\r"
+   ],
+   "caption": "The nation password",
+   "expect": [
+    "Reenter National Password"
+   ]
+  },
+  {
+   "id": "leader",
+   "keys": [
+    "tide123\\r"
+   ],
+   "caption": "Once more",
+   "expect": [
+    "name of your country's leader"
+   ]
+  },
+  {
+   "id": "race",
+   "keys": [
+    "Pelayo\\r"
+   ],
+   "caption": "The ruler: Pelayo",
+   "expect": [
+    "Enter your Race"
+   ]
+  },
+  {
+   "id": "class",
+   "keys": [
+    "H"
+   ],
+   "caption": "H: humans",
+   "wait": 2.2,
+   "expect": [
+    "Enter the number of your choice"
+   ]
+  },
+  {
+   "id": "late",
+   "keys": [
+    "1\\r"
+   ],
+   "caption": "Points for starting late",
+   "wait": 2.2,
+   "expect": [
+    "points added for starting late"
+   ]
+  },
+  {
+   "id": "alignment",
+   "keys": [
+    " "
+   ],
+   "caption": "1: king",
+   "expect": [
+    "Please Enter Alignment"
+   ]
+  }
+ ]
+}

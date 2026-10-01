@@ -49,6 +49,15 @@
    "detect": "Enter the number of your choice"
   },
   {
+   "id": "late",
+   "title": "Puntos por llegar tarde",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>El mundo ya ha jugado algunos turnos, así que el juego le da a tu nación unos puntos extra para ponerse al día. Los repartirás con los demás dentro de un momento.</p><p>Pulsa cualquier tecla.</p>",
+   "detect": "points added for starting late"
+  },
+  {
    "id": "alignment",
    "title": "Alineamiento",
    "keys": [

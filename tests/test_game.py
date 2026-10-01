@@ -35,24 +35,33 @@ def game_sh(script):
 
 
 @pytest.fixture(scope="module")
-def world():
+def game():
     if not LOCAL:
         up = shutil.which("docker") and subprocess.run(
             ["docker", "inspect", "-f", "{{.State.Running}}", "conquer-local"], capture_output=True, text=True).stdout
         if (up or "").strip() != "true":
             pytest.skip("the game container conquer-local is not running, and RECORD_LOCAL is not set")
-    # The default world as installed, at turn 1 (the game's world may be
-    # later: the builder then adds a screen of points for starting late)
-    run = game_sh("set -e; src=/opt/conquer/default-world; [ -d $src ] || src=/opt/conquer/lib; "
-                  "rm -rf %(w)s; cp -a $src %(w)s; rm -f %(w)s/lockadd; "
-                  "conqowner -d %(w)s -s \"$(id -u)\" > /dev/null" % {"w": WORLD})
-    assert run.returncode == 0, "cannot copy the default world: " + run.stderr
-    yield WORLD
+    yield
     game_sh("rm -rf " + WORLD)
 
 
-def test_builder_matches_the_recording(world, tmp_path):
-    spec = load(TUTORIAL / "found-nation.steps.json")
+def copy_world(turns):
+    """The default world as installed, at turn 1, then `turns` turn updates
+    later (the builder gives points for starting late after turn 1)."""
+    run = game_sh("set -e; src=/opt/conquer/default-world; [ -d $src ] || src=/opt/conquer/lib; "
+                  "rm -rf %(w)s; cp -a $src %(w)s; rm -f %(w)s/lockadd; "
+                  "for h in /opt/conquer/share/help[0-5]; do [ -f $h ] && cp $h %(w)s/; done; "
+                  "conqowner -d %(w)s -s \"$(id -u)\" > /dev/null; "
+                  "i=0; while [ $i -lt %(t)d ]; do conqrun -x -d %(w)s > /dev/null; i=$((i + 1)); done"
+                  % {"w": WORLD, "t": turns})
+    assert run.returncode == 0, "cannot prepare the world: " + run.stderr
+    return WORLD
+
+
+@pytest.mark.parametrize("recording,turns", [("found-nation", 0), ("found-nation-late", 1)])
+def test_builder_matches_the_recording(game, tmp_path, recording, turns):
+    world = copy_world(turns)
+    spec = load(TUTORIAL / ("%s.steps.json" % recording))
     spec["cmd"] = "conqrun -a -d " + world
     steps = tmp_path / "steps.json"
     steps.write_text(json.dumps(spec))

@@ -49,6 +49,15 @@
    "detect": "Enter the number of your choice"
   },
   {
+   "id": "late",
+   "title": "Punkte für den späten Einstieg",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>Die Welt hat schon einige Züge gespielt, darum gibt das Spiel deiner Nation ein paar Extrapunkte zum Aufholen. Du verteilst sie gleich mit den anderen.</p><p>Drücke eine beliebige Taste.</p>",
+   "detect": "points added for starting late"
+  },
+  {
    "id": "alignment",
    "title": "Gesinnung",
    "keys": [
