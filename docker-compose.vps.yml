@@ -56,8 +56,8 @@ services:
     security_opt:
       - no-new-privileges:true
     # A runaway game or a flood of sessions cannot take the whole server
-    pids_limit: ${CONQUER_PIDS_LIMIT:-512}
-    mem_limit: ${CONQUER_MEM_LIMIT:-1g}
+    pids_limit: 512
+    mem_limit: 1g
     restart: unless-stopped
     ports:
       - "127.0.0.1:7681:7681"  # Only bind to localhost for security
