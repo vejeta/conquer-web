@@ -140,6 +140,9 @@ if docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
     if docker exec "$CONTAINER" cat /proc/1/cmdline | tr '\0' ' ' | grep -q -- '-H X-WEBAUTH-USER' \
         && docker exec "$CONTAINER" test -x /usr/local/bin/conquer-gate; then
         echo "✅ Game container running"
+        if ! docker exec -u conquer "$CONTAINER" conqpasswd -q god >/dev/null 2>&1; then
+            echo "⚠️  The god password is not set: sudo ./set-nation-password.sh god"
+        fi
     else
         echo "❌ The game container is not the current version: run $0 --rebuild"
     fi

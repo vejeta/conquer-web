@@ -71,7 +71,7 @@ by `manage-players.sh`) and the **nation password** (asked by the game).
 | `sudo ./manage-players.sh rename NAME NEWNAME` | Renames an account; the password and the nation stay |
 | `sudo ./manage-players.sh remove NAME` | Deletes an account |
 | `sudo ./set-nation-password.sh NATION` | Sets a nation's password without the old one |
-| `sudo ./set-nation-password.sh god` | Sets the god (game administrator) password |
+| `sudo ./set-nation-password.sh god` | Sets the god (game administrator) password. The worlds of this repository come with god locked: set it right after deploying and after `new-season.sh` (both ask); `update-vps.sh` warns while it is not set. It opens every nation, so make it hard to guess |
 | `sudo ./check-web-login.sh NAME` | Gives an account a **new** generated password and tests the whole login; use it when a login fails |
 
 Nation passwords keep at most 7 characters (god needs at least 4).
@@ -123,7 +123,6 @@ directory, for example another disk.
 
 | Setting | What it does |
 |---------|--------------|
-| `CONQUER_MEM_LIMIT=1g`, `CONQUER_PIDS_LIMIT=512` | Most memory and processes the game container may use |
 | `ADMIN_CONTACT=` | Your address, shown under "How to join" on the home page and in the menu |
 | `SIGNUP=on` | Sign-up with invite codes on the site (`off` closes it) |
 

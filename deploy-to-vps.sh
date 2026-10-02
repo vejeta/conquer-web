@@ -296,6 +296,15 @@ EOF
     echo "✅ Systemd service configured"
 }
 
+# The world shipped with the image has god's password locked: set this
+# server's own (asked only while none is set)
+set_god_password() {
+    echo "🔑 The game administrator (god) password"
+    sleep 3
+    "$PROJECT_DIR/set-nation-password.sh" god --if-locked \
+        || echo "⚠️  Set it later with: sudo ./set-nation-password.sh god"
+}
+
 # Start services
 start_services() {
     echo "🚀 Starting services..."
@@ -448,6 +457,7 @@ main() {
     build_container
     setup_systemd_service
     start_services
+    set_god_password
     setup_auto_renewal
     verify_deployment
     show_summary
