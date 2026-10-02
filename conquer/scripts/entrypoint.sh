@@ -60,6 +60,12 @@ if [ "$god_uid" != "$GAME_UID" ]; then
     "$PREFIX/bin/conqowner" -d "$WORLD_DIR" -s "$GAME_UID" >/dev/null
 fi
 
+# The worlds shipped with the image have god's password locked (no
+# password opens it): each server sets its own
+if ! "$PREFIX/bin/conqpasswd" -d "$WORLD_DIR" -q god >/dev/null 2>&1; then
+    echo "[entrypoint] The god password is not set yet: run ./set-nation-password.sh god on the server"
+fi
+
 # Schedule turn updates. cron does not inherit the container environment,
 # so pass the settings the turn script needs explicitly.
 if [ "$TURN_SCHEDULE" != "off" ]; then

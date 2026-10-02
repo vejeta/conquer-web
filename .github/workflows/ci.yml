@@ -112,11 +112,17 @@ jobs:
             printf "zz12\n" | conqpasswd -d /tmp/pw sahara &&
             ! printf "abc\n" | conqpasswd -d /tmp/pw god 2>/dev/null &&
             ! printf "abcd\n" | conqpasswd -d /tmp/pw nosuchnation 2>/dev/null &&
+            conqpasswd -d /tmp/pw -q god &&
+            conqpasswd -d /tmp/pw -l god &&
+            { conqpasswd -d /tmp/pw -q god; test $? = 3; } &&
             test "$(cmp -l /opt/conquer/lib/data /tmp/pw/data | wc -l)" -gt 0'
 
       - name: Default world, owner fix and public status
         run: |
           test "$(docker exec conquer-local conqowner)" = 1000
+          # The shipped world has god locked; the server sets its own
+          docker exec conquer-local conqpasswd -q god && exit 1 || test $? = 3
+          docker logs conquer-local 2>&1 | grep -q "god password is not set"
           docker exec conquer-local conquer -s | grep -q 'Turn 1'
           test "$(curl -sk https://localhost/status/status.json | jq .turn)" = 1
           test "$(curl -sk https://localhost/status/status.json | jq -r .schedule)" = "$TURN_SCHEDULE_LABEL"

@@ -174,6 +174,14 @@ Conquer keeps at most 7 characters of a password (god needs at least 4). The
 new password works at once. God's password is also asked by `add-nation.sh`
 once the game is past turn 5.
 
+God's password opens every nation, and the game keeps only a short DES
+hash of it, which anyone could guess back from a published world. So the
+worlds in this repository (`conquer/lib`, `conquer/practice-world`) ship
+with god **locked**: no password opens it until the server sets its own.
+`deploy-to-vps.sh` and `new-season.sh` ask for it, `update-vps.sh` and the
+container log warn while it is missing, and
+`./set-nation-password.sh god --if-locked` asks only if none is set yet.
+
 ### Player accounts
 
 Players sign in to `/play/` with their own account. Apache checks it and

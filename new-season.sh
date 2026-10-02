@@ -78,3 +78,13 @@ docker exec -u root "$CONTAINER" conquer-new-world "${args[@]}"
 [ -n "$WORLD" ] && docker exec -u root "$CONTAINER" rm -f /tmp/new-world.tar.gz
 docker exec "$CONTAINER" conquer-status > /dev/null 2>&1 || true
 echo "✅ Season \"$NAME\" is in the hall of fame and the new one has begun"
+
+# The new world comes with god's password locked (or the one of the world
+# file): set this season's
+if ! docker exec -u conquer "$CONTAINER" conqpasswd -q god > /dev/null 2>&1; then
+    if [ -n "$YES" ]; then
+        echo "⚠️  The god password of the new world is not set: sudo ./set-nation-password.sh god"
+    else
+        ./set-nation-password.sh god
+    fi
+fi
