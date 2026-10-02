@@ -8,6 +8,14 @@ SPDX-License-Identifier: GPL-3.0-or-later
 A secure, web-based implementation of the classic Conquer strategy game using Docker containers, ttyd (terminal over HTTP), and Apache as a reverse proxy with SSL termination.
 
 
+## ▶️ Play now
+
+| Server | What is there |
+|--------|---------------|
+| **[conquer.vejeta.com](https://conquer.vejeta.com)** | The live game, run by the author of this project: a shared world with daily turns. [Try it](https://conquer.vejeta.com/try/) with no account (a practice world in your browser); to join, ask for an invite code at the address on the home page. In English, Spanish, German, Portuguese, Polish, Russian and Chinese. |
+
+Running your own server? Open a pull request to add it here.
+
 > **Everyday commands** for the administrator and players: [QUICK-REFERENCE.md](QUICK-REFERENCE.md).
 
 ## 🎮 Overview
