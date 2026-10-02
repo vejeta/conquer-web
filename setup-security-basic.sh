@@ -84,7 +84,7 @@ cat > /etc/apache2/conf-available/conquer-security-basic.conf << 'EOF'
 # Basic security configuration for Conquer Web
 
 # Security headers
-Header always set X-Frame-Options DENY
+Header always set X-Frame-Options SAMEORIGIN
 Header always set X-Content-Type-Options nosniff
 Header always set X-XSS-Protection "1; mode=block"
 Header always set Referrer-Policy "strict-origin-when-cross-origin"

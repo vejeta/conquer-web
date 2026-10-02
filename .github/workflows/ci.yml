@@ -1,0 +1,261 @@
+# SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: ShellCheck
+        run: shellcheck -S warning -x -P conquer/scripts ./*.sh conquer/scripts/*.sh conquer/i18n/*.sh
+
+      - name: Translations
+        run: python3 tools/check-i18n.py
+
+      - name: Tests (coach, narration, translations)
+        run: |
+          python3 -m pip install --quiet pytest
+          python3 -m pytest -m "not browser and not game"
+
+      - name: Game password check is the last <Location> in the Apache configs
+        run: |
+          for f in apache/local.conf vps/virtualhost.conf.template; do
+            awk '/<Location "\/play\/">/ { seen = 1; next }
+                 seen && /<Location/ { print FILENAME ": <Location> after /play/: " $0; bad = 1 }
+                 END { exit bad }' "$f"
+          done
+
+      - name: Dockerfile checks
+        run: |
+          docker build --check ./conquer
+          docker build --check ./apache
+
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Chromium for the browser tests
+        run: |
+          python3 -m pip install --quiet pytest playwright
+          python3 -m playwright install --with-deps chromium
+
+      - name: Tests in the browser (coach, key bar, terminal size, sign-up video)
+        run: python3 -m pytest -m browser
+
+  smoke:
+    needs: lint
+    runs-on: ubuntu-latest
+    env:
+      TTYD_USERNAME: ci
+      TTYD_PASSWORD: ci-password
+      TURN_SCHEDULE: "off"
+      TURN_SCHEDULE_LABEL: "Weekly, Sundays at 20:00 UTC"
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Prepare local environment
+        run: |
+          ./setup-local-certs.sh
+          mkdir -p data/lib data/public data/backups data/auth data/practice
+          printf '%s\n' "$TTYD_PASSWORD" | ./manage-players.sh add "$TTYD_USERNAME" --admin --password-stdin
+
+      - name: Build and start the local stack
+        run: docker compose -f docker-compose.local.yml up -d --build
+
+      - name: Wait for the game container to be healthy
+        run: |
+          for i in $(seq 1 60); do
+            status=$(docker inspect -f '{{.State.Health.Status}}' conquer-local)
+            echo "health: $status"
+            [ "$status" = healthy ] && exit 0
+            sleep 3
+          done
+          exit 1
+
+      - name: Web pages and authentication
+        run: |
+          code() { curl -sk -o /dev/null -w '%{http_code}' "$@"; }
+          test "$(code https://localhost/)" = 200
+          test "$(code https://localhost/game.html)" = 200
+          test "$(code https://localhost/play/)" = 401
+          test "$(code -u "$TTYD_USERNAME:$TTYD_PASSWORD" https://localhost/play/)" = 200
+          test "$(code -u "$TTYD_USERNAME:wrong-password" https://localhost/play/)" = 401
+          # A client-supplied identity header must not get past Apache
+          test "$(code -H "X-WEBAUTH-USER: $TTYD_USERNAME" https://localhost/play/)" = 401
+          # ttyd itself refuses requests that did not come through the proxy
+          test "$(docker exec conquer-local curl -s -o /dev/null -w '%{http_code}' http://localhost:7681/play/)" = 407
+
+      - name: No credentials in the container logs
+        run: |
+          if docker logs conquer-local 2>&1 | grep -iE "credential|$TTYD_PASSWORD"; then
+            echo "Credentials leaked to the logs" >&2
+            exit 1
+          fi
+
+      - name: Nation password tool (on a copy of the world)
+        run: |
+          docker exec -u conquer conquer-local sh -c '
+            mkdir -p /tmp/pw && cp /opt/conquer/lib/data /tmp/pw/ &&
+            printf "abcd12\n" | conqpasswd -d /tmp/pw god &&
+            printf "zz12\n" | conqpasswd -d /tmp/pw sahara &&
+            ! printf "abc\n" | conqpasswd -d /tmp/pw god 2>/dev/null &&
+            ! printf "abcd\n" | conqpasswd -d /tmp/pw nosuchnation 2>/dev/null &&
+            test "$(cmp -l /opt/conquer/lib/data /tmp/pw/data | wc -l)" -gt 0'
+
+      - name: Default world, owner fix and public status
+        run: |
+          test "$(docker exec conquer-local conqowner)" = 1000
+          docker exec conquer-local conquer -s | grep -q 'Turn 1'
+          test "$(curl -sk https://localhost/status/status.json | jq .turn)" = 1
+          test "$(curl -sk https://localhost/status/status.json | jq -r .schedule)" = "$TURN_SCHEDULE_LABEL"
+          # Readable from other sites (the website on GitHub Pages)
+          curl -skI https://localhost/status/status.json | grep -i '^access-control-allow-origin: \*'
+
+      - name: Turn update
+        run: |
+          docker exec conquer-local conquer-turn --now
+          docker exec conquer-local conquer -s | grep -q 'Turn 2'
+          test "$(curl -sk https://localhost/status/status.json | jq .turn)" = 2
+          test "$(curl -sk https://localhost/status/status.json | jq -r .turn_state.state)" = ok
+          # The newspaper of turn 1 is published. The landing page list may
+          # be empty: it leaves out the captured sectors, and a quiet first
+          # turn has no other news
+          test "$(curl -sk https://localhost/status/status.json | jq -r '.news | type')" = array
+          test "$(curl -sk -o /dev/null -w '%{http_code}' https://localhost/status/news/1.html)" = 200
+          ls data/backups/world_turn1_*.tar.gz
+
+      - name: Early turn update once every nation is done
+        run: |
+          status() { curl -sk https://localhost/status/status.json | jq -c "$1"; }
+          turn() { docker exec conquer-local conquer -s | sed -n 's/.*, Turn \([0-9]*\)$/\1/p'; }
+          game() { docker exec -u conquer conquer-local "$@"; }
+          # data/lib belongs to the game user (uid 1000), not to the runner
+          for p in p1:anorian p2:fung; do
+            printf '%s\n' player-password | sudo ./manage-players.sh add "${p%:*}" --nation "${p#*:}" --password-stdin
+          done
+          sudo ./manage-players.sh list
+          game conquer-ready mark anorian
+          game conquer-turn --if-ready
+          test "$(turn)" = 2
+          game conquer-status
+          test "$(status .ready)" = '{"done":1,"total":2,"early":true}'
+          game conquer-ready mark fung
+          game conquer-turn --if-ready
+          test "$(turn)" = 3
+          test "$(game conquer-ready count)" = "0 2"
+          test "$(status .ready.done)" = 0
+
+      - name: Practice world template
+        run: |
+          # The menu's practice world: a copy of the template, playable and
+          # with turns of its own
+          docker exec -u conquer conquer-local sh -ec '
+            rm -rf /tmp/p && cp -a /opt/conquer/practice-world /tmp/p
+            cp /opt/conquer/share/help[0-5] /tmp/p/
+            conqowner -d /tmp/p -s "$(id -u)" > /dev/null
+            conquer -d /tmp/p -s | grep -q trainee
+            conqrun -x -d /tmp/p > /dev/null
+            conquer -d /tmp/p -s | grep -q "Turn 2"'
+
+      - name: Player menu in English and Spanish
+        run: |
+          menu() { docker exec -u conquer -e TTYD_USER="$TTYD_USERNAME" conquer-local bash -c "printf q | conquer-menu $1"; }
+          menu | grep -q ') Play'
+          menu es | grep -q ') Jugar'
+          # Only a known language is taken from the browser
+          menu es-ES | grep -q ') Play'
+          docker exec conquer-local cat /proc/1/cmdline | tr '\0' ' ' | grep -q -- '--url-arg'
+
+      - name: Sign-up with an invite code
+        run: |
+          signup() { curl -sk -H 'Content-Type: application/json' -d "$1" https://localhost/join/api/signup; }
+          test "$(curl -sk https://localhost/status/status.json | jq .signup)" = true
+          code=$(sudo ./manage-players.sh invite 1 2>/dev/null)
+          # A wrong code creates nothing
+          signup '{"code":"ZZZZ-9999","account":"newbie","password":"newbie-pass"}' | jq -e '.error == "bad_code"'
+          signup "{\"code\":\"$code\",\"account\":\"$TTYD_USERNAME\",\"password\":\"newbie-pass\"}" | jq -e '.error == "account_taken"'
+          signup "{\"code\":\"$code\",\"account\":\"newbie\",\"password\":\"newbie-pass\"}" | jq -e '.ok'
+          # The code works once
+          signup "{\"code\":\"$code\",\"account\":\"newbie2\",\"password\":\"newbie-pass\"}" | jq -e '.error == "bad_code"'
+          sudo grep -qx 'newbie:+' data/lib/.players
+          ! sudo grep -q "$code" data/lib/.invites
+          # The new account signs in, and the game has it found its nation
+          test "$(curl -sk -o /dev/null -w '%{http_code}' -u newbie:newbie-pass https://localhost/play/)" = 200
+          out=$(timeout 30 docker exec -u conquer -e TTYD_USER=newbie conquer-local bash -c "printf 'xx' | conquer-menu" || true)
+          grep -q 'Found your nation' <<< "$out" || { echo "no nation builder for a new account: $out" >&2; exit 1; }
+          sudo ./manage-players.sh remove newbie
+
+      - name: The nation builder still shows the coach's screens
+        run: |
+          python3 -m pip install --quiet pytest pyte
+          python3 -m pytest -m game
+
+      - name: Game runs as an unprivileged user
+        run: |
+          test "$(docker exec conquer-local stat -c %U /proc/1)" = conquer
+          # Least privilege: no new privileges, and ttyd (pid 1) holds no capability
+          docker inspect -f '{{.HostConfig.SecurityOpt}}' conquer-local | grep -q no-new-privileges
+          test "$(docker exec conquer-local sed -n 's/^CapEff:[[:space:]]*//p' /proc/1/status)" = 0000000000000000
+          test "$(stat -c %u data/lib/data)" = 1000
+
+      - name: Scheduled turn update through cron
+        env:
+          TURN_SCHEDULE: "* * * * *"
+        run: |
+          docker compose -f docker-compose.local.yml up -d --force-recreate conquer
+          for i in $(seq 1 50); do
+            if docker logs conquer-local 2>&1 | grep -q 'Turn update completed, now turn 4'; then
+              docker logs conquer-local 2>&1 | grep '^\[turn'
+              exit 0
+            fi
+            sleep 3
+          done
+          docker logs conquer-local
+          exit 1
+
+      - name: Next turn time follows the schedule and time zone
+        env:
+          TZ: Europe/Madrid
+          TURN_SCHEDULE: "0 20 * * 0"
+          # Only the new container publishes this label; the previous one
+          # (scheduled every minute) may still rewrite the status meanwhile
+          TURN_SCHEDULE_LABEL: "Madrid schedule check"
+        run: |
+          status() { curl -sk https://localhost/status/status.json | jq -r "$1"; }
+          docker compose -f docker-compose.local.yml up -d --force-recreate conquer
+          for i in $(seq 1 30); do
+            [ "$(status .schedule)" = "$TURN_SCHEDULE_LABEL" ] && break
+            sleep 2
+          done
+          test "$(status .schedule)" = "$TURN_SCHEDULE_LABEL"
+          next=$(status .next_turn)
+          echo "next turn: $(date -d "@$next")"
+          # Sunday (7) at 20:00 Madrid time
+          test "$(date -d "@$next" +%u-%H:%M)" = "7-20:00"
+
+      - name: A new season keeps the accounts and starts a new world
+        run: |
+          test "$(docker exec -u conquer conquer-local conquer -s | sed -n 's/.*, Turn //p')" != 1
+          sudo ./manage-players.sh assign "$TTYD_USERNAME" fung
+          sudo ./new-season.sh "Season CI" --yes
+          test "$(docker exec -u conquer conquer-local conquer -s | sed -n 's/.*, Turn //p')" = 1
+          sudo grep -qx "$TTYD_USERNAME:+" data/lib/.players
+          ! sudo grep -v ':[+*]$' data/lib/.players
+          curl -sk https://localhost/status/seasons/index.json | jq -e '.[0].name == "Season CI"'
+          sudo sh -c 'ls backups/season-end-*/world.tgz'
+
+      - name: Container logs
+        if: always()
+        run: docker compose -f docker-compose.local.yml logs --no-color

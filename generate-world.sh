@@ -67,7 +67,8 @@ backup_existing_world() {
         local backup_dir="$SCRIPT_DIR/backups"
         mkdir -p "$backup_dir"
 
-        local timestamp=$(date +%Y%m%d_%H%M%S)
+        local timestamp
+        timestamp=$(date +%Y%m%d_%H%M%S)
         local backup_file="$backup_dir/world_backup_$timestamp.tar.gz"
 
         cd "$SCRIPT_DIR"
@@ -114,7 +115,11 @@ generate_world() {
     echo "  - Configure game rules"
     echo ""
     echo "💡 Tips:"
-    echo "  - Start with a small world (10-20 nations) for testing"
+    echo "  - Map size must be at most 256x256 (the engine stores coordinates"
+    echo "    in 8 bits; larger maps misplace armies). For about 15 players:"
+    echo "    112x112 with 60% water and 7 computer nations (the shipped world)"
+    echo "  - At most 35 nations in all: every computer nation in lib/nations"
+    echo "    takes a player's place"
     echo "  - Press Ctrl+C to exit if you need to restart"
     echo "  - The process will create lib/ directory with world data"
     echo ""
@@ -188,7 +193,7 @@ install_world() {
     mkdir -p "$DOCKER_LIB_DIR"
 
     # Remove old world data
-    rm -rf "$DOCKER_LIB_DIR"/*
+    rm -rf "${DOCKER_LIB_DIR:?}"/*
     rm -f "$DOCKER_LIB_DIR/.*" 2>/dev/null || true
 
     # Copy new world data
@@ -213,12 +218,14 @@ show_world_info() {
     echo "===================="
 
     if [ -f "$DOCKER_LIB_DIR/nations" ]; then
-        local nation_count=$(wc -l < "$DOCKER_LIB_DIR/nations" 2>/dev/null || echo "unknown")
+        local nation_count
+        nation_count=$(wc -l < "$DOCKER_LIB_DIR/nations" 2>/dev/null || echo "unknown")
         echo "Nations: $nation_count"
     fi
 
     if [ -f "$DOCKER_LIB_DIR/data" ]; then
-        local data_size=$(du -h "$DOCKER_LIB_DIR/data" 2>/dev/null | cut -f1 || echo "unknown")
+        local data_size
+        data_size=$(du -h "$DOCKER_LIB_DIR/data" 2>/dev/null | cut -f1 || echo "unknown")
         echo "World data size: $data_size"
     fi
 
@@ -226,7 +233,7 @@ show_world_info() {
     echo ""
 
     echo "📋 Files created:"
-    ls -la "$DOCKER_LIB_DIR" | grep -E '\.(data|nations|userlog|help|mesg|exec|news|rules)|\.$' || true
+    ls -la "$DOCKER_LIB_DIR"
 }
 
 # Main execution
@@ -262,9 +269,11 @@ main() {
         echo "🎉 World generation complete!"
         echo ""
         echo "📋 Next steps:"
-        echo "  1. Rebuild Docker containers: ./rebuild.sh --force"
-        echo "  2. Start the game: ./start-local.sh"
-        echo "  3. Access at: https://conquer.local"
+        echo "  The new world is the default world shipped in the image (conquer/lib)."
+        echo "  The running game keeps its own copy in data/lib, so to switch to it:"
+        echo "  1. Backup the current game: ./backup-world.sh"
+        echo "  2. Remove the live world:   rm -rf data/lib"
+        echo "  3. Rebuild and start:       ./rebuild.sh --force"
         echo ""
         echo "💾 To backup this world later: ./backup-world.sh"
     else

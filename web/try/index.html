@@ -1,0 +1,313 @@
+<!doctype html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Try Conquer</title>
+  <meta name="description" content="Play Conquer, the 1987 Usenet strategy game, right now in your browser: no account, nothing to install. A private practice world that runs on your own device.">
+  <meta property="og:title" content="Try Conquer in your browser">
+  <meta property="og:description" content="The 1987 Usenet strategy game, compiled to WebAssembly. No account, nothing to install.">
+  <link rel="stylesheet" href="../vendor/xterm/xterm.css">
+  <style>
+    :root { --bg: #1c1c1c; --bar: #161b22; --key: #30363d; --accent: #3fb950; --text: #e6edf3; --muted: #8b949e; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text); }
+    body { display: flex; flex-direction: column; height: 100dvh; font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    .top { display: flex; gap: 10px; align-items: center; padding: 6px 10px; background: var(--bar); flex-wrap: wrap; }
+    .top a { color: var(--muted); text-decoration: none; }
+    .top .title { font: 700 13px ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: 0.2em; color: var(--accent); }
+    .top .note { color: var(--muted); font-size: 12px; }
+    .top .spacer { flex: 1; }
+    .moves-panel { position: fixed; inset: 0; z-index: 20; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; padding: 12px; }
+    .moves-panel[hidden] { display: none; }
+    .moves-panel .card { --bg: #0d1117; --panel: #161b22; --border: #30363d; background: #0d1117; border: 1px solid var(--key); border-radius: 12px; padding: 18px 20px; max-width: 760px; max-height: 100%; overflow: auto; box-sizing: border-box; }
+    .moves-panel .ok { margin-top: 14px; }
+    button {
+      min-width: 40px; height: 32px; padding: 0 10px; border: 0; border-radius: 6px;
+      background: var(--key); color: var(--text); font: 600 13px system-ui, sans-serif; cursor: pointer; touch-action: manipulation;
+    }
+    button:active { background: var(--accent); color: #0d1117; }
+    button.primary { background: var(--accent); color: #0d1117; }
+    .stage { flex: 1; display: flex; min-height: 0; }
+    #terminal { flex: 1; min-height: 0; min-width: 0; padding: 6px; }
+    /* Coach: step-by-step help next to the terminal (below it on phones) */
+    .coach {
+      width: 330px; flex: none; overflow-y: auto; padding: 14px 16px;
+      background: var(--bar); border-left: 1px solid var(--key);
+      font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    .coach .head { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .coach .bar { height: 3px; background: var(--key); border-radius: 2px; margin: 8px 0 12px; }
+    .coach .bar span { display: block; height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; }
+    .coach h2 { font-size: 17px; margin: 0 0 8px; line-height: 1.3; }
+    .coach p, .coach ul { margin: 0 0 10px; }
+    .coach ul { padding-left: 1.1em; }
+    .coach code, .coach pre { font: 13px ui-monospace, "DejaVu Sans Mono", monospace; }
+    .coach pre { background: var(--bg); padding: 4px 10px; border-radius: 6px; display: inline-block; }
+    .coach kbd { font: 600 12px ui-monospace, monospace; border: 1px solid var(--key); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
+    .coach .rule { border-left: 3px solid #d29922; padding-left: 10px; color: var(--muted); }
+    .coach .press { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 12px; align-items: center; }
+    .coach .press span { color: var(--muted); font-size: 12px; margin-right: 2px; }
+    .coach .press button { background: #0f2417; color: var(--accent); border: 1px solid var(--accent); }
+    .coach .press .typed { font-style: italic; color: var(--muted); font: italic 13px system-ui, sans-serif; }
+    .coach .nav { display: flex; gap: 8px; }
+    .coach .nav button { font: 13px system-ui, sans-serif; height: 30px; }
+    .coach .auto { color: var(--muted); font-size: 12px; margin-top: 10px; }
+    .coach .close { background: none; min-width: 0; padding: 0 4px; color: var(--muted); font: 16px system-ui, sans-serif; height: 22px; }
+    @media (max-width: 800px) {
+      .stage { flex-direction: column; }
+      .coach { width: auto; max-height: 38vh; border-left: 0; border-top: 1px solid var(--key); padding: 10px 14px; }
+    }
+
+    .keys { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); background: var(--bar); }
+    .keys button { font-family: ui-monospace, "DejaVu Sans Mono", monospace; }
+    .pad { display: grid; grid-template-columns: repeat(3, 40px); gap: 4px; }
+    .pad button { font-size: 1.25em; }
+    .pad small { font-size: 0.55em; opacity: 0.65; margin-left: 2px; }
+    .group { display: flex; flex-wrap: wrap; gap: 6px; max-width: 330px; justify-content: center; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="moves-panel" id="moves-panel" hidden role="dialog" aria-modal="true">
+    <div class="card"><div data-moves></div><button class="ok" id="moves-ok" type="button" data-i18n="try.moves_ok">Got it</button></div>
+  </div>
+  <div class="top">
+    <a href="../">&larr;</a>
+    <span class="title">CONQUER</span>
+    <span class="note" id="note" data-i18n="try.note">Practice world on your device · nation <b>trainee</b>, password <b>train1</b></span>
+    <span class="spacer"></span>
+    <button id="coach-toggle" type="button" aria-controls="coach" aria-expanded="false" title="Step-by-step help for your first turn" data-i18n-title="coach.toggle_title">Coach</button>
+    <button id="turn" type="button" title="Run the turn update of your practice world" data-i18n-title="try.turn_title" data-i18n="try.turn" hidden>Next turn</button>
+    <button id="reset" type="button" title="Delete your practice world and start again" data-i18n-title="try.reset_title" data-i18n="try.reset">Start over</button>
+    <button id="moves-toggle" type="button" aria-controls="moves-panel" data-i18n="try.moves">How to move</button>
+    <button id="toggle-keys" type="button" data-i18n="try.toggle_keys">Keys</button>
+  </div>
+  <div class="stage">
+    <div id="terminal"></div>
+    <aside class="coach" id="coach" hidden aria-live="polite">
+      <div class="head"><span id="coach-count"></span><button class="close" id="coach-close" type="button" title="Close the coach" data-i18n-title="coach.close_title">&times;</button></div>
+      <div class="bar"><span id="coach-progress"></span></div>
+      <h2 id="coach-title"></h2>
+      <div class="press" id="coach-keys"></div>
+      <div id="coach-text"></div>
+      <div class="nav">
+        <button id="coach-back" type="button" data-i18n="coach.back">Back</button>
+        <button id="coach-next" type="button">Next</button>
+      </div>
+      <p class="auto" data-i18n="coach.auto">The coach moves on by itself when the game shows the next screen. Tap a key above to press it.</p>
+    </aside>
+  </div>
+  <div class="keys" id="keys" hidden>
+    <div class="pad">
+      <button data-key="y">↖<small>y</small></button><button data-key="k">↑<small>k</small></button><button data-key="u">↗<small>u</small></button>
+      <button data-key="h">←<small>h</small></button><button data-key="p">p</button><button data-key="l">→<small>l</small></button>
+      <button data-key="b">↙<small>b</small></button><button data-key="j">↓<small>j</small></button><button data-key="n">↘<small>n</small></button>
+    </div>
+    <div class="group">
+      <button data-key="\x1b">Esc</button><button data-key="\r">Enter</button><button data-key=" " data-i18n="try.key_space">Space</button>
+      <button data-key="\x7f">&#9003;</button><button data-key="?">?</button><button data-key="m">m</button>
+      <button data-key="a">a</button><button data-key="q">q</button>
+    </div>
+  </div>
+
+<script src="../vendor/xterm/xterm.js"></script>
+<script src="../vendor/xterm/addon-fit.js"></script>
+<script src="conquer.js"></script>
+<script src="conqrun.js"></script>
+<script src="../site.js"></script>
+<script src="../coach.js"></script>
+<script src="../arrows.js"></script>
+<script src="../moves.js"></script>
+<script>
+  (function () {
+    // The world lives in the browser (IndexedDB), under /conquer/lib, where
+    // the game was compiled to look for it
+    var LIB = '/conquer/lib';
+    var NATION = 'trainee';
+
+    // Texts: i18n/<language>.json, "try" (site.js). {b} bold, {d} dim,
+    // {g} green, {r} back to normal
+    var ANSI = { b: '\x1b[1m', d: '\x1b[2m', g: '\x1b[32m', r: '\x1b[0m' };
+    function T(key) { return conquerI18n.t('try.' + key, ANSI).replace(/\n/g, '\r\n'); }
+
+    var term = new Terminal({ cols: 80, rows: 24, fontSize: 16, cursorBlink: true,
+      fontFamily: 'ui-monospace, "DejaVu Sans Mono", Menlo, monospace',
+      theme: { background: '#1c1c1c', foreground: '#d7d7d7' } });
+    var fit = new FitAddon.FitAddon();
+    term.loadAddon(fit);
+    term.open(document.getElementById('terminal'));
+    window.term = term;
+
+    // Conquer needs 80x24: shrink the font until the terminal fits it
+    function fitScreen() {
+      var size = 18;
+      term.options.fontSize = size;
+      var dims = fit.proposeDimensions();
+      while (dims && (dims.cols < 80 || dims.rows < 24) && size > 7) {
+        term.options.fontSize = --size;
+        dims = fit.proposeDimensions();
+      }
+      term.resize(80, 24);
+    }
+    window.addEventListener('resize', fitScreen);
+    fitScreen();
+
+    var running = null;       // the module that has the keyboard
+    var keysBar = document.getElementById('keys');
+    function send(data) {
+      if (!running) { if (data === ' ' || data === '\r') start(); return; }
+      for (var i = 0; i < data.length; i++) running.conquerKeys.push(data.charCodeAt(i));
+    }
+    term.onData(send);
+    conquerArrows(term, send);
+    keysBar.addEventListener('click', function (ev) {
+      var b = ev.target.closest('button[data-key]');
+      if (!b) return;
+      send(b.getAttribute('data-key').replace(/\\x([0-9a-f]{2})/gi, function (_, h) { return String.fromCharCode(parseInt(h, 16)); }).replace(/\\r/g, '\r'));
+      term.focus();
+    });
+    document.getElementById('toggle-keys').addEventListener('click', function () {
+      keysBar.hidden = !keysBar.hidden;
+      setTimeout(fitScreen, 50);
+    });
+    if (window.matchMedia('(pointer: coarse)').matches) keysBar.hidden = false;
+
+    // Output of the game goes straight to the terminal (newline -> CR LF
+    // outside the game screen, which positions the cursor itself)
+    function output(c) {
+      term.write(c === 10 ? '\r\n' : String.fromCharCode(c));
+    }
+
+    var seed = null;
+    function fetchSeed() {
+      if (seed) return Promise.resolve(seed);
+      return fetch('world/files.json').then(function (r) { return r.json(); }).then(function (names) {
+        return Promise.all(names.filter(function (f) { return f !== 'files.json'; }).map(function (f) {
+        return fetch('world/' + f).then(function (r) {
+          if (!r.ok) throw new Error(f);
+          return r.arrayBuffer();
+        }).then(function (b) { return [f, new Uint8Array(b)]; });
+      }));
+      }).then(function (files) { seed = files; return files; });
+    }
+
+    // Mount the saved world (IndexedDB) and plant the practice world the
+    // first time
+    function prepare(M, fresh) {
+      return new Promise(function (resolve, reject) {
+        M.FS.mkdir('/conquer'); M.FS.mkdir(LIB); M.FS.mkdir('/conquer/bin');
+        M.FS.mount(M.IDBFS, {}, LIB);
+        M.FS.syncfs(true, function (err) {
+          if (err) return reject(err);
+          var have = false;
+          try { M.FS.stat(LIB + '/data'); have = true; } catch (e) {}
+          if (have && !fresh) return resolve();
+          fetchSeed().then(function (files) {
+            M.FS.readdir(LIB).forEach(function (f) { if (f !== '.' && f !== '..') M.FS.unlink(LIB + '/' + f); });
+            files.forEach(function (f) { M.FS.writeFile(LIB + '/' + f[0], f[1]); });
+            M.FS.writeFile(LIB + '/.userlog', '');
+            M.FS.syncfs(false, function (e) { e ? reject(e) : resolve(); });
+          }, reject);
+        });
+      });
+    }
+
+    function save(M) {
+      return new Promise(function (resolve) { M.FS.syncfs(false, function () { resolve(); }); });
+    }
+
+    function launch(factory, args, fresh) {
+      var M;
+      return new Promise(function (done) {
+        factory({
+          conquerKeys: [],
+          noExitRuntime: false,
+          preRun: [function (mod) { mod.FS.init(null, output, output); }],
+          onExit: function () { save(M).then(done); },
+          print: function (s) { term.write(s + '\r\n'); },
+          printErr: function (s) { term.write(s + '\r\n'); }
+        }).then(function (mod) {
+          M = mod;
+          return prepare(M, fresh);
+        }).then(function () {
+          running = M;
+          M.callMain(args);
+        }).catch(function (e) {
+          term.write('\r\n\x1b[31m' + T('failed') + ' ' + e + '\x1b[0m\r\n');
+          done();
+        });
+      }).then(function () { running = null; });
+    }
+
+    function menu(message) {
+      term.write('\x1b[0m\x1b[H\x1b[2J');
+      term.write('\r\n  \x1b[1;32mConquer\x1b[0m  \x1b[2m' + T('subtitle') + '\x1b[0m\r\n\r\n');
+      if (message) term.write('  ' + message + '\r\n\r\n');
+      term.write(T('intro'));
+      document.getElementById('turn').hidden = false;
+      // Keys go to the game, not to the button that was just pressed
+      if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+      term.focus();
+    }
+
+    // How to move (moves.js): opened by itself the first time a game starts
+    var movesPanel = document.getElementById('moves-panel');
+    function showMoves(show) {
+      movesPanel.hidden = !show;
+      if (show) { movesPanel.querySelector('.card').scrollTop = 0; document.getElementById('moves-ok').focus({ preventScroll: true }); }
+      else term.focus();
+    }
+    document.getElementById('moves-toggle').addEventListener('click', function () { showMoves(true); });
+    document.getElementById('moves-ok').addEventListener('click', function () { showMoves(false); });
+    movesPanel.addEventListener('click', function (e) { if (e.target === movesPanel) showMoves(false); });
+    movesPanel.addEventListener('keydown', function (e) { if (e.key === 'Escape') showMoves(false); });
+
+    function start() {
+      if (running) return;
+      var seen = false;
+      try { seen = localStorage.getItem('conquer-moves-seen') === '1'; localStorage.setItem('conquer-moves-seen', '1'); } catch (e) {}
+      if (!seen) setTimeout(function () { showMoves(true); }, 800);
+      term.focus();
+      term.write('\x1b[H\x1b[2J');
+      launch(createConquer, ['-n', NATION]).then(function () { menu(T('saved')); });
+    }
+
+    document.getElementById('turn').addEventListener('click', function () {
+      if (running) return;
+      term.write('\x1b[0m\x1b[H\x1b[2J  ' + T('running') + '\r\n\r\n');
+      launch(createConqrun, ['-x']).then(function () { menu(T('new_turn')); });
+    });
+
+    // Two taps, so a stray one does not delete the world
+    var resetButton = document.getElementById('reset'), armed = null;
+    resetButton.addEventListener('click', function () {
+      if (running) return;
+      if (!armed) {
+        resetButton.textContent = T('confirm');
+        armed = setTimeout(function () { armed = null; resetButton.textContent = T('reset'); }, 4000);
+        return;
+      }
+      clearTimeout(armed); armed = null; resetButton.textContent = T('reset');
+      term.write('\x1b[H\x1b[2J  ' + T('starting') + '\r\n');
+      createConquer({ noExitRuntime: true, preRun: [function (mod) { mod.FS.init(null, output, output); }] })
+        .then(function (M) { return prepare(M, true); })
+        .then(function () { menu(T('ready')); });
+    });
+
+    // The coach of the tutorial, next to the terminal
+    conquerCoach(function () { return term; }, fitScreen, '../tutorial/first-turn.json');
+
+    conquerI18n.ready().then(function () {
+      document.title = T('title');
+      menu();
+      term.focus();
+    });
+  })();
+</script>
+</body>
+</html>

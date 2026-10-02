@@ -8,23 +8,62 @@ services:
   conquer:
     build:
       context: ./conquer
+      args:
+        # uid of the unprivileged game user; match the host user that owns
+        # data/ so the backup scripts can read it without sudo
+        CONQUER_UID: ${CONQUER_UID:-1000}
     container_name: conquer-vps
     environment:
-      - TTYD_USERNAME=${TTYD_USERNAME:-user}
-      - TTYD_PASSWORD=${TTYD_PASSWORD:-changeme}
       - MAX_CLIENTS=${MAX_CLIENTS:-5}
       - SESSION_TIMEOUT=${SESSION_TIMEOUT:-1800}
+      - TTYD_FONT_SIZE=${TTYD_FONT_SIZE:-16}
+      - TZ=${TZ:-UTC}
+      - TURN_SCHEDULE=${TURN_SCHEDULE:-0 20 * * 0}
+      - TURN_SCHEDULE_LABEL=${TURN_SCHEDULE_LABEL:-}
+      - TURN_RETRY_MINUTES=${TURN_RETRY_MINUTES:-10}
+      - TURN_MAX_RETRIES=${TURN_MAX_RETRIES:-18}
+      - TURN_GRACE_MINUTES=${TURN_GRACE_MINUTES:-5}
+      - TURN_BACKUPS=${TURN_BACKUPS:-10}
+      - TURN_WEBHOOK_URL=${TURN_WEBHOOK_URL:-}
+      - TURN_EARLY=${TURN_EARLY:-on}
+      - SIGNUP=${SIGNUP:-on}
+      - ADMIN_CONTACT=${ADMIN_CONTACT:-}
+    volumes:
+      # Live world data: persists across rebuilds, seeded on first start
+      - ./data/lib:/opt/conquer/lib
+      # Automatic world backups taken before every turn update
+      - ./data/backups:/opt/conquer/backups
+      # Players' private practice worlds
+      - ./data/practice:/opt/conquer/practice
+      # Player accounts (the file host Apache checks), written when players
+      # join with an invite code
+      - ${HTPASSWD_FILE:-/etc/apache2/conquer-web.htpasswd}:/opt/conquer/auth/htpasswd
+      # Public game status (status.json) served by Apache under /status/
+      - ${STATUS_DIR:-./data/public}:/opt/conquer/public
+    # Least privilege: the entrypoint runs as root only to fix the volumes'
+    # owners, set up cron and drop to the game user (setpriv); the game,
+    # ttyd and the sign-up service never hold these capabilities
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETUID
+      - SETGID
+      - KILL
+      - AUDIT_WRITE
+    security_opt:
+      - no-new-privileges:true
+    # A runaway game or a flood of sessions cannot take the whole server
+    pids_limit: ${CONQUER_PIDS_LIMIT:-512}
+    mem_limit: ${CONQUER_MEM_LIMIT:-1g}
     restart: unless-stopped
     ports:
       - "127.0.0.1:7681:7681"  # Only bind to localhost for security
+      - "127.0.0.1:7682:7682"  # Sign-up service, for Apache only
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7681"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s

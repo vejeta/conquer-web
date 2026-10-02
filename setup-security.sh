@@ -78,6 +78,8 @@ cat > /etc/fail2ban/filter.d/ttyd-auth.conf << 'EOF'
 
 [Definition]
 failregex = ^.* \[client <HOST>:\d+\] client sent HTTP code 401.*
+            ^.* \[client <HOST>:\d+\] AH01617: user .*: authentication failure.*
+            ^.* \[client <HOST>:\d+\] AH01618: user .* not found.*
             ^.* \[client <HOST>:\d+\] AH01797: client denied by server configuration.*
             ^.* \[client <HOST>:\d+\] AH01630: client denied by server configuration.*
 

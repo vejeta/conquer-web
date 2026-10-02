@@ -1,0 +1,322 @@
+<!doctype html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Conquer</title>
+  <style>
+    :root {
+      --bg: #1e1e1e;
+      --bar: #161b22;
+      --key: #30363d;
+      --key-active: #3fb950;
+      --text: #e6edf3;
+      --muted: #8b949e;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text); }
+    body {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      font: 14px/1.2 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    .stage { flex: 1; display: flex; min-height: 0; }
+    iframe { flex: 1; width: 100%; border: 0; display: block; min-height: 0; min-width: 0; }
+    /* Coach: step-by-step help next to the terminal (below it on phones) */
+    .coach {
+      width: 330px; flex: none; overflow-y: auto; padding: 14px 16px;
+      background: var(--bar); border-left: 1px solid var(--key);
+      font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    .coach .head { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .coach .bar { height: 3px; background: var(--key); border-radius: 2px; margin: 8px 0 12px; }
+    .coach .bar span { display: block; height: 100%; background: var(--key-active); border-radius: 2px; transition: width 0.3s; }
+    .coach h2 { font-size: 17px; margin: 0 0 8px; line-height: 1.3; }
+    .coach p, .coach ul { margin: 0 0 10px; }
+    .coach ul { padding-left: 1.1em; }
+    .coach code, .coach pre { font: 13px ui-monospace, "DejaVu Sans Mono", monospace; }
+    .coach pre { background: var(--bg); padding: 4px 10px; border-radius: 6px; display: inline-block; }
+    .coach kbd { font: 600 12px ui-monospace, monospace; border: 1px solid var(--key); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
+    .coach .rule { border-left: 3px solid #d29922; padding-left: 10px; color: var(--muted); }
+    .coach .press { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 12px; align-items: center; }
+    .coach .press span { color: var(--muted); font-size: 12px; margin-right: 2px; }
+    .coach .press button { background: #0f2417; color: var(--key-active); border: 1px solid var(--key-active); }
+    .coach .press .typed { font-style: italic; color: var(--muted); font: italic 13px system-ui, sans-serif; }
+    .coach .nav { display: flex; gap: 8px; }
+    .coach .nav button { font: 13px system-ui, sans-serif; height: 30px; }
+    .coach .auto { color: var(--muted); font-size: 12px; margin-top: 10px; }
+    .coach .close { background: none; min-width: 0; padding: 0 4px; color: var(--muted); font: 16px system-ui, sans-serif; height: 22px; }
+    @media (max-width: 800px) {
+      .stage { flex-direction: column; }
+      .coach { width: auto; max-height: 38vh; border-left: 0; border-top: 1px solid var(--key); padding: 10px 14px; }
+    }
+    .top {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 4px 8px;
+      background: var(--bar);
+    }
+    .top a { color: var(--muted); text-decoration: none; }
+    .top .spacer { flex: 1; }
+    .keys {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      align-items: center;
+      padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+      background: var(--bar);
+    }
+    .pad { display: grid; grid-template-columns: repeat(3, 40px); gap: 4px; }
+    .pad button { font-size: 1.25em; }
+    .pad small { font-size: 0.55em; opacity: 0.65; margin-left: 2px; }
+    .group { display: flex; flex-wrap: wrap; gap: 6px; max-width: 330px; justify-content: center; }
+    button {
+      min-width: 40px;
+      height: 36px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 6px;
+      background: var(--key);
+      color: var(--text);
+      font: 600 14px ui-monospace, "DejaVu Sans Mono", monospace;
+      touch-action: manipulation;
+      cursor: pointer;
+    }
+    button:active { background: var(--key-active); color: #0d1117; }
+    .top button { height: 28px; font: 13px system-ui, sans-serif; }
+    [hidden] { display: none !important; }
+    /* Phones in landscape: keys in a side column so the terminal keeps its height */
+    @media (orientation: landscape) and (max-height: 500px) {
+      body {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto 1fr;
+      }
+      .top { grid-column: 1 / 3; padding: 2px 8px; }
+      .stage { grid-column: 1; grid-row: 2; height: 100%; min-height: 0; }
+      .coach { width: 260px; max-height: none; border-top: 0; border-left: 1px solid var(--key); }
+      .stage { flex-direction: row; }
+      .keys {
+        grid-column: 2;
+        grid-row: 2;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-y: auto;
+        padding: 6px calc(6px + env(safe-area-inset-right)) 6px 6px;
+      }
+      .pad { grid-template-columns: repeat(3, 36px); }
+      .group { max-width: 120px; gap: 4px; }
+      button { min-width: 36px; height: 30px; padding: 0 6px; font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <a href="./" id="home">&larr; Conquer</a>
+    <span class="spacer"></span>
+    <button id="coach-toggle" type="button" aria-controls="coach" aria-expanded="false" title="Step-by-step help for your first turn" data-i18n-title="coach.toggle_title">Coach</button>
+    <button id="keyboard" type="button" title="Show the device keyboard" data-i18n-title="game.keyboard_title" data-i18n="game.keyboard">Keyboard</button>
+    <button id="toggle" type="button" aria-controls="keys" aria-expanded="false" data-i18n="game.toggle">Keys</button>
+  </div>
+
+  <div class="stage">
+    <iframe id="game" title="Conquer game terminal" data-i18n-title="game.game_title"></iframe>
+    <aside class="coach" id="coach" hidden aria-live="polite">
+      <div class="head"><span id="coach-count"></span><button class="close" id="coach-close" type="button" title="Close the coach" data-i18n-title="coach.close_title">&times;</button></div>
+      <div class="bar"><span id="coach-progress"></span></div>
+      <h2 id="coach-title"></h2>
+      <div class="press" id="coach-keys"></div>
+      <div id="coach-text"></div>
+      <div class="nav">
+        <button id="coach-back" type="button" data-i18n="coach.back">Back</button>
+        <button id="coach-next" type="button">Next</button>
+      </div>
+      <p class="auto" data-i18n="coach.auto">The coach moves on by itself when the game shows the next screen. Tap a key above to press it.</p>
+    </aside>
+  </div>
+
+  <div class="keys" id="keys" hidden>
+    <!-- While the game's nation builder is on screen: its own keys -->
+    <div class="group builder" id="builder-keys" hidden>
+      <button data-key="k" title="Up" data-i18n-title="game.key_up_title">k &uarr;</button>
+      <button data-key="j" title="Down" data-i18n-title="game.key_down_title">j &darr;</button>
+      <button data-key=" " title="Buy one more" data-i18n-title="game.key_buy_title" data-i18n="game.key_space">Space</button>
+      <button data-key="h" title="Switch to adding" data-i18n-title="game.key_add_title">h +</button>
+      <button data-key="l" title="Switch to taking back" data-i18n-title="game.key_sub_title">l &minus;</button>
+      <button data-key="?" title="Explain the line" data-i18n-title="game.key_info_title">?</button>
+      <button data-key="\x1b" title="Escape">Esc</button>
+      <button data-key="\r" title="Enter">Enter</button>
+      <button data-key="\x7f" title="Backspace" data-i18n-title="game.key_backspace_title">&#9003;</button>
+      <button data-key="y">y</button>
+      <button data-key="n">n</button>
+    </div>
+    <div class="pad" aria-label="Move">
+      <button data-key="y" title="Move north-west" data-i18n-title="game.key_nw_title">↖<small>y</small></button>
+      <button data-key="k" title="Move north" data-i18n-title="game.key_n_title">↑<small>k</small></button>
+      <button data-key="u" title="Move north-east" data-i18n-title="game.key_ne_title">↗<small>u</small></button>
+      <button data-key="h" title="Move west" data-i18n-title="game.key_w_title">←<small>h</small></button>
+      <button data-key="p" title="Pick next unit" data-i18n-title="game.key_pick_title">p</button>
+      <button data-key="l" title="Move east" data-i18n-title="game.key_e_title">→<small>l</small></button>
+      <button data-key="b" title="Move south-west" data-i18n-title="game.key_sw_title">↙<small>b</small></button>
+      <button data-key="j" title="Move south" data-i18n-title="game.key_s_title">↓<small>j</small></button>
+      <button data-key="n" title="Move south-east" data-i18n-title="game.key_se_title">↘<small>n</small></button>
+    </div>
+    <div class="group">
+      <button data-key="\x1b" title="Escape">Esc</button>
+      <button data-key="\r" title="Enter">Enter</button>
+      <button data-key=" " title="Space" data-i18n-title="game.key_space_title" data-i18n="game.key_space">Space</button>
+      <button data-key="\x7f" title="Backspace" data-i18n-title="game.key_backspace_title">&#9003;</button>
+      <button data-key="\x0c" title="Redraw the screen (Ctrl-L)" data-i18n-title="game.key_redraw_title" data-i18n="game.key_redraw">Redraw</button>
+      <button data-key="?" title="Help" data-i18n-title="game.key_help_title">?</button>
+      <button data-key="m" title="Move selected unit" data-i18n-title="game.key_move_title">m</button>
+      <button data-key="a" title="Army report" data-i18n-title="game.key_army_title">a</button>
+      <button data-key="q" title="Quit the game" data-i18n-title="game.key_quit_title">q</button>
+    </div>
+  </div>
+
+<script src="server.js"></script>
+<script src="site.js"></script>
+<script src="coach.js"></script>
+<script src="arrows.js"></script>
+<script src="moves.js"></script>
+<script>
+  (function () {
+    var frame = document.getElementById('game');
+    var keys = document.getElementById('keys');
+    var toggle = document.getElementById('toggle');
+    var STORE = 'conquer-keybar';
+
+    // The terminal menu speaks the language of the pages: ttyd passes the
+    // "arg" parameter to it (ttyd --url-arg)
+    frame.src = '/play/?arg=' + conquerLang();
+
+    // ttyd exposes the xterm.js instance as window.term in the same-origin frame
+    function term() {
+      try { return frame.contentWindow.term || null; } catch (e) { return null; }
+    }
+
+    function decode(s) {
+      return s.replace(/\\x([0-9a-f]{2})/gi, function (_, h) { return String.fromCharCode(parseInt(h, 16)); })
+              .replace(/\\r/g, '\r');
+    }
+
+    // Conquer needs an 80x24 screen: on small screens shrink the font until
+    // the terminal fits it (down to a minimum size). ttyd applies its own
+    // font size once connected, so treat any size we did not set as the base.
+    // Once the game is on screen, never try a size that would make the
+    // terminal smaller than 80x24, even for a moment: what the game draws
+    // meanwhile would be cut. The size is worked out from the last fit
+    // instead (columns and rows go with the frame's size over the font size).
+    var MIN_COLS = 80, MIN_ROWS = 24, MIN_FONT = 7;
+    function fitColumns() {
+      var t = term();
+      if (!t || !t.fit || !t.options) return;
+      if (t.options.fontSize !== t._conquerSet) {
+        t._conquerBase = t.options.fontSize;
+        t._conquerLast = null;
+      }
+      var w = frame.clientWidth, h = frame.clientHeight, last = t._conquerLast;
+      // ttyd fits the terminal itself when its window changes: start from that
+      if (last && (t.cols !== last.cols || t.rows !== last.rows)) {
+        last = { size: t.options.fontSize, cols: t.cols, rows: t.rows, w: w, h: h };
+      }
+      if (last && last.w === w && last.h === h && t.cols >= MIN_COLS && t.rows >= MIN_ROWS) return;
+      var size = t._conquerBase;
+      if (last) {
+        // (with a margin: character cells round to whole pixels)
+        var fits = function (f) {
+          return last.cols * last.size / f * w / last.w >= MIN_COLS * 1.05 &&
+                 last.rows * last.size / f * h / last.h >= MIN_ROWS * 1.05;
+        };
+        while (size > MIN_FONT && !fits(size)) size--;
+      }
+      t.options.fontSize = size;
+      t.fit();
+      while ((t.cols < MIN_COLS || t.rows < MIN_ROWS) && t.options.fontSize > MIN_FONT) {
+        t.options.fontSize = t.options.fontSize - 1;
+        t.fit();
+      }
+      t._conquerSet = t.options.fontSize;
+      t._conquerLast = { size: t.options.fontSize, cols: t.cols, rows: t.rows, w: w, h: h };
+    }
+
+    function showKeys(show) {
+      keys.hidden = !show;
+      toggle.setAttribute('aria-expanded', String(show));
+      try { localStorage.setItem(STORE, show ? '1' : '0'); } catch (e) {}
+      // let the terminal re-fit to the new height
+      setTimeout(fitColumns, 50);
+    }
+
+    var saved = null;
+    try { saved = localStorage.getItem(STORE); } catch (e) {}
+    // Show the key bar by default on touch devices only
+    showKeys(saved !== null ? saved === '1' : window.matchMedia('(pointer: coarse)').matches);
+
+    toggle.addEventListener('click', function () { showKeys(keys.hidden); });
+
+    document.getElementById('keyboard').addEventListener('click', function () {
+      var t = term();
+      if (t) t.focus();
+    });
+
+    keys.addEventListener('click', function (ev) {
+      var btn = ev.target.closest('button[data-key]');
+      var t = term();
+      if (!btn || !t) return;
+      t.input(decode(btn.getAttribute('data-key')), true);
+    });
+
+    // Keep the terminal sized to the frame when the window changes
+    window.addEventListener('resize', function () { setTimeout(fitColumns, 50); });
+
+    // The arrow keys move as the game's letters do (arrows.js), once ttyd
+    // has made the terminal
+    var arrowWait = setInterval(function () {
+      var t = term();
+      if (!t || !t.attachCustomKeyEventHandler) return;
+      conquerArrows(t, function (k) { t.input(k, true); });
+      clearInterval(arrowWait);
+    }, 500);
+
+    // Step-by-step coach next to the terminal (coach.js): the first turn,
+    // and the game's nation builder while it is on screen
+    conquerCoach(term, fitColumns, 'tutorial/first-turn.json', 'tutorial/found-nation.json');
+
+    // The key bar follows the screen: the nation builder's keys while it is
+    // open, the map's keys otherwise
+    var builderKeys = document.getElementById('builder-keys');
+    var mapKeys = keys.querySelectorAll('.pad, .group:not(.builder)');
+    setInterval(function () {
+      var t = term();
+      if (!t || !t.buffer) return;
+      var buf = t.buffer.active, text = '';
+      for (var y = 0; y < t.rows; y++) {
+        var line = buf.getLine(buf.viewportY + y);
+        if (line) text += line.translateToString(true) + '\n';
+      }
+      var building = /Nation Builder/.test(text);
+      if (building === !builderKeys.hidden) return;
+      builderKeys.hidden = !building;
+      for (var i = 0; i < mapKeys.length; i++) mapKeys[i].hidden = building;
+      setTimeout(fitColumns, 50);
+    }, 700);
+
+    // Keep fitting while ttyd connects and applies its settings
+    var tries = 0;
+    var wait = setInterval(function () {
+      fitColumns();
+      if (++tries > 20) clearInterval(wait);
+    }, 300);
+  })();
+</script>
+</body>
+</html>

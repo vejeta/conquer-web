@@ -1,0 +1,706 @@
+<!doctype html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conquer 4.12: the 1987 multiplayer strategy game</title>
+  <meta name="description" content="Rule a nation, raise armies, sign treaties and break them. Conquer, the 1987 multiplayer strategy game, live again in your browser.">
+  <!-- Link previews. deploy-to-vps.sh writes the server's own address here -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Conquer">
+  <meta property="og:title" content="Conquer 4.12: the 1987 multiplayer strategy game, live again">
+  <meta property="og:description" content="Rule a nation, raise armies, sign treaties and break them. Play in your browser, or try a practice world without an account.">
+  <meta property="og:url" content="https://conquer.vejeta.com/">
+  <meta property="og:image" content="https://conquer.vejeta.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Conquer world map on an amber terminal, with a battle and the dispatch: sahara changes status with darboth to WAR">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preload" href="fonts/vt323-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #3fb950;
+      --accent-text: #0d1117;
+      --warn: #d29922;
+      /* Score chart series: validated categorical slots (dataviz palette) */
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
+      --grid: #30363d;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f6f8fa;
+        --panel: #ffffff;
+        --border: #d0d7de;
+        --text: #1f2328;
+        --muted: #57606a;
+        --accent: #1a7f37;
+        --accent-text: #ffffff;
+        --warn: #9a6700;
+        --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4;
+        --grid: #e3e6ea;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    main { max-width: 820px; margin: 0 auto; padding: 32px 16px 48px; }
+    header { text-align: center; margin-bottom: 32px; }
+    h2 { font-size: 1.2rem; margin: 0 0 12px; }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+    }
+    ol, ul { padding-left: 1.3em; margin: 0; }
+    li + li { margin-top: 6px; }
+    kbd {
+      font: 0.85em ui-monospace, "DejaVu Sans Mono", monospace;
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      padding: 1px 6px;
+      white-space: nowrap;
+    }
+    .moves-box { margin: 0 0 18px; }
+    .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 6px 24px; }
+    .keys div { display: flex; gap: 10px; align-items: baseline; }
+    .keys kbd { min-width: 2.2em; text-align: center; }
+    .note { border-left: 3px solid var(--warn); padding-left: 12px; color: var(--muted); }
+    #status-warning { color: var(--text); margin: 0 0 16px; }
+    #news details { border-top: 1px solid var(--border); padding: 8px 0; }
+    #news details:first-child { border-top: 0; padding-top: 0; }
+    #news summary { cursor: pointer; font-weight: 600; }
+    #news h3 { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 12px 0 4px; }
+    #news ul { margin: 0; }
+    #news li { overflow-wrap: anywhere; }
+    .chart { margin: 4px 0 18px; position: relative; }
+    .chart h3 { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 6px; font-weight: 500; }
+    .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+    .chart .axis { fill: var(--muted); font: 11px system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+    .chart .gridline { stroke: var(--grid); stroke-width: 1; }
+    .chart .line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+    .chart .end { font: 600 11px system-ui, sans-serif; fill: var(--text); }
+    .chart .cross { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+    .legend-row { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.85rem; color: var(--muted); margin-top: 6px; }
+    .legend-row span::before { content: ""; display: inline-block; width: 10px; height: 3px; border-radius: 2px; background: var(--c); margin-right: 6px; vertical-align: middle; }
+    .tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 6px 9px; font-size: 0.8rem; box-shadow: 0 4px 14px rgba(0,0,0,.25); white-space: nowrap; }
+    .tip b { display: block; margin-bottom: 2px; }
+    .tip i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 6px; font-style: normal; }
+    .tip span { float: right; margin-left: 14px; font-variant-numeric: tabular-nums; }
+    .share { font-size: 0.8rem; font-weight: 400; margin-left: 8px; }
+    .countdown { color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
+    a { color: var(--accent); }
+    footer { text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: 32px; }
+    .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .fact { border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+    .fact .label { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .fact .value { font-weight: 600; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    th { color: var(--muted); font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    [hidden] { display: none !important; }
+    @media (max-width: 560px) { .optional { display: none; } }
+    /* The war terminal: an amber monitor of 1987, in both themes */
+    @font-face {
+      font-family: "VT323"; font-display: swap;
+      src: url(fonts/vt323-latin.woff2) format("woff2");
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: "VT323"; font-display: swap;
+      src: url(fonts/vt323-latin-ext.woff2) format("woff2");
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face {
+      font-family: "IM Fell English SC"; font-display: swap;
+      src: url(fonts/im-fell-english-sc-latin.woff2) format("woff2");
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122;
+    }
+    .hero {
+      --crt: #110b04; --crt-2: #1a1107; --amber: #ffb340; --amber-mid: #c7862b;
+      --amber-dim: #80581f; --amber-faint: #33230d; --war: #ff5540; --parchment: #f4e7c9;
+      --term: "VT323", ui-monospace, "DejaVu Sans Mono", monospace;
+      --display: "IM Fell English SC", "Iowan Old Style", Georgia, serif;
+      position: relative; overflow: hidden;
+      background: var(--crt); color: var(--amber);
+      border-bottom: 1px solid var(--amber-faint);
+      color-scheme: dark;
+    }
+    #map { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    /* Scanlines, the curved glass, and a darker side for the text */
+    .hero::before, .hero::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+    .hero::before { background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0 2px, rgba(0,0,0,.28) 2px 3px); z-index: 2; }
+    .hero::after {
+      background:
+        radial-gradient(ellipse at 72% 45%, rgba(0,0,0,0) 0 38%, rgba(0,0,0,.55) 80%),
+        linear-gradient(to right, rgba(17,11,4,.94) 0 30%, rgba(17,11,4,.55) 52%, rgba(17,11,4,0) 70%);
+      z-index: 1;
+    }
+    .hero-inner {
+      position: relative; z-index: 3;
+      max-width: 1120px; margin: 0 auto; padding: 24px 16px 32px;
+      display: grid; grid-template-columns: minmax(0, 470px) minmax(0, 1fr); gap: 24px;
+      min-height: 600px;
+    }
+    .topline { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
+    .topline select {
+      max-width: 60%; font: 18px/1 var(--term); color: var(--amber); background: var(--crt-2);
+      border: 1px solid var(--amber-dim); border-radius: 3px; padding: 3px 6px; cursor: pointer;
+    }
+    .pitch { display: flex; flex-direction: column; gap: 18px; align-self: center; }
+    .version { font: 20px/1 var(--term); color: var(--amber-mid); display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; }
+    .version b { color: var(--amber); font-weight: 400; }
+    .logo {
+      margin: 0; font: 400 clamp(3.2rem, 10vw, 5.6rem)/0.9 var(--display); color: var(--parchment);
+      letter-spacing: .04em; text-shadow: 0 0 18px rgba(255,179,64,.35), 0 0 2px rgba(255,179,64,.6);
+    }
+    .tagline { margin: 0; font: 400 1.25rem/1.4 var(--display); color: var(--amber); text-wrap: balance; max-width: 26em; }
+    /* Two buttons of equal width, each with its note below; long labels
+       (German, Russian...) wrap inside the button, and the buttons stack
+       when there is no room for both */
+    .trailer { padding: 0; border: 1px solid #30363d; border-radius: 10px; background: #000; width: min(960px, 94vw); }
+    .trailer::backdrop { background: rgba(0, 0, 0, .75); }
+    .trailer video { display: block; width: 100%; }
+    .trailer form { text-align: right; padding: 8px; background: #0d1117; }
+    .trailer button { font: 600 .95rem system-ui, sans-serif; color: #e6edf3; background: #30363d; border: 0; border-radius: 6px; padding: 6px 14px; cursor: pointer; }
+    .ctas {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+      gap: 6px 16px;
+    }
+    .cta { display: grid; grid-row: span 2; grid-template-rows: subgrid; gap: 6px; align-content: start; }
+    .cta a {
+      display: flex; align-items: center; justify-content: center; min-height: 52px;
+      text-align: center; padding: 10px 16px; border-radius: 3px; overflow-wrap: anywhere;
+      font: 26px/1.05 var(--term); letter-spacing: .05em; text-decoration: none; text-wrap: balance;
+    }
+    .cta.primary a { background: var(--amber); color: var(--crt); box-shadow: 0 0 22px rgba(255,179,64,.35); }
+    .cta.secondary a { border: 1px solid var(--amber); color: var(--amber); background: rgba(17,11,4,.6); }
+    .cta a:hover, .cta a:focus-visible { filter: brightness(1.12); outline: 2px solid var(--parchment); outline-offset: 2px; }
+    .cta small { font-size: .82rem; color: var(--amber-mid); line-height: 1.35; margin-bottom: 8px; }
+    .join { margin: 0; padding: 8px 12px; border: 1px dashed var(--amber-dim); font-size: .92rem; color: var(--parchment); background: rgba(17,11,4,.7); }
+    .join code { font: 1.15em var(--term); color: var(--amber); user-select: all; }
+    .links { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .92rem; }
+    .hero a.text { color: var(--parchment); text-decoration-color: var(--amber-dim); text-underline-offset: 3px; }
+    .story { display: flex; gap: 10px; align-items: baseline; border-top: 1px solid var(--amber-faint); padding-top: 12px; font-size: .95rem; }
+    .story span { color: var(--amber); font: 20px/1 var(--term); }
+    .wire {
+      align-self: end; justify-self: end; width: min(100%, 470px);
+      background: rgba(17,11,4,.84); border: 1px solid var(--amber-dim);
+      box-shadow: 0 0 0 1px rgba(0,0,0,.6), 0 12px 40px rgba(0,0,0,.5);
+      font: 21px/1.2 var(--term);
+    }
+    .wire h2 {
+      display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 10px; margin: 0;
+      padding: 6px 12px; background: var(--amber); color: var(--crt); font: inherit; letter-spacing: .06em;
+    }
+    .wire ol { list-style: none; margin: 0; padding: 10px 12px 12px; min-height: 8.6em; display: flex; flex-direction: column; gap: 4px; }
+    .wire li { color: var(--amber); overflow-wrap: anywhere; }
+    .wire li.old { color: var(--amber-mid); }
+    .wire li.older { color: var(--amber-dim); }
+    .wire .hot { color: var(--war); text-shadow: 0 0 8px rgba(255,85,64,.55); }
+    .wire .caret { display: inline-block; width: .55em; height: .95em; background: var(--amber); vertical-align: -0.12em; margin-left: 2px; animation: blink 1s steps(1) infinite; }
+    .wire p { margin: 0; padding: 0 12px 8px; font-size: 17px; color: var(--amber-dim); }
+    @keyframes blink { 50% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .wire .caret { animation: none; } }
+    @media (max-width: 820px) {
+      .hero-inner { grid-template-columns: minmax(0, 1fr); min-height: 0; padding-bottom: 20px; }
+      .hero::after { background: linear-gradient(to bottom, rgba(17,11,4,.92) 0 46%, rgba(17,11,4,.35) 70%, rgba(17,11,4,.7) 100%); }
+      .wire { justify-self: stretch; width: 100%; margin-top: 150px; }
+    }
+    /* How to join: the administrator's address and the two passwords */
+    .contact { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 14px; padding: 10px 14px; border: 1px dashed var(--accent); border-radius: 8px; }
+    .contact code { font: 600 1em ui-monospace, "DejaVu Sans Mono", monospace; color: var(--accent); user-select: all; overflow-wrap: anywhere; }
+    .contact button { font: 600 .85rem system-ui, sans-serif; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+    .contact button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .creds { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 14px; }
+    .cred { border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+    .cred strong { display: block; }
+    .cred span { color: var(--muted); font-size: .92rem; }
+  </style>
+</head>
+<body>
+<div class="hero" id="hero">
+  <canvas id="map" aria-hidden="true"></canvas>
+  <div class="hero-inner">
+    <nav class="topline"><select id="lang" aria-label="Language" data-i18n-title="index.language"></select></nav>
+
+    <div class="pitch">
+      <p class="version"><b>CONQUER 4.12</b><span>Usenet, 1987</span><span>GPL</span></p>
+      <h1 class="logo">Conquer</h1>
+      <p class="tagline" data-i18n="index.tagline">Rule a nation. Raise armies, sign treaties, break them. The 1987 multiplayer strategy game, live again in your browser.</p>
+      <div class="ctas">
+        <div class="cta primary">
+          <a href="game.html" data-server-link="game.html" data-i18n="index.play">Play now</a>
+          <small data-i18n="index.hint">Sign in with your website account</small>
+        </div>
+        <div class="cta secondary">
+          <a href="try/" data-i18n="index.try">Try it free</a>
+          <small data-i18n="index.try_hint">No account needed: a practice world in your browser</small>
+        </div>
+      </div>
+      <p class="join" id="join" hidden><span data-i18n="index.join">Have an invite code?</span>
+        <a class="text" href="signup.html" data-server-link="signup.html" data-i18n="index.join_link">Create your account</a></p>
+      <div class="links">
+        <a class="text" href="#trailer" id="trailer-link" hidden data-i18n="index.trailer">&#9654; Watch the trailer (40 s)</a>
+        <a class="text" href="tutorial.html" data-i18n-page="tutorial" data-i18n="index.tutorial">New here? Play your first turn step by step</a>
+        <a class="text" href="guide.html" data-i18n-page="guide" data-i18n="index.guide">Player's guide</a>
+        <a class="text" href="hall.html" data-i18n="index.hall">Hall of fame</a>
+      </div>
+      <p class="story"><span aria-hidden="true">&gt;</span><a class="text" href="https://vejeta.com/reviving-classic-unix-games-a-20-year-journey-through-software-archaeology/" data-i18n="index.story">The story behind this revival</a></p>
+    </div>
+
+    <section class="wire" aria-labelledby="wire-title">
+      <h2><span id="wire-title" data-i18n="index.wire_title">WORLD NEWS</span><span id="wire-turn"></span></h2>
+      <ol id="wire"></ol>
+      <p id="wire-note" data-i18n="index.wire_example">Example dispatches: the real news of the game appear here once turns are played.</p>
+    </section>
+  </div>
+</div>
+<main>
+
+  <section id="status" hidden>
+    <h2 data-i18n="index.h_current">Current game</h2>
+    <p class="note" id="status-warning" hidden></p>
+    <div class="facts">
+      <div class="fact"><div class="label" data-i18n="index.l_turn">Turn</div><div class="value" id="status-turn"></div></div>
+      <div class="fact"><div class="label" data-i18n="index.l_season">Season</div><div class="value" id="status-season"></div></div>
+      <div class="fact"><div class="label" data-i18n="index.l_last">Last update</div><div class="value" id="status-last"></div></div>
+      <div class="fact"><div class="label" data-i18n="index.l_schedule">Turn schedule</div><div class="value" id="status-schedule"></div></div>
+      <div class="fact" id="status-ready-box" hidden><div class="label" data-i18n="index.l_ready">Orders done</div><div class="value" id="status-ready"></div><div class="countdown" id="status-ready-note"></div></div>
+      <div class="fact" id="status-next-box" hidden><div class="label" data-i18n="index.l_next">Next update</div><div class="value" id="status-next"></div><div class="countdown" id="status-countdown"></div></div>
+    </div>
+    <figure class="chart" id="chart" hidden>
+      <h3 data-i18n="index.h_chart">Score, turn by turn: the five leading nations</h3>
+      <div id="chart-box"></div>
+      <div class="legend-row" id="chart-legend"></div>
+    </figure>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th class="num">#</th><th data-i18n="index.th_nation">Nation</th><th data-i18n="index.th_race">Race</th><th class="optional" data-i18n="index.th_class">Class</th><th class="optional" data-i18n="index.th_alignment">Alignment</th><th class="num" data-i18n="index.th_score">Score</th></tr></thead>
+        <tbody id="status-scores"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="news" hidden>
+    <h2 data-i18n="index.h_news">World news</h2>
+    <div id="news-editions"></div>
+  </section>
+
+  <section>
+    <h2 data-i18n="index.h_what">What is Conquer?</h2>
+    <p data-i18n="index.p_what">Conquer is a turn-based fantasy strategy game for many players, first released on Usenet
+      in 1987 by Ed Barlow and Adam Bryant. This server runs version 4.12 of the original game, now free
+      software under the GPL. Each player rules a nation: build cities, raise armies, cast magic, trade and
+      negotiate with other rulers, and expand across a shared world.</p>
+    <p data-i18n="index.p_story"><a href="https://vejeta.com/reviving-classic-unix-games-a-20-year-journey-through-software-archaeology/">The story behind this revival</a>:
+      how the game was found again, relicensed with its authors' permission and brought to the web.</p>
+  </section>
+
+  <section id="how-to-join">
+    <h2 data-i18n="index.h_join">How to join</h2>
+    <p class="note" data-i18n="index.note_join">Joining is by invitation, and takes two steps: an account for this website, then your nation inside the game.</p>
+    <ol>
+      <li data-i18n="index.join1">Write to the game administrator for an <strong>invite code</strong>.</li>
+      <li data-i18n="index.join2"><strong>Your account for this website</strong>: choose <strong>Create your account</strong> (under the buttons at the top), type the code and choose a name and a password. It only opens the door of the site; your browser asks for it when you press Play.</li>
+      <li data-i18n="index.join3"><strong>Your nation</strong>: press <strong>Play now</strong> and sign in with that account. The 1987 game asks you to found your nation: its own name (up to 9 letters), race, class and a nation password. From then on, Play now opens it directly.</li>
+    </ol>
+    <div class="contact" id="contact" hidden>
+      <span data-i18n="index.contact">Game administrator:</span>
+      <code id="contact-address"></code>
+      <button type="button" id="contact-copy" data-i18n="index.copy">Copy address</button>
+    </div>
+    <div class="creds">
+      <div class="cred"><strong data-i18n="index.cred_account_t">Your account for this website</strong><span data-i18n="index.cred_account">Opens the door of this site: your browser asks for it when you press Play. One per player; it is not your nation.</span></div>
+      <div class="cred"><strong data-i18n="index.cred_nation_t">Your nation's password</strong><span data-i18n="index.cred_nation">Part of the original 1987 game: it guards your nation inside the world, as it did on the Unix machines it was written for.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 data-i18n="index.h_turns">How turns work</h2>
+    <ul>
+      <li data-i18n="index.turns1">Log in as often as you like to give orders: move armies, draft troops, build, trade, send messages.</li>
+      <li data-i18n="index.turns2">All orders are resolved together at the next <strong>turn update</strong>, on the schedule shown
+        under <strong>Current game</strong>; the in-game menu shows it too, with the last update.</li>
+      <li data-i18n="index.turns3">Before each update, players still in the game are warned and, a few minutes later,
+        disconnected; their orders are saved. Press <kbd>q</kbd> to quit the game when you are done.</li>
+      <li data-i18n="index.turns4">When you quit, the menu asks whether your orders for the turn are done. Once every
+        nation is done, the update can run right away instead of waiting for the schedule.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 data-i18n="index.h_before">Before you play</h2>
+    <ul>
+      <li data-i18n="index.before1">Conquer is controlled entirely with keys, so a computer keyboard is the most comfortable.
+        On phones and tablets an on-screen key bar provides <kbd>Esc</kbd>, <kbd>Enter</kbd>, movement
+        and other common keys; use the <strong>Keyboard</strong> button to type names and passwords.</li>
+      <li data-i18n="index.before2">The game needs a terminal of at least <strong>80&times;24</strong> characters. If the menu warns that
+        the screen is too small, enlarge the window or zoom out with <kbd>Ctrl</kbd> + <kbd>-</kbd>.</li>
+      <li data-i18n="index.before3">If the screen looks garbled, press <kbd>Ctrl</kbd> + <kbd>L</kbd> to redraw it.</li>
+      <li data-i18n="index.before4">The game itself is in English.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 data-i18n="index.h_keys">Key reference</h2>
+    <div class="moves-box" data-moves></div>
+    <div class="keys">
+      <div><kbd>?</kbd><span data-i18n="index.k_help">help screens</span></div>
+      <div><kbd>p</kbd><span data-i18n="index.k_p">pick next unit</span></div>
+      <div><kbd>m</kbd><span data-i18n="index.k_m">move selected unit</span></div>
+      <div><kbd>a</kbd><span data-i18n="index.k_a">army report</span></div>
+      <div><kbd>D</kbd><span data-i18n="index.k_D">draft troops</span></div>
+      <div><kbd>C</kbd><span data-i18n="index.k_C">construct</span></div>
+      <div><kbd>r</kbd><span data-i18n="index.k_r">redesignate sector</span></div>
+      <div><kbd>B</kbd><span data-i18n="index.k_B">budget</span></div>
+      <div><kbd>P</kbd><span data-i18n="index.k_P">production</span></div>
+      <div><kbd>S</kbd><span data-i18n="index.k_S">diplomacy</span></div>
+      <div><kbd>M</kbd><span data-i18n="index.k_M">magic</span></div>
+      <div><kbd>d</kbd><span data-i18n="index.k_d">change display</span></div>
+      <div><kbd>N</kbd><span data-i18n="index.k_N">read newspaper</span></div>
+      <div><kbd>R</kbd><span data-i18n="index.k_R">read messages</span></div>
+      <div><kbd>W</kbd><span data-i18n="index.k_W">write message</span></div>
+      <div><kbd>s</kbd><span data-i18n="index.k_s">score</span></div>
+      <div><kbd>q</kbd><span data-i18n="index.k_q">quit</span></div>
+    </div>
+  </section>
+
+  <footer data-i18n="index.footer">
+    Conquer is free software (GPL-3.0-or-later).
+    Source: <a href="https://github.com/vejeta/conquer">game</a> &middot;
+    <a href="https://github.com/vejeta/conquer-web">web server</a>
+  </footer>
+</main>
+<script src="server.js"></script>
+<dialog class="trailer" id="trailer" aria-label="Conquer">
+  <video id="trailer-video" controls playsinline preload="none"></video>
+  <form method="dialog"><button data-i18n="index.trailer_close">Close</button></form>
+</dialog>
+<script src="site.js"></script>
+<script src="moves.js"></script>
+<script>
+  // The trailer (tools/tutorial/video.py --video trailer) in the page's
+  // language, or in English; the link shows once one exists
+  (function () {
+    var link = document.getElementById('trailer-link'), dialog = document.getElementById('trailer');
+    var video = document.getElementById('trailer-video'), src = null;
+    function find(lang) {
+      var tries = lang === 'en' ? ['en'] : [lang, 'en'];
+      (function next() {
+        var l = tries.shift();
+        if (!l) { link.hidden = true; return; }
+        fetch('tutorial/trailer.' + l + '.mp4', { method: 'HEAD' }).then(function (r) {
+          if (!r.ok) return next();
+          src = l;
+          link.hidden = false;
+        }).catch(next);
+      })();
+    }
+    conquerI18n.ready().then(function () { find(conquerI18n.lang()); });
+    document.addEventListener('conquer:lang', function (e) { find(e.detail); });
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (!src || !dialog.showModal) return;
+      if (video.getAttribute('data-lang') !== src) {
+        video.textContent = '';
+        video.src = 'tutorial/trailer.' + src + '.mp4';
+        var track = document.createElement('track');
+        track.kind = 'captions'; track.srclang = src; track.label = src;
+        track.src = 'tutorial/trailer.' + src + '.vtt';
+        video.appendChild(track);
+        video.setAttribute('data-lang', src);
+      }
+      dialog.showModal();
+      video.play().catch(function () {});
+    });
+    dialog.addEventListener('close', function () { video.pause(); });
+  })();
+</script>
+<script src="hero.js"></script>
+<script>
+  // Texts of the page: i18n/<language>.json, "index" (site.js)
+  function m(key, params) { return conquerI18n.t('index.' + key, params); }
+  // not "status": window.status is a legacy string property
+  var gameStatus = null;
+  var tickTimer = null;
+
+  // Language menu: every language of the site, in its own name
+  var select = document.getElementById('lang');
+  conquerI18n.languages.forEach(function (l) {
+    var o = document.createElement('option');
+    o.value = l.code; o.lang = l.code; o.textContent = l.name;
+    select.appendChild(o);
+  });
+  select.value = conquerI18n.lang();
+  select.addEventListener('change', function () {
+    conquerI18n.setLang(select.value).then(function () { if (gameStatus) renderStatus(gameStatus); });
+  });
+
+  // Latest world newspapers: newest edition open, older ones collapsed.
+  // The news itself comes from the game and stays in English.
+  function renderNews(editions) {
+    var box = document.getElementById('news-editions');
+    var MAX_ITEMS = 12;
+    box.textContent = '';
+    editions.forEach(function (ed, i) {
+      var det = document.createElement('details');
+      det.open = i === 0;
+      var sum = document.createElement('summary');
+      sum.textContent = m('m_turn', { n: ed.turn });
+      // Shareable page of this edition, with a link preview
+      var share = document.createElement('a');
+      share.className = 'share';
+      share.href = conquerServerUrl('status/news/' + ed.turn + '.html');
+      share.textContent = m('m_share');
+      share.addEventListener('click', function (e) { e.stopPropagation(); });
+      sum.appendChild(share);
+      det.appendChild(sum);
+      ed.sections.forEach(function (sec) {
+        var h = document.createElement('h3');
+        h.textContent = sec.title;
+        det.appendChild(h);
+        var ul = document.createElement('ul');
+        sec.items.slice(0, MAX_ITEMS).forEach(function (item) {
+          var li = document.createElement('li');
+          li.textContent = item;
+          ul.appendChild(li);
+        });
+        if (sec.items.length > MAX_ITEMS) {
+          var more = document.createElement('li');
+          more.textContent = m('m_more', { n: sec.items.length - MAX_ITEMS });
+          ul.appendChild(more);
+        }
+        det.appendChild(ul);
+      });
+      box.appendChild(det);
+    });
+    document.getElementById('news').hidden = editions.length === 0;
+  }
+
+  function renderStatus(d) {
+    function set(id, text) { document.getElementById(id).textContent = text; }
+    set('status-turn', d.turn);
+    set('status-season', d.season || '-');
+    set('status-last', d.last_update || m('m_not_yet'));
+    if (tickTimer) clearInterval(tickTimer);
+    var next = d.next_turn ? new Date(d.next_turn * 1000) : null;
+    // A schedule worked out from the server's cron: in the visitor's own
+    // language and time (the administrator's own words are shown as written)
+    var schedule = d.schedule || m('m_by_admin');
+    if (d.schedule_auto && next && d.repeat) {
+      var lang = conquerI18n.lang();
+      var at = next.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+      schedule = d.repeat === 'daily' ? m('m_daily', { time: at })
+        : m('m_weekly', { day: next.toLocaleDateString(lang, { weekday: 'long' }), time: at });
+    }
+    set('status-schedule', schedule);
+    if (next) {
+      set('status-next', next.toLocaleString(conquerI18n.lang(), { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }));
+      var tick = function () {
+        var s = Math.round((next - Date.now()) / 1000);
+        if (s <= 0) { set('status-countdown', m('m_now')); return; }
+        var dd = Math.floor(s / 86400), hh = Math.floor(s % 86400 / 3600), mm = Math.floor(s % 3600 / 60);
+        set('status-countdown', m('m_in', { time: (dd ? dd + 'd ' : '') + (dd || hh ? hh + 'h ' : '') + mm + 'm' }));
+      };
+      tick();
+      tickTimer = setInterval(tick, 30000);
+      document.getElementById('status-next-box').hidden = false;
+    }
+    var r = d.ready;
+    document.getElementById('status-ready-box').hidden = !r;
+    if (r) {
+      set('status-ready', m('m_ready', { done: r.done, total: r.total }));
+      set('status-ready-note', r.early ? m('m_early') : '');
+    }
+    if (d.contact) {
+      set('contact-address', d.contact);
+      document.getElementById('contact').hidden = false;
+    }
+    renderWire(d);
+    // Players with an invite code create their account on signup.html
+    document.getElementById('join').hidden = !d.signup;
+    renderNews(d.news || []);
+    var ts = d.turn_state || {};
+    var w = document.getElementById('status-warning');
+    w.hidden = ts.state !== 'failed';
+    if (ts.state === 'failed') w.textContent = m('m_failed', { time: ts.time });
+    var body = document.getElementById('status-scores');
+    body.textContent = '';
+    (d.nations || []).slice().sort(function (a, b) { return b.score - a.score; })
+      .forEach(function (n, i) {
+        var tr = document.createElement('tr');
+        [i + 1, n.name, n.race, n.class, n.alignment, n.score].forEach(function (v, col) {
+          var td = document.createElement('td');
+          td.textContent = v;
+          if (col === 0 || col === 5) td.className = 'num';
+          if (col === 3 || col === 4) td.className = 'optional';
+          tr.appendChild(td);
+        });
+        body.appendChild(tr);
+      });
+    document.getElementById('status').hidden = false;
+  }
+
+
+  // Score history of the five leading nations (history.json, written by the
+  // game container after every turn). Color follows the nation in rank order
+  // of the latest turn; names are also written at the line ends.
+  function renderChart(h) {
+    var turns = h.turns || [];
+    if (turns.length < 2) return;
+    var last = turns.length - 1;
+    var names = Object.keys(h.nations).filter(function (n) { return h.nations[n][last] != null; })
+      .sort(function (a, b) { return h.nations[b][last] - h.nations[a][last]; }).slice(0, 5);
+    var W = 640, H = 230, L = 42, R = 86, T = 10, B = 26;
+    var max = 0;
+    names.forEach(function (n) { h.nations[n].forEach(function (v) { if (v > max) max = v; }); });
+    var step = Math.pow(10, Math.floor(Math.log10(Math.max(max, 1))));
+    [1, 2, 5, 10].some(function (m) { if (max / (step * m) <= 5) { step *= m; return true; } });
+    var top = Math.max(step, Math.ceil(max / step) * step);
+    function x(i) { return L + (W - L - R) * i / last; }
+    function y(v) { return T + (H - T - B) * (1 - v / top); }
+    var ns = 'http://www.w3.org/2000/svg';
+    function el(tag, attrs, text) {
+      var e = document.createElementNS(ns, tag);
+      for (var k in attrs) e.setAttribute(k, attrs[k]);
+      if (text != null) e.textContent = text;
+      return e;
+    }
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': m('chart_label') });
+    for (var v = 0; v <= top; v += step) {
+      svg.appendChild(el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v), 'class': 'gridline' }));
+      svg.appendChild(el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end', 'class': 'axis' }, v));
+    }
+    var every = Math.ceil(turns.length / 8);
+    turns.forEach(function (t, i) {
+      if (i % every === 0 || i === last) svg.appendChild(el('text', { x: x(i), y: H - 6, 'text-anchor': 'middle', 'class': 'axis' }, t));
+    });
+    var ends = [];
+    names.forEach(function (n, s) {
+      var d = '', pen = false;
+      h.nations[n].forEach(function (v, i) {
+        if (v == null) { pen = false; return; }
+        d += (pen ? 'L' : 'M') + x(i).toFixed(1) + ',' + y(v).toFixed(1);
+        pen = true;
+      });
+      svg.appendChild(el('path', { d: d, 'class': 'line', stroke: 'var(--s' + (s + 1) + ')' }));
+      ends.push({ n: n, y: y(h.nations[n][last]) });
+    });
+    // Direct labels at the line ends, nudged apart so they never overlap
+    ends.sort(function (a, b) { return a.y - b.y; });
+    for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
+    ends.forEach(function (e) { svg.appendChild(el('text', { x: W - R + 8, y: e.y + 4, 'class': 'end' }, e.n)); });
+    var cross = el('line', { y1: T, y2: H - B, 'class': 'cross', visibility: 'hidden' });
+    svg.appendChild(cross);
+    var box = document.getElementById('chart-box');
+    box.textContent = '';
+    box.appendChild(svg);
+    var tip = document.createElement('div');
+    tip.className = 'tip'; tip.hidden = true;
+    box.parentNode.appendChild(tip);
+    // Crosshair and tooltip on the nearest turn
+    svg.addEventListener('pointermove', function (ev) {
+      var r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) * W / r.width;
+      var i = Math.max(0, Math.min(last, Math.round((px - L) / (W - L - R) * last)));
+      cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); cross.setAttribute('visibility', 'visible');
+      tip.textContent = '';
+      var head = document.createElement('b'); head.textContent = m('m_turn', { n: turns[i] }); tip.appendChild(head);
+      names.forEach(function (n, s) {
+        var row = document.createElement('div'), dot = document.createElement('i'), val = document.createElement('span');
+        dot.style.setProperty('--c', 'var(--s' + (s + 1) + ')');
+        row.appendChild(dot); row.appendChild(document.createTextNode(n));
+        val.textContent = h.nations[n][i] == null ? '-' : h.nations[n][i];
+        row.appendChild(val); tip.appendChild(row);
+      });
+      tip.hidden = false;
+      var left = x(i) * r.width / W + 12;
+      tip.style.left = Math.min(left, r.width - tip.offsetWidth) + 'px';
+      tip.style.top = '28px';
+    });
+    svg.addEventListener('pointerleave', function () { cross.setAttribute('visibility', 'hidden'); tip.hidden = true; });
+    var legend = document.getElementById('chart-legend');
+    legend.textContent = '';
+    names.forEach(function (n, s) {
+      var item = document.createElement('span');
+      item.style.setProperty('--c', 'var(--s' + (s + 1) + ')');
+      item.textContent = n;
+      legend.appendChild(item);
+    });
+    document.getElementById('chart').hidden = false;
+  }
+  fetch(conquerServerUrl('status/history.json'), { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function (h) { return conquerI18n.ready().then(function () { renderChart(h); }); })
+    .catch(function () { /* no history yet */ });
+
+  // The war terminal: the world map and a teletype of world news. Until the
+  // game has news, it prints example dispatches (the game's news is in
+  // English, so these are too)
+  var EXAMPLES = [
+    'sahara changes status with darboth to WAR',
+    'woooo breaks its treaty with darboth: BETRAYAL',
+    'army 7 of sahara marches on the forts of darboth',
+    'BATTLE near the capital of darboth: 1840 soldiers fall',
+    'sahara captures 3 forts of darboth',
+    'edland and anorian sign an alliance',
+    'fung bribes the nomads with 50000 gold',
+    'anorian changes status with edland to HOSTILE'
+  ];
+  var wire = conquerHero.teletype(document.getElementById('wire'));
+  wire.set(EXAMPLES);
+  conquerHero.load().then(function (map) { conquerHero.start(document.getElementById('map'), map); })
+    .catch(function () { /* no map: the hero stays a plain terminal */ });
+  var wireLive = false;
+  function renderWire(d) {
+    var ed = (d.news || [])[0];
+    var items = [];
+    if (ed) ed.sections.forEach(function (sec) { items = items.concat(sec.items); });
+    if (items.length) {
+      document.getElementById('wire-turn').textContent = m('wire_turn', { n: ed.turn });
+      document.getElementById('wire-note').setAttribute('data-i18n', 'index.wire_live');
+      document.getElementById('wire-note').innerHTML = m('wire_live');
+      if (!wireLive) wire.set(items.slice(0, 12));
+      wireLive = true;
+    }
+  }
+
+  document.getElementById('contact-copy').addEventListener('click', function (e) {
+    var button = e.currentTarget, code = document.getElementById('contact-address');
+    function select() {
+      var r = document.createRange(); r.selectNodeContents(code);
+      var sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    }
+    try {
+      navigator.clipboard.writeText(code.textContent).then(function () {
+        button.textContent = m('copied');
+        setTimeout(function () { button.textContent = m('copy'); }, 1600);
+      }, select);
+    } catch (err) { select(); }
+  });
+
+  // Public game status published by the game container after every turn
+  fetch(conquerServerUrl('status/status.json'), { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function (d) { gameStatus = d; return conquerI18n.ready().then(function () { renderStatus(d); }); })
+    .catch(function () { /* no status yet: keep the section hidden */ });
+</script>
+</body>
+</html>

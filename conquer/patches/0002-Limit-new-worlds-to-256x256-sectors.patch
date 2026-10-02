@@ -1,0 +1,52 @@
+From 5d368b40a5c918fec8ba4ee180b15f574845ce1b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Juan=20Manuel=20M=C3=A9ndez=20Rey?= <vejeta@gmail.com>
+Date: Sat, 26 Sep 2026 20:49:51 +0000
+Subject: [PATCH 2/3] Limit new worlds to 256x256 sectors
+
+Army and capital coordinates are stored as unsigned char, so on larger
+maps positions wrap around: armies end up in the sea every update and
+new nations see an empty map because the view centres on the wrong
+sector. conqrun -m accepted any size divisible by 8; it now also rejects
+dimensions above 256 and says so in the prompt.
+---
+ gpl-release/makeworl.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/gpl-release/makeworl.c b/gpl-release/makeworl.c
+index f0a0c62..9e1d8da 100644
+--- a/gpl-release/makeworl.c
++++ b/gpl-release/makeworl.c
+@@ -208,14 +208,19 @@ int	rflag;		/* TRUE if you wish to read in a map from mapfiles */
+ #ifdef CHECKUSER
+ 	ntn[0].uid = getuid();
+ #endif
+-	mvaddstr(8,0,"Please Enter the Size of the World.  [Divisible by 8 and > 23]");
++	/*
++	 * Army and capital coordinates are stored as unsigned char, so no map
++	 * dimension may exceed 256: larger worlds wrap positions around and
++	 * put armies in the sea.
++	 */
++	mvaddstr(8,0,"Please Enter the Size of the World.  [Divisible by 8, from 24 to 256]");
+ 	clrtoeol();
+ 	while(TRUE) {
+ 		mvaddstr(9,0,"Enter number of X sectors: ");
+ 		clrtoeol();
+ 		refresh();
+ 		world.mapx = get_number();
+-		if(((world.mapx % 8) != 0 ) || (world.mapx<24)){
++		if(((world.mapx % 8) != 0 ) || (world.mapx<24) || (world.mapx>256)){
+ 			newerror("Invalid X Value Entered");
+ 			continue;
+ 		}
+@@ -226,7 +231,7 @@ int	rflag;		/* TRUE if you wish to read in a map from mapfiles */
+ 		clrtoeol();
+ 		refresh();
+ 		world.mapy = get_number();
+-		if(((world.mapy % 8) != 0 ) || (world.mapy<24)){
++		if(((world.mapy % 8) != 0 ) || (world.mapy<24) || (world.mapy>256)){
+ 			newerror("Invalid Y Value Entered");
+ 			continue;
+ 		}
+-- 
+2.43.0
+

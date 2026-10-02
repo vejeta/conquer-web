@@ -1,0 +1,39 @@
+{
+ "language": "de",
+ "note": "The trailer: what Conquer is, in 40 seconds, by the narrator of ../de.json (video.py --video trailer)",
+ "captions": {
+  "keys": "Tasten",
+  "look": "nur schauen",
+  "intro_title": "Usenet, 1987",
+  "intro_sub": "Ein Strategiespiel epischer Fantasy",
+  "outro_title": "Conquer ist zurück",
+  "outro_sub": "Spiel im Browser · nichts zu installieren",
+  "password": "Passwort",
+  "space": "Leertaste"
+ },
+ "segments": [
+  {
+   "screen": "intro",
+   "text": "Oktober neunzehnhundertsiebenundachtzig. Ein Strategiespiel verbreitet sich über die ganze Welt, Beitrag für Beitrag, im Usenet."
+  },
+  {
+   "screen": "title",
+   "text": "In den Rechenzentren der Universitäten kompilieren es Studenten und regieren an grün leuchtenden Terminals Königreiche von Elfen, Zwergen, Orks und Menschen.",
+   "caption": "1988"
+  },
+  {
+   "screen": "map",
+   "text": "Es ist kein Brettspiel: Es ist eine Welt epischer Fantasy, mit Magie, Helden und Ungeheuern. In jedem Zug ziehen alle Königreiche zugleich.",
+   "caption": "Dein Königreich"
+  },
+  {
+   "screen": "diplomacy",
+   "text": "Vierzig Jahre später ist Conquer zurück.",
+   "caption": "Die Königreiche der Welt"
+  },
+  {
+   "screen": "outro",
+   "text": "Keine Installation. Kein Shell-Zugang. Nur dein Browser. Probier es jetzt aus."
+  }
+ ]
+}

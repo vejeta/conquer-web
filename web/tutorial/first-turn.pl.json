@@ -1,0 +1,167 @@
+{
+ "title": "Twoja pierwsza tura",
+ "steps": [
+  {
+   "id": "menu",
+   "title": "Zaloguj się i otwórz menu",
+   "keys": [
+    "1"
+   ],
+   "text": "<p>Na stronie głównej kliknij <strong>Graj teraz</strong> i zaloguj się na swoje konto gracza. Menu pokazuje, kim jesteś i który naród należy do ciebie. Naciśnij <kbd>1</kbd>, aby zagrać.</p>",
+   "detect": "Wybierz\\ opcję:"
+  },
+  {
+   "id": "password",
+   "title": "Wpisz hasło narodu",
+   "keys": [
+    "password",
+    "Enter"
+   ],
+   "text": "<p>Twój naród otwiera się od razu. Wpisz <strong>hasło narodu</strong> (do 7 znaków) i naciśnij <kbd>Enter</kbd>. Podczas pisania nic się nie pojawia; tak ma być.</p>",
+   "detect": "Nation's Password"
+  },
+  {
+   "id": "title",
+   "title": "Ekran tytułowy",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>Ten sam ekran tytułowy, który gracze oglądali w 1988 roku. Ekrany samej gry są po angielsku: gdy gra pisze <em>PRESS ANY KEY</em>, naciśnij dowolny klawisz, zwykle klawisz <kbd>Spacja</kbd>.</p>",
+   "detect": "PRESS ANY KEY"
+  },
+  {
+   "id": "map",
+   "title": "Poznaj ekran główny",
+   "keys": [],
+   "text": "<p>Tu spędzisz całą grę. Ekran ma cztery części:</p><ul><li><strong>Mapa</strong>, po lewej. <code>C</code> to twoja stolica. Znaki w negatywie to sektory, które należą do ciebie. Pozostałe pokazują teren: <code>~</code> woda, <code>-</code> równina, <code>%</code> wzgórza, <code>^</code> góry, <code>#</code> szczyty.</li><li><strong>Twoje jednostki</strong>, w prawym górnym rogu. <code>*</code> oznacza wybraną, <code>&gt;</code> pozostałe w tym samym sektorze. <em>mv</em> mówi, ile ruchu każdej zostało w tej turze, <em>st</em> to jej rozkaz.</li><li><strong>Sektor pod kursorem</strong>, w prawym dolnym rogu: właściciel, przeznaczenie, roślinność, teren, ludność.</li><li><strong>Pasek stanu</strong>, na samym dole: tura, skarbiec w złotych talonach, pora roku i <em>You have Conquer Mail</em>, gdy czeka poczta.</li></ul><p>Zaczynasz tylko ze stolicą. Wszystko inne trzeba zdobyć.</p>",
+   "detect": "nation\\.\\.\\."
+  },
+  {
+   "id": "mail",
+   "title": "Przeczytaj pocztę",
+   "keys": [
+    "R"
+   ],
+   "text": "<p>Naciśnij <kbd>R</kbd>. Wiadomości przysyła gra, administrator i inni władcy. Każdy klawisz pokazuje następną; <kbd>Enter</kbd> usuwa tę, którą właśnie czytasz.</p>",
+   "detect": "Message from"
+  },
+  {
+   "id": "mail2",
+   "title": "Następna wiadomość",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>Akt założenia twojego narodu. Naciśnij jeszcze raz klawisz <kbd>Spacja</kbd>, aby wrócić do mapy.</p>",
+   "detect": "Message from"
+  },
+  {
+   "id": "budget",
+   "title": "Sprawdź budżet",
+   "keys": [
+    "B"
+   ],
+   "text": "<p>Naciśnij <kbd>B</kbd>. Twój lud płaci podatki (tutaj 330 000 talonów od 33 000 mieszkańców stolicy), a wojsko kosztuje (100 000 za 2000 żołnierzy). Ostatni wiersz to skarbiec w następnej porze roku.</p><p>Zajrzyj też do <strong>spichlerza</strong>. Z samą stolicą nie produkujesz żywności, a naród bez farm głoduje już po kilku porach roku.</p>",
+   "detect": "BUDGET ESTIMATES"
+  },
+  {
+   "id": "armies",
+   "title": "Poznaj swoje armie",
+   "keys": [
+    "Space",
+    "a"
+   ],
+   "text": "<p>Naciśnij klawisz <kbd>Spacja</kbd>, aby wyjść z budżetu, a potem <kbd>a</kbd>. Armia 0 to <strong>garnizon</strong>: 250 żołnierzy, którzy nigdy nie opuszczają stolicy. Król i baronowie to <strong>dowódcy</strong>. Dalej w prawo (przewijasz dowolnym klawiszem poza klawiszem <kbd>Spacja</kbd>) są twoje <strong>armie polowe</strong>, które mogą maszerować. Gdy skończysz, naciśnij klawisz <kbd>Spacja</kbd>.</p>",
+   "detect": "ARMY STATS SUMMARY"
+  },
+  {
+   "id": "select",
+   "title": "Wybierz armię polową",
+   "keys": [
+    "Space",
+    "o",
+    "o"
+   ],
+   "text": "<p><kbd>p</kbd> wybiera następną jednostkę, a <kbd>o</kbd> poprzednią. Naciskaj <kbd>o</kbd>, aż <code>*</code> stanie przy armii polowej, której został ruch: tutaj <strong>armia 20</strong>, 112 piechurów, 10 punktów ruchu.</p>",
+   "detect": "\\*army [1-9][0-9]*: [0-9]+ Inf"
+  },
+  {
+   "id": "move",
+   "title": "Wymaszeruj po nowe ziemie",
+   "keys": [
+    "m",
+    "j"
+   ],
+   "text": "<p>Naciśnij <kbd>m</kbd>, a potem kierunek:</p><div data-moves=\"compact\"></div><p>Każdy krok zużywa punkty ruchu; wzgórza i lasy kosztują więcej. Jeśli gra napisze <em>Can't Move Here</em> (zwykle to woda), naciśnij dowolny klawisz i spróbuj innego kierunku.</p>",
+   "detect": "MOVE(MENT )?SCREEN"
+  },
+  {
+   "id": "moved",
+   "title": "Zakończ ruch",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>Naciśnij klawisz <kbd>Spacja</kbd>, aby się zatrzymać. Sektor należy teraz do ciebie: raport pokazuje <em>owner: tidewater</em>.</p><p class=\"rule\">Armia zajmuje pustą ziemię tylko wtedy, gdy jest dość duża: ma co najmniej 75 żołnierzy i co najmniej jednego na każde 350 mieszkańców twojego państwa (w nowym narodzie to około 95). Armia 21 z 70 żołnierzami jest sama za mała.</p>",
+   "detect": "nation\\.\\.\\."
+  },
+  {
+   "id": "draft",
+   "title": "Pobierz nowe wojsko",
+   "keys": [
+    "k",
+    "D",
+    "I",
+    "50",
+    "Enter"
+   ],
+   "text": "<p>Wróć kursorem na stolicę (<kbd>k</kbd>), potem naciśnij <kbd>D</kbd>, aby ogłosić pobór, <kbd>I</kbd>, aby wybrać piechotę, wpisz <kbd>50</kbd> i naciśnij <kbd>Enter</kbd>. Wojsko pobiera się w miastach i w stolicy; kosztuje talony i metal.</p>",
+   "detect": "raise a new army"
+  },
+  {
+   "id": "drafted",
+   "title": "Jako nowa armia",
+   "keys": [
+    "y"
+   ],
+   "text": "<p>Odpowiedz <kbd>y</kbd>, aby utworzyć nową armię. Jeśli odpowiesz „nie”, żołnierze dołączą do armii w tym sektorze, a <strong>ta armia straci ruch w tej turze</strong>. Nowe wojsko i tak nie może maszerować przed następną turą, więc niech pilnuje stolicy.</p>",
+   "detect": "nation\\.\\.\\."
+  },
+  {
+   "id": "diplomacy",
+   "title": "Przyjrzyj się innym narodom",
+   "keys": [
+    "Space",
+    "S"
+   ],
+   "text": "<p>Naciśnij <kbd>S</kbd>. Każdy naród zaczyna jako <em>UNMET</em> (jeszcze niespotkany). Gdy już jakiś spotkasz, klawiszem <kbd>Enter</kbd> ustalisz swoje stanowisko (sojusz, neutralność, wrogość, wojna…). Aby napisać do innego władcy, naciśnij na mapie <kbd>W</kbd>. Klawisz <kbd>Spacja</kbd> zamyka ten ekran.</p>",
+   "detect": "DIPLOMACY SUMMARY"
+  },
+  {
+   "id": "quit",
+   "title": "Zapisz i wyjdź",
+   "keys": [
+    "Space",
+    "q"
+   ],
+   "text": "<p>Naciśnij <kbd>q</kbd>. Twoje rozkazy zostaną zapisane, a menu zapyta, czy twoje rozkazy na tę turę są gotowe.</p>",
+   "detect": "Czy\\ twoje\\ rozkazy\\ na\\ tę\\ turę\\ są\\ gotowe\\?\\ \\[t/N\\]"
+  },
+  {
+   "id": "done",
+   "title": "Oznacz rozkazy jako gotowe",
+   "keys": [
+    "y"
+   ],
+   "text": "<p>Odpowiedz <kbd>y</kbd> (w polskim menu działa też litera t, jak „tak”). Gdy zrobią to wszystkie narody, rozliczenie tury rusza od razu; w przeciwnym razie o zaplanowanej porze. Do tego czasu możesz wrócić i zmienić rozkazy.</p>",
+   "detect": "Rozkazy\\ oznaczone\\ jako\\ gotowe\\.\\ Do\\ rozliczenia\\ możesz\\ je\\ zmieniać\\."
+  },
+  {
+   "id": "newturn",
+   "title": "Nowa pora roku",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>W tej rozgrywce tidewater był jedynym graczem, więc rozliczenie ruszyło od razu. Zagraj znowu, aby zobaczyć nową porę roku: twój nowy sektor, gazetę (<kbd>N</kbd>) i pocztę. Tak wygląda cały rytm Conquer: czytaj, rozkazuj, wyjdź, czekaj na wieści.</p>",
+   "detect": "Ostatnie\\ rozliczenie:\\ .*"
+  }
+ ]
+}

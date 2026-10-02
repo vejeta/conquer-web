@@ -11,12 +11,13 @@ RUN sed -i 's/#LoadModule headers_module/LoadModule headers_module/' /usr/local/
 # This avoids compilation complexity while still providing security
 
 # Copiar configuración
-COPY extra.conf /usr/local/apache2/conf/extra/httpd-proxy.conf
+# Local reverse proxy (also mounted by docker-compose.local.yml for quick edits)
+COPY local.conf /usr/local/apache2/conf/extra/httpd-proxy.conf
 COPY security.conf /usr/local/apache2/conf/extra/security.conf
 
 # Include configurations
 RUN echo "Include conf/extra/httpd-proxy.conf" >> /usr/local/apache2/conf/httpd.conf
 RUN echo "Include conf/extra/security.conf" >> /usr/local/apache2/conf/httpd.conf
 
-# Incluir certificado self-signed por defecto
-COPY certs/selfsigned/ /usr/local/apache2/conf/certs/live/conquer.local/
+# Certificates are mounted at runtime (see docker-compose files and
+# setup-local-certs.sh); private keys are never baked into the image.

@@ -1,0 +1,31 @@
+<!doctype html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+
+Draws the share image (web/og-image.png) with web/hero.js; render-og.js
+saves it.
+-->
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: "VT323"; src: url(../../web/fonts/vt323-latin.woff2) format("woff2"); }
+  @font-face { font-family: "IM Fell English SC"; src: url(../../web/fonts/im-fell-english-sc-latin.woff2) format("woff2"); }
+  body { margin: 0; }
+</style>
+<canvas id="og" width="1200" height="630"></canvas>
+<script>
+  // map.json comes from the page (render-og.js), as file:// forbids fetch
+  window.drawShareImage = function (map) {
+    return Promise.all([document.fonts.load('30px VT323'), document.fonts.load('150px "IM Fell English SC"')]).then(function () {
+      conquerHero.drawShare(document.getElementById('og'), map, {
+        version: 'CONQUER 4.12  ·  USENET, 1987  ·  GPL',
+        tagline: ['Rule a nation. Sign treaties.', 'Break them.'],
+        dispatch: 'sahara changes status with darboth to ',
+        hot: 'WAR',
+        site: 'conquer.vejeta.com'
+      });
+      return document.getElementById('og').toDataURL('image/png');
+    });
+  };
+</script>
+<script src="../../web/hero.js"></script>

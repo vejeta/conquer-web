@@ -61,7 +61,7 @@ fi
 # Check world data status
 echo ""
 echo "🌍 World Data Status:"
-WORLD_LIB_DIR="$(pwd)/conquer/lib"
+WORLD_LIB_DIR="$(pwd)/data/lib"
 
 if [ -d "$WORLD_LIB_DIR" ]; then
     echo "   World directory: ✅ Found ($WORLD_LIB_DIR)"
@@ -74,6 +74,9 @@ if [ -d "$WORLD_LIB_DIR" ]; then
         if [ -f "$WORLD_LIB_DIR/$file" ]; then
             if [ -s "$WORLD_LIB_DIR/$file" ]; then
                 echo "   $file: ✅ Present and non-empty"
+            elif [ "$file" = ".userlog" ]; then
+                # Filled in as players log in; empty in a fresh world
+                echo "   $file: ✅ Present (no logins yet)"
             else
                 echo "   $file: ⚠️  Present but empty"
                 MISSING_FILES+=("$file (empty)")

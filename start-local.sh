@@ -11,10 +11,10 @@ if [ ! -f config/local.env ]; then
     exit 1
 fi
 
+# Export every setting so docker-compose can substitute it
+set -a
 source config/local.env
-
-# Export environment variables for docker-compose
-export TTYD_USERNAME TTYD_PASSWORD MAX_CLIENTS SESSION_TIMEOUT
+set +a
 
 echo "🎮 Starting Conquer Web (Local Development)"
 echo "Domain: $DOMAIN"
@@ -24,7 +24,16 @@ echo ""
 # Ensure we have self-signed certificates
 if [ ! -f "$CERT_PATH/fullchain.pem" ] || [ ! -f "$CERT_PATH/privkey.pem" ]; then
     echo "📋 Self-signed certificates not found. Generating them..."
-    ./setup-local-certs.sh
+    DOMAIN="$DOMAIN" CERT_DAYS="${CERT_DAYS:-365}" ./setup-local-certs.sh
+fi
+
+# Live world data directory (seeded by the container on first start)
+mkdir -p data/lib data/public data/backups data/auth data/practice
+
+# Player accounts: create the administrator's account on first start
+if [ ! -s data/auth/htpasswd ]; then
+    echo "📋 Creating the administrator web account '$TTYD_USERNAME'"
+    printf '%s\n' "$TTYD_PASSWORD" | ./manage-players.sh add "$TTYD_USERNAME" --admin --password-stdin
 fi
 
 # Add domain to /etc/hosts if not present
@@ -46,3 +55,6 @@ echo "📋 Useful commands:"
 echo "  ./logs.sh          - View container logs"
 echo "  ./stop.sh          - Stop all containers"
 echo "  ./health-check.sh  - Check service status"
+echo "  ./add-nation.sh    - Create a player nation (admin)"
+echo "  ./manage-players.sh - Manage player web accounts (admin)"
+echo "  ./run-turn.sh      - Run a turn update now (admin)"

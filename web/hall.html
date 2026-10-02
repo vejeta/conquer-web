@@ -1,0 +1,128 @@
+<!doctype html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="hall.page_title">Conquer Hall of Fame</title>
+  <meta name="description" content="The rulers who won the seasons of Conquer, the classic multiplayer strategy game.">
+  <meta property="og:title" content="Conquer Hall of Fame">
+  <meta property="og:description" content="The rulers who won the seasons of Conquer, the 1987 Usenet strategy game back in the browser.">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d1117; --panel: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e;
+      --accent: #3fb950; --gold: #d4a72c; --silver: #9aa4ae; --bronze: #b0714a;
+    }
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) {
+        color-scheme: light;
+        --bg: #f6f8fa; --panel: #ffffff; --border: #d0d7de; --text: #1f2328; --muted: #57606a;
+        --accent: #1a7f37; --gold: #9a6700; --silver: #57606a; --bronze: #8a4b22;
+      }
+    }
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f6f8fa; --panel: #ffffff; --border: #d0d7de; --text: #1f2328; --muted: #57606a;
+      --accent: #1a7f37; --gold: #9a6700; --silver: #57606a; --bronze: #8a4b22;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    main { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+    a { color: var(--accent); }
+    .crumbs { color: var(--muted); font-size: 0.9rem; }
+    h1 { font: 700 clamp(2rem, 6vw, 3rem)/1.1 ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: 0.08em; margin: 12px 0 8px; }
+    .lede { color: var(--muted); margin: 0 0 32px; }
+    .season { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; margin-bottom: 20px; }
+    .season h2 { margin: 0; font-size: 1.3rem; text-wrap: balance; }
+    .meta { color: var(--muted); font-size: 0.9rem; margin: 2px 0 16px; font-variant-numeric: tabular-nums; }
+    .podium { list-style: none; margin: 0 0 12px; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+    .podium li { border: 1px solid var(--border); border-top: 4px solid var(--c); border-radius: 8px; padding: 10px 12px; }
+    .podium .place { font: 700 0.75rem ui-monospace, monospace; text-transform: uppercase; letter-spacing: 0.08em; color: var(--c); }
+    .podium .name { font-size: 1.2rem; font-weight: 700; }
+    .podium .detail { color: var(--muted); font-size: 0.85rem; }
+    details summary { cursor: pointer; color: var(--muted); font-size: 0.9rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 8px; }
+    th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .table-wrap { overflow-x: auto; }
+    .empty { color: var(--muted); }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .top select {
+      font: 600 0.85rem system-ui, sans-serif; color: var(--muted); background: var(--panel);
+      border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; cursor: pointer; max-width: 100%; margin-left: auto;
+    }
+    .top select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  </style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <p class="crumbs"><a href="index.html">Conquer</a> / <span data-i18n="hall.title">Hall of fame</span></p>
+    <select data-lang-menu aria-label="Language" data-i18n-title="index.language"></select>
+  </div>
+  <h1 data-i18n="hall.title">Hall of fame</h1>
+  <p class="lede" data-i18n="hall.lede">Every season of Conquer on this server, and the rulers who ended it on top.</p>
+  <div id="seasons"><p class="empty" data-i18n="hall.empty">The first season is still being fought. Its winners will be written here.</p></div>
+</main>
+<script src="server.js"></script>
+<script src="site.js"></script>
+<script>
+  (function () {
+    var box = document.getElementById('seasons');
+    function T(key, params) { return conquerI18n.t('hall.' + key, params); }
+    var PLACES = [['first', '--gold'], ['second', '--silver'], ['third', '--bronze']];
+    function add(parent, tag, cls, text) {
+      var e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text != null) e.textContent = text;
+      parent.appendChild(e);
+      return e;
+    }
+    function render(s) {
+      var nations = (s.final.nations || []).slice().sort(function (a, b) { return b.score - a.score; });
+      var sec = add(box, 'section', 'season');
+      add(sec, 'h2', null, s.name);
+      add(sec, 'p', 'meta', T('ended', { date: s.ended, season: s.final.season || '', turn: s.final.turn }));
+      var podium = add(sec, 'ol', 'podium');
+      nations.slice(0, 3).forEach(function (n, i) {
+        var li = add(podium, 'li');
+        li.style.setProperty('--c', 'var(' + PLACES[i][1] + ')');
+        add(li, 'div', 'place', T(PLACES[i][0]));
+        add(li, 'div', 'name', n.name);
+        add(li, 'div', 'detail', T('detail', { race: n.race, 'class': n['class'], score: n.score }));
+      });
+      var det = add(sec, 'details');
+      add(det, 'summary', null, T('all_scores', { n: nations.length }));
+      var wrap = add(det, 'div', 'table-wrap');
+      var table = add(wrap, 'table');
+      var head = add(add(table, 'thead'), 'tr');
+      ['#', T('nation'), T('race'), T('class'), T('score')].forEach(function (h, i) { add(head, 'th', i === 0 || i === 4 ? 'num' : null, h); });
+      var body = add(table, 'tbody');
+      nations.forEach(function (n, i) {
+        var tr = add(body, 'tr');
+        add(tr, 'td', 'num', i + 1); add(tr, 'td', null, n.name); add(tr, 'td', null, n.race);
+        add(tr, 'td', null, n['class']); add(tr, 'td', 'num', n.score);
+      });
+    }
+    conquerI18n.ready().then(function () { return fetch(conquerServerUrl('status/seasons/index.json'), { cache: 'no-store' }); })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function (list) {
+        if (!list.length) return;
+        return Promise.all(list.map(function (s) {
+          return fetch(conquerServerUrl('status/seasons/' + encodeURIComponent(s.slug) + '.json')).then(function (r) { return r.json(); });
+        })).then(function (seasons) { shown = seasons; draw(); });
+      })
+      .catch(function () { /* no finished season yet */ });
+    // Seasons drawn in the language chosen in the menu
+    var shown = null;
+    function draw() { box.textContent = ''; shown.forEach(render); }
+    document.addEventListener('conquer:lang', function () { if (shown) draw(); });
+  })();
+</script>
+</body>
+</html>

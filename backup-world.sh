@@ -9,7 +9,7 @@ echo "=============================="
 echo ""
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DOCKER_LIB_DIR="$SCRIPT_DIR/conquer/lib"
+DOCKER_LIB_DIR="$SCRIPT_DIR/data/lib"
 BACKUP_DIR="$SCRIPT_DIR/backups"
 
 # Create backup directory
@@ -32,7 +32,7 @@ echo "   Target: $BACKUP_FILE"
 
 # Create backup
 cd "$SCRIPT_DIR"
-if tar -czf "$BACKUP_FILE" -C conquer lib/; then
+if tar -czf "$BACKUP_FILE" -C data lib/; then
     echo "✅ Backup created successfully!"
 
     # Show backup info

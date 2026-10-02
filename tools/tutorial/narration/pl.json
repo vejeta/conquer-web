@@ -1,0 +1,109 @@
+{
+ "language": "pl",
+ "voice": {
+  "engine": "voxcpm",
+  "language": "Polish",
+  "design": "A warm, deep male voice of a native Polish documentary narrator from Warsaw, about forty years old. Calm, professional and evocative, with clear diction and an unhurried pace.",
+  "reference": "Październik tysiąc dziewięćset osiemdziesiątego siódmego roku. Pewna gra strategiczna rozchodzi się po całym świecie, post po poście, w Usenecie."
+ },
+ "captions": {
+  "keys": "Klawisze",
+  "look": "tylko patrz",
+  "intro_title": "Twoja pierwsza tura",
+  "intro_sub": "Usenet, 1987 · twoja przeglądarka, dziś",
+  "outro_title": "Twój naród czeka",
+  "outro_sub": "Poproś o zaproszenie · rozegraj pierwszą turę dziś wieczorem",
+  "password": "Hasło",
+  "space": "Spacja"
+ },
+ "segments": [
+  {
+   "screen": "intro",
+   "text": "Październik tysiąc dziewięćset osiemdziesiątego siódmego roku. Pewna gra strategiczna rozchodzi się po całym świecie, post po poście, w Usenecie. W uczelnianych ośrodkach obliczeniowych studenci ją kompilują i przed zielono świecącymi terminalami władają królestwami elfów, krasnoludów, orków i ludzi. To nie gra planszowa: to świat epickiej fantasy, z magią, bohaterami i potworami. Czterdzieści lat później Conquer wraca. Bez instalacji. Bez dostępu do shella. Tylko twoja przeglądarka. Oto twoja pierwsza tura."
+  },
+  {
+   "screen": "menu",
+   "text": "Zaloguj się na swoje konto gracza. Menu zna twoje imię i twój naród. Naciśnij jedynkę, aby zagrać.",
+   "title": "Zaloguj się i otwórz menu"
+  },
+  {
+   "screen": "password",
+   "text": "Wpisz hasło swojego narodu. Podczas pisania nic się nie pojawia. Tak ma być.",
+   "title": "Wpisz hasło narodu"
+  },
+  {
+   "screen": "title",
+   "text": "Ekran tytułowy, dokładnie taki, jaki gracze widzieli w tysiąc dziewięćset osiemdziesiątym ósmym roku. Naciśnij dowolny klawisz.",
+   "title": "Ekran tytułowy"
+  },
+  {
+   "screen": "map",
+   "text": "Oto twoje królestwo. Po lewej mapa. Litera C to twoja stolica, a każdy znak w negatywie to ziemia, która należy do ciebie. Na razie to tylko stolica. W prawym górnym rogu twoje jednostki. W prawym dolnym sektor pod kursorem. A na samym dole: tura, skarbiec i pora roku.",
+   "title": "Poznaj ekran główny"
+  },
+  {
+   "screen": "mail",
+   "text": "Masz pocztę. Naciśnij wielkie R, aby ją przeczytać. Każdy klawisz pokazuje następną wiadomość.",
+   "title": "Przeczytaj pocztę"
+  },
+  {
+   "screen": "budget",
+   "text": "Wielkie B otwiera budżet. Twój lud płaci podatki. Twoi żołnierze kosztują. I miej oko na spichlerz: sama stolica nie daje żywności.",
+   "title": "Sprawdź budżet"
+  },
+  {
+   "screen": "armies",
+   "text": "Małe a pokazuje twoje armie. Armia zero to garnizon. Nigdy nie opuszcza domu. Król i jego baronowie dowodzą. Twoje armie polowe są gotowe do wymarszu.",
+   "title": "Poznaj swoje armie"
+  },
+  {
+   "screen": "select",
+   "text": "Naciśnij O, aby wybrać jednostkę. Gwiazdka pokazuje twój wybór: armia dwadzieścia. Stu dwunastu żołnierzy.",
+   "title": "Wybierz armię polową"
+  },
+  {
+   "screen": "move",
+   "text": "Naciśnij M, aby ruszyć, a potem kierunek: H, J, K i L, a na ukos Y, U, B i N. Otaczają twoją prawą dłoń na klawiaturze. Działa też klawiatura numeryczna, a na tej stronie strzałki. Tutaj J. Na południe.",
+   "title": "Wymaszeruj po nowe ziemie"
+  },
+  {
+   "screen": "moved",
+   "text": "Spacja kończy marsz, a ziemia jest twoja. Zapamiętaj tę zasadę: żeby zająć ziemię, armia potrzebuje dość żołnierzy. Na początku mniej więcej stu.",
+   "title": "Zakończ ruch"
+  },
+  {
+   "screen": "draft",
+   "text": "Z powrotem w stolicy wielkie D ogłasza pobór. I jak piechota. Pięćdziesięciu ludzi.",
+   "title": "Pobierz nowe wojsko"
+  },
+  {
+   "screen": "drafted",
+   "text": "Pobierz ich jako nową armię. Jeśli dołączysz ich do armii w marszu, ta nie ruszy się już w tej turze.",
+   "title": "Jako nowa armia"
+  },
+  {
+   "screen": "diplomacy",
+   "text": "Wielkie S wymienia wszystkie narody świata: królestwa innych graczy, a także piratów, koczowników i dzikich, którymi kieruje komputer. Nie znasz jeszcze nikogo. Spotkania dopiero przed tobą.",
+   "title": "Przyjrzyj się innym narodom"
+  },
+  {
+   "screen": "quit",
+   "text": "Naciśnij Q, aby zapisać i wyjść. Menu zada jedno pytanie: czy twoje rozkazy są gotowe?",
+   "title": "Zapisz i wyjdź"
+  },
+  {
+   "screen": "done",
+   "text": "Odpowiedz tak. Gdy wszyscy władcy są gotowi, tura rusza od razu, bez czekania na godzinę aktualizacji.",
+   "title": "Oznacz rozkazy jako gotowe"
+  },
+  {
+   "screen": "newturn",
+   "text": "Zaczyna się nowa pora roku. Przeczytaj wieści. Wydaj rozkazy. Wyjdź z gry i czekaj, aż świat się poruszy. Taki jest rytm Conquer.",
+   "title": "Nowa pora roku"
+  },
+  {
+   "screen": "outro",
+   "text": "Twój naród czeka. Poproś o kod zaproszenia, załóż swój naród i rozegraj pierwszą turę jeszcze dziś wieczorem."
+  }
+ ]
+}

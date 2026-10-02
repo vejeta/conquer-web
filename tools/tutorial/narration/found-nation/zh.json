@@ -1,0 +1,122 @@
+{
+ "language": "zh",
+ "note": "The nation builder video: the same narrator as ../zh.json (video.py --video found-nation)",
+ "captions": {
+  "keys": "按键",
+  "look": "只需观看",
+  "intro_title": "如何建立国家",
+  "intro_sub": "游戏自带的国家生成器，与 1987 年一样",
+  "outro_title": "你的国家在等你",
+  "outro_sub": "申请邀请码 · 今晚就建立你的国家",
+  "password": "密码",
+  "space": "空格"
+ },
+ "segments": [
+  {
+   "screen": "intro",
+   "text": "在第一个回合之前，你要先建立自己的国家：一个史诗奇幻世界中的王国。第一次游戏时，游戏会打开它自带的国家生成器，和一九八七年的玩家见到的一模一样。只需两分钟。方法如下。"
+  },
+  {
+   "screen": "name",
+   "text": "首先是国家的名字，最多九个字母。每位统治者都会在地图上看到它。输入名字，然后按回车。",
+   "keys": [
+    "Enter"
+   ]
+  },
+  {
+   "screen": "password",
+   "text": "现在为你的国家设一个密码，最多七个字符。输入时屏幕上不会显示任何内容。每次游戏都要输入它，所以请记好。",
+   "keys": [
+    "password",
+    "Enter"
+   ]
+  },
+  {
+   "screen": "password2",
+   "text": "再输入一次。",
+   "keys": [
+    "password",
+    "Enter"
+   ]
+  },
+  {
+   "screen": "leader",
+   "text": "你的统治者的名字。新闻会报道他的事迹。",
+   "keys": [
+    "Enter"
+   ]
+  },
+  {
+   "screen": "race",
+   "text": "用一个字母选择你的种族：矮人、精灵、人类或兽人。矮人是矿工和战士；精灵是守护者和法师；兽人繁殖快，以数量取胜。人类最均衡，最适合新手。"
+  },
+  {
+   "screen": "class",
+   "text": "你的职业。输入它的编号，然后按回车。国王和皇帝不花点数，适合第一局游戏。",
+   "keys": [
+    "1",
+    "Enter"
+   ]
+  },
+  {
+   "screen": "alignment",
+   "text": "善良、中立或邪恶。这决定了世界上其他王国如何看待你。"
+  },
+  {
+   "screen": "mark",
+   "text": "一个字母会在所有人的地图上标出你的领土。"
+  },
+  {
+   "screen": "points",
+   "text": "现在分配点数。每一行都是你的国家可以购买的东西。J 向下移动，K 向上移动，空格为标记的那一行再买一份。",
+   "keys": [
+    "j",
+    "k",
+    "Space"
+   ]
+  },
+  {
+   "screen": "treasury",
+   "text": "一个建议：买两点国库。没有黄金的国家在第一回合无法征兵。完成后按 Escape。",
+   "step": "points",
+   "title": "买一些黄金",
+   "keys": [
+    "j",
+    "Space",
+    "Esc"
+   ]
+  },
+  {
+   "screen": "population",
+   "text": "没花完的点数可以变成人口。按 Y，然后按任意键。",
+   "keys": [
+    "y"
+   ]
+  },
+  {
+   "screen": "complete",
+   "text": "你的国家符合你的心意吗？按 Y。",
+   "keys": [
+    "y"
+   ]
+  },
+  {
+   "screen": "save",
+   "text": "按 Y 保存。注意：按其他任何键都会删除这个国家，你得从头再来。",
+   "keys": [
+    "y"
+   ]
+  },
+  {
+   "screen": "added",
+   "text": "你的国家已经加入这个世界，与其他王国并立。从现在起，点击开始游戏会直接进入你的国家，游戏会要求输入它的密码。",
+   "keys": [
+    "Space"
+   ]
+  },
+  {
+   "screen": "outro",
+   "text": "就是这样。申请一个邀请码，创建账户，建立你的国家。然后，开始你的第一个回合。"
+  }
+ ]
+}

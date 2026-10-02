@@ -21,13 +21,6 @@ if docker ps --format "table {{.Names}}" | grep -q "conquer-vps"; then
     STOPPED_ANY=true
 fi
 
-# Fallback to default compose file
-if [ "$STOPPED_ANY" = false ] && [ -f "docker-compose.yml" ] && docker-compose ps -q > /dev/null 2>&1; then
-    echo "   Stopping containers using default compose file..."
-    docker-compose down
-    STOPPED_ANY=true
-fi
-
 if [ "$STOPPED_ANY" = false ]; then
     echo "   No running Conquer Web containers found"
 fi

@@ -43,14 +43,24 @@
 
     # Enhanced security headers
     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-    Header always set X-Frame-Options DENY
+    Header always set X-Frame-Options SAMEORIGIN
     Header always set X-Content-Type-Options nosniff
     Header always set X-XSS-Protection "1; mode=block"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' wss:; font-src 'self'"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' wss:; font-src 'self'; frame-ancestors 'self'"
 
     # Hide server information
     ServerSignature Off
+
+    # Landing page (static, public)
+    DocumentRoot "/var/www/DOMAIN_NAME"
+
+    # Game terminal: ttyd runs with base path /play
+    RedirectMatch permanent ^/play$ /play/
+
+    # Drop any client-supplied identity header so it cannot be forged
+    # (the player account check for /play/ is at the end of this vhost)
+    RequestHeader unset X-WEBAUTH-USER early
 
     # Enable rewrite engine for WebSocket upgrade
     RewriteEngine on
@@ -58,18 +68,39 @@
     # WebSocket upgrade handling
     RewriteCond %{HTTP:Upgrade} websocket [NC]
     RewriteCond %{HTTP:Connection} upgrade [NC]
-    RewriteRule ^/?(.*) "ws://127.0.0.1:7681/$1" [P,L]
+    RewriteRule ^/play/(.*) "ws://127.0.0.1:7681/play/$1" [P,L]
 
-    # Regular HTTP proxy to Docker container
+    # Regular HTTP proxy
     ProxyPreserveHost On
-    ProxyPass /ws ws://127.0.0.1:7681/ws
-    ProxyPassReverse /ws ws://127.0.0.1:7681/ws
-    ProxyPass / http://127.0.0.1:7681/
-    ProxyPassReverse / http://127.0.0.1:7681/
+    # Sign-up with invite codes (web/join.html): conquer-gate checks the
+    # code and creates the account; it is open, like the sign-up page
+    ProxyPass /join/api/ http://127.0.0.1:7682/join/api/
+    ProxyPassReverse /join/api/ http://127.0.0.1:7682/join/api/
+    ProxyPass /play/ http://127.0.0.1:7681/play/
+    ProxyPassReverse /play/ http://127.0.0.1:7681/play/
 
     # WebSocket proxy settings
     ProxyTimeout 3600
-    ProxyPassMatch ^/(.*) http://127.0.0.1:7681/$1
+
+    <Directory "/var/www/DOMAIN_NAME">
+        Options None
+        AllowOverride None
+        Require all granted
+        # Pages, scripts and texts change with every update: browsers ask
+        # for a newer copy each time (a short "not modified" when there is
+        # none), so nobody sees a new page with old texts
+        <FilesMatch "\.(html|js|css|json)$">
+            Header set Cache-Control "no-cache"
+        </FilesMatch>
+    </Directory>
+
+    # Public game status, written by the game container
+    <Directory "/var/www/DOMAIN_NAME/status">
+        # The website may also be published elsewhere (GitHub Pages) and
+        # read the public game status from here
+        Header always set Access-Control-Allow-Origin "*"
+        Header always set Cache-Control "no-cache"
+    </Directory>
 
     # Security: Block access to sensitive files
     <Files ~ "^\.(htaccess|htpasswd|git|env|log)">
@@ -81,13 +112,6 @@
         Require all denied
     </LocationMatch>
 
-    # Rate limiting per IP for game access
-    <Location />
-        # Basic rate limiting - can be enhanced with mod_evasive
-        <RequireAll>
-            Require all granted
-        </RequireAll>
-    </Location>
 
     # Logging
     ErrorLog ${APACHE_LOG_DIR}/conquer_ssl_error.log
@@ -95,6 +119,22 @@
 
     # Log format for monitoring
     LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" combined
+
+    # Player accounts: Apache authenticates every request to the terminal
+    # (manage-players.sh edits the file) and tells ttyd who signed in.
+    # KEEP THIS THE LAST <Location> OF THE VHOST: sections are merged in
+    # order, so a later <Location /> with "Require all granted" would
+    # silently remove the password from the game.
+    <Location "/play/">
+        AuthType Basic
+        AuthName "Conquer"
+        AuthBasicProvider file
+        AuthUserFile "/etc/apache2/conquer-web.htpasswd"
+        Require valid-user
+        RequestHeader set X-WEBAUTH-USER "%{REMOTE_USER}s"
+        # Keep search engines out of the game terminal
+        Header always set X-Robots-Tag "noindex, nofollow"
+    </Location>
 </VirtualHost>
 
 # Additional security configuration
@@ -102,6 +142,8 @@
     # Block known bad user agents and suspicious patterns
     SetEnvIfNoCase User-Agent "^(libwww|wget|python|perl|curl|PHP)" bad_bot
     SetEnvIfNoCase User-Agent "(bot|crawler|spider)" bad_bot
+    # Search engines and link previews (chat apps, social networks) are welcome
+    SetEnvIfNoCase User-Agent "(Googlebot|bingbot|DuckDuckBot|Twitterbot|facebookexternalhit|Discordbot|Slackbot|LinkedInBot|TelegramBot|WhatsApp|Mastodon)" !bad_bot
 
     # Allow legitimate browsers and game clients
     SetEnvIfNoCase User-Agent "(firefox|chrome|safari|edge|opera)" good_browser
@@ -123,5 +165,5 @@ LimitRequestBody 1048576
 Timeout 60
 KeepAliveTimeout 5
 
-# Additional security headers for all responses
-Header always set X-Robots-Tag "noindex, nofollow"
+# The landing page and the guide are public and meant to be found; only the
+# game terminal is kept out of search engines (see <Location "/play/">)

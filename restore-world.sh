@@ -9,19 +9,35 @@ echo "==============================="
 echo ""
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DOCKER_LIB_DIR="$SCRIPT_DIR/conquer/lib"
+DOCKER_LIB_DIR="$SCRIPT_DIR/data/lib"
 BACKUP_DIR="$SCRIPT_DIR/backups"
+# Automatic backups taken by the game container before every turn update
+TURN_BACKUP_DIR="$SCRIPT_DIR/data/backups"
 
 # Function to list available backups
 list_backups() {
-    echo "📁 Available backups:"
-    if ls "$BACKUP_DIR"/*.tar.gz >/dev/null 2>&1; then
-        ls -lah "$BACKUP_DIR"/*.tar.gz | while read -r line; do
-            echo "   $line"
-        done
+    local dir found=1
+    for dir in "$BACKUP_DIR" "$TURN_BACKUP_DIR"; do
+        if ls "$dir"/*.tar.gz >/dev/null 2>&1; then
+            echo "📁 Available backups in $dir:"
+            ls -lah "$dir"/*.tar.gz | while read -r line; do
+                echo "   $line"
+            done
+            found=0
+        fi
+    done
+    if [ $found -ne 0 ]; then
+        echo "📁 No backups found in $BACKUP_DIR or $TURN_BACKUP_DIR"
+    fi
+    return $found
+}
+
+# Resolve a backup name: absolute path, or a file in either backup directory
+resolve_backup() {
+    if [[ "$1" =~ ^/ ]] || [ ! -f "$TURN_BACKUP_DIR/$1" ]; then
+        [[ "$1" =~ ^/ ]] && echo "$1" || echo "$BACKUP_DIR/$1"
     else
-        echo "   No backups found in $BACKUP_DIR"
-        return 1
+        echo "$TURN_BACKUP_DIR/$1"
     fi
 }
 
@@ -53,12 +69,14 @@ validate_backup() {
 backup_current() {
     if [ -d "$DOCKER_LIB_DIR" ] && [ "$(ls -A "$DOCKER_LIB_DIR" 2>/dev/null)" ]; then
         echo "💾 Backing up current world before restore..."
+        mkdir -p "$BACKUP_DIR"
 
-        local timestamp=$(date +%Y%m%d_%H%M%S)
+        local timestamp
+        timestamp=$(date +%Y%m%d_%H%M%S)
         local backup_file="$BACKUP_DIR/world_backup_pre_restore_$timestamp.tar.gz"
 
         cd "$SCRIPT_DIR"
-        if tar -czf "$backup_file" -C conquer lib/; then
+        if tar -czf "$backup_file" -C data lib/; then
             echo "✅ Current world backed up to: $(basename "$backup_file")"
         else
             echo "⚠️  Warning: Failed to backup current world"
@@ -76,12 +94,12 @@ restore_world() {
     mkdir -p "$DOCKER_LIB_DIR"
 
     # Remove existing world data
-    rm -rf "$DOCKER_LIB_DIR"/*
+    rm -rf "${DOCKER_LIB_DIR:?}"/*
     rm -f "$DOCKER_LIB_DIR"/.*userlog* 2>/dev/null || true
 
     # Extract backup
     cd "$SCRIPT_DIR"
-    if tar -xzf "$backup_file"; then
+    if tar -xzf "$backup_file" -C "$SCRIPT_DIR/data"; then
         echo "✅ World data restored successfully!"
 
         # Set proper permissions
@@ -92,12 +110,14 @@ restore_world() {
         echo ""
         echo "📊 Restored World Information:"
         if [ -f "$DOCKER_LIB_DIR/nations" ]; then
-            local nation_count=$(wc -l < "$DOCKER_LIB_DIR/nations" 2>/dev/null || echo "unknown")
+            local nation_count
+            nation_count=$(wc -l < "$DOCKER_LIB_DIR/nations" 2>/dev/null || echo "unknown")
             echo "   Nations: $nation_count"
         fi
 
         if [ -f "$DOCKER_LIB_DIR/data" ]; then
-            local data_size=$(du -h "$DOCKER_LIB_DIR/data" 2>/dev/null | cut -f1 || echo "unknown")
+            local data_size
+            data_size=$(du -h "$DOCKER_LIB_DIR/data" 2>/dev/null | cut -f1 || echo "unknown")
             echo "   World data size: $data_size"
         fi
 
@@ -120,21 +140,16 @@ main() {
         echo ""
         list_backups
 
-        if ls "$BACKUP_DIR"/*.tar.gz >/dev/null 2>&1; then
+        if list_backups >/dev/null; then
             echo ""
-            read -p "Enter backup filename (or 'q' to quit): " backup_filename
+            read -r -p "Enter backup filename (or 'q' to quit): " backup_filename
 
             if [ "$backup_filename" = "q" ]; then
                 echo "❌ Restore cancelled"
                 exit 0
             fi
 
-            # Check if it's just a filename or full path
-            if [[ "$backup_filename" =~ ^/ ]]; then
-                backup_file="$backup_filename"
-            else
-                backup_file="$BACKUP_DIR/$backup_filename"
-            fi
+            backup_file=$(resolve_backup "$backup_filename")
         else
             echo ""
             echo "❌ No backups available. Create a backup first with:"
@@ -142,12 +157,7 @@ main() {
             exit 1
         fi
     else
-        backup_file="$1"
-
-        # If it's just a filename, prepend backup directory
-        if [[ ! "$backup_file" =~ ^/ ]]; then
-            backup_file="$BACKUP_DIR/$backup_file"
-        fi
+        backup_file=$(resolve_backup "$1")
     fi
 
     # Validate backup file
@@ -182,9 +192,8 @@ main() {
         echo "🎉 World restore completed!"
         echo ""
         echo "📋 Next steps:"
-        echo "  1. Rebuild containers: ./rebuild.sh --force"
-        echo "  2. Start the game: ./start-local.sh"
-        echo "  3. Access at: https://conquer.local"
+        echo "  1. Restart the game container so it reloads the world:"
+        echo "     docker restart conquer-local   (or conquer-vps on the VPS)"
     else
         echo "❌ Restore failed"
         exit 1

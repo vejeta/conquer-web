@@ -1,0 +1,138 @@
+{
+ "title": "Gründe deine Nation",
+ "steps": [
+  {
+   "id": "name",
+   "title": "Benenne deine Nation",
+   "keys": [],
+   "text": "<p>Gib den Namen deiner Nation ein und drück <kbd>Enter</kbd>. <strong>Bis 9 Buchstaben</strong>: Das Feld stoppt beim neunten.</p><p>Alle Herrscher sehen diesen Namen auf der Karte und in den Nachrichten. Es ist nicht dein Konto für die Website.</p>",
+   "detect": "Enter a Name for your Country"
+  },
+  {
+   "id": "password",
+   "title": "Das Passwort deiner Nation",
+   "keys": [],
+   "text": "<p>Gib ein Passwort für deine Nation ein, <strong>2 bis 7 Zeichen</strong>, und drück <kbd>Enter</kbd>. Beim Tippen ist nichts zu sehen.</p><p>Das Spiel fragt jedes Mal danach, wie auf den Unix-Rechnern von 1987. Bewahre es gut auf: Nur der Spielleiter kann es zurücksetzen.</p>",
+   "detect": "Enter National Password"
+  },
+  {
+   "id": "password2",
+   "title": "Noch einmal",
+   "keys": [],
+   "text": "<p>Gib dasselbe Passwort noch einmal ein und drück <kbd>Enter</kbd>.</p>",
+   "detect": "Reenter National Password"
+  },
+  {
+   "id": "leader",
+   "title": "Dein Herrscher",
+   "keys": [],
+   "text": "<p>Der Name des Herrschers deiner Nation, <strong>bis 9 Buchstaben</strong> (die Beispiele des Spiels: The Ed, Gandalf, Conan), dann <kbd>Enter</kbd>. Die Nachrichten werden von ihm berichten.</p>",
+   "detect": "name of your country's leader"
+  },
+  {
+   "id": "race",
+   "title": "Volk",
+   "keys": [
+    "D",
+    "E",
+    "H",
+    "O"
+   ],
+   "text": "<p>Drück einen Buchstaben:</p><ul><li><kbd>D</kbd> <strong>Zwerge</strong>: starke Kämpfer und Bergleute.</li><li><kbd>E</kbd> <strong>Elfen</strong>: gute Verteidiger, vertraut mit Magie.</li><li><kbd>H</kbd> <strong>Menschen</strong>: ausgewogen, am leichtesten für den Anfang.</li><li><kbd>O</kbd> <strong>Orks</strong>: vermehren sich schnell und kämpfen in Massen.</li></ul><p>Das Volk bestimmt, welche Klassen du danach wählen kannst.</p>",
+   "detect": "Enter your Race"
+  },
+  {
+   "id": "class",
+   "title": "Klasse",
+   "keys": [],
+   "text": "<p>Gib die <strong>Nummer</strong> einer Klasse ein und drück <kbd>Enter</kbd>. Die Liste zeigt, welche Völker sie wählen dürfen (D, E, H, O) und mit welcher Macht sie beginnt.</p><p><strong>King</strong> (König) und <strong>emperor</strong> (Kaiser) kosten keine Punkte und eignen sich für die erste Partie; die anderen beginnen mit einer Macht, die Punkte kostet.</p>",
+   "detect": "Enter the number of your choice"
+  },
+  {
+   "id": "late",
+   "title": "Punkte für den späten Einstieg",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>Die Welt hat schon einige Züge gespielt, darum gibt das Spiel deiner Nation ein paar Extrapunkte zum Aufholen. Du verteilst sie gleich mit den anderen.</p><p>Drücke eine beliebige Taste.</p>",
+   "detect": "points added for starting late"
+  },
+  {
+   "id": "alignment",
+   "title": "Gesinnung",
+   "keys": [
+    "G",
+    "N",
+    "E"
+   ],
+   "text": "<p>Der Charakter deiner Nation: <kbd>G</kbd> gut, <kbd>N</kbd> neutral oder <kbd>E</kbd> böse. Sie beeinflusst, wie dich die vom Computer gesteuerten Nationen sehen.</p>",
+   "detect": "Please Enter Alignment"
+  },
+  {
+   "id": "mark",
+   "title": "Dein Zeichen auf der Karte",
+   "keys": [],
+   "text": "<p>Drück einen der aufgelisteten Buchstaben. Er markiert das Land deiner Nation auf der Karte aller Spieler.</p>",
+   "detect": "Enter National Mark"
+  },
+  {
+   "id": "points",
+   "title": "Verteile deine Punkte",
+   "keys": [
+    "j",
+    "k",
+    "Space",
+    "Esc"
+   ],
+   "text": "<p>Jede Zeile ist etwas, das deine Nation kaufen kann; <strong>Points Left</strong> sind deine übrigen Punkte.</p><ul><li><kbd>j</kbd> bewegt die Markierung nach unten, <kbd>k</kbd> nach oben.</li><li><kbd>Leertaste</kbd> kauft eine Einheit der markierten Zeile.</li><li><kbd>l</kbd> wechselt zum Zurückgeben, <kbd>h</kbd> wieder zum Hinzufügen; <kbd>?</kbd> erklärt die Zeile.</li></ul><p><strong>Tipp:</strong> Kauf 2 oder 3 Punkte <strong>Treasury</strong> (Schatz): Eine Nation ohne Gold kann im ersten Zug keine Truppen ausheben. Drück <kbd>Esc</kbd>, wenn du fertig bist.</p>",
+   "detect": "Points Left:"
+  },
+  {
+   "id": "population",
+   "title": "Übrige Punkte",
+   "keys": [
+    "y",
+    "n"
+   ],
+   "text": "<p>Nicht ausgegebene Punkte können zu Bevölkerung werden: <kbd>y</kbd> (empfohlen). <kbd>n</kbd> bringt dich zurück, um sie auszugeben.</p>",
+   "detect": "remaining points for population"
+  },
+  {
+   "id": "civilians",
+   "title": "Mehr Bevölkerung",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>Drück eine beliebige Taste.</p>",
+   "detect": "more civilians"
+  },
+  {
+   "id": "complete",
+   "title": "Fertig?",
+   "keys": [
+    "y",
+    "n"
+   ],
+   "text": "<p><kbd>y</kbd>, wenn deine Nation so ist, wie du sie willst; <kbd>n</kbd> bringt dich zurück zu den Punkten.</p>",
+   "detect": "Is the modification complete"
+  },
+  {
+   "id": "save",
+   "title": "Speichern",
+   "keys": [
+    "y"
+   ],
+   "text": "<p>Drück <kbd>y</kbd>. <strong>Jede andere Taste löscht die eben gebaute Nation</strong>, und du fängst von vorn an.</p>",
+   "detect": "Save this nation"
+  },
+  {
+   "id": "added",
+   "title": "Deine Nation ist in der Welt",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>Drück eine beliebige Taste. Dein Konto für die Website ist jetzt mit dieser Nation verknüpft: Ab jetzt führt dich <strong>Spielen</strong> direkt zu ihr, und das Spiel fragt nach ihrem Passwort.</p>",
+   "detect": "Added to the World"
+  }
+ ]
+}

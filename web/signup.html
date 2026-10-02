@@ -1,0 +1,258 @@
+<!doctype html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="join.page_title">Join Conquer</title>
+  <meta name="description" content="Create your Conquer account with an invite code.">
+  <meta name="robots" content="noindex">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d1117; --panel: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e;
+      --accent: #3fb950; --accent-text: #0d1117; --warn: #d29922; --error: #f85149;
+    }
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) {
+        color-scheme: light;
+        --bg: #f6f8fa; --panel: #ffffff; --border: #d0d7de; --text: #1f2328; --muted: #57606a;
+        --accent: #1a7f37; --accent-text: #ffffff; --warn: #9a6700; --error: #cf222e;
+      }
+    }
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f6f8fa; --panel: #ffffff; --border: #d0d7de; --text: #1f2328; --muted: #57606a;
+      --accent: #1a7f37; --accent-text: #ffffff; --warn: #9a6700; --error: #cf222e;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    main { max-width: 560px; margin: 0 auto; padding: 32px 16px 64px; display: flex; flex-direction: column; gap: 20px; }
+    a { color: var(--accent); }
+    .crumbs { color: var(--muted); font-size: 0.9rem; margin: 0; }
+    h1 { font: 700 clamp(1.8rem, 6vw, 2.4rem)/1.15 ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: 0.04em; margin: 0; text-wrap: balance; }
+    .lede { color: var(--muted); margin: 0; }
+    .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+    form { display: flex; flex-direction: column; gap: 16px; }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    label { font-weight: 600; }
+    .hint { color: var(--muted); font-size: 0.85rem; }
+    input {
+      font: inherit; color: var(--text); background: var(--bg);
+      border: 1px solid var(--border); border-radius: 6px; padding: 9px 11px; width: 100%;
+    }
+    input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+    #code { font-family: ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: 0.12em; text-transform: uppercase; }
+    button, .button {
+      font: 600 1.05rem system-ui, sans-serif; background: var(--accent); color: var(--accent-text);
+      border: 0; border-radius: 8px; padding: 12px 20px; cursor: pointer; text-decoration: none; text-align: center;
+    }
+    button:disabled { opacity: 0.6; cursor: wait; }
+    button:focus-visible, .button:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+    .error { color: var(--error); font-weight: 600; margin: 0; }
+    .nocode { border-left: 3px solid var(--warn); padding-left: 12px; margin: 0; color: var(--muted); }
+    .nocode code { color: var(--text); user-select: all; overflow-wrap: anywhere; }
+    .keys { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    .keys li { border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; }
+    .keys li.now { border-color: var(--accent); border-width: 2px; }
+    .keys span { color: var(--muted); font-size: 0.92rem; }
+    .done h2 { margin: 0 0 8px; font-size: 1.3rem; }
+    .done ol { margin: 0 0 16px; padding-left: 1.3em; display: flex; flex-direction: column; gap: 6px; }
+    .done code { font-weight: 600; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .top select {
+      font: 600 0.85rem system-ui, sans-serif; color: var(--muted); background: var(--panel);
+      border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; cursor: pointer; max-width: 100%; margin-left: auto;
+    }
+    .top select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .howto { border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
+    .howto summary { cursor: pointer; font-weight: 600; }
+    .howto p { color: var(--muted); font-size: 0.92rem; margin: 8px 0; }
+    .howto video { width: 100%; border-radius: 6px; background: #000; display: block; }
+  </style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <p class="crumbs"><a href="index.html" data-i18n="join.home">Conquer</a> / <span data-i18n="join.title">Create your website account</span></p>
+    <select data-lang-menu aria-label="Language" data-i18n-title="index.language"></select>
+  </div>
+  <h1 data-i18n="join.title">Create your website account</h1>
+  <p class="lede" data-i18n="join.lede">Playing Conquer takes two keys. This page makes the first one.</p>
+
+  <ol class="keys" aria-label="Two keys">
+    <li class="now">
+      <strong data-i18n="join.step1_t">1. Your account for this website (here, now)</strong>
+      <span data-i18n="join.step1">A name and a password that open the door of the site. Your browser asks for them in a small window each time you press Play. It is not your nation: other players never see it.</span>
+    </li>
+    <li>
+      <strong data-i18n="join.step2_t">2. Your nation (next, inside the game)</strong>
+      <span data-i18n="join.step2">Conquer is a game from 1987 that runs in a terminal. After you sign in, it asks you to found your nation: its name (up to 9 letters, it can differ from your account), race, class, and a nation password the game asks for every time you play.</span>
+    </li>
+  </ol>
+
+  <section class="panel" id="form-panel">
+    <form id="form" novalidate>
+      <div class="field">
+        <label for="code" data-i18n="join.l_code">Invite code</label>
+        <input id="code" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="K7QM-3XPA" required maxlength="12">
+        <span class="hint" data-i18n="join.h_code">From the game administrator. It works once.</span>
+      </div>
+      <div class="field">
+        <label for="account" data-i18n="join.l_account">Account name</label>
+        <input id="account" name="username" autocomplete="username" autocapitalize="off" spellcheck="false" required maxlength="32" pattern="[A-Za-z0-9_.\-]{1,32}">
+        <span class="hint" data-i18n="join.h_account">Letters, digits, dots, dashes and underscores. It is not your nation's name: you choose that later, inside the game.</span>
+      </div>
+      <div class="field">
+        <label for="password" data-i18n="join.l_password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="128">
+        <span class="hint" data-i18n="join.h_password">At least 8 characters. You will sign in with it on this site.</span>
+      </div>
+      <div class="field">
+        <label for="password2" data-i18n="join.l_password2">Repeat the password</label>
+        <input id="password2" name="password2" type="password" autocomplete="new-password" required minlength="8" maxlength="128">
+      </div>
+      <p class="error" id="error" role="alert" hidden></p>
+      <button type="submit" id="submit" data-i18n="join.submit">Create my account</button>
+    </form>
+  </section>
+
+  <p class="nocode" id="nocode"><span data-i18n="join.nocode">No invite code? Ask the game administrator for one.</span>
+    <span id="contact-line" hidden><span data-i18n="join.write_to">Write to</span> <code id="contact"></code></span></p>
+
+  <section class="panel done" id="done" hidden aria-live="polite">
+    <h2 data-i18n="join.done_title">First key ready: your account for this website</h2>
+    <ol>
+      <li><span data-i18n="join.done1">Press Play now. Your browser shows a small sign-in window: type</span> <code id="done-account"></code> <span data-i18n="join.done1b">and the password you just chose.</span></li>
+      <li data-i18n="join.done_private">If the browser does not ask and signs you in as someone else (it remembers the last account used on this site), open this site in a private window.</li>
+      <li data-i18n="join.done2">Second key: the game asks you to found your nation. Choose its name (up to 9 letters), race and class, and a nation password. Save at the end with Esc and then y.</li>
+      <li data-i18n="join.done3">From then on, Play now and your account take you straight to your nation, which asks for its password.</li>
+    </ol>
+    <a class="button" href="game.html" id="play" data-i18n="join.play">Play now</a>
+  </section>
+
+  <details class="howto" id="howto" hidden>
+    <summary data-i18n="join.howto">Watch how a nation is founded (2 minutes)</summary>
+    <p data-i18n="join.howto_note">The game's own nation builder, as the game shows it the first time you play.</p>
+    <video id="howto-video" controls preload="none" playsinline></video>
+  </details>
+</main>
+<script src="server.js"></script>
+<script src="site.js"></script>
+<script>
+  (function () {
+    function m(key, params) { return conquerI18n.t('join.' + key, params); }
+    conquerI18n.ready();
+
+    // The sign-up service lives on the game server: a copy of this page
+    // elsewhere (GitHub Pages) sends the visitor there
+    if (window.conquerRemote) {
+      location.replace(conquerServerUrl('signup.html') + location.search);
+      return;
+    }
+
+    var form = document.getElementById('form'), error = document.getElementById('error');
+    var submit = document.getElementById('submit');
+    var fields = {
+      code: document.getElementById('code'), account: document.getElementById('account'),
+      password: document.getElementById('password'), password2: document.getElementById('password2')
+    };
+    // Invite link: signup.html?code=K7QM-3XPA
+    var given = new URLSearchParams(location.search).get('code');
+    if (given) fields.code.value = given;
+
+    // Where to ask for a code, from the public game status
+    fetch('status/status.json', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : {}; })
+      .then(function (d) {
+        if (!d.contact) return;
+        document.getElementById('contact').textContent = d.contact;
+        document.getElementById('contact-line').hidden = false;
+      })
+      .catch(function () {});
+
+    function show(key, focus) {
+      var text = 'e_' + key;
+      error.textContent = m(text) || m('e_server');
+      error.hidden = false;
+      if (focus) focus.focus();
+    }
+
+    // Another language: its texts come from the catalog; the error shown
+    // and the Play link follow it
+    document.addEventListener('conquer:lang', function (e) {
+      error.hidden = true;
+      document.getElementById('play').href = 'game.html' + (e.detail !== 'en' ? '?lang=' + e.detail : '');
+    });
+
+    // The narrated video of the game's nation builder (tools/tutorial/video.py),
+    // in the page's language or else in English
+    var howto = document.getElementById('howto'), video = document.getElementById('howto-video');
+    function howtoVideo(lang) {
+      var tries = lang === 'en' ? ['en'] : [lang, 'en'];
+      (function next() {
+        var l = tries.shift();
+        if (!l) return;
+        var src = 'tutorial/found-nation.' + l + '.mp4';
+        fetch(src, { method: 'HEAD' }).then(function (r) {
+          if (!r.ok) return next();
+          if (video.getAttribute('src') === src) return;
+          video.pause();
+          video.textContent = '';
+          video.src = src;
+          var track = document.createElement('track');
+          track.kind = 'captions'; track.srclang = l; track.default = true; track.label = l;
+          track.src = 'tutorial/found-nation.' + l + '.vtt';
+          video.appendChild(track);
+          howto.hidden = false;
+        }).catch(function () {});
+      })();
+    }
+    howtoVideo(conquerI18n.lang());
+    document.addEventListener('conquer:lang', function (e) { howtoVideo(e.detail); });
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      error.hidden = true;
+      var account = fields.account.value.trim();
+      if (!fields.code.value.trim()) return show('bad_code', fields.code);
+      if (!/^[A-Za-z0-9_.-]{1,32}$/.test(account)) return show('bad_account', fields.account);
+      if (fields.password.value.length < 8) return show('short_password', fields.password);
+      if (fields.password.value !== fields.password2.value) return show('mismatch', fields.password2);
+      submit.disabled = true;
+      fetch('join/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: fields.code.value, account: account, password: fields.password.value })
+      }).then(function (r) {
+        return r.json().catch(function () { return { error: 'server' }; });
+      }).then(function (res) {
+        submit.disabled = false;
+        if (!res.ok) {
+          var focus = { bad_code: fields.code, account_taken: fields.account, bad_account: fields.account,
+                        short_password: fields.password, bad_password: fields.password }[res.error];
+          return show(res.error || 'server', focus);
+        }
+        document.getElementById('done-account').textContent = res.account;
+        var lang = conquerI18n.lang();
+        document.getElementById('play').href = 'game.html' + (lang !== 'en' ? '?lang=' + lang : '');
+        // Done: the next steps replace the explanation, at the top
+        document.querySelector('.keys').hidden = true;
+        document.querySelector('.lede').hidden = true;
+        document.getElementById('form-panel').hidden = true;
+        document.getElementById('nocode').hidden = true;
+        document.getElementById('done').hidden = false;
+        window.scrollTo(0, 0);
+        document.getElementById('play').focus({ preventScroll: true });
+      }).catch(function () {
+        submit.disabled = false;
+        show('network');
+      });
+    });
+  })();
+</script>
+</body>
+</html>

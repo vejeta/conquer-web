@@ -1,0 +1,167 @@
+{
+ "title": "你的第一个回合",
+ "steps": [
+  {
+   "id": "menu",
+   "title": "登录并打开菜单",
+   "keys": [
+    "1"
+   ],
+   "text": "<p>在首页点击<strong>开始游戏</strong>，用你的玩家账号登录。菜单会显示你是谁、你的国家是哪一个。按 <kbd>1</kbd> 进入游戏。</p>",
+   "detect": "请选择："
+  },
+  {
+   "id": "password",
+   "title": "输入国家密码",
+   "keys": [
+    "password",
+    "Enter"
+   ],
+   "text": "<p>你的国家会直接打开。输入<strong>国家密码</strong>（最多 7 个字符），然后按 <kbd>Enter</kbd>。输入时屏幕上不会显示任何字符，这是正常的。</p>",
+   "detect": "Nation's Password"
+  },
+  {
+   "id": "title",
+   "title": "标题画面",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>和 1988 年的玩家看到的标题画面一模一样。游戏画面保持英文原貌：当它显示 <em>PRESS ANY KEY</em>（按任意键）时，随便按一个键即可，通常按 <kbd>空格</kbd>。</p>",
+   "detect": "PRESS ANY KEY"
+  },
+  {
+   "id": "map",
+   "title": "看懂主画面",
+   "keys": [],
+   "text": "<p>整局游戏你都会在这里度过。它分为四个部分：</p><ul><li><strong>地图</strong>，在左侧。<code>C</code> 是你的首都。反白显示的字母是你拥有的地块，其余字母表示地形：<code>~</code> 水域，<code>-</code> 平地，<code>%</code> 丘陵，<code>^</code> 山地，<code>#</code> 高峰。</li><li><strong>你的单位</strong>，在右上方。<code>*</code> 标出选中的单位，<code>&gt;</code> 标出同一地块上的其他单位。<em>mv</em> 是每个单位本回合还能移动多远，<em>st</em> 是它的指令状态。</li><li><strong>光标所在的地块</strong>，在右下方：所有者、用途、植被、地形、人口。</li><li><strong>状态栏</strong>，在最底部：回合数、国库（单位是金币 talon）、季节，有消息时还会显示 <em>You have Conquer Mail</em>。</li></ul><p>一开始你只有首都。其他一切都要靠自己去夺取。</p>",
+   "detect": "nation\\.\\.\\."
+  },
+  {
+   "id": "mail",
+   "title": "阅读邮件",
+   "keys": [
+    "R"
+   ],
+   "text": "<p>按 <kbd>R</kbd>。消息可能来自游戏、管理员或其他统治者。按任意键显示下一条；按 <kbd>Enter</kbd> 删除正在阅读的消息。</p>",
+   "detect": "Message from"
+  },
+  {
+   "id": "mail2",
+   "title": "下一条消息",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>这是你的国家的建国通知。再按一次 <kbd>空格</kbd> 返回地图。</p>",
+   "detect": "Message from"
+  },
+  {
+   "id": "budget",
+   "title": "查看预算",
+   "keys": [
+    "B"
+   ],
+   "text": "<p>按 <kbd>B</kbd>。你的人民要缴税（这里是首都 33,000 人口缴纳的 330,000 金币），你的军队要花钱（2,000 名士兵花费 100,000）。最后一行是下个季节的国库。</p><p>也要看看<strong>粮仓</strong>。只有一座首都时你不产粮食，没有农场的国家几个季节之内就会闹饥荒。</p>",
+   "detect": "BUDGET ESTIMATES"
+  },
+  {
+   "id": "armies",
+   "title": "认识你的军队",
+   "keys": [
+    "Space",
+    "a"
+   ],
+   "text": "<p>按 <kbd>空格</kbd> 离开预算画面，然后按 <kbd>a</kbd>。0 号军队是<strong>驻军</strong>：250 名永不离开首都的士兵。国王和男爵们是<strong>将领</strong>。再往右（按 <kbd>空格</kbd> 以外的任意键翻页）是你的<strong>野战军</strong>，可以出征。看完后按 <kbd>空格</kbd>。</p>",
+   "detect": "ARMY STATS SUMMARY"
+  },
+  {
+   "id": "select",
+   "title": "选择一支野战军",
+   "keys": [
+    "Space",
+    "o",
+    "o"
+   ],
+   "text": "<p><kbd>p</kbd> 选择下一个单位，<kbd>o</kbd> 选择上一个。一直按 <kbd>o</kbd>，直到 <code>*</code> 落在一支还有移动力的野战军上：这里是 <strong>20 号军队</strong>，112 名步兵，移动力 10。</p>",
+   "detect": "\\*army [1-9][0-9]*: [0-9]+ Inf"
+  },
+  {
+   "id": "move",
+   "title": "出兵占领土地",
+   "keys": [
+    "m",
+    "j"
+   ],
+   "text": "<p>按 <kbd>m</kbd>，再按一个方向键：</p><div data-moves=\"compact\"></div><p>每走一步都要消耗移动点数；丘陵和森林消耗更多。如果游戏显示 <em>Can't Move Here</em>（无法移动到此处，通常是水域），按任意键后换个方向再试。</p>",
+   "detect": "MOVE(MENT )?SCREEN"
+  },
+  {
+   "id": "moved",
+   "title": "结束移动",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>按 <kbd>空格</kbd> 停下。这个地块现在归你了：报告显示 <em>owner: tidewater</em>。</p><p class=\"rule\">军队必须足够强大才能占领无主土地：至少 75 名士兵，并且你的国家人口每 350 人至少对应 1 名士兵（新国家大约需要 95 名）。21 号军队只有 70 名士兵，单独出动兵力不足。</p>",
+   "detect": "nation\\.\\.\\."
+  },
+  {
+   "id": "draft",
+   "title": "征召新兵",
+   "keys": [
+    "k",
+    "D",
+    "I",
+    "50",
+    "Enter"
+   ],
+   "text": "<p>把光标移回首都（<kbd>k</kbd>），然后按 <kbd>D</kbd> 征兵，按 <kbd>I</kbd> 选择步兵，输入 <kbd>50</kbd> 并按 <kbd>Enter</kbd>。只有城市和首都能征兵，征兵要花费金币和金属。</p>",
+   "detect": "raise a new army"
+  },
+  {
+   "id": "drafted",
+   "title": "编成一支新军队",
+   "keys": [
+    "y"
+   ],
+   "text": "<p>回答 <kbd>y</kbd>，组建一支新军队。如果回答否，新兵会并入该地块上已有的军队，<strong>那支军队本回合将失去移动力</strong>。反正新兵要到下回合才能出征，就让他们留守首都吧。</p>",
+   "detect": "nation\\.\\.\\."
+  },
+  {
+   "id": "diplomacy",
+   "title": "看看其他国家",
+   "keys": [
+    "Space",
+    "S"
+   ],
+   "text": "<p>按 <kbd>S</kbd>。所有国家一开始都是 <em>UNMET</em>（尚未接触）。遇到某个国家后，按 <kbd>Enter</kbd> 可以设定你对它的态度（同盟、中立、敌对、战争……）。要给其他统治者写信，在地图上按 <kbd>W</kbd>。按 <kbd>空格</kbd> 离开。</p>",
+   "detect": "DIPLOMACY SUMMARY"
+  },
+  {
+   "id": "quit",
+   "title": "保存并退出",
+   "keys": [
+    "Space",
+    "q"
+   ],
+   "text": "<p>按 <kbd>q</kbd>。你的指令会被保存，菜单会询问你本回合是否已经完成。</p>",
+   "detect": "本回合的指令下达完了吗？\\[y/N\\]"
+  },
+  {
+   "id": "done",
+   "title": "把指令标记为完成",
+   "keys": [
+    "y"
+   ],
+   "text": "<p>回答 <kbd>y</kbd>。当所有国家都这样做了，回合结算会立即进行；否则就在预定时间进行。在那之前，你随时可以回来修改指令。</p>",
+   "detect": "指令已标记为完成。回合结算之前仍可修改。"
+  },
+  {
+   "id": "newturn",
+   "title": "新的季节",
+   "keys": [
+    "Space"
+   ],
+   "text": "<p>在这局游戏里 tidewater 是唯一的玩家，所以回合立即结算了。再次进入游戏，看看新的季节：你新占领的地块、报纸（<kbd>N</kbd>）和你的邮件。这就是 Conquer 的全部节奏：阅读、下令、退出，然后等待消息。</p>",
+   "detect": "上次回合结算：\\ .*"
+  }
+ ]
+}

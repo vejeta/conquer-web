@@ -5,12 +5,55 @@ services:
   conquer:
     build:
       context: ./conquer
+      args:
+        # uid of the unprivileged game user; match the host user that owns
+        # data/ so the backup scripts can read it without sudo
+        CONQUER_UID: ${CONQUER_UID:-1000}
     container_name: conquer-local
     environment:
-      - TTYD_USERNAME=${TTYD_USERNAME:-dev}
-      - TTYD_PASSWORD=${TTYD_PASSWORD:-changeme}
       - MAX_CLIENTS=${MAX_CLIENTS:-10}
       - SESSION_TIMEOUT=${SESSION_TIMEOUT:-3600}
+      - TTYD_FONT_SIZE=${TTYD_FONT_SIZE:-16}
+      - TZ=${TZ:-UTC}
+      - TURN_SCHEDULE=${TURN_SCHEDULE:-0 20 * * 0}
+      - TURN_SCHEDULE_LABEL=${TURN_SCHEDULE_LABEL:-}
+      - TURN_RETRY_MINUTES=${TURN_RETRY_MINUTES:-10}
+      - TURN_MAX_RETRIES=${TURN_MAX_RETRIES:-18}
+      - TURN_GRACE_MINUTES=${TURN_GRACE_MINUTES:-5}
+      - TURN_BACKUPS=${TURN_BACKUPS:-10}
+      - TURN_WEBHOOK_URL=${TURN_WEBHOOK_URL:-}
+      - TURN_EARLY=${TURN_EARLY:-on}
+      - SIGNUP=${SIGNUP:-on}
+      - ADMIN_CONTACT=${ADMIN_CONTACT:-}
+    volumes:
+      # Live world data: persists across rebuilds, seeded on first start
+      - ./data/lib:/opt/conquer/lib
+      # Automatic world backups taken before every turn update
+      - ./data/backups:/opt/conquer/backups
+      # Players' private practice worlds
+      - ./data/practice:/opt/conquer/practice
+      # Player accounts, written when players join with an invite code
+      - ./data/auth:/opt/conquer/auth
+      # Public game status (status.json) served by Apache under /status/
+      - ${STATUS_DIR:-./data/public}:/opt/conquer/public
+    # Least privilege: the entrypoint runs as root only to fix the volumes'
+    # owners, set up cron and drop to the game user (setpriv); the game,
+    # ttyd and the sign-up service never hold these capabilities
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETUID
+      - SETGID
+      - KILL
+      - AUDIT_WRITE
+    security_opt:
+      - no-new-privileges:true
+    # A runaway game or a flood of sessions cannot take the whole server
+    pids_limit: ${CONQUER_PIDS_LIMIT:-512}
+    mem_limit: ${CONQUER_MEM_LIMIT:-1g}
     restart: unless-stopped
     networks:
       - conquer-local
@@ -19,6 +62,11 @@ services:
     build: ./apache
     container_name: apache-local
     volumes:
+      # Public landing page
+      - ./web:/usr/local/apache2/htdocs:ro
+      - ./data/public:/usr/local/apache2/status:ro
+      # Player accounts (manage-players.sh)
+      - ./data/auth:/usr/local/apache2/conf/conquer:ro
       # Local self-signed certificates
       - ./apache/certs/live/conquer.local:/usr/local/apache2/conf/certs/live/conquer.local:ro
       # Local Apache configuration

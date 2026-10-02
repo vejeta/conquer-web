@@ -1,0 +1,306 @@
+From 3d73e273540b418b81213fcc01b5228577be89f5 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Juan=20Manuel=20M=C3=A9ndez=20Rey?= <vejeta@gmail.com>
+Date: Sat, 26 Sep 2026 20:49:51 +0000
+Subject: [PATCH 1/3] Fix crashes on missing users and long command-line
+ arguments
+
+- Several checks dereferenced getpwnam()/getpwuid() results directly, so
+  conquer and conqrun crashed (segmentation fault) when LOGIN or the god
+  nation's leader is not a user on this system, e.g. a world or a binary
+  built on another machine, or a container. Add login_uid() and
+  uid_name(), which return -1 and "(unknown)" for unknown users, and use
+  them everywhere the result was not checked.
+- conqrun -d copied its argument into an 80-byte buffer without a length
+  check (a buffer overflow with long paths, caught by glibc's fortify
+  check and AddressSanitizer), and conquer -n copied the nation name
+  into a 10-byte buffer. Reject names that are too long with a message,
+  bound the data= copy from CONQ_OPTS, always terminate the copied
+  environment string and use snprintf for the data directory paths.
+
+Checked with AddressSanitizer and UBSan: long -d and -n arguments now
+fail cleanly and a full turn update reports no errors; with a LOGIN user
+that does not exist, conqrun -x refuses to run instead of crashing.
+---
+ gpl-release/admin.c    | 19 ++++++++++++-------
+ gpl-release/data.h     |  2 ++
+ gpl-release/main.c     | 42 ++++++++++++++++++++++++++----------------
+ gpl-release/misc.c     | 23 +++++++++++++++++++++++
+ gpl-release/randeven.c |  2 +-
+ 5 files changed, 64 insertions(+), 24 deletions(-)
+
+diff --git a/gpl-release/admin.c b/gpl-release/admin.c
+index ba2a33b..24e0e74 100644
+--- a/gpl-release/admin.c
++++ b/gpl-release/admin.c
+@@ -98,7 +98,8 @@ char **argv;
+ 
+ 	/* check conquer options */
+ 	if (getenv(ENVIRON_OPTS)!=NULL) {
+-		strncpy(cq_opts, getenv(ENVIRON_OPTS), BIGLTH);
++		strncpy(cq_opts, getenv(ENVIRON_OPTS), BIGLTH-1);
++		cq_opts[BIGLTH-1] = '\0';
+ 	}
+ 	if (cq_opts[0] != '\0') {
+ 		l = strlen(cq_opts);
+@@ -131,7 +132,7 @@ char **argv;
+ 				}
+ 				if (i<l) {
+ 					/* grab the data directory */
+-					for (j=0; j<l-i && cq_opts[i+j]!=',';j++) {
++					for (j=0; j<l-i && j<FILELTH-1 && cq_opts[i+j]!=',';j++) {
+ 						datadir[j] = cq_opts[i+j];
+ 					}
+ 					datadir[j]='\0';
+@@ -174,6 +175,10 @@ char **argv;
+ 		strcpy(scenario, optarg);
+ 		break;
+ 	case 'd':
++		if(strlen(optarg) >= FILELTH){
++			fprintf(stderr,"ERROR: DATA DIRECTORY NAME LONGER THAN %d\n",FILELTH-1);
++			exit(FAIL);
++		}
+ 		strcpy(datadir, optarg);
+ 		break;
+ 	case '?': /*  print out command line arguments */
+@@ -193,7 +198,7 @@ char **argv;
+ 	/* set proper defaultdir */
+ 	if (datadir[0] != '/') {
+ 		if (strlen(datadir) > 0) {
+-			sprintf(defaultdir, "%s/%s", DEFAULTDIR, datadir);
++			snprintf(defaultdir, BIGLTH, "%s/%s", DEFAULTDIR, datadir);
+ 		} else {
+ 			strcpy(defaultdir,DEFAULTDIR);
+ 			strcpy(datadir,"[default]");
+@@ -218,7 +223,7 @@ char **argv;
+ 			verifydata( __FILE__, __LINE__ );
+ 
+ 			/* verify ability to remake the world */
+-			if ((realuser != (getpwnam(LOGIN))->pw_uid ) &&
++			if ((realuser != login_uid(LOGIN) ) &&
+ 			    ((pwent=getpwnam(ntn[0].leader)) == NULL ||
+ 				realuser != pwent->pw_uid )) {
+ 				printf("Sorry -- you can not create a world\n");
+@@ -250,7 +255,7 @@ char **argv;
+ 		}
+ #else
+ 		/* check for god permissions */
+-		if(realuser!=(getpwnam(LOGIN))->pw_uid) {
++		if(realuser!=login_uid(LOGIN)) {
+ 			printf("Sorry -- you can not create a world\n");
+ 			printf("you need to be logged in as %s.\n",LOGIN);
+ 			exit(FAIL);
+@@ -319,7 +324,7 @@ char **argv;
+ 	}
+ 
+ #ifdef OGOD
+-	if ((realuser != (getpwnam(LOGIN)->pw_uid) ) &&
++	if ((realuser != (login_uid(LOGIN)) ) &&
+ 	  ((pwent=getpwnam(ntn[0].leader)) == NULL ||
+ 	  realuser != pwent->pw_uid )) {
+ 		printf("Sorry -- you can not administrate conquer\n");
+@@ -334,7 +339,7 @@ char **argv;
+ 
+ 	if (xflag) {	/* update the game */
+ #ifndef OGOD
+-		if ((realuser != (getpwnam(LOGIN))->pw_uid ) &&
++		if ((realuser != login_uid(LOGIN) ) &&
+ 		  ((pwent=getpwnam(ntn[0].leader)) == NULL ||
+ 		  realuser != pwent->pw_uid )) {
+ 			printf("sorry -- your uid is invalid for updating\n");
+diff --git a/gpl-release/data.h b/gpl-release/data.h
+index 2d43792..ddc7aa6 100644
+--- a/gpl-release/data.h
++++ b/gpl-release/data.h
+@@ -663,6 +663,8 @@ extern void	combinearmies(),change_status(),reducearmy(),splitarmy();
+ extern void	errormsg(), clear_bottom(), addgroup(),ext_cmd();
+ extern void	randomevent(), wdisaster(), weather(), deplete();
+ extern void	verify_ntn(), verify_sct(), verifydata(), prep();
++extern long	login_uid();
++extern char	*uid_name();
+ extern void	errorbar(), newbye(), newreset(), newmsg(), newerror();
+ extern void	newinit(), jump_to();
+ extern void	destroy(), updmove(), spreadsheet(), mailclose();
+diff --git a/gpl-release/main.c b/gpl-release/main.c
+index 7a43e9c..841ef67 100644
+--- a/gpl-release/main.c
++++ b/gpl-release/main.c
+@@ -109,7 +109,8 @@ char	**argv;
+ 
+ 	/* check conquer options */
+ 	if (getenv(ENVIRON_OPTS)!=NULL) {
+-		strncpy(cq_opts, getenv(ENVIRON_OPTS), BIGLTH);
++		strncpy(cq_opts, getenv(ENVIRON_OPTS), BIGLTH-1);
++		cq_opts[BIGLTH-1] = '\0';
+ 	}
+ 	if (cq_opts[0] != '\0') {
+ 		l = strlen(cq_opts);
+@@ -165,7 +166,7 @@ char	**argv;
+ 				}
+ 				if (i<l) {
+ 					/* grab the data directory */
+-					for (j=0; j<l-i && cq_opts[i+j]!=',';j++) {
++					for (j=0; j<l-i && j<BIGLTH-1 && cq_opts[i+j]!=',';j++) {
+ 						defaultdir[j] = cq_opts[i+j];
+ 					}
+ 					defaultdir[j]='\0';
+@@ -193,7 +194,7 @@ char	**argv;
+ 	}
+ 	if (defaultdir[0] != '/') {
+ 		strcpy(cq_opts, defaultdir);
+-		sprintf(defaultdir, "%s/%s", DEFAULTDIR, cq_opts);
++		snprintf(defaultdir, BIGLTH, "%s/%s", DEFAULTDIR, cq_opts);
+ 	}
+ 
+ 	/* process the command line arguments */
+@@ -221,13 +222,22 @@ char	**argv;
+ 		Gaudy = TRUE;
+ 		break;
+ 	case 'd':
++		if(strlen(DEFAULTDIR) + strlen(optarg) + 2 > BIGLTH) {
++			fprintf(stderr,"data directory name too long (max %d characters)\n",
++				(int) (BIGLTH - strlen(DEFAULTDIR) - 2));
++			exit(FAIL);
++		}
+ 		if(optarg[0]!='/') {
+-			sprintf(defaultdir, "%s/%s", DEFAULTDIR, optarg);
++			snprintf(defaultdir, BIGLTH, "%s/%s", DEFAULTDIR, optarg);
+ 		} else {
+ 			strcpy(defaultdir, optarg);
+ 		}
+ 		break;
+ 	case 'n':
++		if(strlen(optarg) > NAMELTH) {
++			fprintf(stderr,"nation name too long (max %d characters)\n",NAMELTH);
++			exit(FAIL);
++		}
+ 		strcpy(name, optarg);
+ 		break;
+ #ifdef CHECKUSER
+@@ -313,7 +323,7 @@ char	**argv;
+ 	}
+ #ifdef OGOD
+ 	if(strcmp(name,"god")==0 || strcmp(name,"unowned")==0) {
+-		if ((owneruid != (getpwnam(LOGIN))->pw_uid ) &&
++		if ((owneruid != login_uid(LOGIN) ) &&
+ 		  ((pwent=getpwnam(ntn[0].leader)) == NULL ||
+ 		  owneruid != pwent->pw_uid )) {
+ 			fprintf(stderr,"Sorry -- you can not login as god\n");
+@@ -333,8 +343,8 @@ char	**argv;
+ 
+ #ifdef CHECKUSER
+ 	if ((checkuser_mod) || (checkuser_list)) {
+-		if ((owneruid == (getpwnam(LOGIN))->pw_uid) ||
+-        	    (owneruid == (getpwnam(ntn[0].leader))->pw_uid)) {
++		if ((owneruid == login_uid(LOGIN)) ||
++        	    (owneruid == login_uid(ntn[0].leader))) {
+ 			/* don't change - already set */
+ 		}
+ 		else {
+@@ -440,10 +450,10 @@ char	**argv;
+ 	   {
+ 		fprintf (stderr, "Nation:  %s\n", curntn->name);
+                 fprintf (stderr, "   Current player = %s\n", 
+-			getpwuid(curntn->uid)->pw_name);;
++			uid_name(curntn->uid));;
+ 		curntn->uid = checkuser_uid;
+                 fprintf (stderr, "   New player = %s\n", 
+-			getpwuid(curntn->uid)->pw_name);
++			uid_name(curntn->uid));
+ 		writedata();
+ 		exit (SUCCESS);
+ 	   }
+@@ -454,13 +464,13 @@ char	**argv;
+ 				fprintf (stderr, "%3d %15s %d %-15s\n",
+ 					i, ntn[i].name, 
+ 					ntn[i].uid,
+-					getpwuid(ntn[i].uid)->pw_name);
++					uid_name(ntn[i].uid));
+ 		exit (SUCCESS);
+ 	   }
+         if ((curntn->uid != owneruid) &&
+-	    (owneruid != (getpwnam(LOGIN))->pw_uid) && 
+-            (owneruid != (getpwnam(ntn[0].leader))->pw_uid) &&
+-	    (curntn->uid != (getpwnam(LOGIN))->pw_uid))
++	    (owneruid != login_uid(LOGIN)) && 
++            (owneruid != login_uid(ntn[0].leader)) &&
++	    (curntn->uid != login_uid(LOGIN)))
+            {
+               fprintf (stderr,"\nSorry -- you are not the owner of %s",curntn->name);
+ 	      fprintf(stderr,"\nFor information on conquer please contact %s.",OWNER);
+@@ -532,7 +542,7 @@ char	**argv;
+ #ifdef USERLOG
+ 	userlog = fopen (".userlog", "a");
+         fprintf (userlog, "%3d %15s %30s %15s\n", 
+-   		TURN, getpwuid(owneruid)->pw_name, defaultdir, curntn->name);
++   		TURN, uid_name(owneruid), defaultdir, curntn->name);
+         fclose (userlog);
+ #endif
+ 	centermap();
+@@ -666,7 +676,7 @@ parse(ch)
+ 		break;
+ #ifdef DEBUG
+ 	case '\t':	/* debugging information for god and demi-god */
+-		if ((owneruid != (getpwnam(LOGIN))->pw_uid ) &&
++		if ((owneruid != login_uid(LOGIN) ) &&
+ 		    ((pwent=getpwnam(ntn[0].leader))==NULL || owneruid != pwent->pw_uid ))
+ 			break;
+ 		sect_info();
+@@ -933,7 +943,7 @@ parse(ch)
+ 		break;
+ 	case 'z':	/*login as new user */
+ #ifdef OGOD
+-		if ((owneruid != (getpwnam(LOGIN))->pw_uid ) &&
++		if ((owneruid != login_uid(LOGIN) ) &&
+ 		    ((pwent=getpwnam(ntn[0].leader))==NULL || owneruid != pwent->pw_uid )) break;
+ #endif
+ 		clear_bottom(0);
+diff --git a/gpl-release/misc.c b/gpl-release/misc.c
+index b9b4b19..6436502 100644
+--- a/gpl-release/misc.c
++++ b/gpl-release/misc.c
+@@ -35,6 +35,29 @@
+ #include "header.h"
+ #include "data.h"
+ #include "trade.h"
++#include <pwd.h>
++
++/*
++ * uid of a login name, or -1 when the system has no such user. The world
++ * may name users of another machine (the god nation's leader, LOGIN of a
++ * binary built elsewhere), and getpwnam() then returns NULL.
++ */
++long
++login_uid(name)
++char	*name;
++{
++	struct passwd *pw = getpwnam(name);
++	return(pw == NULL ? -1L : (long) pw->pw_uid);
++}
++
++/* login name of a uid, or "(unknown)" when the system has no such user */
++char *
++uid_name(uid)
++long	uid;
++{
++	struct passwd *pw = getpwuid((uid_t) uid);
++	return(pw == NULL ? "(unknown)" : pw->pw_name);
++}
+ 
+ extern FILE *fnews;
+ extern short country,redraw;
+diff --git a/gpl-release/randeven.c b/gpl-release/randeven.c
+index e8c01d6..44bfe62 100644
+--- a/gpl-release/randeven.c
++++ b/gpl-release/randeven.c
+@@ -202,7 +202,7 @@ int ispsnt;		/* true/false */
+ 	printf("TMP new nation %s created at %d,%d",ntn[new].name,realx,realy);
+ 	sct[realx][realy].owner=new;
+ #ifdef CHECKUSER
+-	ntn[new].uid = getpwnam(LOGIN)->pw_uid;
++	ntn[new].uid = login_uid(LOGIN);
+ #endif /* CHECKUSER */
+ 	ntn[new].capx=realx;
+ 	ntn[new].capy=realy;
+-- 
+2.43.0
+

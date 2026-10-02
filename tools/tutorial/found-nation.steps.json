@@ -1,0 +1,162 @@
+{
+ "cmd": "conqrun -a -d /opt/conquer/lib",
+ "title": "Conquer: found your nation",
+ "start_wait": 2.5,
+ "steps": [
+  {
+   "id": "name",
+   "keys": [],
+   "caption": "Name your nation",
+   "expect": [
+    "Enter a Name for your Country"
+   ]
+  },
+  {
+   "id": "password",
+   "keys": [
+    "iberia\\r"
+   ],
+   "caption": "iberia: up to 9 letters",
+   "expect": [
+    "Enter National Password"
+   ]
+  },
+  {
+   "id": "password2",
+   "keys": [
+    "tide123\\r"
+   ],
+   "caption": "The nation password",
+   "expect": [
+    "Reenter National Password"
+   ]
+  },
+  {
+   "id": "leader",
+   "keys": [
+    "tide123\\r"
+   ],
+   "caption": "Once more",
+   "expect": [
+    "name of your country's leader"
+   ]
+  },
+  {
+   "id": "race",
+   "keys": [
+    "Pelayo\\r"
+   ],
+   "caption": "The ruler: Pelayo",
+   "expect": [
+    "Enter your Race"
+   ]
+  },
+  {
+   "id": "class",
+   "keys": [
+    "H"
+   ],
+   "caption": "H: humans",
+   "wait": 2.2,
+   "expect": [
+    "Enter the number of your choice"
+   ]
+  },
+  {
+   "id": "alignment",
+   "keys": [
+    "1\\r"
+   ],
+   "caption": "1: king",
+   "expect": [
+    "Please Enter Alignment"
+   ]
+  },
+  {
+   "id": "mark",
+   "keys": [
+    "G"
+   ],
+   "caption": "G: good",
+   "expect": [
+    "Enter National Mark"
+   ]
+  },
+  {
+   "id": "points",
+   "keys": [
+    "I"
+   ],
+   "caption": "I: the mark on the map",
+   "wait": 2.2,
+   "expect": [
+    "Points Left: 30"
+   ]
+  },
+  {
+   "id": "treasury",
+   "keys": [
+    "j",
+    " ",
+    " "
+   ],
+   "caption": "j, then Space twice: treasury",
+   "wait": 2.2,
+   "expect": [
+    "Points Left: 28",
+    "200000 gold"
+   ]
+  },
+  {
+   "id": "population",
+   "keys": [
+    "\\x1b"
+   ],
+   "caption": "Esc: done",
+   "expect": [
+    "remaining points for population"
+   ]
+  },
+  {
+   "id": "civilians",
+   "keys": [
+    "y"
+   ],
+   "caption": "y: the rest becomes people",
+   "expect": [
+    "more civilians"
+   ]
+  },
+  {
+   "id": "complete",
+   "keys": [
+    " "
+   ],
+   "caption": "Any key",
+   "expect": [
+    "Is the modification complete"
+   ]
+  },
+  {
+   "id": "save",
+   "keys": [
+    "y"
+   ],
+   "caption": "y: it is complete",
+   "expect": [
+    "Save this nation"
+   ]
+  },
+  {
+   "id": "added",
+   "keys": [
+    "y"
+   ],
+   "caption": "y: save it",
+   "wait": 2.2,
+   "expect": [
+    "Added to the World"
+   ]
+  }
+ ]
+}

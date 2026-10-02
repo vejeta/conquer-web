@@ -34,6 +34,52 @@ validate_email() {
     fi
 }
 
+# uid for the game user in the container: the invoking user, never root
+game_uid() {
+    local uid
+    uid=$(id -u)
+    if [ "$uid" = 0 ]; then
+        uid=${SUDO_UID:-1000}
+    fi
+    echo "$uid"
+}
+
+# Turn update settings shared by both environments
+turn_settings() {
+    cat << 'SETTINGS'
+
+# Turn updates (cron format: minute hour day-of-month month day-of-week)
+# Weekly on Sundays at 20:00 while players learn the game.
+# Daily at 20:00 would be "0 20 * * *". Use "off" to disable.
+TZ=UTC
+TURN_SCHEDULE="0 20 * * 0"
+# Optional: the schedule in your own words. Left empty, it is worked out
+# from TURN_SCHEDULE and TZ, and the website shows it in each visitor's
+# language and local time.
+TURN_SCHEDULE_LABEL=
+# The update waits while players are logged in: retry interval and attempts
+TURN_RETRY_MINUTES=10
+TURN_MAX_RETRIES=18
+
+# Before a turn update, players still in the game are warned and, after this
+# many minutes, disconnected (the game saves their orders)
+TURN_GRACE_MINUTES=5
+# World backups kept in data/backups (taken before every turn; 0 disables)
+TURN_BACKUPS=10
+# Optional webhook notified after every turn update (Slack, Mattermost, Discord)
+TURN_WEBHOOK_URL=
+# Run the turn update early once every player nation has marked its orders
+# as done in the game menu (on/off); the schedule still applies as deadline
+TURN_EARLY=on
+# Sign-up with invite codes on the site (signup.html; codes are made with
+# ./manage-players.sh invite): on/off
+SIGNUP=on
+
+# Terminal font size in the browser
+TTYD_FONT_SIZE=16
+SETTINGS
+}
+
 # Setup local environment
 setup_local() {
     echo "📋 Setting up LOCAL development environment..."
@@ -80,6 +126,13 @@ TTYD_USERNAME=$LOCAL_USER
 TTYD_PASSWORD=$LOCAL_PASS
 MAX_CLIENTS=$LOCAL_MAX_CLIENTS
 SESSION_TIMEOUT=3600
+
+# Shown to players in the menu under "How to join"
+ADMIN_CONTACT=
+$(turn_settings)
+
+# uid the game runs as inside the container (owner of data/ on this host)
+CONQUER_UID=$(game_uid)
 EOF
 
     echo "✅ Local environment configured!"
@@ -136,6 +189,9 @@ setup_vps_production() {
     read -p "Session timeout in seconds [1800]: " PROD_TIMEOUT
     PROD_TIMEOUT=${PROD_TIMEOUT:-1800}
 
+    # Contact shown to players who want a nation
+    read -p "Administrator contact shown to players (e.g. email, optional): " PROD_CONTACT
+
     # Create production.env
     cat > config/production.env << EOF
 # Production Environment Configuration
@@ -158,6 +214,13 @@ TTYD_USERNAME=$PROD_USER
 TTYD_PASSWORD=$PROD_PASS
 MAX_CLIENTS=$PROD_MAX_CLIENTS
 SESSION_TIMEOUT=$PROD_TIMEOUT
+
+# Shown to players in the menu under "How to join"
+ADMIN_CONTACT="$PROD_CONTACT"
+$(turn_settings)
+
+# uid the game runs as inside the container (owner of data/ on this host)
+CONQUER_UID=$(game_uid)
 EOF
 
     echo "✅ Production environment configured!"
