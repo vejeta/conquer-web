@@ -16,6 +16,23 @@ A secure, web-based implementation of the classic Conquer strategy game using Do
 
 Running your own server? Open a pull request to add it here.
 
+<table>
+<tr>
+<td width="33%"><a href="https://conquer.vejeta.com/tutorial/trailer.en.mp4"><img src="docs/img/trailer.jpg" alt="Conquer trailer: Usenet, 1987, a strategy game of epic fantasy"></a></td>
+<td width="33%"><a href="https://conquer.vejeta.com/tutorial/found-nation.en.mp4"><img src="docs/img/found-nation.jpg" alt="Found your nation: the game's own nation builder"></a></td>
+<td width="33%"><a href="https://conquer.vejeta.com/tutorial.html"><img src="docs/img/first-turn.jpg" alt="Your first turn: the main screen of your kingdom"></a></td>
+</tr>
+<tr>
+<td align="center"><b>Trailer</b><br>40 seconds: what Conquer is</td>
+<td align="center"><b>Found your nation</b><br>the game's own builder, step by step</td>
+<td align="center"><b>Your first turn</b><br>the narrated tutorial</td>
+</tr>
+</table>
+
+The videos are narrated in all seven languages, with captions: the site
+plays each visitor's own (`web/tutorial/<video>.<language>.mp4`, made by
+`tools/tutorial/video.py`).
+
 > **Everyday commands** for the administrator and players: [QUICK-REFERENCE.md](QUICK-REFERENCE.md).
 
 ## 🎮 Overview
