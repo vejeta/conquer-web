@@ -28,6 +28,7 @@ container; `sudo` is only for the server's side of the administration:
 |---------|--------------|
 | `sudo ./update-vps.sh` | Saves a copy of accounts, settings and world, pulls the code, rebuilds the game when it changed, installs the web pages, checks the result |
 | `sudo ./update-vps.sh --rebuild` | The same, always rebuilding the game |
+| `sudo ./update-vps.sh --branch master` | Switches the server to another branch (once; later updates follow it) |
 | `sudo systemctl restart conquer-web` | Restarts the game, for example after changing `config/production.env` |
 | `sudo ./health-check.sh` | Checks Docker, the game container and the site |
 | `sudo ./logs.sh` | Follows the game container's log |

@@ -7,8 +7,12 @@
 # nations), the world and config/production.env are kept; a copy of them is
 # saved first.
 #
-#   sudo ./update-vps.sh            # rebuild the game only if conquer/ changed
-#   sudo ./update-vps.sh --rebuild  # always rebuild the game
+#   sudo ./update-vps.sh                 # rebuild the game only if conquer/ changed
+#   sudo ./update-vps.sh --rebuild       # always rebuild the game
+#   sudo ./update-vps.sh --branch master # follow another branch from now on
+#
+# The server follows the branch it has checked out. --branch switches it
+# once (for example to master after a merge); later updates follow it.
 #
 # For a first installation use deploy-to-vps.sh.
 
@@ -20,8 +24,15 @@ SERVICE=conquer-web
 PROJECT=conquer-vps          # docker-compose project of the systemd service
 CONTAINER=conquer-vps
 HTPASSWD=/etc/apache2/conquer-web.htpasswd
-REBUILD=""
-[ "${1:-}" = "--rebuild" ] && REBUILD=1
+REBUILD="" BRANCH=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --rebuild) REBUILD=1 ;;
+        --branch) [ -n "${2:-}" ] || { echo "❌ --branch needs a branch name"; exit 1; }; BRANCH="$2"; shift ;;
+        *) sed -n '/^#   sudo/p' "$0" | sed 's/^# //'; exit 1 ;;
+    esac
+    shift
+done
 
 [ "$EUID" -eq 0 ] || { echo "❌ Run it with sudo"; exit 1; }
 [ -f config/production.env ] || { echo "❌ config/production.env missing: this is not a VPS deployment"; exit 1; }
@@ -45,6 +56,15 @@ find /root/conquer-backups -mindepth 1 -maxdepth 1 -type d | sort | head -n -10 
 
 # 2. The code
 before=$(g rev-parse HEAD)
+current=$(g rev-parse --abbrev-ref HEAD)
+if [ -n "$BRANCH" ] && [ "$BRANCH" != "$current" ]; then
+    g diff --quiet && g diff --cached --quiet \
+        || { echo "❌ The checkout has local changes: commit or undo them before switching branch"; exit 1; }
+    g fetch origin "$BRANCH" || { echo "❌ No branch $BRANCH on origin"; exit 1; }
+    g checkout -q -B "$BRANCH" --track "origin/$BRANCH"
+    echo "✅ Now following $BRANCH (was $current)"
+fi
+echo "   Branch: $(g rev-parse --abbrev-ref HEAD)"
 g pull --ff-only
 after=$(g rev-parse HEAD)
 if [ "$before" = "$after" ]; then
