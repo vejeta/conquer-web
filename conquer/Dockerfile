@@ -105,9 +105,10 @@ FROM debian:${DEBIAN_TAG}
 # - cron/tzdata: scheduled turn updates in the configured time zone
 # - curl: container health check
 # - less: pager for scores in the player menu
-# - apache2-utils: htpasswd, for accounts created with invite codes
+# - apache2-utils: htpasswd, for the accounts the sign-up page creates
+# - ca-certificates: TLS to the mail server (conquer-gate) and to webhooks
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libncurses6 cron tzdata curl less apache2-utils \
+    libncurses6 cron tzdata curl less apache2-utils ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 ENV CONQUER_PREFIX=/opt/conquer
