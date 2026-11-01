@@ -231,7 +231,9 @@ announce the requests in Slack, Mattermost or Discord instead.
 
 Mail is optional and configured in `config/production.env`. `NOTIFY_EMAIL`
 is where new requests are announced (default: `ADMIN_CONTACT` when it is an
-address). A player who gave an address gets a mail when approved. Nothing is
+address). A player who gave an address gets a mail when approved, in the
+language of the page they asked from; yours (and the webhook text) is in
+`NOTIFY_LANG` (`en`, `es`, `de`, `pl`, `pt-br`, `ru` or `zh`; default `en`). Nothing is
 sent while `SMTP_HOST` is empty. Mails link to `SITE_URL` (default
 `https://DOMAIN`).
 

@@ -16,6 +16,7 @@ import (
 	"net/smtp"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -40,6 +41,7 @@ type notifier struct {
 	startTLS   bool
 	webhook    string // SIGNUP_WEBHOOK_URL, else TURN_WEBHOOK_URL
 	siteURL    string
+	lang       string // NOTIFY_LANG: the administrator's language
 }
 
 func envOr(names ...string) string {
@@ -76,6 +78,7 @@ func loadNotifier() *notifier {
 		startTLS:   !strings.EqualFold(envOr("SMTP_STARTTLS"), "off"),
 		webhook:    envOr("SIGNUP_WEBHOOK_URL", "TURN_WEBHOOK_URL"),
 		siteURL:    strings.TrimRight(envOr("SITE_URL"), "/"),
+		lang:       validLang(envOr("NOTIFY_LANG")),
 	}
 	if n.adminEmail == "" {
 		if c := envOr("ADMIN_CONTACT"); validEmail(c) {
@@ -204,52 +207,49 @@ func (n *notifier) adminURL() string {
 	return n.siteURL + "/admin/"
 }
 
-// newRequest announces a pending request; it returns at once
+// newRequest announces a pending request, in the administrator's
+// language; it returns at once
 func (n *notifier) newRequest(account, email, message string) {
 	if n.adminEmail == "" && n.webhook == "" {
 		return
 	}
 	go func() {
 		if n.adminEmail != "" && n.mailEnabled() {
-			var b strings.Builder
-			fmt.Fprintf(&b, "%s asks for a seat in Conquer.\n\n", account)
+			details := ""
 			if email != "" {
-				fmt.Fprintf(&b, "Email: %s\n", email)
+				details += mailText(n.lang, "line_email", "email", email)
 			}
 			if message != "" {
-				fmt.Fprintf(&b, "Message: %s\n", message)
+				details += mailText(n.lang, "line_message", "message", message)
 			}
-			fmt.Fprintf(&b, "\nApprove or reject it here: %s\n", n.adminURL())
-			if err := n.sendMail(n.adminEmail, "Conquer: "+account+" asks for a seat", b.String()); err != nil {
+			body := mailText(n.lang, "body_request", "account", account, "details", details, "url", n.adminURL())
+			if err := n.sendMail(n.adminEmail, mailText(n.lang, "subject_request", "account", account), body); err != nil {
 				log.Printf("notify: mail to the administrator failed: %v", err)
 			}
 		}
 		if n.webhook != "" {
-			text := fmt.Sprintf("Conquer: %s asks for a seat. Approve it at %s", account, n.adminURL())
-			if err := n.post(text); err != nil {
+			if err := n.post(mailText(n.lang, "webhook_request", "account", account, "url", n.adminURL())); err != nil {
 				log.Printf("notify: webhook failed: %v", err)
 			}
 		}
 	}()
 }
 
-// approved tells the player their seat is approved; it returns at once
-func (n *notifier) approved(account, email string, turn int) {
+// approved tells the player their seat is approved, in their language;
+// it returns at once
+func (n *notifier) approved(account, email, lang string, turn int) {
+	lang = validLang(lang)
 	go func() {
 		site := n.siteURL
 		if site == "" {
-			site = "the game's website"
+			site = mailText(lang, "site_fallback")
 		}
-		var b strings.Builder
-		fmt.Fprintf(&b, "Hello %s,\n\nYour seat in Conquer is approved.\n\n", account)
+		key := "body_approved_early"
 		if turn > lastJoinTurn {
-			fmt.Fprintf(&b, "The game is already at turn %d, so the administrator will add your nation by hand. "+
-				"Sign in and press Play at %s to see your status; you will be contacted when it is ready.\n", turn, site)
-		} else {
-			fmt.Fprintf(&b, "Press Play at %s with your account and password, and found your nation.\n", site)
+			key = "body_approved_late"
 		}
-		b.WriteString("\nSee you in the game.\n")
-		if err := n.sendMail(email, "Conquer: your seat is approved", b.String()); err != nil {
+		body := mailText(lang, key, "account", account, "site", site, "turn", strconv.Itoa(turn))
+		if err := n.sendMail(email, mailText(lang, "subject_approved", "account", account), body); err != nil {
 			log.Printf("notify: approval mail to %s failed: %v", account, err)
 		}
 	}()

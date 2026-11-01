@@ -211,11 +211,11 @@ jobs:
           test "$(curl -sk https://localhost/status/status.json | jq .requests_open)" = true
           test "$(curl -sk https://localhost/status/status.json | jq .last_join_turn)" = 5
           # A request without a code creates a pending account
-          ask '{"account":"asker","password":"asker-pass","email":"asker@example.org","message":"Hi from CI"}' | jq -e '.ok and .status == "pending"'
+          ask '{"account":"asker","password":"asker-pass","email":"asker@example.org","message":"Hi from CI","lang":"es"}' | jq -e '.ok and .status == "pending"'
           ask '{"account":"asker","password":"asker-pass"}' | jq -e '.error == "account_taken"'
           ask '{"account":"nomail","password":"asker-pass","email":"not an address"}' | jq -e '.ok == false'
           sudo grep -qx 'asker:?' data/lib/.players
-          sudo grep -qP '^asker\t[0-9]+\tasker@example.org\tHi from CI$' data/lib/.requests
+          sudo grep -qP '^asker\t[0-9]+\tasker@example.org\tHi from CI\tes$' data/lib/.requests
           # The administrator page and its API need an administrator
           test "$(code https://localhost/admin/)" = 401
           test "$(code -u "$TTYD_USERNAME:$TTYD_PASSWORD" https://localhost/admin/)" = 200
@@ -226,6 +226,7 @@ jobs:
           test "$(code -u asker:asker-pass -H "X-WEBAUTH-USER: $TTYD_USERNAME" https://localhost/admin/api/state)" = 403
           sudo ./manage-players.sh assign "$TTYD_USERNAME" --admin
           admin https://localhost/admin/api/state | jq -e '.ok and .last_join_turn == 5 and (.requests | map(.account) | index("asker") != null)'
+          admin https://localhost/admin/api/state | jq -e '.requests | map(select(.account == "asker"))[0].lang == "es"'
           admin https://localhost/admin/api/state | jq -e '.players | map(select(.account == "asker" and .state == "?")) | length == 1'
           # Approving makes it a normal new account and empties the list
           admin -d '{"account":"asker"}' https://localhost/admin/api/approve | jq -e '.ok and .emailed == false'

@@ -147,6 +147,7 @@ directory, for example another disk.
 | `ADMIN_CONTACT=` | Your address, shown under "How to join" on the home page and in the menu |
 | `SIGNUP=on` | Requests for a seat and invite codes on the site (`off` closes them) |
 | `NOTIFY_EMAIL=`, `SMTP_HOST=`, `SMTP_USER=`, `SMTP_PASSWORD=`, `SMTP_FROM=`, `SMTP_STARTTLS=on` | Email for new requests and approvals, see DEPLOYMENT.md "Email notifications"; test with `docker exec conquer-vps conquer-gate -test-mail you@example.com` |
+| `NOTIFY_LANG=en` | Language of the mails and webhook text you receive (`en`, `es`, `de`, `pl`, `pt-br`, `ru`, `zh`); players get theirs in the language of the page they asked from |
 | `SIGNUP_WEBHOOK_URL=` | Webhook announcing each new request (default `TURN_WEBHOOK_URL`) |
 
 After changing this file, `sudo systemctl restart conquer-web`: the game

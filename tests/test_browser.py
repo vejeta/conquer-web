@@ -290,7 +290,7 @@ def test_signup_done_panel(site, browser, status):
         assert "ana@example.org" in page.inner_text("#pending-mail")
         assert "Your seat is pending" in page.inner_text("#done-pending")
         assert seen == [{"account": "ana", "password": "correct horse", "email": "ana@example.org",
-                         "message": "I found you on Usenet"}]
+                         "message": "I found you on Usenet", "lang": "en"}]
     else:
         page.wait_for_selector("#done:not([hidden])")
         assert page.evaluate("document.getElementById('done-pending').hidden")
@@ -315,8 +315,26 @@ def test_signup_without_email_or_code(site, browser):
     page.fill("#email", "")
     page.click("#submit")
     page.wait_for_selector("#done-pending:not([hidden])")
-    assert seen == [{"account": "ana", "password": "correct horse"}]
+    assert seen == [{"account": "ana", "password": "correct horse", "lang": "en"}]
     assert "no email" in page.inner_text("#pending-mail")
+    page.close()
+
+
+@pytest.mark.parametrize("lang", ["es", "zh"])
+def test_signup_sends_the_page_language(site, browser, lang):
+    """The request says which language the page is shown in, for the mails."""
+    seen = []
+
+    def api(route):
+        seen.append(json.loads(route.request.post_data))
+        route.fulfill(content_type="application/json", body='{"ok": true, "account": "ana", "status": "pending"}')
+    page = browser.new_page()
+    page.route("**/join/api/request", api)
+    page.goto(site + "signup.html?lang=" + lang)
+    fill_signup(page)
+    page.click("#submit")
+    page.wait_for_selector("#done-pending:not([hidden])")
+    assert seen[0]["lang"] == lang == page.evaluate("conquerI18n.lang()")
     page.close()
 
 

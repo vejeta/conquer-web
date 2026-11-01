@@ -7,9 +7,9 @@
 # lib/.players: "account:?" while the administrator has not approved it,
 # "account:+" once it may found a nation (the first time the player plays,
 # the menu opens the nation builder). Pending requests are also listed in
-# lib/.requests (account, time, email, message; tab separated).
+# lib/.requests (account, time, email, message, language; tab separated).
 #
-# usage: conquer-signup request ACCOUNT [EMAIL] [MESSAGE]   (password on stdin)
+# usage: conquer-signup request ACCOUNT [EMAIL] [MESSAGE] [LANG]   (password on stdin)
 #        conquer-signup invite  CODE ACCOUNT                (password on stdin)
 #        conquer-signup approve ACCOUNT
 #        conquer-signup reject  ACCOUNT
@@ -111,6 +111,10 @@ request)
     valid_account "$account" || exit 3
     email=$(oneline "$3" 120)
     message=$(oneline "$4" 500)
+    case "$5" in
+        en|es|de|pl|pt-br|ru|zh) lang="$5" ;;
+        *) lang=en ;;
+    esac
     read_password
     [ -w "$HTPASSWD_FILE" ] || exit 5
     (
@@ -118,7 +122,7 @@ request)
         create_account "$account" '?'
         touch "$REQUESTS_FILE" 2>/dev/null
         chmod 640 "$REQUESTS_FILE" 2>/dev/null
-        printf '%s\t%s\t%s\t%s\n' "$account" "$(date +%s)" "$email" "$message" >> "$REQUESTS_FILE" || {
+        printf '%s\t%s\t%s\t%s\t%s\n' "$account" "$(date +%s)" "$email" "$message" "$lang" >> "$REQUESTS_FILE" || {
             drop_line "$PLAYERS_FILE" "$account"
             drop_line "$HTPASSWD_FILE" "$account"
             exit 1

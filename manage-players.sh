@@ -275,20 +275,20 @@ is_pending() {
     awk -F: -v user="$1" '$1 == user && $2 == "?" { found = 1 } END { exit !found }' "$PLAYERS_FILE" 2>/dev/null
 }
 
-# Requests for a seat: account, how long ago, email and message
+# Requests for a seat: account, how long ago, language, email and message
 cmd_requests() {
     if [ ! -s "$REQUESTS_FILE" ]; then
         echo "No requests waiting for approval ($REQUESTS_FILE)"
         return
     fi
     awk -F'\t' -v now="$(date +%s)" '
-        BEGIN { printf "%-32s %-10s %s\n", "ACCOUNT", "WAITING", "EMAIL / MESSAGE" }
+        BEGIN { printf "%-32s %-10s %-6s %s\n", "ACCOUNT", "WAITING", "LANG", "EMAIL / MESSAGE" }
         {
             age = now - $2
             if (age >= 86400) w = int(age / 86400) " d"
             else if (age >= 3600) w = int(age / 3600) " h"
             else w = int(age / 60) " min"
-            printf "%-32s %-10s %s%s%s\n", $1, w, $3, ($3 != "" && $4 != "" ? " / " : ""), $4
+            printf "%-32s %-10s %-6s %s%s%s\n", $1, w, ($5 != "" ? $5 : "en"), $3, ($3 != "" && $4 != "" ? " / " : ""), $4
         }' "$REQUESTS_FILE"
 }
 

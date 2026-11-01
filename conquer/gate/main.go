@@ -16,7 +16,7 @@
 //
 // Public endpoints:
 //
-//	POST /join/api/request {"account","password","email"?,"message"?,"code"?}
+//	POST /join/api/request {"account","password","email"?,"message"?,"lang"?,"code"?}
 //	                       -> {"ok":true,"account":...,"status":"pending"|"approved"}
 //	                          or {"ok":false,"error":...}
 //	POST /join/api/signup  the same (old links)
@@ -270,6 +270,7 @@ func (g *gate) signup(w http.ResponseWriter, r *http.Request) {
 		Password string `json:"password"`
 		Email    string `json:"email"`
 		Message  string `json:"message"`
+		Lang     string `json:"lang"`
 	}
 	r.Body = http.MaxBytesReader(w, r.Body, 8192)
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
@@ -283,6 +284,7 @@ func (g *gate) signup(w http.ResponseWriter, r *http.Request) {
 	account := strings.TrimSpace(in.Account)
 	email := strings.TrimSpace(in.Email)
 	message := shortText(in.Message, 500)
+	lang := validLang(in.Lang)
 	switch {
 	case code != "" && !codeRe.MatchString(code):
 		g.failures.allow(ip)
@@ -305,7 +307,7 @@ func (g *gate) signup(w http.ResponseWriter, r *http.Request) {
 
 	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
 	defer cancel()
-	args := []string{"request", account, email, message}
+	args := []string{"request", account, email, message, lang}
 	status := "pending"
 	if code != "" {
 		args = []string{"invite", code, account}
@@ -366,13 +368,14 @@ type request struct {
 	Since   int64  `json:"since"`
 	Email   string `json:"email"`
 	Message string `json:"message"`
+	Lang    string `json:"lang"`
 }
 
 // pending reads lib/.requests, oldest first
 func (g *gate) pending() []request {
 	list := []request{}
 	for _, line := range readLines(g.lib + "/.requests") {
-		f := strings.SplitN(line, "\t", 4)
+		f := strings.SplitN(line, "\t", 5)
 		if len(f) < 2 {
 			continue
 		}
@@ -383,6 +386,10 @@ func (g *gate) pending() []request {
 		}
 		if len(f) > 3 {
 			req.Message = f[3]
+		}
+		req.Lang = "en"
+		if len(f) > 4 {
+			req.Lang = validLang(f[4])
 		}
 		list = append(list, req)
 	}
@@ -472,10 +479,10 @@ func (g *gate) accountAction(verb string) http.HandlerFunc {
 			fail(w, http.StatusBadRequest, "bad_request")
 			return
 		}
-		email := ""
+		email, lang := "", "en"
 		for _, req := range g.pending() {
 			if req.Account == in.Account {
-				email = req.Email
+				email, lang = req.Email, req.Lang
 			}
 		}
 		ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
@@ -497,7 +504,7 @@ func (g *gate) accountAction(verb string) http.HandlerFunc {
 		}
 		emailed := email != "" && g.notify.mailEnabled()
 		if emailed {
-			g.notify.approved(in.Account, email, g.turn(r.Context()))
+			g.notify.approved(in.Account, email, lang, g.turn(r.Context()))
 		}
 		reply(w, http.StatusOK, map[string]any{"ok": true, "account": in.Account, "emailed": emailed})
 	}
