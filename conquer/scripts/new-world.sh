@@ -47,7 +47,7 @@ fi
 
 keep=$(mktemp -d)
 trap 'rm -rf "$keep"' EXIT
-for f in .players .invites; do
+for f in .players .invites .requests; do
     [ -f "$WORLD_DIR/$f" ] && cp -p "$WORLD_DIR/$f" "$keep/"
 done
 
@@ -65,11 +65,12 @@ find "$WORLD_DIR" -mindepth 1 -delete
 cp -a "$source_dir/." "$WORLD_DIR/"
 # State of the old season, if the new world came from a copy of one
 rm -f "$WORLD_DIR/.ready" "$WORLD_DIR/.turn-state" "$WORLD_DIR/.score-history" "$WORLD_DIR/lockadd" \
-    "$WORLD_DIR/.players" "$WORLD_DIR/.invites"
+    "$WORLD_DIR/.players" "$WORLD_DIR/.invites" "$WORLD_DIR/.requests"
 
 [ -f "$keep/.invites" ] && cp -p "$keep/.invites" "$WORLD_DIR/"
+[ -f "$keep/.requests" ] && cp -p "$keep/.requests" "$WORLD_DIR/"
 if [ -f "$keep/.players" ]; then
-    awk -F: '$1 != "" { print $1 ":" ($2 == "*" ? "*" : "+") }' "$keep/.players" > "$WORLD_DIR/.players"
+    awk -F: '$1 != "" { print $1 ":" ($2 == "*" || $2 == "?" ? $2 : "+") }' "$keep/.players" > "$WORLD_DIR/.players"
 fi
 
 chown -R "$GAME_USER:$GAME_USER" "$WORLD_DIR"

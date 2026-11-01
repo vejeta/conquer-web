@@ -135,6 +135,17 @@ if [ -f "$vhost" ] && ! grep -q '/join/api/' "$vhost"; then
     echo "     ProxyPass /join/api/ http://127.0.0.1:7682/join/api/"
     echo "     ProxyPassReverse /join/api/ http://127.0.0.1:7682/join/api/"
 fi
+if [ -f "$vhost" ] && ! grep -q '/admin/api/' "$vhost"; then
+    echo "⚠️  $vhost does not have the administrator page (/admin/): requests for a seat"
+    echo "   cannot be approved from the website. Copy these parts from vps/virtualhost.conf.template"
+    echo "   (replace DOMAIN_NAME), then: apache2ctl configtest && systemctl reload apache2"
+    echo "     ProxyPass /admin/api/ http://127.0.0.1:7682/admin/api/"
+    echo "     ProxyPassReverse /admin/api/ http://127.0.0.1:7682/admin/api/"
+    echo "     RedirectMatch permanent ^/admin\$ /admin/"
+    echo "     AliasMatch \"^/admin/\$\" \"/var/www/$DOMAIN/admin.html\""
+    echo "     the <Location \"/admin/\"> block (before <Location \"/play/\">)"
+    echo "   and remove \"admin|\" from the <LocationMatch ...phpmyadmin> list."
+fi
 sleep 3
 if docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
     if docker exec "$CONTAINER" cat /proc/1/cmdline | tr '\0' ' ' | grep -q -- '-H X-WEBAUTH-USER' \

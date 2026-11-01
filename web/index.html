@@ -194,8 +194,14 @@ SPDX-License-Identifier: GPL-3.0-or-later
     .cta.secondary a { border: 1px solid var(--amber); color: var(--amber); background: rgba(17,11,4,.6); }
     .cta a:hover, .cta a:focus-visible { filter: brightness(1.12); outline: 2px solid var(--parchment); outline-offset: 2px; }
     .cta small { font-size: .82rem; color: var(--amber-mid); line-height: 1.35; margin-bottom: 8px; }
-    .join { margin: 0; padding: 8px 12px; border: 1px dashed var(--amber-dim); font-size: .92rem; color: var(--parchment); background: rgba(17,11,4,.7); }
-    .join code { font: 1.15em var(--term); color: var(--amber); user-select: all; }
+    .join { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px dashed var(--amber-dim); background: rgba(17,11,4,.7); }
+    .join a {
+      align-self: flex-start; max-width: 100%; padding: 8px 16px; border-radius: 3px; overflow-wrap: anywhere;
+      border: 1px solid var(--amber); color: var(--amber); text-decoration: none;
+      font: 22px/1.1 var(--term); letter-spacing: .05em; text-wrap: balance;
+    }
+    .join a:hover, .join a:focus-visible { filter: brightness(1.12); outline: 2px solid var(--parchment); outline-offset: 2px; }
+    .join small { font-size: .85rem; color: var(--parchment); line-height: 1.4; }
     .links { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .92rem; }
     .hero a.text { color: var(--parchment); text-decoration-color: var(--amber-dim); text-underline-offset: 3px; }
     .story { display: flex; gap: 10px; align-items: baseline; border-top: 1px solid var(--amber-faint); padding-top: 12px; font-size: .95rem; }
@@ -255,8 +261,10 @@ SPDX-License-Identifier: GPL-3.0-or-later
           <small data-i18n="index.try_hint">No account needed: a practice world in your browser</small>
         </div>
       </div>
-      <p class="join" id="join" hidden><span data-i18n="index.join">Have an invite code?</span>
-        <a class="text" href="signup.html" data-server-link="signup.html" data-i18n="index.join_link">Create your account</a></p>
+      <div class="join" id="join" hidden>
+        <a href="signup.html" data-server-link="signup.html" data-i18n="index.join_cta">I want to play: ask for your seat</a>
+        <small id="join-note"></small>
+      </div>
       <div class="links">
         <a class="text" href="#trailer" id="trailer-link" hidden data-i18n="index.trailer">&#9654; Watch the trailer (40 s)</a>
         <a class="text" href="tutorial.html" data-i18n-page="tutorial" data-i18n="index.tutorial">New here? Play your first turn step by step</a>
@@ -316,10 +324,10 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
   <section id="how-to-join">
     <h2 data-i18n="index.h_join">How to join</h2>
-    <p class="note" data-i18n="index.note_join">Joining is by invitation, and takes two steps: an account for this website, then your nation inside the game.</p>
+    <p class="note" data-i18n="index.note_join">Joining takes three steps: ask for your seat, wait for the administrator to approve it, then found your nation inside the game.</p>
     <ol>
-      <li data-i18n="index.join1">Write to the game administrator for an <strong>invite code</strong>.</li>
-      <li data-i18n="index.join2"><strong>Your account for this website</strong>: choose <strong>Create your account</strong> (under the buttons at the top), type the code and choose a name and a password. It only opens the door of the site; your browser asks for it when you press Play.</li>
+      <li data-i18n="index.join1"><strong>Ask for your seat</strong>: choose <strong>I want to play</strong> (under the buttons at the top), pick an account name and a password, and add your email if you want to be told. An invite link skips the wait.</li>
+      <li data-i18n="index.join2"><strong>The administrator approves it</strong>, by hand. If you gave an email you get a message when it is done. Until then Play shows the practice world and the state of your seat. Your account is for this website only: it opens the door, your browser asks for it when you press Play.</li>
       <li data-i18n="index.join3"><strong>Your nation</strong>: press <strong>Play now</strong> and sign in with that account. The 1987 game asks you to found your nation: its own name (up to 9 letters), race, class and a nation password. From then on, Play now opens it directly.</li>
     </ol>
     <div class="contact" id="contact" hidden>
@@ -535,8 +543,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
       document.getElementById('contact').hidden = false;
     }
     renderWire(d);
-    // Players with an invite code create their account on signup.html
-    document.getElementById('join').hidden = !d.signup;
+    // Anyone can ask for a seat on signup.html while requests are open;
+    // past the last turn a nation can join by itself, the administrator
+    // adds latecomers' nations. (signup: the field of older servers)
+    var asking = d.requests_open !== undefined ? d.requests_open : d.signup;
+    var late = d.turn > (d.last_join_turn || 5);
+    document.getElementById('join').hidden = !asking;
+    set('join-note', late ? m('join_late', { n: d.turn }) : m('join_note'));
     renderNews(d.news || []);
     var ts = d.turn_state || {};
     var w = document.getElementById('status-warning');

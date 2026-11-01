@@ -58,6 +58,11 @@
     # Game terminal: ttyd runs with base path /play
     RedirectMatch permanent ^/play$ /play/
 
+    # Administrator page: /admin/ shows admin.html (the page itself holds
+    # nothing private; the signed-in check is the <Location "/admin/"> below)
+    RedirectMatch permanent ^/admin$ /admin/
+    AliasMatch "^/admin/$" "/var/www/DOMAIN_NAME/admin.html"
+
     # Drop any client-supplied identity header so it cannot be forged
     # (the player account check for /play/ is at the end of this vhost)
     RequestHeader unset X-WEBAUTH-USER early
@@ -72,10 +77,15 @@
 
     # Regular HTTP proxy
     ProxyPreserveHost On
-    # Sign-up with invite codes (web/join.html): conquer-gate checks the
-    # code and creates the account; it is open, like the sign-up page
+    # Requests for a seat (web/signup.html): conquer-gate creates the account
+    # (pending the administrator's approval, or approved with an invite
+    # code); it is open, like the sign-up page
     ProxyPass /join/api/ http://127.0.0.1:7682/join/api/
     ProxyPassReverse /join/api/ http://127.0.0.1:7682/join/api/
+    # Administrator page (/admin/): the gate answers only to accounts marked
+    # "*" in the players file, see <Location "/admin/"> below
+    ProxyPass /admin/api/ http://127.0.0.1:7682/admin/api/
+    ProxyPassReverse /admin/api/ http://127.0.0.1:7682/admin/api/
     ProxyPass /play/ http://127.0.0.1:7681/play/
     ProxyPassReverse /play/ http://127.0.0.1:7681/play/
 
@@ -108,7 +118,7 @@
     </Files>
 
     # Block suspicious request patterns
-    <LocationMatch "/(\.git|\.env|config|admin|phpmyadmin)">
+    <LocationMatch "/(\.git|\.env|config|phpmyadmin)">
         Require all denied
     </LocationMatch>
 
@@ -119,6 +129,19 @@
 
     # Log format for monitoring
     LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" combined
+
+    # Administrator page and its API: the same accounts as the game; the gate
+    # lets in only the ones marked "*" (manage-players.sh assign NAME --admin)
+    <Location "/admin/">
+        AuthType Basic
+        AuthName "Conquer"
+        AuthBasicProvider file
+        AuthUserFile "/etc/apache2/conquer-web.htpasswd"
+        Require valid-user
+        RequestHeader set X-WEBAUTH-USER "%{REMOTE_USER}s"
+        # Keep search engines out of the administration
+        Header always set X-Robots-Tag "noindex, nofollow"
+    </Location>
 
     # Player accounts: Apache authenticates every request to the terminal
     # (manage-players.sh edits the file) and tells ttyd who signed in.

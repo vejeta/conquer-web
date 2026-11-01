@@ -155,3 +155,10 @@ MSG[join_done]="
   Coach przeprowadzi cię przez pierwszą turę.
 "
 MSG[join_finish]="  Naciśnij dowolny klawisz, aby kontynuować..."
+
+# Account waiting for approval ("?" in the assignments)
+MSG[menu_requested]="miejsce zgłoszone, czeka na zatwierdzenie"
+MSG[menu_pending]="  ${yellow}Twoje miejsce czeka na zatwierdzenie.${reset}
+  Administrator zatwierdza nowych graczy ręcznie. Gdy to zrobi, Graj
+  otworzy tutaj kreator państwa. Do tego czasu możesz wypróbować świat
+  treningowy (opcja 7) i przeczytać pełną pomoc (opcja 5)."

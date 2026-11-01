@@ -37,16 +37,37 @@ Passwords (web accounts, nations) and the world survive all of these.
 
 ### Let a player in
 
-**With an invite code** (the player creates their own account on the site,
-then founds their nation; new nations can join until turn 5):
+**Approve a request** (the usual way): the player presses **I want to play**
+on the home page and asks for a seat. Their account exists at once but waits
+for you. Open `https://YOUR-SITE/admin/` (sign in with an administrator
+account, see `assign NAME --admin` below) and choose **Approve** or
+**Reject** on the *Requests* tab. Approving mails the player if they gave an
+address; rejecting deletes the account. Set up the mails (and a mail to you
+for each new request) in DEPLOYMENT.md, "Email notifications". The
+*Players* tab shows every account and its state, the *Invitations* tab makes
+codes. From the server:
+
+```bash
+sudo ./manage-players.sh requests       # who is waiting
+sudo ./manage-players.sh approve NAME   # the player founds a nation when they play
+sudo ./manage-players.sh reject NAME    # deletes the account (no email from here)
+```
+
+An approved player presses **Play** and the game has them found their
+nation. New nations can join until turn 5: after it the request is still
+accepted, but you create the nation yourself (below) and link it with
+`sudo ./manage-players.sh assign ACCOUNT NATION`; `/admin/` reminds you.
+
+**With an invite code** (skips the wait; the player is approved at once):
 
 ```bash
 sudo ./manage-players.sh invite         # a single-use code for one player
 sudo ./manage-players.sh invites        # the codes not used yet
 ```
 
-Send the player the code, or the link `https://YOUR-SITE/signup.html?code=THE-CODE`.
-They choose **Create your account**, then **Play now** with that account.
+Send the player the code, or the link `https://YOUR-SITE/signup.html?code=THE-CODE`
+(codes can also be made at `/admin/`). They ask for their seat with the code
+and press **Play** with that account.
 
 **Or create the nation yourself**:
 
@@ -63,7 +84,7 @@ by `manage-players.sh`) and the **nation password** (asked by the game).
 
 | Command | What it does |
 |---------|--------------|
-| `sudo ./manage-players.sh list` | Web accounts and the nation each opens |
+| `sudo ./manage-players.sh list` | Web accounts and the nation each opens (`?` = waiting for approval) |
 | `sudo ./manage-players.sh add NAME --nation NATION` | Creates or resets a web account (Enter at the password prompt generates one) |
 | `sudo ./manage-players.sh add NAME --admin` | An administrator account: opens any nation, god included |
 | `sudo ./manage-players.sh assign NAME NATION` | Links an account to another nation |
@@ -124,7 +145,9 @@ directory, for example another disk.
 | Setting | What it does |
 |---------|--------------|
 | `ADMIN_CONTACT=` | Your address, shown under "How to join" on the home page and in the menu |
-| `SIGNUP=on` | Sign-up with invite codes on the site (`off` closes it) |
+| `SIGNUP=on` | Requests for a seat and invite codes on the site (`off` closes them) |
+| `NOTIFY_EMAIL=`, `SMTP_HOST=`, `SMTP_USER=`, `SMTP_PASSWORD=`, `SMTP_FROM=`, `SMTP_STARTTLS=on` | Email for new requests and approvals, see DEPLOYMENT.md "Email notifications"; test with `docker exec conquer-vps conquer-gate -test-mail you@example.com` |
+| `SIGNUP_WEBHOOK_URL=` | Webhook announcing each new request (default `TURN_WEBHOOK_URL`) |
 
 After changing this file, `sudo systemctl restart conquer-web`: the game
 reads it when it starts, and the home page shows the new values then.
@@ -133,10 +156,12 @@ reads it when it starts, and the home page shows the new values then.
 
 Everything happens in the browser, at the address of the site.
 
-1. **Join**: ask the administrator (address under "How to join") for an
-   invite code. Choose **Create your account** on the home page, type the
-   code and choose your account name and password. Then **Play now** with
-   that account: the game has you found your nation.
+1. **Join**: choose **I want to play** on the home page, pick an account
+   name and password (add an email to be told when you are approved) and ask
+   for your seat. The administrator approves it by hand; with an invite
+   code from them you are in at once. Then **Play now** with that account:
+   the game has you found your nation. While your seat is pending, **Play**
+   only shows your status, the practice world and the help.
 2. **Play**: **Play now**, your account, option **1** of the menu, your
    nation password.
 3. **Learn**: **Try it free** on the home page (a practice world, no account),

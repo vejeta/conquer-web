@@ -28,6 +28,15 @@ services:
       - TURN_EARLY=${TURN_EARLY:-on}
       - SIGNUP=${SIGNUP:-on}
       - ADMIN_CONTACT=${ADMIN_CONTACT:-}
+      - DOMAIN=${DOMAIN:-}
+      - SITE_URL=${SITE_URL:-}
+      - NOTIFY_EMAIL=${NOTIFY_EMAIL:-}
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - SMTP_FROM=${SMTP_FROM:-}
+      - SMTP_STARTTLS=${SMTP_STARTTLS:-on}
+      - SIGNUP_WEBHOOK_URL=${SIGNUP_WEBHOOK_URL:-}
     volumes:
       # Live world data: persists across rebuilds, seeded on first start
       - ./data/lib:/opt/conquer/lib
@@ -59,6 +68,10 @@ services:
     pids_limit: 512
     mem_limit: 1g
     restart: unless-stopped
+    # Lets SMTP_HOST=host.docker.internal:25 reach a mail server (Postfix)
+    # on the VPS itself, whatever the address of the Docker bridge
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "127.0.0.1:7681:7681"  # Only bind to localhost for security
       - "127.0.0.1:7682:7682"  # Sign-up service, for Apache only

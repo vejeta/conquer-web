@@ -128,11 +128,11 @@ player_nation() {
 }
 
 # Nation whose orders this account can mark as done (not administrators,
-# not a new account still without a nation)
+# not an account still without a nation: "+" approved, "?" waiting)
 own_nation() {
     local nation
     [ -f "$PLAYERS_FILE" ] || return 1
-    nation=$(player_nation) && [ "$nation" != "*" ] && [ "$nation" != "+" ] && echo "$nation"
+    nation=$(player_nation) && [ "$nation" != "*" ] && [ "$nation" != "+" ] && [ "$nation" != "?" ] && echo "$nation"
 }
 
 # An account created on the sign-up page has no nation yet ("+" in the
@@ -228,6 +228,7 @@ show_banner() {
         case "$nation" in
             "") nation=$(t menu_no_nation) ;;
             "*") nation=$(t menu_any_nation) ;;
+            "?") nation=$(t menu_requested) ;;
             *) nation=$(t menu_nation "$nation") ;;
         esac
         t menu_signed_in "$PLAYER" "$nation"; echo
@@ -383,6 +384,11 @@ play() {
     fi
     if [ "$nation" = "+" ]; then
         found_nation
+        return
+    elif [ "$nation" = "?" ]; then
+        # Requested on the sign-up page, not approved yet: no real game
+        t menu_pending; echo
+        pause
         return
     elif [ "$nation" = "*" ]; then
         # Administrators choose the nation at the game's own prompt: say
