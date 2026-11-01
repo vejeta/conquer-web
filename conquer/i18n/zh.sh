@@ -148,3 +148,9 @@ MSG[join_done]="
   完成第一个回合。
 "
 MSG[join_finish]="  按任意键继续..."
+
+# Account waiting for approval ("?" in the assignments)
+MSG[menu_requested]="已申请席位，等待批准"
+MSG[menu_pending]="  ${yellow}你的席位正在等待批准。${reset}
+  管理员会手动批准新玩家。批准后，“进入游戏”会在这里打开建国向导。
+  在此期间，你可以试玩练习世界（选项 7），并阅读完整帮助（选项 5）。"

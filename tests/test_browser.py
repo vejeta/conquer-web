@@ -223,3 +223,198 @@ def test_schedule_in_visitor_time(site, browser, tmp_path):
         ctx.close()
     finally:
         Site.status_file = None
+
+
+def status_fixture(tmp_path, **fields):
+    status = tmp_path / "status.json"
+    status.write_text(json.dumps(dict({"turn": 3, "season": "Spring of Year 1", "news": [], "nations": []}, **fields)))
+    return status
+
+
+@pytest.mark.parametrize("fields,want,note", [
+    ({"requests_open": True, "turn": 3, "last_join_turn": 5}, "ask for your seat", "invite code you are in at once"),
+    ({"requests_open": True, "turn": 36, "last_join_turn": 5}, "ask for your seat", "The game is at turn 36"),
+    ({"requests_open": False, "turn": 3, "last_join_turn": 5}, None, None),
+    ({"signup": True, "turn": 3}, "ask for your seat", "invite code you are in at once"),
+])
+def test_home_asks_for_a_seat(site, browser, tmp_path, fields, want, note):
+    """The home page offers one call to action, from status.json: the same
+    for everyone, another line for latecomers, hidden when requests are closed."""
+    Site.status_file = status_fixture(tmp_path, **fields)
+    try:
+        page = browser.new_page()
+        page.goto(site + "index.html?lang=en")
+        page.wait_for_function("() => document.getElementById('status-turn').textContent !== ''")
+        hidden = page.evaluate("document.getElementById('join').hidden")
+        if want is None:
+            assert hidden
+        else:
+            assert not hidden
+            assert want in page.inner_text("#join a")
+            assert note in page.inner_text("#join-note")
+            assert page.get_attribute("#join a", "href") == "signup.html"
+        page.close()
+    finally:
+        Site.status_file = None
+
+
+def fill_signup(page, **extra):
+    page.fill("#account", "ana")
+    page.fill("#password", "correct horse")
+    page.fill("#password2", "correct horse")
+    for field, value in extra.items():
+        page.fill("#" + field, value)
+
+
+@pytest.mark.parametrize("status", ["pending", "approved"])
+def test_signup_done_panel(site, browser, status):
+    """The reply's status picks the panel: a pending seat offers the practice
+    world while waiting, an approved one (invite code) the first key."""
+    seen = []
+
+    def api(route):
+        seen.append(json.loads(route.request.post_data))
+        route.fulfill(content_type="application/json", body=json.dumps({"ok": True, "account": "ana", "status": status}))
+    page = browser.new_page()
+    page.route("**/join/api/request", api)
+    page.goto(site + "signup.html?lang=en")
+    fill_signup(page, email="ana@example.org", message="I found you on Usenet")
+    if status == "approved":
+        page.click("#invite summary")
+        page.fill("#code", "k7qm-3xpa")
+    page.click("#submit")
+    if status == "pending":
+        page.wait_for_selector("#done-pending:not([hidden])")
+        assert page.evaluate("document.getElementById('done').hidden")
+        assert page.get_attribute("#done-pending a[href='try/']", "href") == "try/"
+        assert "ana@example.org" in page.inner_text("#pending-mail")
+        assert "Your seat is pending" in page.inner_text("#done-pending")
+        assert seen == [{"account": "ana", "password": "correct horse", "email": "ana@example.org",
+                         "message": "I found you on Usenet"}]
+    else:
+        page.wait_for_selector("#done:not([hidden])")
+        assert page.evaluate("document.getElementById('done-pending').hidden")
+        assert page.inner_text("#done-account") == "ana"
+        assert seen[0]["code"] == "k7qm-3xpa"
+    page.close()
+
+
+def test_signup_without_email_or_code(site, browser):
+    """Email and code are optional; a bad email is refused before asking."""
+    seen = []
+
+    def api(route):
+        seen.append(json.loads(route.request.post_data))
+        route.fulfill(content_type="application/json", body='{"ok": true, "account": "ana", "status": "pending"}')
+    page = browser.new_page()
+    page.route("**/join/api/request", api)
+    page.goto(site + "signup.html?lang=en")
+    fill_signup(page, email="not-an-address")
+    page.click("#submit")
+    assert "email address" in page.inner_text("#error") and not seen
+    page.fill("#email", "")
+    page.click("#submit")
+    page.wait_for_selector("#done-pending:not([hidden])")
+    assert seen == [{"account": "ana", "password": "correct horse"}]
+    assert "no email" in page.inner_text("#pending-mail")
+    page.close()
+
+
+def test_signup_invite_link_opens_the_code(site, browser):
+    page = browser.new_page()
+    page.goto(site + "signup.html?lang=es&code=K7QM-3XPA")
+    page.wait_for_function("() => document.title === 'Pide tu plaza'")
+    assert page.evaluate("document.getElementById('invite').open")
+    assert page.input_value("#code") == "K7QM-3XPA"
+    page.close()
+
+
+ADMIN_STATE = {
+    "ok": True, "turn": 36, "last_join_turn": 5,
+    "requests": [{"account": "ana", "since": 1, "email": "ana@example.org", "message": "Hello <b>there</b>"},
+                 {"account": "bob", "since": 2, "email": "", "message": ""}],
+    "players": [{"account": "ana", "state": "?", "nation": None}, {"account": "root", "state": "*", "nation": None},
+                {"account": "cy", "state": "nation", "nation": "Gondor"}, {"account": "di", "state": "+", "nation": None}],
+    "invites": ["K7QM-3XPA", "AAAA-BBBB"],
+}
+
+
+def test_admin_page(site, browser):
+    """The three tabs show the state; Approve posts to the API and the page
+    tells how to add the nation when the game is past the last joining turn."""
+    posts = []
+    state = json.loads(json.dumps(ADMIN_STATE))
+
+    def api(route):
+        req = route.request
+        if req.method == "POST":
+            posts.append((req.url.split("/admin/api/")[1], json.loads(req.post_data)))
+            if req.url.endswith("/approve"):
+                state["requests"] = state["requests"][1:]
+                return route.fulfill(content_type="application/json", body='{"ok": true, "account": "ana", "emailed": true}')
+            if req.url.endswith("/invite"):
+                state["invites"].append("NEW1-CODE")
+                return route.fulfill(content_type="application/json", body='{"ok": true, "codes": ["NEW1-CODE"]}')
+        route.fulfill(content_type="application/json", body=json.dumps(state))
+    page = browser.new_page()
+    page.route("**/admin/api/**", api)
+    page.goto(site + "admin.html?lang=en")
+    page.wait_for_selector("#app:not([hidden])")
+    rows = page.locator("#requests li")
+    assert rows.count() == 2
+    assert "ana@example.org" in rows.nth(0).inner_text()
+    assert "Hello <b>there</b>" in rows.nth(0).inner_text()      # shown as text
+    assert "no email" in rows.nth(1).inner_text()
+    page.click("#tab-players")
+    text = page.inner_text("#players")
+    for want in ("plays: Gondor", "administrator", "approved, not founded yet", "requested"):
+        assert want in text
+    page.click("#tab-invites")
+    assert page.locator("#invites li").count() == 2
+    page.fill("#count", "3")
+    page.click("#make")
+    page.wait_for_function("() => document.querySelectorAll('#invites li').length === 3")
+    assert ("invite", {"count": 3}) in posts
+    page.click("#tab-requests")
+    page.locator("#requests li").nth(0).locator("button.approve").click()
+    page.wait_for_function("() => document.querySelectorAll('#requests li').length === 1")
+    assert ("approve", {"account": "ana"}) in posts
+    assert "approved" in page.inner_text("#info")
+    note = page.inner_text("#notes")
+    assert "turn 36" in note and "add-nation.sh" in note and "assign ana NATION" in note
+    page.close()
+
+
+def test_admin_reject_asks_first(site, browser):
+    posts = []
+    page = browser.new_page()
+
+    def api(route):
+        if route.request.method == "POST":
+            posts.append(route.request.post_data)
+            return route.fulfill(content_type="application/json", body='{"ok": true}')
+        route.fulfill(content_type="application/json", body=json.dumps(ADMIN_STATE))
+    page.route("**/admin/api/**", api)
+    page.goto(site + "admin.html?lang=es")
+    page.wait_for_selector("#app:not([hidden])")
+    answers = iter([False, True])
+    page.on("dialog", lambda d: d.accept() if next(answers) else d.dismiss())
+    page.locator("#requests li").nth(0).locator("button.reject").click()
+    page.wait_for_timeout(300)
+    assert posts == []
+    page.locator("#requests li").nth(0).locator("button.reject").click()
+    page.wait_for_function("() => document.getElementById('info').textContent.includes('rechazado')")
+    assert [json.loads(p) for p in posts] == [{"account": "ana"}]
+    page.close()
+
+
+@pytest.mark.parametrize("status", [401, 403])
+def test_admin_needs_an_administrator(site, browser, status):
+    page = browser.new_page()
+    page.route("**/admin/api/**", lambda r: r.fulfill(status=status, content_type="application/json",
+                                                      body='{"ok": false, "error": "forbidden"}'))
+    page.goto(site + "admin.html?lang=en")
+    page.wait_for_selector("#signin:not([hidden])")
+    assert "administrator account" in page.inner_text("#signin")
+    assert page.evaluate("document.getElementById('app').hidden")
+    page.close()

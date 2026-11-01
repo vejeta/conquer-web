@@ -155,3 +155,10 @@ MSG[join_done]="
   Coach guia você no primeiro turno.
 "
 MSG[join_finish]="  Pressione uma tecla para continuar..."
+
+# Account waiting for approval ("?" in the assignments)
+MSG[menu_requested]="vaga solicitada, aguardando aprovação"
+MSG[menu_pending]="  ${yellow}Sua vaga está pendente.${reset}
+  O administrador aprova os novos jogadores manualmente. Quando ele
+  aprovar, Jogar abrirá aqui o criador de nações. Enquanto isso, você
+  pode experimentar o mundo de treino (opção 7) e ler a ajuda completa (opção 5)."

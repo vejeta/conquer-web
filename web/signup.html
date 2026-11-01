@@ -7,8 +7,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title data-i18n="join.page_title">Join Conquer</title>
-  <meta name="description" content="Create your Conquer account with an invite code.">
+  <title data-i18n="join.page_title">Ask for your seat</title>
+  <meta name="description" content="Ask for your seat in Conquer.">
   <meta name="robots" content="noindex">
   <style>
     :root {
@@ -29,6 +29,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
       --accent: #1a7f37; --accent-text: #ffffff; --warn: #9a6700; --error: #cf222e;
     }
     * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
     body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
     main { max-width: 560px; margin: 0 auto; padding: 32px 16px 64px; display: flex; flex-direction: column; gap: 20px; }
     a { color: var(--accent); }
@@ -44,7 +45,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
       font: inherit; color: var(--text); background: var(--bg);
       border: 1px solid var(--border); border-radius: 6px; padding: 9px 11px; width: 100%;
     }
-    input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+    textarea {
+      font: inherit; color: var(--text); background: var(--bg); resize: vertical; min-height: 5.5em;
+      border: 1px solid var(--border); border-radius: 6px; padding: 9px 11px; width: 100%;
+    }
+    input:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
     #code { font-family: ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: 0.12em; text-transform: uppercase; }
     button, .button {
       font: 600 1.05rem system-ui, sans-serif; background: var(--accent); color: var(--accent-text);
@@ -53,8 +58,12 @@ SPDX-License-Identifier: GPL-3.0-or-later
     button:disabled { opacity: 0.6; cursor: wait; }
     button:focus-visible, .button:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
     .error { color: var(--error); font-weight: 600; margin: 0; }
-    .nocode { border-left: 3px solid var(--warn); padding-left: 12px; margin: 0; color: var(--muted); }
-    .nocode code { color: var(--text); user-select: all; overflow-wrap: anywhere; }
+    .invite { border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
+    .invite summary { cursor: pointer; font-weight: 600; }
+    .invite .field { margin-top: 10px; }
+    .meanwhile { margin: 0 0 16px; padding-left: 1.3em; display: flex; flex-direction: column; gap: 6px; }
+    .done p { margin: 0 0 12px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; }
     .keys { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
     .keys li { border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; }
     .keys li.now { border-color: var(--accent); border-width: 2px; }
@@ -80,27 +89,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <p class="crumbs"><a href="index.html" data-i18n="join.home">Conquer</a> / <span data-i18n="join.title">Create your website account</span></p>
     <select data-lang-menu aria-label="Language" data-i18n-title="index.language"></select>
   </div>
-  <h1 data-i18n="join.title">Create your website account</h1>
-  <p class="lede" data-i18n="join.lede">Playing Conquer takes two keys. This page makes the first one.</p>
-
-  <ol class="keys" aria-label="Two keys">
-    <li class="now">
-      <strong data-i18n="join.step1_t">1. Your account for this website (here, now)</strong>
-      <span data-i18n="join.step1">A name and a password that open the door of the site. Your browser asks for them in a small window each time you press Play. It is not your nation: other players never see it.</span>
-    </li>
-    <li>
-      <strong data-i18n="join.step2_t">2. Your nation (next, inside the game)</strong>
-      <span data-i18n="join.step2">Conquer is a game from 1987 that runs in a terminal. After you sign in, it asks you to found your nation: its name (up to 9 letters, it can differ from your account), race, class, and a nation password the game asks for every time you play.</span>
-    </li>
-  </ol>
+  <h1 data-i18n="join.title">Ask for your seat</h1>
+  <p class="lede" data-i18n="join.lede">Create your account and ask the administrator for a seat in the game.</p>
 
   <section class="panel" id="form-panel">
     <form id="form" novalidate>
-      <div class="field">
-        <label for="code" data-i18n="join.l_code">Invite code</label>
-        <input id="code" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="K7QM-3XPA" required maxlength="12">
-        <span class="hint" data-i18n="join.h_code">From the game administrator. It works once.</span>
-      </div>
       <div class="field">
         <label for="account" data-i18n="join.l_account">Account name</label>
         <input id="account" name="username" autocomplete="username" autocapitalize="off" spellcheck="false" required maxlength="32" pattern="[A-Za-z0-9_.\-]{1,32}">
@@ -115,13 +108,51 @@ SPDX-License-Identifier: GPL-3.0-or-later
         <label for="password2" data-i18n="join.l_password2">Repeat the password</label>
         <input id="password2" name="password2" type="password" autocomplete="new-password" required minlength="8" maxlength="128">
       </div>
+      <div class="field">
+        <label for="email" data-i18n="join.l_email">Email (optional)</label>
+        <input id="email" name="email" type="email" autocomplete="email" spellcheck="false" maxlength="120">
+        <span class="hint" data-i18n="join.h_email">To tell you when you are approved. Only the administrator sees it.</span>
+      </div>
+      <div class="field">
+        <label for="message" data-i18n="join.l_message">Message for the administrator (optional)</label>
+        <textarea id="message" name="message" maxlength="500" rows="3"></textarea>
+        <span class="hint" data-i18n="join.h_message">Who you are, how you found Conquer... (up to 500 characters)</span>
+      </div>
+      <details class="invite" id="invite">
+        <summary data-i18n="join.code_summary">Have an invite code?</summary>
+        <div class="field">
+          <label for="code" data-i18n="join.l_code">Invite code</label>
+          <input id="code" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="K7QM-3XPA" maxlength="12">
+          <span class="hint" data-i18n="join.h_code">An invite code skips the wait: you are approved at once. It works once.</span>
+        </div>
+      </details>
       <p class="error" id="error" role="alert" hidden></p>
-      <button type="submit" id="submit" data-i18n="join.submit">Create my account</button>
+      <button type="submit" id="submit" data-i18n="join.submit">Ask for my seat</button>
     </form>
   </section>
 
-  <p class="nocode" id="nocode"><span data-i18n="join.nocode">No invite code? Ask the game administrator for one.</span>
-    <span id="contact-line" hidden><span data-i18n="join.write_to">Write to</span> <code id="contact"></code></span></p>
+  <ol class="keys" id="keys" aria-label="Two keys">
+    <li class="now">
+      <strong data-i18n="join.step1_t">Your account for this website</strong>
+      <span data-i18n="join.step1">A name and a password that open the door of the site. Your browser asks for them in a small window each time you press Play. It is not your nation: other players never see it.</span>
+    </li>
+    <li>
+      <strong data-i18n="join.step2_t">Your nation, later</strong>
+      <span data-i18n="join.step2">Once you are approved, the game asks you to found your nation: its name (up to 9 letters, it can differ from your account), race, class, and a nation password the game asks for every time you play.</span>
+    </li>
+  </ol>
+
+  <section class="panel done" id="done-pending" hidden aria-live="polite">
+    <h2 data-i18n="join.pending_title">Your seat is pending</h2>
+    <p><span data-i18n="join.pending_text">The administrator approves seats by hand.</span> <span id="pending-mail"></span></p>
+    <p data-i18n="join.pending_play">Your website account works already: Play shows the practice world and the state of your seat.</p>
+    <p><strong data-i18n="join.pending_meanwhile">Meanwhile:</strong></p>
+    <ul class="meanwhile">
+      <li><a href="try/" data-i18n="join.pending_try">Try the practice world, free and in your browser</a></li>
+      <li><a href="tutorial.html" data-i18n-page="tutorial" data-i18n="join.pending_tutorial">Play your first turn step by step</a></li>
+    </ul>
+    <div class="actions"><a class="button play-link" href="game.html" data-i18n="join.play">Play now</a></div>
+  </section>
 
   <section class="panel done" id="done" hidden aria-live="polite">
     <h2 data-i18n="join.done_title">First key ready: your account for this website</h2>
@@ -131,7 +162,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
       <li data-i18n="join.done2">Second key: the game asks you to found your nation. Choose its name (up to 9 letters), race and class, and a nation password. Save at the end with Esc and then y.</li>
       <li data-i18n="join.done3">From then on, Play now and your account take you straight to your nation, which asks for its password.</li>
     </ol>
-    <a class="button" href="game.html" id="play" data-i18n="join.play">Play now</a>
+    <a class="button play-link" href="game.html" id="play" data-i18n="join.play">Play now</a>
   </section>
 
   <details class="howto" id="howto" hidden>
@@ -158,21 +189,15 @@ SPDX-License-Identifier: GPL-3.0-or-later
     var submit = document.getElementById('submit');
     var fields = {
       code: document.getElementById('code'), account: document.getElementById('account'),
-      password: document.getElementById('password'), password2: document.getElementById('password2')
+      password: document.getElementById('password'), password2: document.getElementById('password2'),
+      email: document.getElementById('email'), message: document.getElementById('message')
     };
     // Invite link: signup.html?code=K7QM-3XPA
     var given = new URLSearchParams(location.search).get('code');
-    if (given) fields.code.value = given;
-
-    // Where to ask for a code, from the public game status
-    fetch('status/status.json', { cache: 'no-store' })
-      .then(function (r) { return r.ok ? r.json() : {}; })
-      .then(function (d) {
-        if (!d.contact) return;
-        document.getElementById('contact').textContent = d.contact;
-        document.getElementById('contact-line').hidden = false;
-      })
-      .catch(function () {});
+    if (given) {
+      fields.code.value = given;
+      document.getElementById('invite').open = true;
+    }
 
     function show(key, focus) {
       var text = 'e_' + key;
@@ -181,12 +206,28 @@ SPDX-License-Identifier: GPL-3.0-or-later
       if (focus) focus.focus();
     }
 
+    // The Play links keep the page's language
+    function playLinks() {
+      var lang = conquerI18n.lang();
+      document.querySelectorAll('.play-link').forEach(function (a) {
+        a.href = 'game.html' + (lang !== 'en' ? '?lang=' + lang : '');
+      });
+    }
+    // What the reply said, to show it again in another language
+    var result = null;
+    function pendingMail() {
+      if (!result) return;
+      document.getElementById('pending-mail').textContent =
+        result.email ? m('pending_mail', { email: result.email }) : m('pending_nomail');
+    }
     // Another language: its texts come from the catalog; the error shown
-    // and the Play link follow it
-    document.addEventListener('conquer:lang', function (e) {
+    // and the Play links follow it
+    document.addEventListener('conquer:lang', function () {
       error.hidden = true;
-      document.getElementById('play').href = 'game.html' + (e.detail !== 'en' ? '?lang=' + e.detail : '');
+      playLinks();
+      pendingMail();
     });
+    playLinks();
 
     // The narrated video of the game's nation builder (tools/tutorial/video.py),
     // in the page's language or else in English
@@ -217,36 +258,49 @@ SPDX-License-Identifier: GPL-3.0-or-later
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       error.hidden = true;
-      var account = fields.account.value.trim();
-      if (!fields.code.value.trim()) return show('bad_code', fields.code);
+      var account = fields.account.value.trim(), email = fields.email.value.trim();
+      var code = fields.code.value.trim(), message = fields.message.value.trim();
       if (!/^[A-Za-z0-9_.-]{1,32}$/.test(account)) return show('bad_account', fields.account);
       if (fields.password.value.length < 8) return show('short_password', fields.password);
       if (fields.password.value !== fields.password2.value) return show('mismatch', fields.password2);
+      if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return show('bad_email', fields.email);
       submit.disabled = true;
-      fetch('join/api/signup', {
+      var body = { account: account, password: fields.password.value };
+      if (email) body.email = email;
+      if (message) body.message = message;
+      if (code) body.code = code;
+      fetch('join/api/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: fields.code.value, account: account, password: fields.password.value })
+        body: JSON.stringify(body)
       }).then(function (r) {
         return r.json().catch(function () { return { error: 'server' }; });
       }).then(function (res) {
         submit.disabled = false;
         if (!res.ok) {
-          var focus = { bad_code: fields.code, account_taken: fields.account, bad_account: fields.account,
-                        short_password: fields.password, bad_password: fields.password }[res.error];
+          var focus = { bad_code: fields.code, too_late: fields.code, account_taken: fields.account,
+                        bad_account: fields.account, short_password: fields.password,
+                        bad_password: fields.password, bad_email: fields.email }[res.error];
+          if (focus === fields.code) document.getElementById('invite').open = true;
           return show(res.error || 'server', focus);
         }
-        document.getElementById('done-account').textContent = res.account;
-        var lang = conquerI18n.lang();
-        document.getElementById('play').href = 'game.html' + (lang !== 'en' ? '?lang=' + lang : '');
-        // Done: the next steps replace the explanation, at the top
-        document.querySelector('.keys').hidden = true;
+        result = { account: res.account || account, email: email };
+        playLinks();
+        // Done: the next steps replace the form, at the top
+        document.getElementById('keys').hidden = true;
         document.querySelector('.lede').hidden = true;
         document.getElementById('form-panel').hidden = true;
-        document.getElementById('nocode').hidden = true;
-        document.getElementById('done').hidden = false;
+        var next;
+        if (res.status === 'approved') {
+          document.getElementById('done-account').textContent = result.account;
+          next = document.getElementById('done');
+        } else {
+          pendingMail();
+          next = document.getElementById('done-pending');
+        }
+        next.hidden = false;
         window.scrollTo(0, 0);
-        document.getElementById('play').focus({ preventScroll: true });
+        next.querySelector('.play-link').focus({ preventScroll: true });
       }).catch(function () {
         submit.disabled = false;
         show('network');

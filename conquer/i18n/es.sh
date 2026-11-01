@@ -153,3 +153,10 @@ MSG[join_done]="
   botón Coach te guía en tu primer turno.
 "
 MSG[join_finish]="  Pulsa una tecla para continuar..."
+
+# Account waiting for approval ("?" in the assignments)
+MSG[menu_requested]="plaza solicitada, pendiente de aprobación"
+MSG[menu_pending]="  ${yellow}Tu plaza está pendiente.${reset}
+  El administrador aprueba a los jugadores nuevos a mano. Cuando lo haga,
+  Jugar abrirá aquí el creador de naciones. Mientras tanto puedes probar
+  el mundo de práctica (opción 7) y leer la ayuda completa (opción 5)."

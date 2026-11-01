@@ -203,6 +203,53 @@ jobs:
           grep -q 'Found your nation' <<< "$out" || { echo "no nation builder for a new account: $out" >&2; exit 1; }
           sudo ./manage-players.sh remove newbie
 
+      - name: Requests and approval
+        run: |
+          code() { curl -sk -o /dev/null -w '%{http_code}' "$@"; }
+          ask() { curl -sk -H 'Content-Type: application/json' -d "$1" https://localhost/join/api/request; }
+          admin() { curl -sk -u "$TTYD_USERNAME:$TTYD_PASSWORD" -H 'Content-Type: application/json' "$@"; }
+          test "$(curl -sk https://localhost/status/status.json | jq .requests_open)" = true
+          test "$(curl -sk https://localhost/status/status.json | jq .last_join_turn)" = 5
+          # A request without a code creates a pending account
+          ask '{"account":"asker","password":"asker-pass","email":"asker@example.org","message":"Hi from CI"}' | jq -e '.ok and .status == "pending"'
+          ask '{"account":"asker","password":"asker-pass"}' | jq -e '.error == "account_taken"'
+          ask '{"account":"nomail","password":"asker-pass","email":"not an address"}' | jq -e '.ok == false'
+          sudo grep -qx 'asker:?' data/lib/.players
+          sudo grep -qP '^asker\t[0-9]+\tasker@example.org\tHi from CI$' data/lib/.requests
+          # The administrator page and its API need an administrator
+          test "$(code https://localhost/admin/)" = 401
+          test "$(code -u "$TTYD_USERNAME:$TTYD_PASSWORD" https://localhost/admin/)" = 200
+          test "$(code https://localhost/admin/api/state)" = 401
+          test "$(code -u asker:asker-pass https://localhost/admin/api/state)" = 403
+          test "$(code -u asker:asker-pass -H 'Content-Type: application/json' -d '{"account":"asker"}' https://localhost/admin/api/approve)" = 403
+          # A header sent by the client does not make anyone an administrator
+          test "$(code -u asker:asker-pass -H "X-WEBAUTH-USER: $TTYD_USERNAME" https://localhost/admin/api/state)" = 403
+          sudo ./manage-players.sh assign "$TTYD_USERNAME" --admin
+          admin https://localhost/admin/api/state | jq -e '.ok and .last_join_turn == 5 and (.requests | map(.account) | index("asker") != null)'
+          admin https://localhost/admin/api/state | jq -e '.players | map(select(.account == "asker" and .state == "?")) | length == 1'
+          # Approving makes it a normal new account and empties the list
+          admin -d '{"account":"asker"}' https://localhost/admin/api/approve | jq -e '.ok and .emailed == false'
+          admin -d '{"account":"asker"}' https://localhost/admin/api/approve | jq -e '.error == "not_pending"'
+          sudo grep -qx 'asker:+' data/lib/.players
+          ! sudo grep -q '^asker' data/lib/.requests
+          # Rejecting deletes the account
+          ask '{"account":"asker2","password":"asker-pass"}' | jq -e '.status == "pending"'
+          sudo grep -q '^asker2:' data/auth/htpasswd
+          admin -d '{"account":"asker2"}' https://localhost/admin/api/reject | jq -e '.ok'
+          ! sudo grep -q '^asker2' data/auth/htpasswd data/lib/.players data/lib/.requests
+          test "$(code -u asker2:asker-pass https://localhost/play/)" = 401
+          # Invite codes made from the page work for the sign-up tool
+          invite=$(admin -d '{"count":1}' https://localhost/admin/api/invite | jq -er '.codes[0]')
+          admin https://localhost/admin/api/state | jq -e --arg c "$invite" '.invites | index($c) != null'
+          printf 'invited-pass\n' | docker exec -i -u conquer conquer-local conquer-signup invite "$invite" invited
+          sudo grep -qx 'invited:+' data/lib/.players
+          # Administrators can do the same from the server
+          ask '{"account":"asker3","password":"asker-pass"}' | jq -e '.status == "pending"'
+          sudo ./manage-players.sh requests | grep -q asker3
+          sudo ./manage-players.sh approve asker3
+          sudo grep -qx 'asker3:+' data/lib/.players
+          for a in asker asker3 invited; do sudo ./manage-players.sh remove "$a"; done
+
       - name: The nation builder still shows the coach's screens
         run: |
           python3 -m pip install --quiet pytest pyte

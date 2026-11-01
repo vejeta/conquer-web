@@ -48,3 +48,7 @@ lib/data
 data/
 __pycache__/
 .pytest_cache/
+.claude/
+
+# Built locally by go build in conquer/gate (the image builds its own)
+conquer/gate/conquer-gate

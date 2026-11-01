@@ -25,6 +25,15 @@ services:
       - TURN_EARLY=${TURN_EARLY:-on}
       - SIGNUP=${SIGNUP:-on}
       - ADMIN_CONTACT=${ADMIN_CONTACT:-}
+      - DOMAIN=${DOMAIN:-}
+      - SITE_URL=${SITE_URL:-}
+      - NOTIFY_EMAIL=${NOTIFY_EMAIL:-}
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - SMTP_FROM=${SMTP_FROM:-}
+      - SMTP_STARTTLS=${SMTP_STARTTLS:-on}
+      - SIGNUP_WEBHOOK_URL=${SIGNUP_WEBHOOK_URL:-}
     volumes:
       # Live world data: persists across rebuilds, seeded on first start
       - ./data/lib:/opt/conquer/lib

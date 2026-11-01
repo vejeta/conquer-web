@@ -127,10 +127,11 @@ ADMIN_CONTACT="${ADMIN_CONTACT:-}"
 TURN_EARLY="${TURN_EARLY:-on}"
 SIGNUP="${SIGNUP:-on}"
 HTPASSWD_FILE="$PREFIX/auth/htpasswd"
+SITE_URL="${SITE_URL:-${DOMAIN:+https://$DOMAIN}}"
 EOF
 
-# Sign-up with invite codes (web/signup.html): conquer-gate checks the code
-# and creates the player's account, so the game user must be able to
+# Requests for a seat (web/signup.html): conquer-gate creates the player's
+# account (pending, or approved with a valid invite code), so the game user must be able to
 # write the account file Apache reads (the group is kept)
 if [ "${SIGNUP:-on}" != off ]; then
     if [ -f "$PREFIX/auth/htpasswd" ]; then
@@ -142,7 +143,7 @@ if [ "${SIGNUP:-on}" != off ]; then
                 sleep 5
             done
         ) &
-        echo "[entrypoint] Sign-up with invite codes enabled"
+        echo "[entrypoint] Requests for a seat enabled (administrator: /admin/)"
     else
         echo "[entrypoint] Sign-up disabled: no account file mounted at $PREFIX/auth/htpasswd"
     fi

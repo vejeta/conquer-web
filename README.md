@@ -12,7 +12,7 @@ A secure, web-based implementation of the classic Conquer strategy game using Do
 
 | Server | What is there |
 |--------|---------------|
-| **[conquer.vejeta.com](https://conquer.vejeta.com)** | The live game, run by the author of this project: a shared world with daily turns. [Try it](https://conquer.vejeta.com/try/) with no account (a practice world in your browser); to join, ask for an invite code at the address on the home page. In English, Spanish, German, Portuguese, Polish, Russian and Chinese. |
+| **[conquer.vejeta.com](https://conquer.vejeta.com)** | The live game, run by the author of this project: a shared world with daily turns. [Try it](https://conquer.vejeta.com/try/) with no account (a practice world in your browser); to join, ask for your seat on the home page and the administrator approves it. In English, Spanish, German, Portuguese, Polish, Russian and Chinese. |
 
 Running your own server? Open a pull request to add it here.
 
@@ -199,31 +199,32 @@ Administrator accounts may open any nation, god included.
 ./manage-players.sh list                         # accounts and their nations
 ```
 
-#### Joining with an invite code
+#### Joining: ask for a seat, the administrator approves
 
-Players create their own account with an invite code; nobody without one
-can create an account or reach the game terminal. The administrator hands
-out the codes:
+Anyone can ask for a seat; nobody reaches the game terminal until the
+administrator approves it (or the player brings an invite code).
 
-```bash
-sudo ./manage-players.sh invite 5     # five single-use codes
-sudo ./manage-players.sh invites      # the codes not used yet
-```
+1. The player opens **I want to play** on the home page (`signup.html`),
+   chooses an account name and a password, and may add an email (to be told
+   when approved) and a message. `conquer-gate`, a small service in the game
+   container, creates the website account at once but **pending** (`?` in
+   `lib/.players`, a line in `lib/.requests`) and tells the administrator by
+   email and/or webhook. With an invite code (`signup.html?code=K7QM-3XPA`,
+   under "Have an invite code?") the seat is approved on the spot.
+2. The administrator opens **/admin/** (same login, accounts marked `*`
+   only), reads the requests and presses Approve or Reject. Approving emails
+   the player if they gave an address. The same page lists the players and
+   makes invitation links; `manage-players.sh` does the same on the host.
+3. The player presses **Play now** and signs in. While pending, the menu
+   shows the state of the seat, the practice world and the help; once
+   approved, the game has them found their nation with its nation builder,
+   links it to the account, and from then on opens it directly.
 
-1. The player opens **Create your account** on the home page (`signup.html`,
-   or `signup.html?code=K7QM-3XPA` to fill the code in), types the code and
-   chooses an account name and a password. `conquer-gate`, a small service
-   in the game container, checks the code, creates the account and uses the
-   code up; it slows down anyone who keeps trying wrong codes.
-2. The player presses **Play now** and signs in with that account. The game
-   has them found their nation with its nation builder, links it to the
-   account, and from then on opens it directly.
-
-The page shows `ADMIN_CONTACT` to visitors without a code. After turn 5 the
-game only lets the administrator add nations, so sign-up then asks players
-to write to them. `SIGNUP=off` in the environment file closes it.
-`sudo ./manage-players.sh list` shows new accounts that have not founded
-their nation yet with `+`.
+After turn 5 the game only lets the administrator add nations: /admin/ says
+which commands to run (`add-nation.sh`, `manage-players.sh assign`).
+`SIGNUP=off` in the environment file closes requests.
+`sudo ./manage-players.sh list` shows pending accounts with `?` and
+approved ones that have not founded their nation yet with `+`.
 
 Assignments are stored with the world, in `data/lib/.players`
 (`account:nation`, `*` for administrators), so backups and restores keep them.

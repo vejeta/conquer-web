@@ -154,3 +154,10 @@ MSG[join_done]="
   button walks you through your first turn.
 "
 MSG[join_finish]="  Press any key to continue..."
+
+# Account waiting for approval ("?" in the assignments)
+MSG[menu_requested]="seat requested, waiting for approval"
+MSG[menu_pending]="  ${yellow}Your seat is pending.${reset}
+  The administrator approves new players by hand. Once they do, Play
+  opens the nation builder here. Meanwhile you can try the practice
+  world (option 7) and read the full help (option 5)."

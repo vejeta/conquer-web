@@ -20,12 +20,18 @@
 #   ./manage-players.sh list                list accounts and their nations
 #   ./manage-players.sh invite [COUNT]      create invite codes (default 1)
 #   ./manage-players.sh invites             list the unused invite codes
+#   ./manage-players.sh requests            list the requests waiting for approval
+#   ./manage-players.sh approve NAME        approve a request (the player may found
+#                                           a nation; no email is sent from here)
+#   ./manage-players.sh reject NAME         reject a request and delete its account
 #
 # Without an assignment an account opens the nation with the same name, if
 # there is one. The account file is data/auth/htpasswd for the local setup
 # and /etc/apache2/conquer-web.htpasswd on the VPS (run with sudo there).
 # Set HTPASSWD_FILE to use another file.
 # Assignments are kept with the world, in data/lib/.players (PLAYERS_FILE).
+# Requests wait in data/lib/.requests (REQUESTS_FILE); the website's /admin/
+# page does the same as requests, approve and reject.
 
 set -e
 
@@ -43,6 +49,8 @@ fi
 
 PLAYERS_FILE="${PLAYERS_FILE:-$SCRIPT_DIR/data/lib/.players}"
 INVITES_FILE="${INVITES_FILE:-$SCRIPT_DIR/data/lib/.invites}"
+REQUESTS_FILE="${REQUESTS_FILE:-$SCRIPT_DIR/data/lib/.requests}"
+TAB=$'\t'
 
 usage() {
     sed -n '/^# Usage:/,/^# Assignments are kept/p' "$0" | sed 's/^# \{0,1\}//'
@@ -68,12 +76,13 @@ valid_nation() {
     [[ "$1" =~ ^[A-Za-z0-9_.-]{1,9}$ ]]
 }
 
-# Remove the line for account $2 from the "name:..." file $1
+# Remove the line for account $2 from the "name:..." file $1 (fields
+# separated by $3 instead of ":", for the tab separated requests)
 remove_line() {
     local file="$1" tmp
     [ -f "$file" ] || return 0
     tmp=$(mktemp "$file.XXXXXX")
-    awk -F: -v user="$2" '$1 != user' "$file" > "$tmp"
+    awk -F"${3:-:}" -v user="$2" '$1 != user' "$file" > "$tmp"
     cat "$tmp" > "$file"
     rm -f "$tmp"
 }
@@ -181,6 +190,7 @@ cmd_remove() {
     fi
     remove_line "$HTPASSWD_FILE" "$1"
     remove_line "$PLAYERS_FILE" "$1"
+    remove_line "$REQUESTS_FILE" "$1" "$TAB"
     echo "✅ Account '$1' removed"
 }
 
@@ -202,6 +212,12 @@ cmd_rename() {
         cat "$tmp" > "$f"
         rm -f "$tmp"
     done
+    if [ -f "$REQUESTS_FILE" ]; then
+        tmp=$(mktemp "$REQUESTS_FILE.XXXXXX")
+        awk -F"$TAB" -v old="$old" -v new="$new" 'BEGIN { OFS = FS } $1 == old { $1 = new } { print }' "$REQUESTS_FILE" > "$tmp"
+        cat "$tmp" > "$REQUESTS_FILE"
+        rm -f "$tmp"
+    fi
     echo "✅ Account '$old' is now '$new' (same password)"
     echo "   Browsers remember the old name: sign in again, in a private window if it does not ask"
 }
@@ -223,6 +239,7 @@ cmd_list() {
             n = ($1 in nation) ? nation[$1] : "-"
             if (n == "*") n = "* (administrator)"
             if (n == "+") n = "+ (signed up, nation not founded yet)"
+            if (n == "?") n = "? (requested, waiting for approval)"
             printf "%-32s %s\n", $1, n
         }'
 }
@@ -253,6 +270,47 @@ cmd_invites() {
     cat "$INVITES_FILE"
 }
 
+# Is account $1 waiting for approval?
+is_pending() {
+    awk -F: -v user="$1" '$1 == user && $2 == "?" { found = 1 } END { exit !found }' "$PLAYERS_FILE" 2>/dev/null
+}
+
+# Requests for a seat: account, how long ago, email and message
+cmd_requests() {
+    if [ ! -s "$REQUESTS_FILE" ]; then
+        echo "No requests waiting for approval ($REQUESTS_FILE)"
+        return
+    fi
+    awk -F'\t' -v now="$(date +%s)" '
+        BEGIN { printf "%-32s %-10s %s\n", "ACCOUNT", "WAITING", "EMAIL / MESSAGE" }
+        {
+            age = now - $2
+            if (age >= 86400) w = int(age / 86400) " d"
+            else if (age >= 3600) w = int(age / 3600) " h"
+            else w = int(age / 60) " min"
+            printf "%-32s %-10s %s%s%s\n", $1, w, $3, ($3 != "" && $4 != "" ? " / " : ""), $4
+        }' "$REQUESTS_FILE"
+}
+
+# Approve the request of account $1: it may found a nation next time it plays
+cmd_approve() {
+    valid_name "$1" || { echo "❌ Invalid name"; exit 1; }
+    is_pending "$1" || { echo "❌ '$1' has no request waiting for approval (see: $0 requests)"; exit 1; }
+    set_nation "$1" "+"
+    remove_line "$REQUESTS_FILE" "$1" "$TAB"
+    echo "✅ '$1' is approved: it founds a nation in the game the next time it plays"
+}
+
+# Reject the request of account $1 and delete the account
+cmd_reject() {
+    valid_name "$1" || { echo "❌ Invalid name"; exit 1; }
+    is_pending "$1" || { echo "❌ '$1' has no request waiting for approval (see: $0 requests)"; exit 1; }
+    remove_line "$HTPASSWD_FILE" "$1"
+    remove_line "$PLAYERS_FILE" "$1"
+    remove_line "$REQUESTS_FILE" "$1" "$TAB"
+    echo "✅ Request of '$1' rejected: the account is deleted"
+}
+
 case "${1:-}" in
     add) [ -n "$2" ] || usage; shift; cmd_add "$@" ;;
     assign) [ -n "$3" ] || usage; cmd_assign "$2" "$3" ;;
@@ -261,5 +319,8 @@ case "${1:-}" in
     list) cmd_list ;;
     invite) cmd_invite "${2:-1}" ;;
     invites) cmd_invites ;;
+    requests) cmd_requests ;;
+    approve) [ -n "$2" ] || usage; cmd_approve "$2" ;;
+    reject) [ -n "$2" ] || usage; cmd_reject "$2" ;;
     *) usage ;;
 esac

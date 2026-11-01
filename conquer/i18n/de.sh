@@ -155,3 +155,10 @@ MSG[join_done]="
   Coach führt dich durch deinen ersten Zug.
 "
 MSG[join_finish]="  Drück eine Taste, um fortzufahren..."
+
+# Account waiting for approval ("?" in the assignments)
+MSG[menu_requested]="Platz angefragt, wartet auf Freigabe"
+MSG[menu_pending]="  ${yellow}Dein Platz ist noch nicht freigegeben.${reset}
+  Der Administrator gibt neue Spieler von Hand frei. Danach öffnet
+  Spielen hier den Nationen-Assistenten. Bis dahin kannst du die
+  Übungswelt (Option 7) ausprobieren und die ganze Hilfe lesen (Option 5)."

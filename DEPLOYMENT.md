@@ -221,6 +221,77 @@ cd /home/conquer/conquer-web
 sudo certbot renew
 ```
 
+## Email notifications
+
+Players ask for a seat on the site and you approve them at `/admin/`. The
+game can tell you about each new request, and tell the player when you
+approve it, by email. It works without mail too (the requests wait in
+`/admin/`); a webhook (`SIGNUP_WEBHOOK_URL`, default `TURN_WEBHOOK_URL`) can
+announce the requests in Slack, Mattermost or Discord instead.
+
+Mail is optional and configured in `config/production.env`. `NOTIFY_EMAIL`
+is where new requests are announced (default: `ADMIN_CONTACT` when it is an
+address). A player who gave an address gets a mail when approved. Nothing is
+sent while `SMTP_HOST` is empty. Mails link to `SITE_URL` (default
+`https://DOMAIN`).
+
+**Option 1 (recommended): the provider of your mailbox.** No mail server on
+the VPS:
+
+```
+NOTIFY_EMAIL=you@example.com
+SMTP_HOST=smtp.example.com:587
+SMTP_USER=you@example.com
+SMTP_PASSWORD=...
+SMTP_FROM=conquer@example.com
+SMTP_STARTTLS=on
+```
+
+Gmail needs an "app password" (Google account, Security, 2-step
+verification). Many providers (Fastmail, Migadu, your hosting's mail) accept
+the mailbox password. Mails come from `SMTP_FROM`, which must belong to that
+account or the provider refuses them. Port 465 (implicit TLS) also works.
+
+**Option 2: the VPS sends the mail itself.** Install Postfix:
+
+```bash
+sudo apt install postfix      # choose "Internet site"; the mail name is the
+                              # VPS's name, whose DNS PTR record must match
+```
+
+Make it listen on the Docker bridge as well as on the loopback and accept
+the containers: in `/etc/postfix/main.cf`
+
+```
+inet_interfaces = loopback-only        # becomes: 127.0.0.1, 172.17.0.1
+mynetworks = 127.0.0.0/8 172.16.0.0/12
+```
+
+(`172.17.0.1` is the usual address of the `docker0` bridge: see
+`ip -4 addr show docker0`), then `sudo systemctl restart postfix`. Use the
+bridge without a login. The compose file maps `host.docker.internal` to the
+host, so this works whatever the bridge address is:
+
+```
+SMTP_HOST=host.docker.internal:25
+SMTP_STARTTLS=off
+SMTP_FROM=conquer@your-domain.com
+```
+
+Leave `SMTP_USER` empty. Without SPF and DKIM records for your domain many
+providers put such mail in the spam folder, so option 1 is the simpler one.
+Do not open port 25 of the firewall to the internet for this: only the
+containers on the host need it.
+
+After editing `production.env`, restart the game (`sudo systemctl restart
+conquer-web`) and try it:
+
+```bash
+docker exec conquer-vps conquer-gate -test-mail you@example.com
+```
+
+It sends one mail and prints the result or the reason it failed.
+
 ## Security Considerations
 
 1. **Firewall**: Ensure only ports 80, 443, and SSH are open

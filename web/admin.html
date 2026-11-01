@@ -1,0 +1,331 @@
+<!doctype html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="admin.page_title">Administration</title>
+  <meta name="description" content="Approve seats and make invitations for Conquer.">
+  <meta name="robots" content="noindex">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d1117; --panel: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e;
+      --accent: #3fb950; --accent-text: #0d1117; --warn: #d29922; --error: #f85149;
+    }
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) {
+        color-scheme: light;
+        --bg: #f6f8fa; --panel: #ffffff; --border: #d0d7de; --text: #1f2328; --muted: #57606a;
+        --accent: #1a7f37; --accent-text: #ffffff; --warn: #9a6700; --error: #cf222e;
+      }
+    }
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f6f8fa; --panel: #ffffff; --border: #d0d7de; --text: #1f2328; --muted: #57606a;
+      --accent: #1a7f37; --accent-text: #ffffff; --warn: #9a6700; --error: #cf222e;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; display: flex; flex-direction: column; gap: 20px; }
+    a { color: var(--accent); }
+    .crumbs { color: var(--muted); font-size: 0.9rem; margin: 0; }
+    h1 { font: 700 clamp(1.8rem, 6vw, 2.4rem)/1.15 ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: 0.04em; margin: 0; text-wrap: balance; }
+    .lede { color: var(--muted); margin: 0; }
+    .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+    .hint { color: var(--muted); font-size: 0.85rem; }
+    input {
+      font: inherit; color: var(--text); background: var(--bg);
+      border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; width: 5.5em;
+    }
+    input:focus-visible, button:focus-visible, .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    button {
+      font: 600 0.95rem system-ui, sans-serif; background: var(--accent); color: var(--accent-text);
+      border: 0; border-radius: 8px; padding: 9px 16px; cursor: pointer;
+    }
+    button.quiet { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    button.danger { background: transparent; color: var(--error); border: 1px solid var(--error); }
+    button:disabled { opacity: 0.6; cursor: wait; }
+    .error { color: var(--error); font-weight: 600; margin: 0; }
+    .ok { color: var(--accent); font-weight: 600; margin: 0; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .top select {
+      font: 600 0.85rem system-ui, sans-serif; color: var(--muted); background: var(--panel);
+      border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; cursor: pointer; max-width: 100%; margin-left: auto;
+    }
+    .top select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .tabs { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .tab { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .tab[aria-selected="true"] { color: var(--text); border-color: var(--accent); border-width: 2px; padding: 8px 15px; }
+    .tabs .refresh { margin-left: auto; }
+    .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    .item { border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; background: var(--panel); }
+    .item header { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+    .item strong { font-family: ui-monospace, "DejaVu Sans Mono", monospace; overflow-wrap: anywhere; }
+    .item .meta { color: var(--muted); font-size: 0.9rem; overflow-wrap: anywhere; }
+    .item .text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .item .none { color: var(--muted); font-style: italic; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .badge { font-size: 0.8rem; font-weight: 600; border: 1px solid var(--border); border-radius: 999px; padding: 1px 10px; color: var(--muted); white-space: nowrap; }
+    .badge.plays { color: var(--accent); border-color: var(--accent); }
+    .badge.pending { color: var(--warn); border-color: var(--warn); }
+    .note { border-left: 3px solid var(--warn); padding-left: 12px; margin: 0; }
+    .note code, .code { font-family: ui-monospace, "DejaVu Sans Mono", monospace; font-size: 0.9em; overflow-wrap: anywhere; }
+    .make { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .make label { font-weight: 600; }
+    .code { font-size: 1.1rem; letter-spacing: 0.1em; font-weight: 600; }
+    .invite-row { flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <p class="crumbs"><a href="/index.html" data-i18n="admin.home">Conquer</a> / <span data-i18n="admin.title">Administration</span></p>
+    <select data-lang-menu aria-label="Language" data-i18n-title="index.language"></select>
+  </div>
+  <h1 data-i18n="admin.title">Administration</h1>
+  <p class="lede" data-i18n="admin.lede">Approve seats, see the players and make invitation links.</p>
+
+  <p class="error" id="signin" role="alert" hidden></p>
+  <p class="error" id="error" role="alert" hidden></p>
+  <p class="ok" id="info" role="status" hidden></p>
+
+  <div id="app" hidden>
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab" role="tab" id="tab-requests" aria-controls="panel-requests" aria-selected="true" data-tab="requests"></button>
+      <button type="button" class="tab" role="tab" id="tab-players" aria-controls="panel-players" aria-selected="false" data-tab="players"></button>
+      <button type="button" class="tab" role="tab" id="tab-invites" aria-controls="panel-invites" aria-selected="false" data-tab="invites"></button>
+      <button type="button" class="quiet refresh" id="refresh" data-i18n="admin.refresh">Refresh</button>
+    </div>
+
+    <section id="panel-requests" role="tabpanel" aria-labelledby="tab-requests">
+      <div id="notes"></div>
+      <p class="hint" id="requests-empty" hidden data-i18n="admin.no_requests">No requests waiting.</p>
+      <ul class="list" id="requests"></ul>
+    </section>
+
+    <section id="panel-players" role="tabpanel" aria-labelledby="tab-players" hidden>
+      <p class="hint" id="players-empty" hidden data-i18n="admin.no_players">No accounts yet.</p>
+      <ul class="list" id="players"></ul>
+    </section>
+
+    <section id="panel-invites" role="tabpanel" aria-labelledby="tab-invites" hidden>
+      <p class="hint" data-i18n="admin.invites_lede">Unused codes. Each works once; its link fills the code in on the sign-up page.</p>
+      <div class="panel make">
+        <label for="count" data-i18n="admin.l_count">How many</label>
+        <input id="count" type="number" min="1" max="20" value="5" inputmode="numeric">
+        <button type="button" id="make" data-i18n="admin.make">Make codes</button>
+      </div>
+      <p class="hint" id="invites-empty" hidden data-i18n="admin.no_invites">No unused codes.</p>
+      <ul class="list" id="invites" style="margin-top: 10px"></ul>
+    </section>
+  </div>
+</main>
+<script src="/server.js"></script>
+<script src="/site.js"></script>
+<script>
+  (function () {
+    function m(key, params) { return conquerI18n.t('admin.' + key, params); }
+    conquerI18n.ready();
+
+    // The administration lives on the game server
+    if (window.conquerRemote) {
+      location.replace(conquerServerUrl('admin/'));
+      return;
+    }
+
+    var $ = function (id) { return document.getElementById(id); };
+    var state = null;       // the last reply of /admin/api/state
+    var notes = [];         // accounts approved past the last turn that joins by itself
+    var tab = 'requests';
+    var info = $('info'), error = $('error'), signin = $('signin');
+
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+    function say(el, text) { info.hidden = el !== info; error.hidden = el !== error; if (el) { el.textContent = text; el.hidden = false; } }
+    function fail(code) { var key = 'e_' + code; say(error, m(key) || m('e_server')); }
+
+    // "2 h ago"
+    function ago(epoch) {
+      var s = Math.max(0, Math.round(Date.now() / 1000 - epoch));
+      if (s < 60) return m('ago_now');
+      if (s < 3600) return m('ago_min', { n: Math.floor(s / 60) });
+      if (s < 86400) return m('ago_h', { n: Math.floor(s / 3600) });
+      return m('ago_d', { n: Math.floor(s / 86400) });
+    }
+
+    function el(tag, cls, text) {
+      var e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text !== undefined) e.textContent = text;
+      return e;
+    }
+    function button(label, cls, click) {
+      var b = el('button', cls, label);
+      b.type = 'button';
+      b.addEventListener('click', function () { click(b); });
+      return b;
+    }
+
+    // Calls the API; the reply's error is passed on as a text key
+    function call(path, body) {
+      var opts = body === undefined ? { cache: 'no-store' } : {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+      };
+      return fetch(path, opts).then(function (r) {
+        if (r.status === 401 || r.status === 403) return { ok: false, error: 'forbidden' };
+        return r.json().catch(function () { return { ok: false, error: 'server' }; });
+      });
+    }
+
+    function load() {
+      return conquerI18n.ready().then(function () { return call('/admin/api/state'); }).then(function (res) {
+        if (!res.ok) {
+          $('app').hidden = true;
+          if (res.error === 'forbidden' || res.error === 'unauthenticated') {
+            signin.textContent = m('signin');
+            signin.hidden = false;
+          } else fail(res.error);
+          return;
+        }
+        signin.hidden = true;
+        state = res;
+        $('app').hidden = false;
+        render();
+      }).catch(function () { fail('network'); });
+    }
+
+    function render() {
+      if (!state) return;
+      var requests = state.requests || [], players = state.players || [], invites = state.invites || [];
+      $('tab-requests').textContent = m('tab_requests') + ' (' + requests.length + ')';
+      $('tab-players').textContent = m('tab_players') + ' (' + players.length + ')';
+      $('tab-invites').textContent = m('tab_invites') + ' (' + invites.length + ')';
+      ['requests', 'players', 'invites'].forEach(function (name) {
+        $('tab-' + name).setAttribute('aria-selected', String(name === tab));
+        $('panel-' + name).hidden = name !== tab;
+      });
+
+      var late = state.turn > (state.last_join_turn || 5);
+      var box = $('notes');
+      box.textContent = '';
+      notes.forEach(function (account) {
+        var p = el('p', 'note');
+        p.innerHTML = m('late_note', { n: state.turn, account: esc(account) });
+        box.appendChild(p);
+      });
+
+      var list = $('requests');
+      list.textContent = '';
+      $('requests-empty').hidden = requests.length > 0;
+      requests.forEach(function (r) {
+        var li = el('li', 'item');
+        var head = el('header');
+        head.appendChild(el('strong', '', r.account));
+        head.appendChild(el('span', 'meta', ago(r.since)));
+        li.appendChild(head);
+        li.appendChild(r.email ? el('span', 'meta', r.email) : el('span', 'meta none', m('no_email')));
+        li.appendChild(r.message ? el('p', 'text', r.message) : el('p', 'text none', m('no_message')));
+        var actions = el('div', 'actions');
+        actions.appendChild(button(m('approve'), 'approve', function (b) { approve(r.account, b, late); }));
+        actions.appendChild(button(m('reject'), 'danger reject', function (b) { reject(r.account, b); }));
+        li.appendChild(actions);
+        list.appendChild(li);
+      });
+
+      list = $('players');
+      list.textContent = '';
+      $('players-empty').hidden = players.length > 0;
+      players.forEach(function (p) {
+        var li = el('li', 'item invite-row');
+        li.appendChild(el('strong', '', p.account));
+        var label, cls = 'badge';
+        if (p.state === 'nation') { label = m('st_plays', { nation: p.nation || '' }); cls += ' plays'; }
+        else if (p.state === '*') label = m('st_admin');
+        else if (p.state === '+') label = m('st_approved');
+        else if (p.state === '?') { label = m('st_pending'); cls += ' pending'; }
+        else label = m('st_none');
+        li.appendChild(el('span', cls, label));
+        list.appendChild(li);
+      });
+
+      list = $('invites');
+      list.textContent = '';
+      $('invites-empty').hidden = invites.length > 0;
+      invites.forEach(function (code) {
+        var li = el('li', 'item invite-row');
+        li.appendChild(el('span', 'code', code));
+        li.appendChild(button(m('copy_link'), 'quiet', function (b) { copy(code, b); }));
+        list.appendChild(li);
+      });
+    }
+
+    function approve(account, b, late) {
+      b.disabled = true;
+      call('/admin/api/approve', { account: account }).then(function (res) {
+        b.disabled = false;
+        if (!res.ok) return fail(res.error || 'server');
+        say(info, m(res.emailed ? 'approved_emailed' : 'approved_ok', { account: account }));
+        if (late) notes.push(account);
+        return load();
+      }).catch(function () { b.disabled = false; fail('network'); });
+    }
+
+    function reject(account, b) {
+      if (!window.confirm(m('confirm_reject', { account: account }))) return;
+      b.disabled = true;
+      call('/admin/api/reject', { account: account }).then(function (res) {
+        b.disabled = false;
+        if (!res.ok) return fail(res.error || 'server');
+        say(info, m('rejected_ok', { account: account }));
+        return load();
+      }).catch(function () { b.disabled = false; fail('network'); });
+    }
+
+    // The link a player opens to skip the wait
+    function copy(code, b) {
+      var url = new URL('signup.html?code=' + encodeURIComponent(code), location.origin + '/').href;
+      var done = function () {
+        b.textContent = m('copied');
+        setTimeout(function () { b.textContent = m('copy_link'); }, 1500);
+      };
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(url).then(done, function () { window.prompt(url, url); });
+      } else window.prompt(url, url);
+    }
+
+    $('make').addEventListener('click', function () {
+      var n = Math.max(1, Math.min(20, parseInt($('count').value, 10) || 1));
+      $('make').disabled = true;
+      call('/admin/api/invite', { count: n }).then(function (res) {
+        $('make').disabled = false;
+        if (!res.ok) return fail(res.error || 'server');
+        say(null);
+        return load();
+      }).catch(function () { $('make').disabled = false; fail('network'); });
+    });
+
+    document.querySelectorAll('.tab').forEach(function (t) {
+      t.addEventListener('click', function () { tab = t.getAttribute('data-tab'); render(); });
+    });
+    $('refresh').addEventListener('click', function () { say(null); load(); });
+
+    // Another language: the rows and messages are drawn again
+    document.addEventListener('conquer:lang', function () {
+      say(null);
+      if (!signin.hidden) signin.textContent = m('signin');
+      render();
+    });
+
+    load();
+  })();
+</script>
+</body>
+</html>
