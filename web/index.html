@@ -286,6 +286,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
   // now, so other languages get the same video and a note saying so. Phones
   // held upright get the vertical file.
   (function () {
+    // the story on demand: in the visitor's language, and it does not touch the once-only flag
+    var slink = document.getElementById('story-link');
+    function paintStory() { slink.href = 'story.html?lang=' + conquerI18n.lang(); }
+    conquerI18n.ready().then(paintStory);
+    document.addEventListener('conquer:lang', paintStory);
     var link = document.getElementById('trailer-link'), dialog = document.getElementById('trailer');
     var video = document.getElementById('trailer-video');
     var base = 'story/conquer-story.es';
