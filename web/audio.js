@@ -1,43 +1,87 @@
 // SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
-// Optional sound for the game pages, synthesised with the Web Audio API
-// (no audio files). Chiptune with a medieval flavour: modal scales, square
-// and triangle waves, a soft noise drum. Off by default and quiet
-// (on by default in the Android app, after the first gesture).
-// window.conquerAudio: enable(on), enabled(), setVolume(v), volume(),
-// event(name), screen(name), _demo(). Every method is a no-op when the
-// browser has no Web Audio.
+// Sound for the game pages: recorded instruments, not oscillators.
+// web/sound/*.ogg is rendered from a SoundFont by tools/sound/build.py:
+// ambient beds (map-human/elf/dwarf/orc, builder, report, combat, app-home)
+// that play as loops and cross-fade into one another, and short effects.
+// Music and effects have their own on/off and volume (kept in localStorage)
+// and the music ducks under an effect. Off by default on the web; on in the
+// app (html.in-app), from the first gesture. The synthesiser of the first
+// version stays below only as a fallback for a file that fails to load.
+//
+// window.conquerAudio:
+//   enable(on) / enabled()            both channels together (enabled: either is on)
+//   setMusic(on) / music()            the music channel
+//   setEffects(on) / effects()        the effects channel
+//   setVolume(v) / volume()           the overall volume, 0..1
+//   musicVolume([v]) / effectsVolume([v])   get, or set when given a number
+//   event(name)   ui, move, bump, open, close, news, message, turn, combat,
+//                 found, approved, app-doors-open, app-doors-fail
+//   screen(name)  map (the bed of the race in <html data-race>), builder,
+//                 report*, combat, app-home, off; other names keep what plays
+//   _demo(), _state(), _nodes(), _bed(), _loaded(), _failed()  (tests)
+// Every method is a no-op when the browser has no Web Audio.
 (function () {
   'use strict';
   var KEY = 'conquer-audio';
   var AC = window.AudioContext || window.webkitAudioContext;
-  var on = false, vol = 0.4, ctx = null, master = null, noiseBuf = null;
-  var screenName = '', music = null, musicKey = '', pending = false;
-  var moveStep = 0, nodes = 0;
+  var BASE = (function () {
+    try {
+      var s = document.currentScript && document.currentScript.src;
+      if (s) return s.replace(/[^\/]*$/, '') + 'sound/';
+    } catch (e) {}
+    return 'sound/';
+  })();
+  var BEDS = ['map-human', 'map-elf', 'map-dwarf', 'map-orc', 'builder', 'report', 'combat', 'app-home'];
+  var FX = ['ui-tap', 'move', 'bump', 'open', 'close', 'news', 'message', 'turn', 'combat-hit', 'found', 'approved',
+            'app-doors-open', 'app-doors-fail'];
+  var ALIAS = { ui: 'ui-tap', combat: 'combat-hit' };
+  var SYN = { 'ui-tap': 'ui', 'combat-hit': 'combat', found: 'turn', approved: 'open', 'app-doors-open': 'turn', 'app-doors-fail': 'bump' };
+  var FADE = 2.5;                  // s, the cross-fade between beds
 
+  var musicOn = false, fxOn = false, vol = 0.8, mVol = 0.5, fVol = 0.8;
+  var ctx = null, master = null, musicBus = null, duck = null, fxBus = null, noiseBuf = null;
+  var screenName = '', pending = false, nodes = 0, moveStep = 0;
+  var bed = null, bedKey = '';                 // the bed that plays: {key, el, gain, synth}
+  var buffers = {}, failed = {}, loading = {}, beds = {};
+  var duckTimer = 0;
+
+  function inApp() {
+    try {
+      return document.documentElement.classList.contains('in-app') || !!(window.conquerApp && window.conquerApp.is);
+    } catch (e) { return false; }
+  }
+  function num(v, d) { return typeof v === 'number' && v >= 0 && v <= 1 ? v : d; }
   function load() {
-    try {
-      var s = JSON.parse(window.localStorage.getItem(KEY) || '{}');
-      if (typeof s.volume === 'number' && s.volume >= 0 && s.volume <= 1) vol = s.volume;
-      if (s.enabled === true) on = true;
-    } catch (e) {}
-    // In the app, sound is on until the player turns it off (it starts at
-    // the first gesture); on the web it is off until asked for
-    try {
-      if (window.conquerApp && window.conquerApp.is && window.localStorage.getItem(KEY) === null) on = true;
-    } catch (e) {}
+    var stored = null;
+    try { stored = window.localStorage.getItem(KEY); } catch (e) {}
+    if (stored !== null) {
+      try {
+        var s = JSON.parse(stored || '{}');
+        vol = num(s.volume, vol);
+        mVol = num(s.musicVolume, mVol);
+        fVol = num(s.effectsVolume, fVol);
+        if ('music' in s || 'effects' in s) { musicOn = s.music === true; fxOn = s.effects === true; }
+        else if (s.enabled === true) { musicOn = true; fxOn = true; }       // the first version's single switch
+      } catch (e) {}
+    } else if (inApp()) {
+      musicOn = true; fxOn = true;      // in the app sound is on until the player turns it off
+    }
   }
   function save() {
-    try { window.localStorage.setItem(KEY, JSON.stringify({ enabled: on, volume: vol })); } catch (e) {}
+    try {
+      window.localStorage.setItem(KEY, JSON.stringify({ music: musicOn, effects: fxOn, volume: vol, musicVolume: mVol, effectsVolume: fVol }));
+    } catch (e) {}
   }
 
   function hz(m) { return 440 * Math.pow(2, (m - 69) / 12); }
 
+
   // ---- building blocks, all scheduled on the AudioContext clock ----------
   function tone(type, freq, t, dur, level, opt) {
     opt = opt || {};
-    var o = ctx.createOscillator(), g = ctx.createGain(), out = opt.dest || master;
+    var o = ctx.createOscillator(), g = ctx.createGain(), out = opt.dest || fxBus;
     o.type = type;
     o.frequency.setValueAtTime(freq, t);
     if (opt.to) o.frequency.exponentialRampToValueAtTime(opt.to, t + dur);
@@ -66,7 +110,7 @@
     f.type = ftype; f.frequency.value = freq;
     g.gain.setValueAtTime(level, t);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    s.connect(f); f.connect(g); g.connect(dest || master);
+    s.connect(f); f.connect(g); g.connect(dest || fxBus);
     s.start(t); s.stop(t + dur + 0.02);
     nodes++;
   }
@@ -154,7 +198,7 @@
     var out = ctx.createGain(), now = ctx.currentTime, m = { gain: out, stopped: false, timer: 0, oscs: [] };
     out.gain.setValueAtTime(0.0001, now);
     out.gain.linearRampToValueAtTime(1, now + 1.5);
-    out.connect(master);
+    out.connect(musicBus);
     if (key === 'report') {
       // a quiet drone: two slightly detuned triangles
       [-5, 5].forEach(function (cents) {
@@ -195,19 +239,127 @@
       try { m.gain.disconnect(); } catch (e) {}
     }, fade * 1000 + 300);
   }
+
+
+  // ---- recorded effects -------------------------------------------------------------
+  function fetchBuffer(name) {
+    if (buffers[name] || failed[name] || loading[name] || !ctx) return;
+    loading[name] = true;
+    var done = function (ok, buf) {
+      loading[name] = false;
+      if (ok) buffers[name] = buf; else failed[name] = true;
+    };
+    try {
+      window.fetch(BASE + name + '.ogg').then(function (r) {
+        if (!r.ok) throw new Error(String(r.status));
+        return r.arrayBuffer();
+      }).then(function (ab) {
+        return new Promise(function (res, rej) {
+          var p = ctx.decodeAudioData(ab, res, rej);
+          if (p && p.catch) p.catch(rej);
+        });
+      }).then(function (b) { done(true, b); }, function () { done(false); });
+    } catch (e) { done(false); }
+  }
+  function duckFor(sec) {
+    if (!ctx || !duck) return;
+    var t = ctx.currentTime;
+    duck.gain.cancelScheduledValues(t);
+    duck.gain.setTargetAtTime(0.45, t, 0.03);
+    window.clearTimeout(duckTimer);
+    duckTimer = window.setTimeout(function () {
+      if (ctx && duck) duck.gain.setTargetAtTime(1, ctx.currentTime, 0.5);
+    }, Math.min(sec, 3) * 1000);
+  }
+  function playFx(name) {
+    var b = buffers[name];
+    if (!b) {
+      if (failed[name]) {               // the file did not load: the synthesised cue
+        var f = EVENTS[SYN[name] || name];
+        if (f) f(ctx.currentTime + 0.01);
+      } else fetchBuffer(name);
+      return;
+    }
+    var s = ctx.createBufferSource();
+    s.buffer = b;
+    if (name === 'move') s.playbackRate.value = 0.94 + Math.random() * 0.12;     // no two ticks alike
+    s.connect(fxBus);
+    s.start(ctx.currentTime + 0.005);
+    nodes++;
+    if (b.duration > 0.6) duckFor(Math.min(b.duration, 2.5) * 0.6);
+  }
+
+  // ---- beds: HTMLAudio loops through the graph, cross-faded ---------------------------
+  function bedFor(key) {
+    if (beds[key]) return beds[key];
+    var el = new Audio();
+    el.loop = true;
+    el.preload = 'auto';
+    var g = ctx.createGain();
+    g.gain.value = 0;
+    var b = { key: key, el: el, gain: g, synth: null, dead: false };
+    el.addEventListener('error', function () { failed[key] = true; if (bed === b) synthBed(b); });
+    try {
+      var src = ctx.createMediaElementSource(el);
+      src.connect(g); g.connect(musicBus);
+    } catch (e) { failed[key] = true; }
+    el.src = BASE + key + '.ogg';
+    beds[key] = b;
+    return b;
+  }
+  function synthBed(b) {          // the fallback: the first version's synthesised bed
+    if (b.synth || !ctx) return;
+    var k = b.key.indexOf('map') === 0 ? 'map' : b.key === 'app-home' ? 'builder' : b.key;
+    b.synth = startMusic(k);
+  }
+  function fadeIn(b) {
+    var t = ctx.currentTime;
+    b.gain.gain.cancelScheduledValues(t);
+    b.gain.gain.setValueAtTime(b.gain.gain.value, t);
+    b.gain.gain.linearRampToValueAtTime(1, t + FADE);
+    if (failed[b.key]) { synthBed(b); return; }
+    var p = b.el.play();
+    nodes++;
+    if (p && p.catch) p.catch(function () { failed[b.key] = true; synthBed(b); });
+  }
+  function fadeOut(b, sec) {
+    if (!b) return;
+    var t = ctx.currentTime;
+    try {
+      b.gain.gain.cancelScheduledValues(t);
+      b.gain.gain.setValueAtTime(b.gain.gain.value, t);
+      b.gain.gain.linearRampToValueAtTime(0, t + sec);
+    } catch (e) {}
+    if (b.synth) { stopMusic(b.synth, sec); b.synth = null; }
+    window.setTimeout(function () { if (bed !== b) { try { b.el.pause(); } catch (e) {} } }, sec * 1000 + 100);
+  }
+  function race() {
+    var r = document.documentElement.getAttribute('data-race') || 'human';
+    return /^(human|elf|dwarf|orc)$/.test(r) ? r : 'human';
+  }
   function keyFor(name) {
-    if (name === 'map' || name === 'builder' || name === 'combat') return name;
+    if (name === 'map') return 'map-' + race();
+    if (name === 'builder' || name === 'combat' || name === 'app-home') return name;
     if (/^report/.test(name)) return 'report';
     if (!name || name === 'off' || name === 'none' || name === 'silence') return '';
     return null;   // prompt_*, anykey, menu, unknown: keep what plays
   }
   function applyScreen() {
-    if (!ctx || !on) return;
+    if (!ctx || !musicOn) return;
     var k = keyFor(screenName);
-    if (k === null || k === musicKey) return;
-    stopMusic(music, 1.5);
-    music = k ? startMusic(k) : null;
-    musicKey = k;
+    if (k === null || k === bedKey) return;
+    var old = bed;
+    bed = k ? bedFor(k) : null;
+    bedKey = k;
+    fadeOut(old, FADE);
+    if (bed) fadeIn(bed);
+  }
+  function applyGains() {
+    if (!ctx) return;
+    var t = ctx.currentTime;
+    master.gain.setTargetAtTime(vol, t, 0.03);
+    musicBus.gain.setTargetAtTime(musicOn ? mVol : 0, t, 0.05);
+    fxBus.gain.setTargetAtTime(fxOn ? fVol : 0, t, 0.02);
   }
 
   // ---- context and gesture handling ------------------------------------------
@@ -217,10 +369,16 @@
       if (!ctx) {
         ctx = new AC();
         master = ctx.createGain();
-        master.gain.value = vol;
+        musicBus = ctx.createGain();
+        duck = ctx.createGain();
+        fxBus = ctx.createGain();
+        musicBus.connect(duck); duck.connect(master); fxBus.connect(master);
         var comp = ctx.createDynamicsCompressor();
-        comp.threshold.value = -18; comp.ratio.value = 12;
+        comp.threshold.value = -14; comp.ratio.value = 6;
         master.connect(comp); comp.connect(ctx.destination);
+        applyGains();
+        master.gain.value = vol; musicBus.gain.value = musicOn ? mVol : 0; fxBus.gain.value = fxOn ? fVol : 0;
+        FX.forEach(fetchBuffer);
       }
       var p = ctx.resume();
       if (p && p.catch) p.catch(function () {});
@@ -233,59 +391,82 @@
     var go = function () {
       document.removeEventListener('click', go, true);
       document.removeEventListener('keydown', go, true);
+      document.removeEventListener('pointerdown', go, true);
       pending = false;
-      if (on) start();
+      if (musicOn || fxOn) start();
     };
     document.addEventListener('click', go, true);
     document.addEventListener('keydown', go, true);
+    document.addEventListener('pointerdown', go, true);
   }
+  function stopBed() {
+    if (bed) { var b = bed; bed = null; bedKey = ''; fadeOut(b, 0.4); }
+  }
+  function refresh(wasAny) {
+    var any = musicOn || fxOn;
+    if (any && !ctx) start();
+    else if (ctx) {
+      applyGains();
+      if (!musicOn) stopBed(); else applyScreen();
+      if (!any) {
+        var c = ctx;
+        window.setTimeout(function () { if (!musicOn && !fxOn && c.suspend) c.suspend().catch(function () {}); }, 600);
+      } else if (ctx.state === 'suspended') ctx.resume().catch(function () {});
+    }
+  }
+  function clamp01(v) { v = Number(v); if (!(v >= 0)) v = 0; return v > 1 ? 1 : v; }
 
   var api = {
     enable: function (v) {
       if (!AC) return;
-      on = !!v;
-      save();
-      if (on) { start(); }
-      else if (ctx) {
-        stopMusic(music, 0.3); music = null; musicKey = '';
-        var c = ctx;
-        window.setTimeout(function () { if (!on && c.suspend) c.suspend().catch(function () {}); }, 500);
-      }
+      musicOn = !!v; fxOn = !!v; save(); refresh();
     },
-    enabled: function () { return !!AC && on; },
-    setVolume: function (v) {
-      v = Number(v);
-      if (!(v >= 0)) v = 0;
-      if (v > 1) v = 1;
-      vol = v;
-      if (AC) save();
-      if (master) master.gain.setTargetAtTime(vol, ctx.currentTime, 0.02);
-    },
+    enabled: function () { return !!AC && (musicOn || fxOn); },
+    setMusic: function (v) { if (!AC) return; musicOn = !!v; save(); refresh(); },
+    music: function () { return !!AC && musicOn; },
+    setEffects: function (v) { if (!AC) return; fxOn = !!v; save(); refresh(); },
+    effects: function () { return !!AC && fxOn; },
+    setVolume: function (v) { vol = clamp01(v); if (AC) save(); if (ctx) applyGains(); },
     volume: function () { return vol; },
+    musicVolume: function (v) {
+      if (v !== undefined) { mVol = clamp01(v); if (AC) save(); if (ctx) applyGains(); }
+      return mVol;
+    },
+    effectsVolume: function (v) {
+      if (v !== undefined) { fVol = clamp01(v); if (AC) save(); if (ctx) applyGains(); }
+      return fVol;
+    },
     event: function (name) {
-      if (!ctx || !on || !EVENTS.hasOwnProperty(name)) return;
+      name = ALIAS[name] || name;
+      if (!ctx || !fxOn || FX.indexOf(name) < 0) return;
       try {
         if (ctx.state === 'suspended') ctx.resume();
-        EVENTS[name](ctx.currentTime + 0.01);
+        playFx(name);
       } catch (e) {}
     },
     screen: function (name) {
       screenName = name ? String(name) : '';
       try { applyScreen(); } catch (e) {}
     },
-    // plays every effect in turn; returns the names, in order
+    // the preview of the options panel: the doors of the app open
     _demo: function () {
-      var names = ['move', 'bump', 'ui', 'open', 'close', 'combat', 'turn', 'news', 'message'];
-      if (!ctx || !on) return names;
-      names.forEach(function (n, i) { window.setTimeout(function () { api.event(n); }, i * 1500); });
+      var names = ['app-doors-open'];
+      if (ctx && fxOn) api.event(names[0]);
       return names;
     },
     _nodes: function () { return nodes; },
-    _state: function () { return ctx ? ctx.state : 'none'; }
+    _state: function () { return ctx ? ctx.state : 'none'; },
+    _bed: function () { return bedKey; },
+    _loaded: function () { return Object.keys(buffers); },
+    _failed: function () { return Object.keys(failed); }
   };
 
   load();
-  if (!AC) on = false;
+  if (!AC) { musicOn = false; fxOn = false; }
   window.conquerAudio = api;
-  if (on) waitForGesture();
+  document.addEventListener('conquer:race', function () {
+    // another race, another map bed
+    if (ctx && musicOn && /^map/.test(bedKey)) { bedKey = ''; try { applyScreen(); } catch (e) {} }
+  });
+  if (musicOn || fxOn) waitForGesture();
 })();

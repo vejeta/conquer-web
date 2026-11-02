@@ -307,6 +307,11 @@ var ui = el('div', 'touch-ui');
     var builderBox = el('div', 'chips touch-chips builder', { role: 'toolbar' });
     builderBox.id = 'builder-keys';
     builderBox.hidden = true;
+    // The game's nation builder accepts 2 to 7 characters for the nation password
+    var fieldHint = el('div', 'touch-fieldhint', { role: 'note' });
+    fieldHint.id = 'touch-fieldhint';
+    fieldHint.hidden = true;
+    ledge.appendChild(fieldHint);
     ledge.appendChild(chipsBox);
     ledge.appendChild(builderBox);
     // In the app: a speaker to mute the sound (it is on by default there)
@@ -329,7 +334,7 @@ var ui = el('div', 'touch-ui');
       prefs.sound = on; save();
       try { a.enable(on); } catch (e) {}
       paintSpeaker();
-      var sb = document.getElementById('touch-opt-sound'); if (sb) sb.checked = on;
+      ['touch-opt-music', 'touch-opt-effects'].forEach(function (id) { var cb = document.getElementById(id); if (cb) cb.checked = on; });
     });
     var panel = el('div', 'touch-panel sheet', { role: 'dialog' });
     panel.id = 'touch-panel';
@@ -534,6 +539,7 @@ var ui = el('div', 'touch-ui');
       gear.setAttribute('aria-label', T('options'));
       gear.title = T('options');
       hintText.textContent = T('hint_rotate');
+      fieldHint.textContent = T('hint_password');
       hintClose.setAttribute('aria-label', T('hint_close'));
       ui.classList.toggle('touch-nohints', !prefs.hints);
       updatePad();
@@ -564,24 +570,36 @@ var ui = el('div', 'touch-ui');
       }
       var a = audio();
       if (a && a.enable) {
-        row(T('opt_sound'), checkbox('touch-opt-sound', a.enabled ? a.enabled() : prefs.sound, function (on) {
-          prefs.sound = on; save();
-          try { a.enable(on); } catch (e) {}
-        }), 'touch-opt-sound');
-        var vol = el('input', '', { type: 'range', id: 'touch-opt-volume', min: '0', max: '100', step: '5' });
-        vol.value = String(Math.round((a.volume ? a.volume() : prefs.volume) * 100));
-        vol.addEventListener('input', function () {
-          prefs.volume = vol.value / 100; save();
-          try { a.setVolume(prefs.volume); } catch (e) {}
-        });
-        row(T('opt_volume'), vol, 'touch-opt-volume');
+        var setMusic = a.setMusic || a.enable, setFx = a.setEffects || a.enable;
+        function slider(id, get, set) {
+          var r = el('input', '', { type: 'range', id: id, min: '0', max: '100', step: '5' });
+          r.value = String(Math.round(get() * 100));
+          r.addEventListener('input', function () { try { set(r.value / 100); } catch (e) {} });
+          return r;
+        }
+        row(T('opt_music'), checkbox('touch-opt-music', a.music ? a.music() : a.enabled(), function (on) {
+          prefs.sound = on || (a.effects ? a.effects() : false); save();
+          try { setMusic.call(a, on); } catch (e) {}
+          paintSpeaker();
+        }), 'touch-opt-music');
+        row(T('opt_music_volume'), slider('touch-opt-music-volume', function () { return a.musicVolume ? a.musicVolume() : 0.5; },
+          function (v) { if (a.musicVolume) a.musicVolume(v); }), 'touch-opt-music-volume');
+        row(T('opt_effects'), checkbox('touch-opt-effects', a.effects ? a.effects() : a.enabled(), function (on) {
+          prefs.sound = on || (a.music ? a.music() : false); save();
+          try { setFx.call(a, on); } catch (e) {}
+          paintSpeaker();
+        }), 'touch-opt-effects');
+        row(T('opt_effects_volume'), slider('touch-opt-effects-volume', function () { return a.effectsVolume ? a.effectsVolume() : 0.8; },
+          function (v) { if (a.effectsVolume) a.effectsVolume(v); }), 'touch-opt-effects-volume');
         var pv = el('button', 'touch-reset key key-small', { type: 'button', id: 'touch-opt-preview' });
         pv.textContent = T('opt_preview');
         pv.addEventListener('click', function () {
           try {
-            a.enable(true); prefs.sound = true; save();
-            var sb = document.getElementById('touch-opt-sound'); if (sb) sb.checked = true;
+            if (a.setEffects) a.setEffects(true); else a.enable(true);
+            prefs.sound = true; save();
+            var fb = document.getElementById('touch-opt-effects'); if (fb) fb.checked = true;
             if (a._demo) a._demo();
+            paintSpeaker();
           } catch (e) {}
         });
         panel.appendChild(pv);
@@ -784,6 +802,9 @@ var ui = el('div', 'touch-ui');
       var prev = state;
       var changed = prev.where !== c.where || prev.kind !== c.kind;
       state = c;
+      var pw = /National Password/i.test(c.prompt || '');
+      fieldHint.hidden = !pw;
+      if (pw) fieldHint.textContent = T('hint_password');
       if (changed) {
         if (c.where === 'map' || c.where === 'menu' || c.where === 'builder') rootWhere = c.where;
         var a = audio();
@@ -1133,8 +1154,7 @@ var ui = el('div', 'touch-ui');
     function onLang() { lang = conquerI18n.lang(); renderBar(true); }
     function onFirstGesture() {
       // sound starts only after a gesture of the visitor
-      var a = audio();
-      if (prefs.sound && a && a.enable) { try { a.enable(true); if (a.setVolume) a.setVolume(prefs.volume); } catch (e) {} }
+      // (audio.js keeps its own settings and starts its context on this same gesture)
       document.removeEventListener('pointerdown', onFirstGesture, true);
       document.removeEventListener('keydown', onFirstGesture, true);
     }
