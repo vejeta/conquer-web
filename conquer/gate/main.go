@@ -58,7 +58,10 @@ import (
 const lastJoinTurn = 5
 
 var (
-	accountRe = regexp.MustCompile(`^[A-Za-z0-9_.-]{1,32}$`)
+	// The first character is a letter or digit: a name that starts with "-"
+	// would be read as an option by htpasswd, and "." or ".." must never
+	// become a directory name (the menu's practice world is named after it)
+	accountRe = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_.-]{0,31}$`)
 	codeRe    = regexp.MustCompile(`^[A-Z0-9]{4}-[A-Z0-9]{4}$`)
 	turnRe    = regexp.MustCompile(`(?m)^Conquer .*, Turn ([0-9]+)$`)
 	// Names that must not become player accounts
@@ -165,7 +168,9 @@ func sameOrigin(r *http.Request) bool {
 	if host == "" {
 		host = r.Host
 	}
-	return strings.EqualFold(u.Host, strings.Split(host, ",")[0])
+	// Apache adds its own value last; whatever a client sent comes before
+	parts := strings.Split(host, ",")
+	return strings.EqualFold(u.Host, strings.TrimSpace(parts[len(parts)-1]))
 }
 
 func reply(w http.ResponseWriter, status int, body map[string]any) {

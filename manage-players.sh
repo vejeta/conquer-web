@@ -59,16 +59,32 @@ usage() {
 
 # Print an htpasswd line (bcrypt) for user $1, reading the password on stdin
 hash_line() {
+    # -C 10: the cost the sign-up page uses (htpasswd's default is 5)
     if command -v htpasswd >/dev/null 2>&1; then
-        htpasswd -niB "$1"
+        htpasswd -niB -C 10 "$1"
     else
         # Apache's own tool from the httpd image the local setup already uses
-        docker run --rm -i --entrypoint htpasswd httpd:2.4 -niB "$1"
+        docker run --rm -i --entrypoint htpasswd httpd:2.4 -niB -C 10 "$1"
     fi
 }
 
+# The first character is a letter or digit: "-name" would be read as an
+# option by htpasswd, and "." or ".." must never become a directory name.
+# Same rule as accountRe in the gate and valid_account in signup.sh.
 valid_name() {
-    [[ "$1" =~ ^[A-Za-z0-9_.-]{1,32}$ ]]
+    [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]{0,31}$ ]]
+}
+
+# Files in data/lib belong to the game user, who could swap one for a link
+# to a file of root's while this script runs with sudo: refuse links
+refuse_link() {
+    local f
+    for f in "$@"; do
+        if [ -L "$f" ]; then
+            echo "❌ $f is a symbolic link: not touching it" >&2
+            exit 1
+        fi
+    done
 }
 
 # Conquer nation names: up to 9 characters
@@ -80,6 +96,7 @@ valid_nation() {
 # separated by $3 instead of ":", for the tab separated requests)
 remove_line() {
     local file="$1" tmp
+    refuse_link "$file"
     [ -f "$file" ] || return 0
     tmp=$(mktemp "$file.XXXXXX")
     awk -F"${3:-:}" -v user="$2" '$1 != user' "$file" > "$tmp"
@@ -99,6 +116,7 @@ match_world_owner() {
 # Assign nation $2 ("*" = any nation) to account $1
 set_nation() {
     mkdir -p "$(dirname "$PLAYERS_FILE")"
+    refuse_link "$PLAYERS_FILE"
     touch "$PLAYERS_FILE"
     remove_line "$PLAYERS_FILE" "$1"
     printf '%s:%s\n' "$1" "$2" >> "$PLAYERS_FILE"
@@ -154,6 +172,7 @@ cmd_add() {
 
     line=$(printf '%s\n' "$password" | hash_line "$name")
     mkdir -p "$(dirname "$HTPASSWD_FILE")"
+    refuse_link "$HTPASSWD_FILE"
     touch "$HTPASSWD_FILE"
     remove_line "$HTPASSWD_FILE" "$name"
     printf '%s\n' "$line" >> "$HTPASSWD_FILE"
@@ -205,6 +224,7 @@ cmd_rename() {
     valid_name "$old" && valid_name "$new" || { echo "❌ Invalid name: use letters, digits, . _ - (max 32)"; exit 1; }
     has_account "$old" || { echo "❌ No account named '$old'"; exit 1; }
     ! has_account "$new" || { echo "❌ There is already an account named '$new'"; exit 1; }
+    refuse_link "$HTPASSWD_FILE" "$PLAYERS_FILE" "$REQUESTS_FILE"
     for f in "$HTPASSWD_FILE" "$PLAYERS_FILE"; do
         [ -f "$f" ] || continue
         tmp=$(mktemp "$f.XXXXXX")
@@ -250,6 +270,7 @@ cmd_invite() {
     local count="${1:-1}" i code
     [[ "$count" =~ ^[0-9]+$ ]] && [ "$count" -ge 1 ] && [ "$count" -le 100 ] || usage
     mkdir -p "$(dirname "$INVITES_FILE")"
+    refuse_link "$INVITES_FILE"
     touch "$INVITES_FILE"
     chmod 640 "$INVITES_FILE"
     match_world_owner "$INVITES_FILE"

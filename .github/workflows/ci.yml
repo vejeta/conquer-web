@@ -94,6 +94,11 @@ jobs:
           test "$(code -u "$TTYD_USERNAME:wrong-password" https://localhost/play/)" = 401
           # A client-supplied identity header must not get past Apache
           test "$(code -H "X-WEBAUTH-USER: $TTYD_USERNAME" https://localhost/play/)" = 401
+          # A WebSocket opened by another site (or by no browser page) is
+          # refused even with the right password: no cross-site hijacking
+          ws() { code -u "$TTYD_USERNAME:$TTYD_PASSWORD" -H 'Upgrade: websocket' -H 'Connection: Upgrade' "$@" https://localhost/play/ws; }
+          test "$(ws -H 'Origin: https://evil.example')" = 403
+          test "$(ws)" = 403
           # ttyd itself refuses requests that did not come through the proxy
           test "$(docker exec conquer-local curl -s -o /dev/null -w '%{http_code}' http://localhost:7681/play/)" = 407
 
@@ -140,7 +145,10 @@ jobs:
           # turn has no other news
           test "$(curl -sk https://localhost/status/status.json | jq -r '.news | type')" = array
           test "$(curl -sk -o /dev/null -w '%{http_code}' https://localhost/status/news/1.html)" = 200
-          ls data/backups/world_turn1_*.tar.gz
+          # Backups are private to the game user (uid 1000, not the runner)
+          sudo sh -c 'ls data/backups/world_turn1_*.tar.gz &&
+            test "$(stat -c %a data/backups)" = 700 &&
+            test "$(stat -c %a data/backups/world_turn1_*.tar.gz)" = 600'
 
       - name: Early turn update once every nation is done
         run: |
@@ -214,6 +222,11 @@ jobs:
           ask '{"account":"asker","password":"asker-pass","email":"asker@example.org","message":"Hi from CI","lang":"es"}' | jq -e '.ok and .status == "pending"'
           ask '{"account":"asker","password":"asker-pass"}' | jq -e '.error == "account_taken"'
           ask '{"account":"nomail","password":"asker-pass","email":"not an address"}' | jq -e '.ok == false'
+          # Names read as an option or as a directory are refused
+          for bad in .. . -v .hidden; do
+            ask "{\"account\":\"$bad\",\"password\":\"asker-pass\"}" | jq -e '.error == "bad_account"'
+          done
+          ! sudo grep -qE '^(\.|-)' data/auth/htpasswd
           sudo grep -qx 'asker:?' data/lib/.players
           sudo grep -qP '^asker\t[0-9]+\tasker@example.org\tHi from CI\tes$' data/lib/.requests
           # The administrator page and its API need an administrator

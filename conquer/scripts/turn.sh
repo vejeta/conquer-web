@@ -105,9 +105,12 @@ backup_world() {
 
     local file
     mkdir -p "$BACKUP_DIR" || return 1
+    # A backup holds the nations' password hashes, the players' emails and
+    # the unused invite codes: for the game user only
+    chmod 700 "$BACKUP_DIR" 2>/dev/null
     file="$BACKUP_DIR/world_turn$(current_turn)_$(date +%Y%m%d_%H%M%S).tar.gz"
     # Same layout as backup-world.sh, so restore-world.sh can use it
-    tar -czf "$file" -C "$PREFIX" lib/ || { rm -f "$file"; return 1; }
+    (umask 077 && tar -czf "$file" -C "$PREFIX" lib/) || { rm -f "$file"; return 1; }
     log "World backed up to $(basename "$file")"
 
     # Keep only the newest KEEP_BACKUPS archives
