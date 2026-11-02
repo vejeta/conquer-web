@@ -90,7 +90,8 @@
   "trailer": "&#9654; Obejrzyj zwiastun (40 s)",
   "trailer_close": "Zamknij",
   "m_daily": "codziennie o {time}, według twojego czasu",
-  "m_weekly": "w każdy {day} o {time}, według twojego czasu"
+  "m_weekly": "w każdy {day} o {time}, według twojego czasu",
+  "story_link": "&#9656; Historia w 2 minuty"
  },
  "game": {
   "keyboard_title": "Pokaż klawiaturę urządzenia",
@@ -475,5 +476,41 @@
   "sound_off": "Dźwięk wyłączony: dotknij, by włączyć",
   "kb_hint": "Klawiatura otwiera się sama, gdy gra prosi o tekst. Dotknij Klawiatura, by otworzyć ją w dowolnej chwili.",
   "hint_close": "Rozumiem"
+ },
+ "story": {
+  "title": "Historia Conquera",
+  "skip": "Pomiń",
+  "begin": "Dotknij, aby zacząć",
+  "play": "Graj",
+  "replay": "Obejrzyj jeszcze raz",
+  "sound_on": "Dźwięk: włączony",
+  "sound_off": "Dźwięk: wyłączony",
+  "back": "Wstecz",
+  "next": "Dalej",
+  "progress": "Scena {n} z {total}",
+  "hint": "Dotknij lub naciśnij spację, aby iść dalej",
+  "r_human": "Ludzie",
+  "r_elf": "Elfy",
+  "r_dwarf": "Krasnoludy",
+  "r_orc": "Orkowie",
+  "a_human": "palantír",
+  "a_elf": "srebrna misa",
+  "a_dwarf": "Wrota Durina",
+  "a_orc": "żelazne okno",
+  "d1a": "login: edb",
+  "d1b": "Conquer v4 — Turn 1",
+  "d2": "comp.sources.games: conquer — rule a nation.",
+  "d4": "sahara zmienia stosunek do darboth na WOJNA.",
+  "d6": "Powiedz „przyjaciel” i wejdź.",
+  "d7": "Nazwa twojego państwa:",
+  "p1": "Rok tysiąc dziewięćset osiemdziesiąty siódmy. W uniwersyteckich ośrodkach obliczeniowych, gdy wszyscy inni szli spać, terminale nadal świeciły.",
+  "p2": "Dwaj studenci, Ed Barlow i Adam Bryant, publikują w Usenecie turową grę strategiczną dla wielu graczy. Nie ma tu grafiki: jest świat narysowany literami.",
+  "p3": "W tym świecie żyją cztery ludy. Ludzie, którzy widzą przyszłość w kamieniu. Elfy, które widzą ją w wodzie. Krasnoludy, które wykuwają ją w górze. I orkowie, którzy wyrywają ją żelazem.",
+  "p4": "Każdy gracz wydaje rozkazy, kiedy może. Raz na dobę świat rusza naprzód: armie maszerują, plony rosną, traktaty są dotrzymywane albo łamane. A gazeta opisuje wszystko.",
+  "p5": "Uniwersytety zmieniły maszyny. Wiadomości przepadły. Przez trzydzieści lat Conquer był wspomnieniem garstki ludzi.",
+  "p6": "Aż ktoś go odnalazł, poprosił autorów o zgodę i przywrócił światłu: ta sama gra, ten sam kod, wolny na zawsze. Dziś drzwi znów się otwierają dla każdego, kto wypowie słowo.",
+  "p7": "Teraz twoja kolej. Wybierz lud, nadaj imię swojemu państwu i obejmij kawałek świata. Inni już tu są: sojusznicy, których jeszcze nie znasz, i wrogowie, którzy już cię zauważyli.",
+  "p8": "Jedna tura na dobę. Całe życie panowania. Conquer.",
+  "b_people": "Lud:"
  }
 }

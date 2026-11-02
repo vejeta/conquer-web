@@ -90,7 +90,8 @@
   "trailer": "&#9654; Watch the trailer (40 s)",
   "trailer_close": "Close",
   "m_daily": "every day at {time}, your time",
-  "m_weekly": "every {day} at {time}, your time"
+  "m_weekly": "every {day} at {time}, your time",
+  "story_link": "&#9656; The story in 2 minutes"
  },
  "game": {
   "keyboard_title": "Show the device keyboard",
@@ -475,5 +476,41 @@
   "sound_off": "Sound off: tap to turn it on",
   "kb_hint": "The keyboard opens by itself when the game asks for text. Tap Keyboard to open it any time.",
   "hint_close": "Got it"
+ },
+ "story": {
+  "title": "The story of Conquer",
+  "skip": "Skip",
+  "begin": "Tap to begin",
+  "play": "Play",
+  "replay": "Watch again",
+  "sound_on": "Sound: on",
+  "sound_off": "Sound: off",
+  "back": "Back",
+  "next": "Next",
+  "progress": "Scene {n} of {total}",
+  "hint": "Tap or press Space to continue",
+  "r_human": "Men",
+  "r_elf": "Elves",
+  "r_dwarf": "Dwarves",
+  "r_orc": "Orcs",
+  "a_human": "the palantír",
+  "a_elf": "the silver basin",
+  "a_dwarf": "the Doors of Durin",
+  "a_orc": "the iron window",
+  "d1a": "login: edb",
+  "d1b": "Conquer v4 — Turn 1",
+  "d2": "comp.sources.games: conquer — rule a nation.",
+  "d4": "sahara changes status with darboth to WAR.",
+  "d6": "Speak, friend, and enter.",
+  "d7": "Nation name:",
+  "p1": "Nineteen eighty-seven. In the computing centres of the universities, when everyone else had gone to sleep, the terminals stayed on.",
+  "p2": "Two students, Ed Barlow and Adam Bryant, post a turn-based strategy game for many players on Usenet. There are no graphics: there is a world, drawn with letters.",
+  "p3": "In that world there are four peoples. Men, who look into the future in a stone. Elves, who see it in the water. Dwarves, who carve it into the mountain. And orcs, who tear it out with iron.",
+  "p4": "Each player gives their orders whenever they can. Once a day, the world moves on: armies march, harvests grow, treaties are kept or broken. And the newspaper tells it all.",
+  "p5": "The universities changed their machines. The messages were lost. For thirty years, Conquer was the memory of a few.",
+  "p6": "Until someone found it, asked its authors for permission, and brought it back into the light: the same game, the same code, free forever. Today the door opens again for anyone who speaks the word.",
+  "p7": "Now it is your turn. Choose a people, name your nation, and take a corner of the world. The others are already here: allies you have yet to meet, and enemies who have already seen you.",
+  "p8": "One turn a day. A whole lifetime of reign. Conquer.",
+  "b_people": "People:"
  }
 }
