@@ -406,3 +406,27 @@ def test_watch_again_on_the_last_scene(site, browser):
     page.click("#replay")
     page.wait_for_function("() => conquerStory.state().n === 1")
     context.close()
+
+
+def _metas(page):
+    import re
+    html = (WEB / page).read_text(encoding="utf-8")
+    return {m.group(2): m.group(4) for m in re.finditer(
+        r'<meta\s+(property|name)="([^"]+)"\s+(content)="([^"]*)"', html)}
+
+
+@pytest.mark.parametrize("page", ["index.html", "story.html"])
+def test_link_preview_tags(page):
+    m = _metas(page)
+    assert m["og:title"] and m["og:description"]
+    assert m["og:image"].startswith("https://conquer.vejeta.com/")
+    assert m["twitter:card"] == "summary_large_image"
+    assert m["twitter:image"].startswith("https://")
+    assert (WEB / m["og:image"].split("conquer.vejeta.com/")[1]).is_file()
+
+
+def test_story_video_preview():
+    m = _metas("story.html")
+    assert m["og:type"] == "video.other"
+    assert m["og:video:type"] == "video/mp4"
+    assert (WEB / m["og:video"].split("conquer.vejeta.com/")[1]).is_file()
