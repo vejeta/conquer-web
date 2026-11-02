@@ -45,7 +45,7 @@
   var screenName = '', pending = false, nodes = 0, moveStep = 0;
   var bed = null, bedKey = '';                 // the bed that plays: {key, el, gain, synth}
   var buffers = {}, failed = {}, loading = {}, beds = {};
-  var duckTimer = 0;
+  var duckTimer = 0, under = 1;   // under: the music's share while a voice speaks (not saved)
 
   function inApp() {
     try {
@@ -358,7 +358,7 @@
     if (!ctx) return;
     var t = ctx.currentTime;
     master.gain.setTargetAtTime(vol, t, 0.03);
-    musicBus.gain.setTargetAtTime(musicOn ? mVol : 0, t, 0.05);
+    musicBus.gain.setTargetAtTime(musicOn ? mVol * under : 0, t, 0.05);
     fxBus.gain.setTargetAtTime(fxOn ? fVol : 0, t, 0.02);
   }
 
@@ -432,6 +432,8 @@
       if (v !== undefined) { mVol = clamp01(v); if (AC) save(); if (ctx) applyGains(); }
       return mVol;
     },
+    // a narration speaks: the music bed sinks to this share of the player's volume (1 = back); not saved
+    underVoice: function (f) { under = clamp01(f); if (ctx) applyGains(); return under; },
     effectsVolume: function (v) {
       if (v !== undefined) { fVol = clamp01(v); if (AC) save(); if (ctx) applyGains(); }
       return fVol;

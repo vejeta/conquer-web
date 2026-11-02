@@ -238,3 +238,15 @@ def test_each_people_has_its_own_artefact(site, browser):
     assert "dwarf" in lintel(page, ".p6 .gate-stage")
     assert errors == []
     context.close()
+
+
+def test_spanish_narration_files_are_real_and_the_scene_waits_for_them(site, browser):
+    context, page, errors = story(browser, site, lang="es", dur="")
+    page.click("#begin")
+    page.wait_for_function("() => conquerStory.state().n === 1 && conquerStory.state().D > 5", timeout=10000)
+    d = page.evaluate("() => conquerStory.state().D")
+    assert 10 < d < 13                       # the real 1.mp3 (11.3 s), not the text estimate
+    page.wait_for_timeout(6000)
+    assert current(page) == 1                # still on the first scene while the voice speaks
+    page.wait_for_function("() => conquerStory.state().n === 2", timeout=int((d + 1.0) * 1000))
+    context.close()
