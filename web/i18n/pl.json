@@ -84,7 +84,7 @@
   "copy": "Kopiuj adres",
   "copied": "Skopiowano",
   "cred_account_t": "Twoje konto w serwisie",
-  "cred_account": "Otwiera drzwi serwisu: przeglądarka pyta o nie, gdy klikasz Graj. Jedno na gracza; to nie jest twój naród.",
+  "cred_account": "Otwiera drzwi serwisu: strona logowania prosi o nie, gdy klikasz Graj. Jedno na gracza; to nie jest twój naród.",
   "cred_nation_t": "Hasło twojego narodu",
   "cred_nation": "Część oryginalnej gry z 1987 roku: chroni twój naród w świecie gry, tak jak na uniksowych maszynach, dla których ją napisano.",
   "trailer": "&#9654; Obejrzyj zwiastun (40 s)",
@@ -215,12 +215,29 @@
   "e_server": "Coś poszło nie tak na serwerze. Spróbuj ponownie albo napisz do administratora.",
   "e_network": "Serwer nie odpowiada. Sprawdź połączenie i spróbuj ponownie.",
   "step1_t": "Twoje konto na tej stronie",
-  "step1": "Nazwa i hasło, które otwierają drzwi strony. Przeglądarka prosi o nie w małym okienku przy każdym kliknięciu Graj. To nie jest twój naród: inni gracze nigdy go nie widzą.",
+  "step1": "Nazwa i hasło, które otwierają drzwi strony: strona logowania prosi o nie po kliknięciu Graj i może cię zapamiętać na 30 dni. To nie jest twój naród: inni gracze nigdy go nie widzą.",
   "step2_t": "Twój naród, później",
   "step2": "Po zatwierdzeniu gra poprosi cię o założenie narodu: nazwa (do 9 liter, może różnić się od nazwy konta), rasa, klasa i hasło narodu, o które gra pyta przy każdym uruchomieniu. W dowolnej turze: jeśli gra jest już w toku, późny naród startuje z dodatkowymi punktami na nadrobienie zaległości.",
-  "done_private": "Jeśli przeglądarka nie zapyta i zaloguje cię na inne konto (pamięta ostatnie użyte w tym serwisie), otwórz serwis w oknie prywatnym.",
+  "done_private": "Aby grać innym kontem, kliknij Wyloguj (na pasku gry) i zaloguj się ponownie.",
   "howto": "Zobacz, jak założyć naród (2 minuty)",
   "howto_note": "Kreator narodów samej gry, taki, jaki pojawia się przy pierwszej grze."
+ },
+ "login": {
+  "page_title": "Logowanie",
+  "title": "Wrota Durina",
+  "lede": "Powiedz «przyjacielu» i wejdź: zaloguj się kontem, które założyłeś na tej stronie.",
+  "doors": "Zamknięte Wrota Durina z formularzem logowania przed nimi",
+  "l_account": "Konto",
+  "l_password": "Hasło",
+  "remember": "Zapamiętaj mnie",
+  "h_remember": "Zostajesz zalogowany na tym urządzeniu przez 30 dni. Nie używaj tego na wspólnym komputerze.",
+  "go": "Powiedz przyjacielu i wejdź",
+  "failed": "Wrota pozostają zamknięte: złe konto lub hasło.",
+  "loggedout": "Wylogowano. Wrota znów są zamknięte.",
+  "opening": "Wrota się otwierają...",
+  "neterror": "Serwer nie odpowiada. Sprawdź połączenie i spróbuj ponownie.",
+  "no_account": "Nie masz jeszcze konta?",
+  "ask_seat": "Poproś o miejsce"
  },
  "admin": {
   "page_title": "Administracja",
@@ -418,7 +435,8 @@
   "hall": "Hala sław",
   "join": "Dołącz",
   "design": "Wygląd",
-  "main": "Menu główne"
+  "main": "Menu główne",
+  "logout": "Wyloguj"
  },
  "race": {
   "human": "Człowiek",

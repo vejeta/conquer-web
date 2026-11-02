@@ -84,7 +84,7 @@
   "copy": "Copiar dirección",
   "copied": "Copiada",
   "cred_account_t": "Tu cuenta de este sitio web",
-  "cred_account": "Abre la puerta del sitio: el navegador te la pide cuando pulsas Jugar. Una por jugador; no es tu nación.",
+  "cred_account": "Abre la puerta del sitio: la página de entrada te la pide cuando pulsas Jugar. Una por jugador; no es tu nación.",
   "cred_nation_t": "La contraseña de tu nación",
   "cred_nation": "Es parte del juego original de 1987: protege tu nación dentro del mundo, como en las máquinas Unix para las que se escribió.",
   "trailer": "&#9654; Ver el tráiler (40 s)",
@@ -215,12 +215,29 @@
   "e_server": "Algo ha fallado en el servidor. Vuelve a probar o escribe al administrador.",
   "e_network": "El servidor no responde. Comprueba tu conexión y vuelve a probar.",
   "step1_t": "Tu cuenta de este sitio web",
-  "step1": "Un nombre y una contraseña que abren la puerta del sitio. Tu navegador te los pide en una ventanita cada vez que pulsas Jugar. No es tu nación: los demás jugadores nunca la ven.",
+  "step1": "Un nombre y una contraseña que abren la puerta del sitio: la página de entrada te los pide cuando pulsas Jugar y puede recordarte durante 30 días. No es tu nación: los demás jugadores nunca la ven.",
   "step2_t": "Tu nación, más adelante",
   "step2": "Cuando te aprueben, el juego te pedirá fundar tu nación: su nombre (hasta 9 letras; puede ser distinto del de tu cuenta), raza, clase y una contraseña de nación que el juego te pedirá cada vez que juegues. En cualquier turno: si la partida ya está avanzada, una nación tardía empieza con puntos extra para ponerse al día.",
-  "done_private": "Si el navegador no te pregunta y entra con otra cuenta (recuerda la última que se usó en este sitio), abre el sitio en una ventana privada.",
+  "done_private": "Para jugar con otra cuenta, pulsa Salir (en la barra del juego) y vuelve a entrar.",
   "howto": "Mira cómo se funda una nación (2 minutos)",
   "howto_note": "El constructor de naciones del propio juego, tal como aparece la primera vez que juegas."
+ },
+ "login": {
+  "page_title": "Entrar",
+  "title": "Las Puertas de Durin",
+  "lede": "Di «amigo» y entra: identifícate con la cuenta que creaste en este sitio.",
+  "doors": "Las puertas cerradas de Durin, con el formulario de entrada delante",
+  "l_account": "Cuenta",
+  "l_password": "Contraseña",
+  "remember": "Recordarme",
+  "h_remember": "Mantiene la sesión en este dispositivo durante 30 días. No lo uses en un ordenador compartido.",
+  "go": "Di «amigo» y entra",
+  "failed": "Las puertas siguen cerradas: cuenta o contraseña incorrectas.",
+  "loggedout": "Has salido. Las puertas vuelven a estar cerradas.",
+  "opening": "Las puertas se abren...",
+  "neterror": "El servidor no responde. Comprueba tu conexión e inténtalo de nuevo.",
+  "no_account": "¿Aún no tienes cuenta?",
+  "ask_seat": "Pide tu plaza"
  },
  "admin": {
   "page_title": "Administración",
@@ -418,7 +435,8 @@
   "hall": "Salón",
   "join": "Unirse",
   "design": "Diseño",
-  "main": "Menú principal"
+  "main": "Menú principal",
+  "logout": "Salir"
  },
  "race": {
   "human": "Humano",

@@ -749,7 +749,10 @@ button.plaque:hover, a.plaque:hover { text-decoration: none; filter: brightness(
 .gate .login .form { gap: var(--s3); }
 .gate.open .login { opacity: 0; visibility: hidden; }
 .gate-actions { margin-top: var(--s3); }
-@media (prefers-reduced-motion: reduce) { .gate .leaf, .gate .login { transition: none; } .runes { transition: none; } }
+/* A wrong password: the doors shake */
+.gate-stage.shake { animation: gate-shake 480ms cubic-bezier(.36, .07, .19, .97) both; }
+@keyframes gate-shake { 10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(4px); } 30%, 50%, 70% { transform: translateX(-7px); } 40%, 60% { transform: translateX(7px); } }
+@media (prefers-reduced-motion: reduce) { .gate .leaf, .gate .login { transition: none; } .runes { transition: none; } .gate-stage.shake { animation: none; } }
 [data-race="orc"] .stone .roll { display: none !important; }
 
 /* 13. Page chrome shared by every page ------------------------------------

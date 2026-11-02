@@ -65,8 +65,14 @@ fi
 # 3. Apache, asked on this server with the site's name
 echo "== 3. Apache (https://$DOMAIN/play/)"
 before=$(wc -l < "$ERROR_LOG" 2>/dev/null || echo 0)
-code=$(printf 'user = "%s:%s"\n' "$NAME" "$PASSWORD" | curl -s -K - -o /dev/null -w '%{http_code}' \
-    --resolve "$DOMAIN:443:127.0.0.1" "https://$DOMAIN/play/")
+# The site's sign-in (form login): post the form, keep the session cookie,
+# then ask for /play/ with it
+JAR=$(mktemp)
+trap 'rm -f "$JAR"' EXIT
+printf 'httpd_username=%s&httpd_password=%s&httpd_location=/play/' "$NAME" "$PASSWORD" \
+    | curl -s -c "$JAR" -b "$JAR" -o /dev/null --resolve "$DOMAIN:443:127.0.0.1" -d @- "https://$DOMAIN/login/do"
+code=$(curl -s -b "$JAR" -o /dev/null -w '%{http_code}' --resolve "$DOMAIN:443:127.0.0.1" "https://$DOMAIN/play/")
+[ "$code" = 302 ] && code=401   # sent back to the sign-in page: the login failed
 sleep 1
 news=$(tail -n +"$((before + 1))" "$ERROR_LOG" 2>/dev/null | grep -i 'auth' | tail -3)
 case "$code" in

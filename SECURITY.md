@@ -44,10 +44,20 @@ becoming players without the administrator's approval.
   `Referrer-Policy`, and a Content-Security-Policy (`default-src 'self'`,
   `frame-ancestors 'self'`, `object-src 'none'`, `base-uri 'self'`,
   `form-action 'self'`; inline scripts are still allowed, the pages use them).
-- `/play/` and `/admin/` require a valid account (Basic auth against the
-  htpasswd file). They are the last `<Location>` blocks of the vhost; CI checks
+- `/play/` and `/admin/` require a valid account: a sign-in page of the site
+  (`/login.html`, mod_auth_form form login against the same htpasswd file) and a
+  session cookie. They are the last `<Location>` blocks of the vhost; CI checks
   that `/play/` stays last, because a later block could silently lift the
   password.
+- Session cookie `conquer_session`: `httponly` (scripts cannot read it),
+  `secure` (https only), `samesite=lax`, `path=/`. Its content is the account and
+  the password encrypted (AES-256, mod_session_crypto) with the passphrase in
+  `/etc/apache2/conquer-web.session` (mode 600, never in git; changing it signs
+  everybody out). Plain sign-in: a browser-session cookie (no expiry on the
+  server side either); "Remember me": 30 days from the login (`/login/long`,
+  `SessionMaxAge 2592000`). `/logout` replaces the cookie with an expired empty
+  one; a copied cookie keeps working until it expires or the passphrase changes.
+  `SessionCookieRemove On` hides the cookie from the game and the gate.
 - Identity: Apache sets `X-WEBAUTH-USER` from the signed-in account after
   `RequestHeader unset X-WEBAUTH-USER early`, so a header sent by a client never
   survives. ttyd (`-H X-WEBAUTH-USER`) answers 407 to a request without it; the
@@ -160,14 +170,20 @@ or the invite codes. `ADMIN_CONTACT`, if you set it, is public.
 
 `ci.yml` has read-only repository permissions, no secrets, no `set -x`; its
 only password is the throwaway `ci-password` of a container that exists for the
-run. It checks the Apache password rule, a forged identity header, the
+run. It checks the Apache sign-in rule (redirect to the sign-in page, session
+cookie flags, logout), a forged identity header or cookie, the
 WebSocket origin check, the container's capabilities and the sign-up and
 approval flows. A step fails if the password shows up in a container log.
 
 ## Known limits
 
-- **Basic auth.** The browser keeps the password for the session and resends it;
-  there is no log-out, no second factor and no lockout inside the application.
+- **Session cookie.** It holds the encrypted password (mod_auth_form does not
+  keep server-side sessions), so a stolen cookie works until it expires, a
+  logout does not revoke a copy of it, and "Remember me" lasts 30 days: it
+  is the browser's saved password again, but httponly and encrypted. There is
+  no second factor and no lockout inside the application; a logout link
+  can be followed from another site (samesite=lax allows top-level GET) and
+  only signs the visitor out.
   Brute force is limited only by fail2ban if you install it (below). Use long
   passwords; the sign-up page asks for 8 or more, bcrypt uses the first 72 bytes.
 - **Everything in the container is one user.** The gate, ttyd, the menu, the game,
@@ -257,7 +273,7 @@ A nation that starts late gets the game's own extra points
 
 ## Checklist
 
-- [ ] HTTPS works, HSTS header present, `/play/` and `/admin/` answer 401 without a password
+- [ ] HTTPS works, HSTS header present, `/play/` and `/admin/` redirect (302) to `/login.html` without a session; the cookie is httponly, secure and same-site
 - [ ] God password set on the server (`conqpasswd -q god` says "set")
 - [ ] fail2ban installed and `./check-security.sh` clean
 - [ ] Administrator accounts few, with long passwords
