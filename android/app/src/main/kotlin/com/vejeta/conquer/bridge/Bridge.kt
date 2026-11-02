@@ -10,6 +10,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import com.cefrium.CefriumBrowser
 import com.cefrium.compose.CefriumBridge
+import com.vejeta.conquer.ui.Race
 import com.vejeta.conquer.work.Notifications
 import org.json.JSONException
 import org.json.JSONObject
@@ -21,6 +22,8 @@ import org.json.JSONObject
  *  - {"type":"haptic","ms":8}: vibrate for ms milliseconds (1 to 500)
  *  - {"type":"keepAwake","on":true}: keep the screen on (or let it sleep)
  *  - {"type":"notify","title":"...","body":"..."}: a local notification
+ *  - {"type":"race","race":"elf"}: the race of the colours (human, elf,
+ *    dwarf or orc); the app stores it and themes itself with it
  *
  * The answer is {"ok":true}, or a failure with a code: -1 bad request, -2
  * unknown type, -3 no permission to notify. The contract is in
@@ -32,6 +35,7 @@ import org.json.JSONObject
 class Bridge(
     context: Context,
     private val onKeepAwake: (Boolean) -> Unit,
+    private val onRace: (Race) -> Unit,
 ) {
     private val context = context.applicationContext
     private val main = Handler(Looper.getMainLooper())
@@ -69,6 +73,15 @@ class Bridge(
                     callback.success(OK)
                 } else {
                     callback.failure(-3, "notifications not allowed")
+                }
+            }
+            "race" -> {
+                val race = Race.fromKey(json.optString("race"))
+                if (race == null) {
+                    callback.failure(-1, "unknown race")
+                } else {
+                    main.post { onRace(race) }
+                    callback.success(OK)
                 }
             }
             else -> callback.failure(-2, "unknown type")

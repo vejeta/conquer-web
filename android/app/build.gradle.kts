@@ -67,9 +67,11 @@ android {
 
     buildTypes {
         debug {
-            // The emulator on a PC is x86_64
+            // The emulator on a PC is x86_64, a phone is arm64. A build type's
+            // abiFilters replace the default config's instead of adding to
+            // them, so the whole list is given here
             ndk {
-                abiFilters += listOf("x86_64")
+                abiFilters += listOf("arm64-v8a", "x86_64")
             }
         }
         release {

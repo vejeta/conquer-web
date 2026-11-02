@@ -6,6 +6,7 @@ package com.vejeta.conquer.ui
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -30,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,7 +39,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -48,30 +49,40 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.vejeta.conquer.R
 
-private val Bg = Color(0xFF0D1117)
-private val Panel = Color(0xFF161B22)
-private val Accent = Color(0xFF3FB950)
-private val TextColor = Color(0xFFE6EDF3)
-private val Muted = Color(0xFF8B949E)
-
 /** The retro font of the site's title (web/fonts/vt323). */
 val Retro = FontFamily(Font(R.font.vt323))
 
-/** The colours of the website (web/index.html), always dark. */
+/**
+ * The colours of the website for one race (web/theme.css), always dark.
+ * Typography stays the system's, except the retro title font.
+ */
 @Composable
-fun ConquerTheme(content: @Composable () -> Unit) {
-    MaterialTheme(
-        colorScheme = darkColorScheme(
-            primary = Accent,
-            onPrimary = Bg,
-            secondary = Muted,
-            background = Bg,
-            onBackground = TextColor,
-            surface = Panel,
-            onSurface = TextColor,
-        ),
-        content = content,
-    )
+fun ConquerTheme(race: Race = Race.Human, content: @Composable () -> Unit) {
+    CompositionLocalProvider(LocalRace provides race) {
+        MaterialTheme(
+            colorScheme = darkColorScheme(
+                primary = race.phos,
+                onPrimary = race.onPhos,
+                primaryContainer = race.phosDim,
+                onPrimaryContainer = race.ink,
+                secondary = race.stone,
+                onSecondary = race.bg,
+                tertiary = race.gold,
+                onTertiary = race.bg,
+                background = race.bg,
+                onBackground = race.ink,
+                surface = race.bg2,
+                onSurface = race.ink,
+                surfaceVariant = race.bg2,
+                onSurfaceVariant = race.inkDim,
+                outline = race.stone,
+                outlineVariant = race.stone.copy(alpha = 0.45f),
+                error = race.bad,
+                onError = race.bg,
+            ),
+            content = content,
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -88,10 +99,21 @@ fun Home(
         .fillMaxWidth()
         .widthIn(max = 480.dp)
 
+    val race = LocalRace.current
+    val colors = MaterialTheme.colorScheme
+
+    Box(Modifier.fillMaxSize().background(race.bg)) {
+    // The race's mountains along the bottom; the sides are cropped on wide screens
+    Image(
+        painter = painterResource(race.mountains),
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        alignment = Alignment.BottomCenter,
+        modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(200.dp),
+    )
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Bg)
             .statusBarsPadding()
             .navigationBarsPadding()
             .verticalScroll(rememberScrollState())
@@ -109,14 +131,14 @@ fun Home(
         )
         Text(
             text = "CONQUER",
-            color = Accent,
+            color = colors.primary,
             fontFamily = Retro,
             fontSize = 56.sp,
             letterSpacing = 8.sp,
         )
         Text(
             text = stringResource(R.string.tagline),
-            color = Muted,
+            color = colors.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(8.dp))
@@ -125,24 +147,25 @@ fun Home(
         FilledTonalButton(
             onClick = onPractice,
             modifier = wide.height(64.dp),
-            colors = ButtonDefaults.filledTonalButtonColors(containerColor = Panel, contentColor = Accent),
+            colors = ButtonDefaults.filledTonalButtonColors(containerColor = colors.surface, contentColor = colors.primary),
         ) { Label(R.string.btn_practice) }
         OutlinedButton(onClick = onTutorial, modifier = wide.height(64.dp)) { Label(R.string.btn_tutorial) }
         OutlinedButton(onClick = onSite, modifier = wide.height(64.dp)) { Label(R.string.btn_site) }
 
         TextButton(onClick = { settings = true }) {
-            Text(stringResource(R.string.settings), color = Muted)
+            Text(stringResource(R.string.settings), color = colors.onSurfaceVariant)
         }
+    }
     }
 
     if (settings) {
-        ModalBottomSheet(onDismissRequest = { settings = false }, containerColor = Panel) {
+        ModalBottomSheet(onDismissRequest = { settings = false }, containerColor = colors.surface) {
             Column(Modifier.padding(horizontal = 24.dp, vertical = 8.dp).navigationBarsPadding()) {
                 TextButton(onClick = {
                     onForgetAccount()
                     settings = false
                 }) {
-                    Text(stringResource(R.string.forget_account), color = TextColor)
+                    Text(stringResource(R.string.forget_account), color = colors.onSurface)
                 }
             }
         }

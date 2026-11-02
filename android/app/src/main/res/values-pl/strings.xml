@@ -17,6 +17,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <string name="login_password">Hasło</string>
     <string name="login_remember">Zapamiętaj mnie</string>
     <string name="login_wrong">Serwer nie przyjął tych danych logowania</string>
+    <string name="login_speak">Powiedz przyjacielu</string>
     <string name="ok">OK</string>
     <string name="cancel">Anuluj</string>
     <string name="close">Zamknij</string>

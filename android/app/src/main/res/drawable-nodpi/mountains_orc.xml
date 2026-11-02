@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+
+Generated from web/mountains-orc.svg (the viewBox and the path data are the SVG's).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="1200dp"
+    android:height="200dp"
+    android:viewportWidth="1200"
+    android:viewportHeight="200">
+    <path
+        android:pathData="M0 200V64L0 64L80 108L153 66L235 100L291 66L366 114L450 55L501 108L565 54L615 111L704 70L751 113L821 64L907 113L993 55L1077 94L1155 52L1200 52 V200z"
+        android:fillColor="#1A1313"
+        android:fillAlpha="0.8" />
+    <path android:pathData="M0 110H1200V170H0z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="0" android:startY="110"
+                android:endX="0" android:endY="170">
+                <item android:offset="0" android:color="#00E07A5A" />
+                <item android:offset="1" android:color="#29E07A5A" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:pathData="M0 200V86L0 86L47 129L83 99L138 136L185 101L234 131L300 85L340 136L392 98L462 124L513 95L562 138L615 85L654 140L695 97L736 131L795 87L831 122L879 91L917 137L976 97L1037 124L1084 93L1140 124L1194 95L1200 95 V200z"
+        android:fillColor="#211614" />
+    <path
+        android:pathData="M150 200L330 50L350 58L362 48L560 200z"
+        android:fillColor="#251915" />
+    <path
+        android:pathData="M0 86L47 129L83 99L138 136L185 101L234 131L300 85L340 136L392 98L462 124L513 95L562 138L615 85L654 140L695 97L736 131L795 87L831 122L879 91L917 137L976 97L1037 124L1084 93L1140 124L1194 95"
+        android:strokeColor="#C9A24A"
+        android:strokeWidth="1.5"
+        android:strokeAlpha="0.2" />
+    <path
+        android:pathData="M0 200V141L0 141L54 163L88 138L140 163L170 135L214 174L259 137L310 170L346 142L392 165L445 147L479 168L529 141L562 168L605 138L635 166L692 147L740 166L798 135L834 164L876 148L925 172L973 136L1004 164L1040 142L1078 162L1132 144L1172 175L1200 175 V200z"
+        android:fillColor="#251714" />
+</vector>

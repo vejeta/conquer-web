@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+
+Generated from web/mountains-dwarf.svg (the viewBox and the path data are the SVG's).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="1200dp"
+    android:height="200dp"
+    android:viewportWidth="1200"
+    android:viewportHeight="200">
+    <path
+        android:pathData="M0 200L0 95L0 95L130 50L260 95L430 30L610 100L800 45L980 95L1200 60L1200 60V200z"
+        android:fillColor="#1C1812"
+        android:fillAlpha="0.8" />
+    <path
+        android:pathData="M0 200L0 125L0 125L160 85L330 125L520 70L700 120L900 80L1100 120L1200 100L1200 100V200z"
+        android:fillColor="#241C10" />
+    <path
+        android:pathData="M0 200L0 170L0 170L220 150L480 168L700 148L940 166L1200 150L1200 150V200z"
+        android:fillColor="#2B2011" />
+    <path
+        android:pathData="M540 88h14v84h-14zM537 83h20v4h-20zM590 72h14v100h-14zM587 67h20v4h-20zM640 60h14v112h-14zM637 55h20v4h-20zM690 72h14v100h-14zM687 67h20v4h-20zM770 80h14v92h-14zM767 75h20v4h-20zM820 96h14v76h-14zM817 91h20v4h-20z"
+        android:fillColor="#2D2212" />
+</vector>

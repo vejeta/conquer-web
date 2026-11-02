@@ -134,6 +134,7 @@ function app(request) {
 app({ type: 'haptic', ms: 8 });                       // vibrate 8 ms (1 to 500)
 app({ type: 'keepAwake', on: true });                 // keep the screen on / let it sleep
 app({ type: 'notify', title: 'Conquer', body: 'Your armies have arrived' });
+app({ type: 'race', race: 'elf' });                   // the colours: human, elf, dwarf or orc
 ```
 
 | `type`      | Fields                  | Does                                  |
@@ -141,8 +142,9 @@ app({ type: 'notify', title: 'Conquer', body: 'Your armies have arrived' });
 | `haptic`    | `ms` (default 10)       | `Vibrator`, one shot                  |
 | `keepAwake` | `on` (boolean)          | `FLAG_KEEP_SCREEN_ON` on or off       |
 | `notify`    | `title`, `body`         | a local notification                  |
+| `race`      | `race`                  | stores the race of the app's colours  |
 
-The answer is `{"ok":true}`. Failures: `-1` bad request (not JSON), `-2`
+The answer is `{"ok":true}`. Failures: `-1` bad request (not JSON, or an unknown race), `-2`
 unknown `type`, `-3` notifications not allowed (no permission), `-403`
 origin not allowed. The page also keeps the screen on by itself while the
 address contains `/play/` or `/try/`, and `navigator.vibrate` works in

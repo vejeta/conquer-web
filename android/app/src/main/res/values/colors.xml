@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
 SPDX-License-Identifier: GPL-3.0-or-later
 -->
 <resources>
-    <!-- The site's colours (web/index.html) -->
-    <color name="conquer_bg">#0D1117</color>
+    <!-- The human colours of web/theme.css (ConquerTheme sets the rest) -->
+    <color name="conquer_bg">#0B1210</color>
     <color name="ic_launcher_background">#0D1117</color>
 </resources>

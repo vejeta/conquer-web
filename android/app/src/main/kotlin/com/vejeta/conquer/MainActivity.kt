@@ -4,6 +4,7 @@
 package com.vejeta.conquer
 
 import android.Manifest
+import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
@@ -21,6 +22,7 @@ import com.vejeta.conquer.bridge.Bridge
 import com.vejeta.conquer.ui.BrowserScreen
 import com.vejeta.conquer.ui.ConquerTheme
 import com.vejeta.conquer.ui.Home
+import com.vejeta.conquer.ui.Race
 import com.vejeta.conquer.web.LoopbackServer
 import com.vejeta.conquer.web.Site
 import com.vejeta.conquer.work.Notifications
@@ -35,6 +37,10 @@ class MainActivity : ComponentActivity() {
     private lateinit var server: LoopbackServer
     private lateinit var credentials: Credentials
     private lateinit var bridge: Bridge
+    private lateinit var prefs: SharedPreferences
+
+    // The colours: the race chosen on the site (stored; human until then)
+    private var race by mutableStateOf(Race.Human)
 
     // Why the screen must stay on: "page" (a game is open), "bridge" (a page asked)
     private val awake = mutableSetOf<String>()
@@ -48,13 +54,21 @@ class MainActivity : ComponentActivity() {
 
         // The same port every run: the practice world is kept in the origin's
         // IndexedDB, and the port is part of the origin
-        val prefs = getSharedPreferences("conquer", MODE_PRIVATE)
+        prefs = getSharedPreferences("conquer", MODE_PRIVATE)
         server = LoopbackServer(assets, prefs.getInt("port", 0))
         server.start()
         prefs.edit().putInt("port", server.port).apply()
 
         credentials = Credentials(this)
-        bridge = Bridge(this) { on -> keepAwake("bridge", on) }
+        race = Race.fromKey(prefs.getString("race", null)) ?: Race.Human
+        bridge = Bridge(
+            this,
+            onKeepAwake = { on -> keepAwake("bridge", on) },
+            onRace = { chosen ->
+                prefs.edit().putString("race", chosen.key).apply()
+                race = chosen
+            },
+        )
 
         Notifications.ensureChannel(this)
         TurnCheck.schedule(this)
@@ -63,7 +77,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            ConquerTheme {
+            ConquerTheme(race) {
                 var url by remember { mutableStateOf<String?>(null) }
                 val lang = Site.language()
                 val open = url

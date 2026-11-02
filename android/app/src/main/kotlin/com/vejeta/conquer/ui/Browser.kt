@@ -19,12 +19,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,7 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
@@ -52,13 +48,12 @@ import com.cefrium.compose.CefriumView
 import com.cefrium.compose.rememberCefriumNavigator
 import com.cefrium.compose.rememberCefriumViewState
 import com.vejeta.conquer.R
-import com.vejeta.conquer.auth.Account
 import com.vejeta.conquer.auth.Credentials
 import com.vejeta.conquer.web.Site
 import kotlinx.coroutines.delay
 
 /** A Basic authentication challenge the user has to answer. */
-private class AuthRequest(
+internal class AuthRequest(
     val host: String,
     val realm: String,
     /** The server just refused the credentials that were sent. */
@@ -128,9 +123,12 @@ fun BrowserScreen(
     val navigator = rememberCefriumNavigator()
     var barVisible by remember { mutableStateOf(true) }
     var auth by remember { mutableStateOf<AuthRequest?>(null) }
+    // The doors stay on screen while they swing open after "Speak friend"
+    var leaving by remember { mutableStateOf<AuthRequest?>(null) }
     val flow = remember {
         AuthFlow(credentials) { request ->
             auth?.callback?.cancel()
+            leaving = null
             auth = request
         }
     }
@@ -226,82 +224,35 @@ fun BrowserScreen(
         }
     }
 
-    auth?.let { request ->
-        AuthDialog(
-            request = request,
+    val doors = auth ?: leaving
+    if (doors != null) {
+        DoorsDialog(
+            request = doors,
             saved = credentials.load(),
-            onSignIn = { account, remember ->
+            opening = auth == null,
+            onSpeak = { account, remember ->
                 auth = null
+                leaving = doors
                 flow.answered()
                 if (remember) credentials.save(account)
-                request.callback.proceed(account.user, account.password)
+                doors.callback.proceed(account.user, account.password)
             },
             onCancel = {
                 auth = null
-                request.callback.cancel()
+                doors.callback.cancel()
             },
         )
     }
-}
-
-@Composable
-private fun AuthDialog(
-    request: AuthRequest,
-    saved: Account?,
-    onSignIn: (Account, Boolean) -> Unit,
-    onCancel: () -> Unit,
-) {
-    var user by remember { mutableStateOf(saved?.user ?: "") }
-    var password by remember { mutableStateOf("") }
-    var rememberMe by remember { mutableStateOf(true) }
-
-    AlertDialog(
-        onDismissRequest = onCancel,
-        title = { Text(stringResource(R.string.login_title)) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(request.host + if (request.realm.isNotEmpty()) " · " + request.realm else "")
-                if (request.wrong) {
-                    Text(
-                        stringResource(R.string.login_wrong),
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-                OutlinedTextField(
-                    value = user,
-                    onValueChange = { user = it },
-                    label = { Text(stringResource(R.string.login_user)) },
-                    singleLine = true,
-                )
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = { Text(stringResource(R.string.login_password)) },
-                    singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
-                )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { rememberMe = !rememberMe },
-                ) {
-                    Checkbox(checked = rememberMe, onCheckedChange = null)
-                    Text(
-                        stringResource(R.string.login_remember),
-                        modifier = Modifier.padding(start = 8.dp),
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onSignIn(Account(user.trim(), password), rememberMe) },
-                enabled = user.isNotBlank() && password.isNotEmpty(),
-            ) { Text(stringResource(R.string.ok)) }
-        },
-        dismissButton = {
-            TextButton(onClick = onCancel) { Text(stringResource(R.string.cancel)) }
-        },
-    )
+    // Once the leaves are open the dialog goes; a refusal (a new request)
+    // closes them again before this runs out
+    val swinging = leaving
+    val animationsOff = rememberAnimationsOff()
+    LaunchedEffect(swinging) {
+        if (swinging != null) {
+            delay(if (animationsOff) 0L else DOORS_OPEN_MS + 150L)
+            leaving = null
+        }
+    }
 }
 
 private const val BAR_MS = 3000L
