@@ -1,0 +1,300 @@
+<!doctype html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conquer design system</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    /* Layout only. Colours and fonts come from theme.css. */
+    main { max-width: 880px; margin: 0 auto; padding: var(--s5) var(--s4) 64px; display: flex; flex-direction: column; gap: var(--s6); }
+    section { display: flex; flex-direction: column; gap: var(--s3); }
+    section > h2 { padding-bottom: var(--s2); border-bottom: 1px solid var(--line); margin: 0; }
+    .row { display: flex; flex-wrap: wrap; gap: var(--s3); align-items: center; }
+    .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--s4); align-items: start; }
+    .cap { color: var(--ink-dim); font-size: .85rem; margin: 0; }
+    .page-tools { display: flex; gap: var(--s2); flex-wrap: wrap; }
+    .stack { display: flex; flex-direction: column; gap: var(--s3); }
+    .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: var(--s2); }
+    .sw { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: .8rem; }
+    .sw i { display: block; height: 36px; }
+    .sw span { display: block; padding: var(--s1) var(--s2); background: var(--bg-2); font-family: var(--font-mono); font-size: 1rem; }
+    .terminal { overflow-x: auto; }
+    .terminal pre { font-size: 1.15rem; width: max-content; }
+    .sheet-demo { max-width: 420px; }
+    .reading { background: var(--bg); color: var(--ink); border: var(--bezel) solid var(--line); border-radius: var(--radius); padding: var(--s5); }
+    .reading p { max-width: 62ch; }
+    .rule-title { font-family: var(--font-title); }
+    .stats { display: flex; gap: var(--s5); flex-wrap: wrap; }
+    .stats .mono { font-size: 2rem; color: var(--amber-text); display: block; line-height: 1; }
+    .podium-rank { font-family: var(--font-mono); font-size: 1.3rem; color: var(--amber-text); }
+  </style>
+</head>
+<body>
+<header class="site-header">
+  <a class="site-name" href="#top">Conquer</a>
+  <span class="badge" id="where">Map 12,7</span>
+  <span class="spacer"></span>
+  <nav class="nav" aria-label="Main">
+    <a class="key key-small" href="#keys">Play <span class="hint">P</span></a>
+    <a class="key key-small" href="#tables">Hall <span class="hint">H</span></a>
+    <a class="key key-small" href="#forms">Join <span class="hint">J</span></a>
+  </nav>
+  <select class="select" aria-label="Language"><option>English</option><option>Español</option><option>Deutsch</option></select>
+</header>
+
+<main id="top">
+  <section>
+    <h1>Phosphor and parchment</h1>
+    <p class="lede">The design system for Conquer: an amber monitor from a 1987 computing centre, with the warmth of an old book. This page is a sample of every component, not part of the site.</p>
+    <div class="page-tools">
+      <button class="key key-small toggle" id="t-crt" type="button" aria-pressed="false" style="width:auto">CRT effect <span class="state">OFF</span></button>
+      <button class="key key-small toggle" id="t-parch" type="button" aria-pressed="false" style="width:auto">Parchment reading block <span class="state">OFF</span></button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Colour</h2>
+    <div class="swatches" id="swatches"></div>
+    <p class="cap">Amber is the only accent. Green and red appear only with meaning: seat approved, something wrong.</p>
+  </section>
+
+  <section>
+    <h2>Type</h2>
+    <h1 style="margin:0">Hall of fame</h1>
+    <h2 style="border:0;padding:0;margin:0">Ask for your seat</h2>
+    <h3 style="margin:0">Section name in IM Fell English SC</h3>
+    <p>Body text is the system font: Create your account and ask the administrator for a seat in the game. <a href="#top">A link is amber</a> and underlines on hover.</p>
+    <p class="mono">K7QM-3XPA &middot; Gold 1,240 &middot; Mono (VT323) is for keys, codes and numbers.</p>
+    <p class="dim">Dim text for hints: letters, digits, dots, dashes and underscores.</p>
+  </section>
+
+  <section id="keys">
+    <h2>Keys</h2>
+    <div class="row">
+      <button class="key key-primary" type="button">Ask for my seat <span class="hint">&#x23CE;</span></button>
+      <button class="key" type="button">Refresh <span class="hint">R</span></button>
+      <button class="key key-small" type="button">Small</button>
+      <button class="key" type="button" disabled>Disabled</button>
+      <button class="key key-primary" type="button" disabled>Disabled</button>
+    </div>
+    <p class="cap">Primary, secondary, small, disabled. Press one to see it sink. Tab to see the focus ring.</p>
+
+    <h3>Chip bar (map)</h3>
+    <div class="chips" aria-label="Map commands">
+      <button class="key key-small" type="button">Move <span class="hint">m</span></button>
+      <button class="key key-small" type="button">Army <span class="hint">a</span></button>
+      <button class="key key-small" type="button">Navy <span class="hint">n</span></button>
+      <button class="key key-small" type="button">Sector <span class="hint">s</span></button>
+      <button class="key key-small" type="button">Magic <span class="hint">M</span></button>
+      <button class="key key-small" type="button">Diplomacy <span class="hint">D</span></button>
+      <button class="key key-small" type="button">End turn <span class="hint">q</span></button>
+      <button class="key key-small" type="button">Help <span class="hint">?</span></button>
+    </div>
+
+    <div class="grid2">
+      <div class="stack">
+        <h3>D-pad</h3>
+        <div class="dpad" role="group" aria-label="Move">
+          <span class="gap"></span><button class="key" type="button" aria-label="North">&#x2191;</button><span class="gap"></span>
+          <button class="key" type="button" aria-label="West">&#x2190;</button><button class="key" type="button" aria-label="Centre">&#xB7;</button><button class="key" type="button" aria-label="East">&#x2192;</button>
+          <span class="gap"></span><button class="key" type="button" aria-label="South">&#x2193;</button><span class="gap"></span>
+        </div>
+      </div>
+      <div class="stack sheet-demo">
+        <h3>Options sheet</h3>
+        <div class="sheet" role="group" aria-label="Options">
+          <h3>Options</h3>
+          <button class="key toggle" type="button" aria-pressed="true">Touch keys <span class="state">ON</span></button>
+          <button class="key toggle" type="button" aria-pressed="false" id="t-crt2">CRT effect <span class="state">OFF</span></button>
+          <button class="key toggle" type="button" aria-pressed="true">Sound <span class="state">ON</span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Terminal</h2>
+    <div class="terminal" role="img" aria-label="Static mock of the Conquer map screen">
+<pre id="screen"></pre>
+    </div>
+    <p class="cap">80 by 24 in VT323. The bezel is always there; the scanlines and vignette follow the CRT toggle.</p>
+  </section>
+
+  <section id="forms">
+    <h2>Forms</h2>
+    <div class="panel">
+      <form class="form" onsubmit="return false" novalidate>
+        <div class="field">
+          <label for="account">Account name</label>
+          <input class="input" id="account" autocomplete="off" value="gandalf_grey">
+          <span class="help">Letters, digits, dots, dashes and underscores. It is not your nation's name.</span>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input class="input" id="password" type="password" value="secret-phrase">
+          <span class="help">At least 8 characters.</span>
+        </div>
+        <div class="field">
+          <label for="message">Message for the administrator (optional)</label>
+          <textarea class="input" id="message" rows="3" placeholder="Who you are, how you found Conquer..."></textarea>
+        </div>
+        <div class="field">
+          <label for="code">Invite code</label>
+          <input class="input code" id="code" placeholder="K7QM-3XPA" maxlength="12">
+          <span class="help">An invite code skips the wait. It works once.</span>
+        </div>
+        <div class="field">
+          <label for="bad">Repeat the password</label>
+          <input class="input" id="bad" type="password" aria-invalid="true" value="secret-phras">
+          <p class="error-text" role="alert">The passwords do not match.</p>
+        </div>
+        <button class="key key-primary" type="submit">Ask for my seat</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="cards">
+    <h2>Cards</h2>
+    <div class="grid2">
+      <article class="card">
+        <span class="who">frodo_b</span>
+        <span class="meta">Asked 2 hours ago &middot; frodo@example.org</span>
+        <p style="margin:0">Found you through the Usenet archive. I would like to play the Hobbit nation.</p>
+        <div class="actions">
+          <button class="key key-primary key-small" type="button">Approve</button>
+          <button class="key key-small" type="button">Decline</button>
+        </div>
+      </article>
+      <article class="card">
+        <span class="who">boromir</span>
+        <span class="meta">Approved &middot; plays Gondor</span>
+        <div class="progress" role="progressbar" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100" aria-label="Season progress"><span style="width:62%"></span></div>
+        <span class="meta">Season progress: turn 31 of 50</span>
+      </article>
+    </div>
+  </section>
+
+  <section id="tables">
+    <h2>Hall of fame</h2>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Place</th><th>Ruler</th><th>Nation</th><th class="num">Score</th></tr></thead>
+        <tbody>
+          <tr><td><span class="podium-rank">1st</span></td><td>gandalf_grey</td><td>Rohan</td><td class="num">12,480</td></tr>
+          <tr><td><span class="podium-rank">2nd</span></td><td>boromir</td><td>Gondor</td><td class="num">11,902</td></tr>
+          <tr><td><span class="podium-rank">3rd</span></td><td>frodo_b</td><td>Shire</td><td class="num">9,317</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Notices</h2>
+    <div class="notice"><p><strong>Your seat is pending.</strong> The administrator approves seats by hand. Your website account works already: Play shows the practice world.</p></div>
+    <div><span class="toast" role="status"><span class="mono" aria-hidden="true">&#x21BB;</span> Rotate your phone for a bigger map.</span></div>
+    <p class="ok-text">Seat approved. Found your nation at any turn.</p>
+  </section>
+
+  <section>
+    <h2>Parchment reading mode</h2>
+    <div class="reading" id="reading">
+      <h2 style="margin-top:0">The first turn</h2>
+      <p>Conquer is a strategy game of nations. You rule a realm in a world of Middle-earth: you raise armies, tend the land and make war or peace with the other players. Each turn is a season; the world moves when everyone has ended theirs.</p>
+      <div class="notice"><p><strong>Tip.</strong> Press <code>?</code> at any screen to see the keys you can use there.</p></div>
+      <p style="margin-top:var(--s3)">Read the <a href="#top">full guide</a>, or press <button class="key key-small" type="button">Play <span class="hint">P</span></button> to open the practice world.</p>
+      <div class="stats"><span><span class="mono">12</span><span class="dim">sectors</span></span><span><span class="mono">1,240</span><span class="dim">gold</span></span></div>
+    </div>
+    <p class="cap">Parchment is only for long-reading pages. Use the toggle at the top to switch this block.</p>
+  </section>
+</main>
+
+<script>
+(function () {
+  var rows = [
+    '+------------------------------------------------------------------------------+',
+    '| CONQUER 5.0   Nation: Rohan   Year 1 Spring   Turn 3/50           Gold: 1,240 |',
+    '+------------------------------------------------------------------------------+',
+    '|  ^^^^ ^^^^ ....  ~~~~ ~~~~ ....  ""  ""  """ .....  ^^   ^^   ....  ....      |',
+    '|  ^^^^ ^^^^ ....  ~~~~ ~~~~ ....  ""  ""  """ .....  ^^   ^^   ....  ....      |',
+    '|  ....  ...  """"  ~~~~  ....  ####  ""  ....  ....  ....  ....  """"  ^^^^    |',
+    '|  ....  ...  """"  ~~~~  ....  ####  ""  ....  ....  ....  ....  """"  ^^^^    |',
+    '|  """  """  ....  ....  ####  [##]  ####  ....  """  """  ....  ....  ....     |',
+    '|  """  """  ....  ....  ####  [##]  ####  ....  """  """  ....  ....  ....     |',
+    '|  ....  ....  """"  ....  ....  ####  ....  ....  ....  ^^^^  ^^^^  """"       |',
+    '|  ....  ....  """"  ....  ....  ####  ....  ....  ....  ^^^^  ^^^^  """"       |',
+    '|  ~~~~  ....  ....  """  """  ....  ....  ....  """"  ^^^^  ....  ....         |',
+    '|  ~~~~  ....  ....  """  """  ....  ....  ....  """"  ^^^^  ....  ....         |',
+    '|                                                                              |',
+    '+------------------------------------------------------------------------------+',
+    '| Sector 12,7  Capitol  Pop 3,410  Plains  Fertile 8   Army 1 (Warriors, 120)  |',
+    '| Food 2,150   Wood 410   Metal 88   Jewels 52                                 |',
+    '+------------------------------------------------------------------------------+',
+    '|                                                                              |',
+    '| Moves left: 18                                                               |',
+    '|                                                                              |',
+    '+------------------------------------------------------------------------------+',
+    ' hjkl:Move   a:Army   n:Navy   s:Sector   M:Magic   D:Diplomacy   q:End turn',
+    ' Press ? for help_',
+    ''
+  ];
+  var pre = document.getElementById('screen');
+  var lines = rows.slice(0, 24).map(function (r) {
+    if (r.charAt(0) === '|') {
+      var inner = r.slice(1).replace(/\|\s*$/, '');
+      while (inner.length < 78) { inner += ' '; }
+      return '|' + inner.slice(0, 78) + '|';
+    }
+    while (r.length < 80) { r += ' '; }
+    return r.slice(0, 80);
+  });
+  var out = lines.join('\n').replace('_', '<span class="cursor"> </span>');
+  pre.innerHTML = out.replace(/\[##\]/g, '<b>[##]</b>').replace(/&/g, '&amp;');
+
+  var tokens = [
+    ['--bg', 'page'], ['--bg-2', 'panel'], ['--ink', 'text'], ['--ink-dim', 'dim text'],
+    ['--amber', 'accent'], ['--amber-dim', 'key edge'], ['--ok', 'ok'], ['--bad', 'bad']
+  ];
+  var sw = document.getElementById('swatches');
+  function paint() {
+    sw.innerHTML = '';
+    var cs = getComputedStyle(document.documentElement);
+    var host = getComputedStyle(document.getElementById('reading'));
+    for (var i = 0; i < tokens.length; i++) {
+      var d = document.createElement('div'); d.className = 'sw';
+      d.innerHTML = '<i style="background:var(' + tokens[i][0] + ')"></i><span>' + tokens[i][0].slice(2) + '</span>';
+      sw.appendChild(d);
+    }
+  }
+  paint();
+
+  function toggle(btn, on) {
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    var s = btn.querySelector('.state'); if (s) s.textContent = on ? 'ON' : 'OFF';
+  }
+  var crt = document.getElementById('t-crt'), crt2 = document.getElementById('t-crt2'), par = document.getElementById('t-parch');
+  function setCrt(on) { document.body.className = on ? 'crt' : ''; toggle(crt, on); toggle(crt2, on); }
+  crt.onclick = function () { setCrt(crt.getAttribute('aria-pressed') !== 'true'); };
+  crt2.onclick = crt.onclick;
+  par.onclick = function () {
+    var on = par.getAttribute('aria-pressed') !== 'true';
+    toggle(par, on);
+    var r = document.getElementById('reading');
+    if (on) r.setAttribute('data-theme', 'parchment'); else r.removeAttribute('data-theme');
+  };
+  var all = document.querySelectorAll('.toggle');
+  for (var i = 0; i < all.length; i++) {
+    if (all[i].id) continue;
+    all[i].onclick = function () { toggle(this, this.getAttribute('aria-pressed') !== 'true'); };
+  }
+  if (location.hash === '#crt') setCrt(true);
+  if (location.hash === '#parchment') { par.onclick(); }
+})();
+</script>
+</body>
+</html>
