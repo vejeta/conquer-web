@@ -1,5 +1,5 @@
 #!/usr/bin/env python3.13
-"""Bake the architecture sprites (design v5).
+"""Bake the architecture sprites (design v6: authored relief).
 
     python3.13 tools/arch/build.py        # shape sources -> tools/arch/src/*.svg
     python3.13 tools/arch/bake.py [race ...] [--only piece-substring]
@@ -11,7 +11,7 @@ Passes.  The SVG sources hold the shapes of one piece.  From each source this
 script derives, at 4x device pixels,
   * the CLEAN pass: black outlines (dark strokes), film-grain rectangles and
     drop-shadow filters are removed, so only fills remain;
-  * the HEIGHT pass: luminance of the clean pass is the relief height
+  * the HEIGHT pass: AUTHORED src/<piece>.h.svg (greyscale volumes: domes, tubes, cones, chamfers; optional .e.svg emissive mask for flames) where present, otherwise luminance of the clean pass is the relief height
     (background deepest, mouldings and figures higher, highlights highest),
     softened at three radii so rounded forms (shafts, capitals, crowns)
     get soft edges and chiselled steps stay crisp;
@@ -112,12 +112,12 @@ def clean_svg(s):
     return s
 
 _cache = {}
-def render(name):
-    """name -> (H, W, 4) float32 straight RGBA at S x"""
+def render(name, raw=False):
+    """name -> (H, W, 4) float32 straight RGBA at S x (raw: authored height SVGs are not cleaned)"""
     if name in _cache: return _cache[name]
     txt = open(os.path.join(SRC, name + '.svg')).read()
     w, h = map(int, re.search(r'width="(\d+)" height="(\d+)"', txt).groups())
-    b64 = base64.b64encode(clean_svg(txt).encode()).decode()
+    b64 = base64.b64encode((txt if raw else clean_svg(txt)).encode()).decode()
     pg = browser().new_page(viewport={'width': w + 8, 'height': h + 8}, device_scale_factor=S)
     pg.set_content(f'<body style="margin:0;background:transparent"><img id="i" style="display:block" width="{w}" height="{h}" src="data:image/svg+xml;base64,{b64}"></body>')
     pg.wait_for_timeout(150)
@@ -127,6 +127,16 @@ def render(name):
     assert im.shape[0] == h * S and im.shape[1] == w * S, (name, im.shape)
     _cache[name] = im
     return im
+
+def authored(name):
+    """AUTHORED height pass (src/<name>.h.svg) -> (H, W, 3) float32 [height 0..1, coverage, emission 0..1] or None.
+    The emission channel comes from the optional src/<name>.e.svg (a greyscale emissive intensity, bright core, soft edge)."""
+    if not os.path.exists(os.path.join(SRC, name + '.h.svg')): return None
+    im = render(name + '.h', raw=True)
+    em = np.zeros(im.shape[:2], np.float32)
+    if os.path.exists(os.path.join(SRC, name + '.e.svg')):     # authored emissive mask (flames, sockets)
+        e = render(name + '.e', raw=True); em = e[..., 0] * e[..., 3]
+    return np.stack([im[..., 0], im[..., 3], em], -1)
 
 # --------------------------------------------------------------------------
 # per-race look
@@ -194,14 +204,31 @@ def height_from(lum, a, wx, wy):
     h0 = lum * a
     return (.50 * blur(h0, .55 * S, wx, wy) + .30 * blur(h0, 1.8 * S, wx, wy) + .20 * blur(h0, 5.5 * S, wx, wy)).astype(np.float32)
 
-def bake(race, im, wx=False, wy=False, chamfer=None, shadow=False, seed=0):
+# per-piece material overrides: (race, piece-name substring) -> {material: {param: value}}
+MAT_PIECE = {
+    # the swans were slightly blown: less silver specular, a little less albedo
+    ('elf', '-cor-'): {'silver': dict(ks=.40, p=70, alb=(.64, .70, .73))},
+}
+EXP_PIECE = {('elf', '-cor-'): .86}   # swan corners: pull the exposure down a little more
+AUTH_A = .35      # authored relief is modelled at true depth: normals get this much extra strength under it
+TONE_AUTH = .55   # how much of the painted tonal shading is dropped under authored relief
+
+def bake(race, im, wx=False, wy=False, chamfer=None, shadow=False, seed=0, hm=None, name=''):
     """im: (H,W,4) straight RGBA at S x. returns (H,W,4) float straight RGBA at S x."""
-    G = GRADE[race]; mats = MAT[race]
+    G = GRADE[race]; mats = {k: dict(v) for k, v in MAT[race].items()}
+    for (r_, sub), ov in MAT_PIECE.items():
+        if r_ == race and sub in name:
+            for mk, upd in ov.items(): mats[mk].update(upd)
     Hh, Ww = im.shape[:2]; shp = (Hh, Ww)
     a = im[..., 3].astype(np.float32)
     rgb = im[..., :3] * 1.0
     masks, lum = classify(race, rgb, a)
     h = height_from(lum, a, wx, wy)
+    ma = None
+    if hm is not None:   # authored relief: replaces the luminance height where it covers
+        ma = blur(hm[..., 1].astype(np.float32), .5 * S, wx, wy)
+        ha = (.62 * blur(hm[..., 0], .45 * S, wx, wy) + .38 * blur(hm[..., 0], 1.5 * S, wx, wy)).astype(np.float32)
+        h = h * (1 - ma) + ha * ma
     if chamfer:   # end bevel of a frieze cap: height falls away over 7 css px at the outer end
         xs = np.arange(Ww, dtype=np.float32)
         d = xs if chamfer == 'l' else (Ww - 1 - xs)
@@ -237,7 +264,7 @@ def bake(race, im, wx=False, wy=False, chamfer=None, shadow=False, seed=0):
     h = h + micro
     # ---- normals
     gx, gy = grad(h, wx, wy)
-    k = G['A'] * S
+    k = G['A'] * S * (1 + (AUTH_A * ma if ma is not None else 0))
     nx, ny, nz = -gx * k, -gy * k, np.ones_like(gx)
     inv = 1 / np.sqrt(nx * nx + ny * ny + nz * nz)
     nx, ny, nz = nx * inv, ny * inv, nz * inv
@@ -273,6 +300,8 @@ def bake(race, im, wx=False, wy=False, chamfer=None, shadow=False, seed=0):
     ref = {'human': .55, 'elf': .50, 'dwarf': .38, 'orc': .30}[race]
     tone = np.clip(lum / ref, .12, 1.7)
     tone = (.25 + .75 * tone) if race == 'human' else tone
+    if ma is not None:   # painted shading is replaced by the modelled relief: flatten the tone where authored
+        tone = 1 + (tone - 1) * (1 - TONE_AUTH * ma)
     w = (.45 - .25 * (masks.get('bronze', 0) + masks.get('silver', 0)))[..., None] if race in ('dwarf', 'elf') else .45
     base = col * tone[..., None] * (1 - w) + np.clip(rgb, 0, 1) * w * (1.0 if race != 'orc' else 1.0)
     base = base * (1 - .0)
@@ -287,13 +316,28 @@ def bake(race, im, wx=False, wy=False, chamfer=None, shadow=False, seed=0):
     # ---- ember emission (orc)
     if race == 'orc':
         em = masks['ember']
-        glow = blur(em, 1.6 * S) * .9 + blur(em, 7 * S) * .55 + blur(em, 18 * S) * .22
+        ea = np.zeros(shp, np.float32)
+        if hm is not None and hm.shape[-1] > 2 and hm[..., 2].max() > 0:   # authored flames replace the painted ones
+            eraw = blur(hm[..., 2].astype(np.float32), .5 * S)
+            ea = smooth(eraw, .02, .30)
+            em = em * (1 - ea)
+        glow = blur(np.maximum(em, ea * .8), 1.6 * S) * .9 + blur(np.maximum(em, ea * .8), 7 * S) * .55 + blur(np.maximum(em, ea * .8), 18 * S) * .22
         core = em[..., None] * EMBER[None, None, :] * (.75 + .5 * np.clip(lum, 0, 1)[..., None] * 1.4)
         out = out * (1 - .55 * em[..., None]) + core * 1.0
-        out += glow[..., None] * np.array((1.0, .38, .10), np.float32) * .55 * (1 - .5 * em[..., None])
-        out = out + .0
+        if ea.max() > 0:
+            # flame colour ramp: deep red edge -> orange body -> yellow -> white-hot core, modulated by the relief
+            e = eraw
+            c0 = np.array((.50, .10, .03), np.float32); c1 = np.array((1.0, .36, .08), np.float32)
+            c2 = np.array((1.0, .72, .26), np.float32); c3 = np.array((1.0, .95, .78), np.float32)
+            t1 = smooth(e, .08, .40)[..., None]; t2 = smooth(e, .40, .72)[..., None]; t3 = smooth(e, .72, .98)[..., None]
+            fc = c0 + (c1 - c0) * t1; fc = fc + (c2 - fc) * t2; fc = fc + (c3 - fc) * t3
+            fc = fc * (.88 + .24 * dk[..., None])
+            out = out * (1 - ea[..., None]) + fc * ea[..., None] * 1.05
+        out += glow[..., None] * np.array((1.0, .38, .10), np.float32) * .55 * (1 - .5 * np.maximum(em, ea)[..., None])
     # ---- grade
     out = out * np.array(G['tint'], np.float32)[None, None, :] * G['exp']
+    for (r_, sub), f_ in EXP_PIECE.items():
+        if r_ == race and sub in name: out = out * f_
     out = np.clip(out, 0, 1.4)
     out = 1 / (1 + np.exp(-(out - .5) * 5.2 * G['con'] / 1.1))  # soft S-curve
     lo, hi = 1 / (1 + np.exp(2.6 * G['con'] / 1.1 * 1.0)), 1 / (1 + np.exp(-2.6 * G['con'] / 1.1 * 1.0))
@@ -336,34 +380,42 @@ def pieces(race, only=None):
     # ---- columns (72 x 184: cap 0-64, tile 64-136, base 136-184); right = mirrored shapes
     if any(want(f'{race}-col-{k}-{s}') for k in ('cap', 'tile', 'base') for s in 'lr'):
         col = render(f'{race}-column')
+        cap_h = authored(f'{race}-capital')     # 72 x 64 authored relief of the capital
         for sd in 'lr':
             c = col if sd == 'l' else col[:, ::-1]
             for k, (y, h, wy) in {'cap': (0, 64, False), 'tile': (64, 72, True), 'base': (136, 48, False)}.items():
                 n = f'{race}-col-{k}-{sd}'
                 if want(n):
-                    res[n] = (bake(race, crop(c, 0, y, 72, h), wy=wy, seed=1 if sd == 'l' else 2), 82 if k != 'tile' else 86)
+                    hm = None
+                    if k == 'cap' and cap_h is not None: hm = cap_h if sd == 'l' else cap_h[:, ::-1]
+                    res[n] = (bake(race, crop(c, 0, y, 72, h), wy=wy, seed=1 if sd == 'l' else 2, hm=hm, name=n), 82 if k != 'tile' else 86)
     # ---- lintel (704 x 88: emblem 0-616 + tile 616-704) and sill (672 x 56: emblem 0-560 + tile 560-672)
     for nm, emb, tw, hh in (('lintel', 616, 88, 88), ('sill', 560, 112, 56)):
         if not any(want(f'{race}-{nm}-{k}') for k in ('emblem', 'tile', 'cap-l', 'cap-r')): continue
         src = render(f'{race}-{nm}')
+        ah = authored(f'{race}-{nm}')
+        eh = crop(ah, 0, 0, emb, hh) if ah is not None else None
+        th = crop(ah, emb, 0, tw, hh) if ah is not None else None
         if want(f'{race}-{nm}-emblem'):
-            res[f'{race}-{nm}-emblem'] = (bake(race, crop(src, 0, 0, emb, hh), seed=3), 82)
+            res[f'{race}-{nm}-emblem'] = (bake(race, crop(src, 0, 0, emb, hh), seed=3, hm=eh, name=f'{race}-{nm}-emblem'), 82)
         tile = crop(src, emb, 0, tw, hh)
         if want(f'{race}-{nm}-tile'):
-            res[f'{race}-{nm}-tile'] = (bake(race, tile, wx=True, seed=4), 86)
+            res[f'{race}-{nm}-tile'] = (bake(race, tile, wx=True, seed=4, hm=th, name=f'{race}-{nm}-tile'), 86)
         for sd in 'lr':
             n = f'{race}-{nm}-cap-{sd}'
             if want(n):
-                b = bake(race, tile, wx=False, chamfer=sd, seed=4)
+                b = bake(race, tile, wx=False, chamfer=sd, seed=4, hm=th, name=n)
                 res[n] = (b[:, :CAP * S] if sd == 'l' else b[:, -CAP * S:], 86)
     # ---- corners (100 x 100) + 14 px margin with a baked shadow; right = mirrored shapes
     for nm, srcn in (('cor', f'{race}-corner'),) + ((('corb', 'dwarf-corner-b'),) if race == 'dwarf' else ()):
         if not any(want(f'{race}-{nm}-{s}') for s in 'lr'): continue
         c = render(srcn)
+        ch = authored(srcn)
         for sd in 'lr':
             n = f'{race}-{nm}-{sd}'
             if want(n):
-                res[n] = (bake(race, c if sd == 'l' else c[:, ::-1], shadow=True, seed=5 if sd == 'l' else 6), 84)
+                hm = None if ch is None else (ch if sd == 'l' else ch[:, ::-1])
+                res[n] = (bake(race, c if sd == 'l' else c[:, ::-1], shadow=True, seed=5 if sd == 'l' else 6, hm=hm, name=n), 84)
     return res
 
 if __name__ == '__main__':

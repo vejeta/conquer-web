@@ -142,3 +142,128 @@ def corner():
     b+=f'<path d="M34 66C30 74 32 82 38 82C36 76 38 70 40 66Z" fill="url(#ivory)" stroke="#2a2418" stroke-width="1"/><path d="M66 66C70 74 68 82 62 82C64 76 62 70 60 66Z" fill="url(#ivory)" stroke="#2a2418" stroke-width="1"/>'
     b+=crack('M50 18L46 26L51 30',1)
     return svg('orc-corner.svg',100,100,d,b)
+
+# =============================================================== authored relief (height pass)
+def hrivet(x,y,r):
+    return f'<circle cx="{x}" cy="{y}" r="{r}" fill="url(#hrv)"/>'
+def _spike_ring(cx,cy,r0,r1,hw,n=12,rot=15):
+    s=''
+    for i in range(n):
+        a=i*360/n+rot
+        s+=f'<g transform="rotate({a+90:.1f} {cx} {cy})">{cone(cx,cy-r1,cy-r0,hw,.50,.98)}</g>'
+    return s
+
+def capital_h():
+    """Spiked collar: five cones, an iron band round in section, rivets, cracks cut into the iron."""
+    d=hdome('hrv',.70,1.0)+hcyl('col',0,32,0,64,.46,.92,True,n=10,p=.7)
+    b=hrect(0,0,72,64,.08)
+    for x in (8,22,36,50,64):
+        h=8 if x in (8,64) else 0
+        b+=cone(x,2+h*2,34,6.5,.50,.98,n=7)
+    b+='<path d="M0 32H72V58L66 64H6L0 58Z" fill="url(#col)"/>'
+    b+=hrect(0,37.4,72,1.6,.98)+hrect(0,55,72,2,.46)
+    for x in (8,22,36,50,64): b+=hrivet(x,46,2.4)
+    b+=f'<path d="M20 58L24 62L22 64" fill="none" stroke="{gv(.36)}" stroke-width="1.6"/>'
+    return hsvg('orc-capital.h.svg',72,64,d,b)
+
+def corner_h():
+    """Skull on a spiked boss: cranium dome, brow ridges, deep eye sockets and nasal cavity, cheekbones, teeth, round tusks."""
+    d=hdome('hrv',.70,1.0)+hdome('cran',.56,.98,.5,.42,r=.62)+hdome('sock',.34,.04,.5,.5,r=.5)
+    d+=hdome('boss',.30,.20,.5,.5,r=.5)+hdome('chk',.70,.98)+hcyl('tth',0,60,0,68,.70,.92,True,n=6,p=.8)
+    b=hrect(0,0,100,100,.0)
+    b+=_spike_ring(50,50,38,53,8.4)
+    b+='<circle cx="50" cy="50" r="42.5" fill="'+gv(.58)+'"/>'
+    b+=tube('M50 7.5a42.5 42.5 0 1 0 .01 0',5,.54,.92,n=9)
+    b+='<circle cx="50" cy="50" r="38" fill="'+gv(.40)+'"/><circle cx="50" cy="50" r="36.6" fill="url(#boss)"/>'
+    for k in range(8):
+        a=math.radians(k*45+22.5); b+=hrivet(round(50+39.5*math.cos(a),1),round(50+39.5*math.sin(a),1),1.9)
+    # cranium and jaw
+    b+='<path d="M24 48C22 28 36 16 50 16C64 16 78 28 76 48C76 54 72 58 70 60L70 66H30V60C28 58 24 54 24 48Z" fill="url(#cran)"/>'
+    b+=tube('M27 37C31 29 43 30 48 38',3.4,.80,1.0,n=6)+tube('M73 37C69 29 57 30 52 38',3.4,.80,1.0,n=6)    # brow ridges
+    b+='<ellipse cx="29" cy="56" rx="5.5" ry="4.5" fill="url(#chk)"/><ellipse cx="71" cy="56" rx="5.5" ry="4.5" fill="url(#chk)"/>'
+    for sx in ('M29 38C32 33 42 33 46 40C47 48 43 54 37 54C31 54 28 46 29 38Z','M71 38C68 33 58 33 54 40C53 48 57 54 63 54C69 54 72 46 71 38Z'):
+        b+=f'<path d="{sx}" fill="none" stroke="{gv(.50)}" stroke-width="3.2" stroke-linejoin="round"/><path d="{sx}" fill="url(#sock)"/>'
+    b+=f'<path d="M50 50L45 60H55Z" fill="{gv(.06)}" stroke="{gv(.34)}" stroke-width="1.6" stroke-linejoin="round"/>'
+    b+='<path d="M32 60H68V68H32Z" fill="'+gv(.52)+'"/>'
+    for i in range(5):
+        x0=32+i*7.2
+        b+=f'<rect x="{x0+.5:.1f}" y="60.5" width="6.2" height="7" rx="2.4" fill="url(#tth)"/>'
+    for sx in (-1,1):
+        x=50+sx*13
+        b+=tube(f'M{x} 66C{x-sx*3} 74 {x-sx*1.5} 80 {x-sx*.5} 82',5,.56,.98,n=8)
+    b+=f'<path d="M50 18L46 26L51 30" fill="none" stroke="{gv(.40)}" stroke-width="1.4"/>'
+    return hsvg('orc-corner.h.svg',100,100,d,b)
+
+def corner_e():
+    """Eye-fire: a hot core, a soft edge, slightly brighter toward the lower rim (the glow pools in the bowl of the socket)."""
+    d='<filter id="b1" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation=".6"/></filter>'
+    d+='<radialGradient id="eg" cx=".5" cy=".58" r=".55"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#d0d0d0"/><stop offset=".8" stop-color="#7a7a7a"/><stop offset="1" stop-color="#4a4a4a"/></radialGradient>'
+    b=''.join(f'<ellipse cx="{x}" cy="45" rx="4.6" ry="5.6" fill="url(#eg)" filter="url(#b1)"/>' for x in (38,62))
+    return hsvg('orc-corner.e.svg',100,100,d,b)
+
+def lintel_h():
+    """Cones along the top, rounded iron rails with rivets, the brazier: a hemispherical bowl, a round rim, coals and the flames."""
+    cx=308; W=704
+    d=hdome('hrv',.70,1.0)+hcyl('rail',0,28,0,38,.50,.92,True,n=6,p=.8)+hcyl('rail2',0,74,0,88,.50,.92,True,n=6,p=.8)
+    d+=hcyl('bowl',0,58,0,76,.52,.92,True,n=8,p=.7)+hcyl('bowlh',cx-38,0,cx+38,0,.50,.92,True,n=10,p=.6)+hcyl('rim',0,55,0,61,.78,1.0,True,n=6,p=.8)
+    d+=hdome('crl',.46,.62)
+    b=''
+    for x in range(0,W,44):
+        b+=cone(x+22,0,30,16,.50,.98,n=8)
+    b+=f'<rect y="28" width="{W}" height="10" fill="url(#rail)"/><rect y="74" width="{W}" height="14" fill="url(#rail2)"/>'
+    for k in range(W//44):
+        b+=hrivet(k*44+22,33,2.2)+hrivet(k*44+22,81,2)
+    pl=lambda i,o: f'M{cx-i*112} 52L{cx-i*88} 38L{cx-i*60} 32L{cx-i*30} 14L{cx-i*12} 22L{cx} 0L{cx+i*12} 22L{cx+i*30} 14L{cx+i*60} 32L{cx+i*88} 38L{cx+i*112} 52L{cx+i*88} 70L{cx+i*60} 80L{cx} 86L{cx-i*60} 80L{cx-i*88} 70Z'
+    b+=bevel(pl(1,0),.50,.78,4,6)
+    rec=f'M{cx-98} 52L{cx-80} 42L{cx-56} 37L{cx-28} 22L{cx} 8L{cx+28} 22L{cx+56} 37L{cx+80} 42L{cx+98} 52L{cx+80} 66L{cx+54} 74L{cx} 79L{cx-54} 74L{cx-80} 66Z'
+    b+=f'<path d="{rec}" fill="{gv(.46)}"/><path d="{rec}" fill="{gv(.30)}" transform="translate({cx} 44) scale(.975 .955) translate({-cx} -44)"/><path d="{rec}" fill="{gv(.14)}" transform="translate({cx} 44) scale(.95 .91) translate({-cx} -44)"/>'
+    # flames: soft domes, nested, taller in the middle; every tongue is round in section
+    b+=f'<ellipse cx="{cx}" cy="58" rx="34" ry="5" fill="url(#crl)"/>'
+    fl1=f'M{cx-26} 62C{cx-34} 48 {cx-22} 40 {cx-20} 28C{cx-14} 36 {cx-12} 40 {cx-10} 46C{cx-8} 34 {cx-10} 24 {cx-4} 12C{cx} 22 {cx+6} 26 {cx+6} 40C{cx+10} 34 {cx+12} 30 {cx+12} 24C{cx+20} 34 {cx+26} 46 {cx+22} 62Z'
+    fl2=f'M{cx-12} 62C{cx-18} 52 {cx-8} 46 {cx-6} 36C{cx-2} 44 {cx} 46 {cx+2} 40C{cx+8} 48 {cx+12} 54 {cx+8} 62Z'
+    fl3=f'M{cx-5} 62C{cx-8} 56 {cx-2} 52 {cx} 46C{cx+3} 52 {cx+6} 56 {cx+4} 62Z'
+    b+=f'<path d="{fl1}" fill="{gv(.52)}"/><path d="{fl2}" fill="{gv(.72)}"/><path d="{fl3}" fill="{gv(.90)}"/>'
+    b+=f'<path d="M{cx-38} 58H{cx+38}C{cx+36} 68 {cx+26} 76 {cx+14} 76H{cx-14}C{cx-26} 76 {cx-36} 68 {cx-38} 58Z" fill="url(#bowlh)"/>'
+    b+=f'<path d="M{cx-36} 61H{cx+36}C{cx+34} 68 {cx+26} 74 {cx+14} 74.4H{cx-14}C{cx-26} 74 {cx-34} 68 {cx-36} 61Z" fill="url(#bowl)" opacity=".7"/>'
+    b+=f'<rect x="{cx-40}" y="55" width="80" height="6" rx="3" fill="url(#rim)"/>'
+    for dx in (-90,90): b+=hrivet(cx+dx,52,3)
+    return hsvg('orc-lintel.h.svg',W,88,d,b)
+
+def lintel_e():
+    """Flames: three nested tongues (dim edge -> orange body -> hot core), soft edges, hotter at the coals, plus a glow on the bowl rim."""
+    cx=308; W=704
+    d='<filter id="b1" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation=".9"/></filter><filter id="b2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.6"/></filter>'
+    d+=hlg('f1',0,12,0,62,[(0,.30),(.55,.50),(1,.72)])+hlg('f2',0,34,0,62,[(0,.52),(1,.86)])+hlg('f3',0,44,0,62,[(0,.82),(1,1.0)])
+    fl1=f'M{cx-26} 62C{cx-34} 48 {cx-22} 40 {cx-20} 28C{cx-14} 36 {cx-12} 40 {cx-10} 46C{cx-8} 34 {cx-10} 24 {cx-4} 12C{cx} 22 {cx+6} 26 {cx+6} 40C{cx+10} 34 {cx+12} 30 {cx+12} 24C{cx+20} 34 {cx+26} 46 {cx+22} 62Z'
+    fl2=f'M{cx-12} 62C{cx-18} 52 {cx-8} 46 {cx-6} 36C{cx-2} 44 {cx} 46 {cx+2} 40C{cx+8} 48 {cx+12} 54 {cx+8} 62Z'
+    fl3=f'M{cx-5} 62C{cx-8} 56 {cx-2} 52 {cx} 46C{cx+3} 52 {cx+6} 56 {cx+4} 62Z'
+    b=f'<path d="{fl1}" fill="url(#f1)" filter="url(#b1)"/><path d="{fl2}" fill="url(#f2)" filter="url(#b1)"/><path d="{fl3}" fill="url(#f3)" filter="url(#b1)"/>'
+    b+=f'<ellipse cx="{cx}" cy="60" rx="30" ry="3" fill="{gv(.62)}" filter="url(#b2)"/><path d="M{cx-26} 66H{cx+26}" stroke="{gv(.45)}" stroke-width="1.4" filter="url(#b1)"/>'
+    return hsvg('orc-lintel.e.svg',W,88,d,b)
+
+def sill_h():
+    """Iron boss with a round rim, crossed tusks as tapering round rods, an ember eye at the centre, tusk frieze."""
+    cx=280; W=672
+    d=hdome('hrv',.70,1.0)+hdome('bs',.42,.26)+hdome('emb',.55,.80)
+    def tusk(x,s):
+        sil=f'M{x-s*8} 36C{x-s*10} 22 {x-s*4} 10 {x+s*9} 3C{x+s*3} 12 {x+s*2} 24 {x+s*7} 36Z'
+        cid=f'tc{int(x)}_{s}'
+        return f'<clipPath id="{cid}"><path d="{sil}"/></clipPath><g clip-path="url(#{cid})">'+tube(f'M{x-s*.6} 37C{x-s*4} 22 {x} 10 {x+s*9} 2',11,.46,1.0,n=10)+'</g>'
+    b=''
+    for k in range(W//112):
+        x=k*112
+        b+=tusk(x+30,1)+tusk(x+82,-1)+hrivet(x+56,45,2.4)
+    b+=f'<circle cx="{cx}" cy="30" r="25.5" fill="{gv(.60)}"/>'+tube(f'M{cx-23} 30a23 23 0 1 0 46 0a23 23 0 1 0 -46 0',5.5,.58,.94,n=9)
+    b+=f'<circle cx="{cx}" cy="30" r="19.6" fill="{gv(.42)}"/><circle cx="{cx}" cy="30" r="18.4" fill="url(#bs)"/>'
+    for sx,x in ((1,cx-18),(-1,cx+18)):
+        sil=f'M{x} 44C{x+sx*2} 26 {x+sx*12} 14 {x+sx*30} 10C{x+sx*20} 20 {x+sx*22} 32 {x+sx*20} 44Z'
+        b+=f'<clipPath id="cs{sx+1}"><path d="{sil}"/></clipPath><g clip-path="url(#cs{sx+1})">'+tube(f'M{x+sx*9} 45C{x+sx*10} 26 {x+sx*18} 17 {x+sx*30} 9',13,.46,1.0,n=10)+'</g>'
+    b+=f'<circle cx="{cx}" cy="30" r="4.4" fill="url(#emb)"/>'
+    for dx in (-30,30): b+=hrivet(cx+dx,30,2.4)
+    return hsvg('orc-sill.h.svg',W,56,d,b)
+
+def sill_e():
+    cx=280
+    d='<filter id="b1" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation=".7"/></filter><radialGradient id="eg"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#e0e0e0"/><stop offset="1" stop-color="#6a6a6a"/></radialGradient>'
+    b=f'<circle cx="{cx}" cy="30" r="4.2" fill="url(#eg)" filter="url(#b1)"/>'
+    return hsvg('orc-sill.e.svg',672,56,d,b)

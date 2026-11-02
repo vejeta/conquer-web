@@ -102,7 +102,7 @@ def lintel():
     T='#f1ecdc'
     t=f'<g filter="url(#lsh)" fill="none" stroke="{T}" stroke-linecap="round">'
     t+=f'<path d="M{cx-9} 76C{cx-3} 70 {cx-3} 62 {cx-2} 54H{cx+2}C{cx+3} 62 {cx+3} 70 {cx+9} 76Z" fill="{T}" stroke="none"/>'
-    br=[(54,[(-9,-4),(-14,-9),(-24,-13)],3.2),(54,[(-2,-9),(-9,-14),(-17,-22)],2.6),(54,[(0,-8),(1,-14),(0,-24)],3),(54,[(2,-9),(9,-14),(17,-22)],2.6),(54,[(9,-4),(14,-9),(24,-13)],3.2),
+    br=[(54,[(-9,-4),(-14,-9),(-24,-13)],3.2),(54,[(-2,-9),(-9,-14),(-17,-22)],2.6),(54,[(0,-8),(1,-12),(0,-18)],3),(54,[(2,-9),(9,-14),(17,-22)],2.6),(54,[(9,-4),(14,-9),(24,-13)],3.2),
         (47,[(-6,-3),(-12,-3),(-21,-6)],2),(47,[(6,-3),(12,-3),(21,-6)],2)]
     tips=[]
     for y0,pts,wd in br:
@@ -123,8 +123,8 @@ def lintel():
     # top star + flanking stars
     def st(x,y,r):
         return f'<g filter="url(#lsh)"><path d="{star(x,y,r,8,.42)}" fill="url(#fv)" stroke="{DK}" stroke-width=".8"/><circle cx="{x}" cy="{y}" r="{r*.22:.1f}" fill="{HI}"/></g>'
-    b+=st(cx,24,7)
-    for k,(dx,r) in enumerate([(-92,9),(-122,8),(-150,7)]):
+    b+=st(cx,20,9)
+    for k,(dx,r) in enumerate([(-92,14.4),(-122,12.8),(-150,11.2)]):
         b+=st(cx+dx,47,r)+st(cx-dx,47,r)
     # tile end
     b+=f'<rect x="0" y="0" width="704" height="88" filter="url(#gl)" opacity=".22"/>'
@@ -213,3 +213,157 @@ def corner():
     b+=f'<path d="M50 66L52 80M57 70L58 80M45 66L44 78" stroke="#2a2824" stroke-width="1.2"/>'
     b+=f'<path d="M62 70L66 72L66 80L62 84Z" fill="{HI}" opacity=".5"/>'
     return svg('human-corner.svg',100,100,d,b)
+
+# =============================================================== authored relief (height pass)
+def corner_h():
+    """King in profile, in a stepped block: skull/cheek/brow/nose volumes, beard mass, crown points."""
+    d=hdome('skull',.46,.74,.40,.45)+hdome('cheek',.46,.86,.62,.5,r=.62)+hdome('chest',.30,.52,.5,.8,r=.62)
+    d+=hdome('nose',.70,.96,.40,.35,r=.6)+hdome('gem',.88,1.0)+hdome('beard',.55,.80,.45,.35,r=.62)
+    d+=hcyl('neck',40,0,62,0,.38,.58)+hcyl('band',0,22,0,29,.70,.95)
+    d+=hcyl('wingl',12,0,34,0,.28,.40)
+    b=''
+    b+=hrect(0,0,100,100,.30)
+    # stepped block: 5 px of outer chamfer, a step, then the recess
+    b+=bevel('M2 2H92L98 8V92L92 98H2Z',.28,.62,4,6)
+    b+=flat('M6 6H90L94 10V90L90 94H6Z',.60)
+    b+=flat('M11 11H86V86H11Z',.40)+flat('M12.5 12.5H84.5V84.5H12.5Z',.22)+flat('M14 14H83V83H14Z',.12)
+    # mantle / shoulders: a broad swelling
+    b+='<path d="M12 86V74C20 66 30 64 40 62L66 62C74 64 82 68 85 74V86Z" fill="url(#chest)"/>'
+    b+=tube('M16 84C26 74 38 72 50 71C62 72 74 74 82 84',6,.30,.60)
+    # wings behind the crown (feather steps)
+    b+=flat('M26 26C20 24 17 18 16 12C22 14 28 16 32 20Z',.44)+flat('M24 31C17 30 13 25 12 19C19 20 26 23 30 27Z',.36)
+    b+=tube('M26 25C22 22 19 18 17 13',1.5,.44,.54)+tube('M24 30C19 28 15 25 13 20',1.5,.38,.46)
+    # back of head / hair
+    b+='<path d="M30 24C26 36 27 50 33 62L48 66L52 42L50 24Z" fill="url(#skull)"/>'
+    # neck: a short cylinder
+    b+='<path d="M40 56L58 56L62 70L36 70Z" fill="url(#neck)"/>'
+    # face: a skull-and-cheek mass with a bone structure drawn on top
+    face='M46 24L62 24L63 30L66 40L64 44L71 54L67 57L68 60L66 63L67 66L65 72L58 70L47 62L44 46Z'
+    b+=f'<path d="{face}" fill="url(#cheek)"/>'
+    b+=flat('M52 40L63 40L65 46L62 52L56 56L52 52Z',.74)                       # cheek plane
+    b+='<ellipse cx="58.5" cy="49.5" rx="6.5" ry="5" fill="url(#cheek)"/>'      # cheekbone
+    b+=tube('M53 40.5C58 39.5 63 40 67 41.5',3.4,.66,.90)                        # brow ridge
+    b+='<ellipse cx="59.5" cy="45" rx="4.2" ry="2.3" fill="'+gv(.44)+'"/>'       # eye socket
+    b+='<ellipse cx="60.2" cy="45.2" rx="1.7" ry=".9" fill="'+gv(.46)+'"/>'
+    b+=tube('M64 41C65.5 47 68 51 70 54.5',3.8,.70,.98)                          # nose bridge + ridge
+    b+='<ellipse cx="69.5" cy="54.5" rx="3" ry="2.6" fill="url(#nose)"/>'        # nose tip
+    b+='<ellipse cx="66" cy="56.8" rx="1.4" ry=".8" fill="'+gv(.55)+'"/>'        # nostril
+    b+=tube('M60 61.5C63 60.5 66 61 68 62.4',2.6,.62,.86)                        # lips
+    b+='<path d="M61 62.2L67.5 62.3" stroke="'+gv(.42)+'" stroke-width=".9" fill="none"/>'
+    b+=flat('M52 24L56 24L58 40L55 40Z',.60)+tube('M47 26C46 34 46 42 48 52',3,.60,.74)  # temple / hairline
+    # crown: a band that is round in section, five points as faceted pyramids, three gems
+    b+='<path d="M33 22H70V29H33Z" fill="url(#band)"/>'
+    for px,py,vl,vr in ((33,12,33,40),(47,8,40,54),(61,8,54,68),(70,12,68,70)):
+        b+=flat(f'M{vl} 24L{vl} 19L{px} {py}L{px} 24Z',.80)+flat(f'M{px} 24L{px} {py}L{vr} 19L{vr} 24Z',.94)
+    b+='<path d="M33 22H70V29H33Z" fill="url(#band)"/>'
+    for gx,r in ((51,2.2),(42,1.6),(60,1.6)):
+        b+=f'<ellipse cx="{gx}" cy="25.5" rx="{r}" ry="{r}" fill="url(#gem)"/>'
+    # beard: one heavy mass, locks as round ridges with grooves between
+    bd='M47 62L58 66L65 72L67 82L62 86L58 78L54 88L48 80L44 86L40 74L40 62Z'
+    b+=f'<path d="{bd}" fill="url(#beard)"/>'
+    for p,w in (('M50 65C52 70 52 76 52 82',4.2),('M57 68C58 73 58 77 58 82',3.8),('M44 66C44 71 43 76 43 82',3.6),('M62 72C64 76 64 80 63 84',3.2)):
+        b+=tube(p,w,.62,.92)
+    b+=tube('M42 60C48 62 56 64 63 70',3,.70,.90)                                  # moustache sweep
+    return hsvg('human-corner.h.svg',100,100,d,b)
+
+def capital_h():
+    """Ionic capital: abacus slab, echinus bowl, two spiral volutes, five acanthus leaves, crown relief, astragal."""
+    d=hcyl('ech',6,0,66,0,.42,.78)+hdome('vol',.62,.95)+hdome('gem',.88,1.0)
+    d+=hcyl('astr',0,58,0,64,.36,.84)+hcyl('abv',0,0,0,11,.58,.92,n=6,p=.9)
+    d+=hcyl('leaf',0,0,1,0,.52,.88,False)
+    b=hrect(0,0,72,64,.12)
+    b+='<path d="M6 13C6 34 14 44 14 53H58C58 44 66 34 66 13Z" fill="url(#ech)"/>'
+    b+=tube('M10 16C10 32 17 42 18 52',3.5,.62,.80)+tube('M62 16C62 32 55 42 54 52',3.5,.62,.80)
+    # acanthus leaves: a rib, two rounded lobes and a curled tip
+    for x in (17,27,36,45,55):
+        h=44 if x==36 else 47
+        lf=f'M{x-6} 59Q{x-8} 50 {x-2} {h}Q{x} {h-5} {x+2} {h}Q{x+8} 50 {x+6} 59Z'
+        b+=f'<path d="{lf}" fill="url(#leaf)"/>'
+        b+=tube(f'M{x-3.2} 58Q{x-4.4} 51 {x-1.6} {h+3}',2.4,.70,.86)+tube(f'M{x+3.2} 58Q{x+4.4} 51 {x+1.6} {h+3}',2.4,.70,.86)
+        b+=tube(f'M{x} 59V{h+2}',1.6,.84,1.0)
+    # crown relief on the echinus
+    b+=flat('M25 38V24L31 30L36 20L41 30L47 24V38Z',.88)
+    b+=flat('M25 38V24L31 30L36 20L36 38Z',.84)+flat('M36 38V20L41 30L47 24V38Z',.93)
+    b+='<path d="M25 33H47V39H25Z" fill="'+gv(.95)+'"/>'+f'<circle cx="36" cy="36" r="1.5" fill="url(#gem)"/><circle cx="36" cy="18.8" r="2" fill="url(#gem)"/>'
+    # volutes: a disc with a spiral groove
+    for cx in (13,59):
+        b+=f'<circle cx="{cx}" cy="20" r="8" fill="url(#vol)"/>'
+        b+=f'<path d="M{cx} 20m0 0a1.5 1.5 0 0 1 3 0a4 4 0 0 1-6 3a6 6 0 0 1 0-9" fill="none" stroke="{gv(.50)}" stroke-width="1.5" stroke-linecap="round"/>'
+        b+=f'<circle cx="{cx}" cy="20" r="1.6" fill="url(#gem)"/>'
+    # abacus: a slab with a chamfered top edge and a recessed lower edge
+    b+='<rect x="1" y="0" width="70" height="11" rx="1.5" fill="url(#abv)"/>'
+    b+=hrect(1,0,70,1.8,.98)+hrect(1,9,70,2,.50)+hrect(3,4.6,66,.9,.66)
+    # astragal ring
+    b+=f'<rect x="12" y="58" width="48" height="6" rx="3" fill="url(#astr)"/>'
+    return hsvg('human-capital.h.svg',72,64,d,b)
+
+def lintel_h():
+    """Authored where it is sculptural: the three rosette panels, the arched niche with the white tree, the stars."""
+    cx=308
+    d=hdome('pet',.50,.88)+hdome('ctr',.62,1.0)+hcyl('trk',cx-9,0,cx+9,0,.28,.64)
+    d+=hcyl('arc',0,0,1,0,.55,.80,False)
+    b=''
+    # rosette panels: a frame, a recessed field, eight domed petals, a domed centre
+    pn=''
+    pn+=hrect(0,0,80,34,.52,2)+hrect(1.6,1.6,76.8,30.8,.36,1.5)
+    for k in range(8):
+        pn+=f'<ellipse cx="40" cy="9" rx="3.2" ry="6.5" fill="url(#pet)" transform="rotate({k*45} 40 17)"/>'
+    pn+='<circle cx="40" cy="17" r="4.2" fill="url(#ctr)"/>'
+    for x in (4,532,620):
+        b+=f'<g transform="translate({x} 30)">{pn}</g>'
+    # niche: moulded arch frame, a deep recess
+    arch=lambda r1,r2,y0,y1: f'M{cx-r1} {y1}V{y0}A{r1} {r2} 0 0 1 {cx+r1} {y0}V{y1}Z'
+    b+=flat(arch(64,32,44,78),.70)
+    b+=flat(arch(61,30.5,44,77),.78)
+    b+=flat(arch(58,29,44,76),.40)+flat(arch(56.6,28.2,44,76),.24)+flat(arch(55.4,27.6,44,76),.13)
+    # white tree: round trunk, round branches, leaves
+    b+='<path d="M%d 76C%d 70 %d 62 %d 54H%d C%d 62 %d 70 %d 76Z" fill="url(#trk)"/>'%(cx-9,cx-3,cx-3,cx-2,cx+2,cx+3,cx+3,cx+9)
+    br=[(54,[(-9,-4),(-14,-9),(-24,-13)],3.2),(54,[(-2,-9),(-9,-14),(-17,-22)],2.6),(54,[(0,-8),(1,-12),(0,-18)],3),(54,[(2,-9),(9,-14),(17,-22)],2.6),(54,[(9,-4),(14,-9),(24,-13)],3.2),
+        (47,[(-6,-3),(-12,-3),(-21,-6)],2),(47,[(6,-3),(12,-3),(21,-6)],2)]
+    tips=[]
+    for y0,pts,wd in br:
+        sx=0
+        if y0==47: sx=-3 if pts[0][0]<0 else 3
+        c=[(cx+sx+px,y0+py) for px,py in pts]
+        b+=tube(f'M{cx+sx} {y0}C{c[0][0]} {c[0][1]} {c[1][0]} {c[1][1]} {c[2][0]} {c[2][1]}',wd+.6,.30,.66)
+        tips.append(c[2])
+    for (x,y) in tips:
+        for a in (-50,-15,20,55):
+            ang=a+(0 if abs(x-cx)<3 else (-20 if x<cx else 20))
+            b+=f'<path d="M{x} {y}q-2.6 -5 0 -9q2.6 4 0 9z" transform="rotate({ang} {x} {y})" fill="{gv(.70)}"/>'
+    # stars (enlarged), faceted; a raised boss at the centre
+    def st(x,y,r):
+        return star_facets(x,y,r,8,.42)+f'<circle cx="{x}" cy="{y}" r="{r*.22:.1f}" fill="{gv(.99)}"/>'
+    b+=st(cx,20,9)
+    for dx,r in [(-92,14.4),(-122,12.8),(-150,11.2)]:
+        b+=st(cx+dx,47,r)+st(cx-dx,47,r)
+    return hsvg('human-lintel.h.svg',704,88,d,b)
+
+def sill_h():
+    """Horses (body and neck as cylinders, round legs, domed head), the roundel with the star, two discs."""
+    d=hcyl('body',0,11,0,30,.50,.96)+hcyl('neck',48,6,66,16,.52,.96)+hdome('head',.52,.98,.5,.5)+hcyl('tail',1,28,20,18,.52,.86)
+    d+=hcyl('plin',0,6,0,50,.58,.82,n=6,p=.9)+hdome('rnd',.74,.98)+hdome('dsk',.76,.96)+hdome('ctr',.88,1.0)
+    def horse(x,y):
+        s=f'<g transform="translate({x} {y})">'
+        s+='<path d="M21 16C13 12 5 16 1 28C7 21 14 20 20 22Z" fill="url(#tail)"/>'
+        # far legs a little lower than near legs
+        s+=tube('M47 26L56 33L66 33',4,.50,.80)+tube('M33 26L24 34L13 37',4,.50,.80)
+        s+='<path d="M20 15C26 11 44 11 54 14C59 16 59 23 54 26C46 30 28 29 20 25C16 22 16 18 20 15Z" fill="url(#body)"/>'
+        s+='<path d="M48 15C52 7 57 3 63 2L71 8C66 13 64 19 58 26Z" fill="url(#neck)"/>'
+        s+=tube('M52 24L62 28L72 24',4,.52,.92)+tube('M27 24L17 30L6 29',4,.52,.92)
+        s+=tube('M54 9C57 4 60 2 63 0',2.4,.60,.98)   # mane crest
+        s+='<path d="M62 2L64-1L67 1C72 4 77 8 80 14L78 18L72 17L63 10Z" fill="url(#head)"/>'
+        s+=f'<circle cx="70" cy="8" r="1.3" fill="{gv(.46)}"/>'
+        s+=tube('M28 17C38 14 46 15 54 17',1.2,.80,.94)  # flank line
+        return s+'</g>'
+    b=''
+    for k in range(5):
+        if k==2: continue
+        b+=horse(6+112*k,11)
+    b+=horse(566,11)
+    cx=280
+    b+=hrect(cx-66,6,132,44,'url(#plin)',3)+hrect(cx-60,12,120,32,.30,2)
+    b+=f'<circle cx="{cx}" cy="28" r="14" fill="url(#rnd)"/>'+star_facets(cx,28,12,8,.45,lo=.84,hi=1.0)
+    for dx in (-44,44):
+        b+=f'<circle cx="{cx+dx}" cy="28" r="9" fill="url(#dsk)"/><circle cx="{cx+dx}" cy="28" r="4" fill="url(#ctr)"/>'
+    return hsvg('human-sill.h.svg',672,56,d,b)
