@@ -14,7 +14,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
     /* Layout only. Colours and fonts come from theme.css. */
     main { max-width: 880px; margin: 0 auto; padding: var(--s5) var(--s4) 64px; display: flex; flex-direction: column; gap: var(--s6); }
     section { display: flex; flex-direction: column; gap: var(--s3); }
-    section > h2 { padding-bottom: var(--s2); border-bottom: 1px solid var(--line); margin: 0; }
+    section > h2 { margin: 0; }
+    .hero { border-radius: var(--radius); border: 1px solid var(--line); }
     .row { display: flex; flex-wrap: wrap; gap: var(--s3); align-items: center; }
     .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--s4); align-items: start; }
     .cap { color: var(--ink-dim); font-size: .85rem; margin: 0; }
@@ -31,12 +32,12 @@ SPDX-License-Identifier: GPL-3.0-or-later
     .reading p { max-width: 62ch; }
     .rule-title { font-family: var(--font-title); }
     .stats { display: flex; gap: var(--s5); flex-wrap: wrap; }
-    .stats .mono { font-size: 2rem; color: var(--amber-text); display: block; line-height: 1; }
-    .podium-rank { font-family: var(--font-mono); font-size: 1.3rem; color: var(--amber-text); }
+    .stats .mono { font-size: 2rem; color: var(--gold); display: block; line-height: 1; }
+    .podium-rank { font-family: var(--font-mono); font-size: 1.3rem; color: var(--gold); }
   </style>
 </head>
 <body>
-<header class="site-header">
+<header class="site-header mountains">
   <a class="site-name" href="#top">Conquer</a>
   <span class="badge" id="where">Map 12,7</span>
   <span class="spacer"></span>
@@ -49,9 +50,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
 </header>
 
 <main id="top">
-  <section>
-    <h1>Phosphor and parchment</h1>
-    <p class="lede">The design system for Conquer: an amber monitor from a 1987 computing centre, with the warmth of an old book. This page is a sample of every component, not part of the site.</p>
+  <section class="hero mountains">
+    <h1>Green phosphor over the mountains</h1>
+    <p class="lede">The design system for Conquer: a green monitor from a 1987 computing centre, set under the mountains and pine forests of Middle-earth. This page is a sample of every component, not part of the site.</p>
     <div class="page-tools">
       <button class="key key-small toggle" id="t-crt" type="button" aria-pressed="false" style="width:auto">CRT effect <span class="state">OFF</span></button>
       <button class="key key-small toggle" id="t-parch" type="button" aria-pressed="false" style="width:auto">Parchment reading block <span class="state">OFF</span></button>
@@ -61,18 +62,22 @@ SPDX-License-Identifier: GPL-3.0-or-later
   <section>
     <h2>Colour</h2>
     <div class="swatches" id="swatches"></div>
-    <p class="cap">Amber is the only accent. Green and red appear only with meaning: seat approved, something wrong.</p>
+    <p class="cap">Phosphor green is the only accent. Gold marks scores, ranks and founded nations, never buttons. Brick red appears only when something is wrong.</p>
   </section>
+
+  <div class="divider" role="separator"><svg viewBox="0 0 40 16" aria-hidden="true"><path d="M2 14 11 4l5 6 5-8 8 12 4-4 5 4"/></svg></div>
 
   <section>
     <h2>Type</h2>
     <h1 style="margin:0">Hall of fame</h1>
     <h2 style="border:0;padding:0;margin:0">Ask for your seat</h2>
     <h3 style="margin:0">Section name in IM Fell English SC</h3>
-    <p>Body text is the system font: Create your account and ask the administrator for a seat in the game. <a href="#top">A link is amber</a> and underlines on hover.</p>
+    <p>Body text is the system font: Create your account and ask the administrator for a seat in the game. <a href="#top">A link is phosphor green</a> and underlines on hover.</p>
     <p class="mono">K7QM-3XPA &middot; Gold 1,240 &middot; Mono (VT323) is for keys, codes and numbers.</p>
     <p class="dim">Dim text for hints: letters, digits, dots, dashes and underscores.</p>
   </section>
+
+  <div class="divider" role="separator"><svg viewBox="0 0 40 16" aria-hidden="true"><path d="M2 14 11 4l5 6 5-8 8 12 4-4 5 4"/></svg></div>
 
   <section id="keys">
     <h2>Keys</h2>
@@ -118,6 +123,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
     </div>
   </section>
 
+  <div class="divider" role="separator"><svg viewBox="0 0 40 16" aria-hidden="true"><path d="M2 14 11 4l5 6 5-8 8 12 4-4 5 4"/></svg></div>
+
   <section>
     <h2>Terminal</h2>
     <div class="terminal" role="img" aria-label="Static mock of the Conquer map screen">
@@ -125,6 +132,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
     </div>
     <p class="cap">80 by 24 in VT323. The bezel is always there; the scanlines and vignette follow the CRT toggle.</p>
   </section>
+
+  <div class="divider" role="separator"><svg viewBox="0 0 40 16" aria-hidden="true"><path d="M2 14 11 4l5 6 5-8 8 12 4-4 5 4"/></svg></div>
 
   <section id="forms">
     <h2>Forms</h2>
@@ -159,6 +168,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
     </div>
   </section>
 
+  <div class="divider" role="separator"><svg viewBox="0 0 40 16" aria-hidden="true"><path d="M2 14 11 4l5 6 5-8 8 12 4-4 5 4"/></svg></div>
+
   <section id="cards">
     <h2>Cards</h2>
     <div class="grid2">
@@ -180,6 +191,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
     </div>
   </section>
 
+  <div class="divider" role="separator"><svg viewBox="0 0 40 16" aria-hidden="true"><path d="M2 14 11 4l5 6 5-8 8 12 4-4 5 4"/></svg></div>
+
   <section id="tables">
     <h2>Hall of fame</h2>
     <div class="table-wrap">
@@ -194,12 +207,17 @@ SPDX-License-Identifier: GPL-3.0-or-later
     </div>
   </section>
 
+  <div class="divider" role="separator"><svg viewBox="0 0 40 16" aria-hidden="true"><path d="M2 14 11 4l5 6 5-8 8 12 4-4 5 4"/></svg></div>
+
   <section>
     <h2>Notices</h2>
     <div class="notice"><p><strong>Your seat is pending.</strong> The administrator approves seats by hand. Your website account works already: Play shows the practice world.</p></div>
     <div><span class="toast" role="status"><span class="mono" aria-hidden="true">&#x21BB;</span> Rotate your phone for a bigger map.</span></div>
     <p class="ok-text">Seat approved. Found your nation at any turn.</p>
+    <div class="notice gold-note"><p><strong class="gold">Rohan founded.</strong> Your nation is on the map: turn 1 of 50.</p></div>
   </section>
+
+  <div class="divider" role="separator"><svg viewBox="0 0 40 16" aria-hidden="true"><path d="M2 14 11 4l5 6 5-8 8 12 4-4 5 4"/></svg></div>
 
   <section>
     <h2>Parchment reading mode</h2>
@@ -213,6 +231,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <p class="cap">Parchment is only for long-reading pages. Use the toggle at the top to switch this block.</p>
   </section>
 </main>
+<footer class="site-footer mountains" role="presentation"></footer>
 
 <script>
 (function () {
@@ -257,8 +276,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
   pre.innerHTML = out.replace(/\[##\]/g, '<b>[##]</b>').replace(/&/g, '&amp;');
 
   var tokens = [
-    ['--bg', 'page'], ['--bg-2', 'panel'], ['--ink', 'text'], ['--ink-dim', 'dim text'],
-    ['--amber', 'accent'], ['--amber-dim', 'key edge'], ['--ok', 'ok'], ['--bad', 'bad']
+    ['--bg', 'page'], ['--bg-2', 'panel'], ['--screen', 'screen'], ['--ink', 'text'], ['--ink-dim', 'dim text'],
+    ['--phos', 'accent'], ['--phos-dim', 'key edge'], ['--stone', 'stone'], ['--gold', 'gold'], ['--ok', 'ok'], ['--bad', 'bad']
   ];
   var sw = document.getElementById('swatches');
   function paint() {
