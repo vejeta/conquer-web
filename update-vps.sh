@@ -146,6 +146,32 @@ if [ -f "$vhost" ] && ! grep -q '/admin/api/' "$vhost"; then
     echo "     the <Location \"/admin/\"> block (before <Location \"/play/\">)"
     echo "   and remove \"admin|\" from the <LocationMatch ...phpmyadmin> list."
 fi
+# The sign-in page of the site (phase 2 of the join flow): Apache needs these
+# modules and a passphrase for the session cookie, and the virtual host the
+# form login blocks (vps/virtualhost.conf.template, DEPLOYMENT.md "Login")
+SESSION_KEY=/etc/apache2/conquer-web.session
+login_missing=""
+for m in auth_form session session_cookie session_crypto request; do
+    a2query -m "$m" >/dev/null 2>&1 || login_missing="$login_missing $m"
+done
+if [ -n "$login_missing" ] || [ ! -s "$SESSION_KEY" ]; then
+    echo "⚠️  Apache is not ready for the sign-in page (/login.html):"
+    [ -n "$login_missing" ] && echo "   missing modules:$login_missing"
+    [ -s "$SESSION_KEY" ] || echo "   missing passphrase file $SESSION_KEY"
+    echo "   Run, then paste the blocks of DEPLOYMENT.md \"Login\" into $vhost:"
+    echo "     sudo a2enmod auth_form session session_cookie session_crypto request"
+    echo "     sudo sh -c 'openssl rand -base64 48 > $SESSION_KEY' && sudo chmod 600 $SESSION_KEY"
+    echo "     sudo apache2ctl configtest && sudo systemctl reload apache2"
+elif [ -f "$vhost" ] && ! grep -q 'AuthType form' "$vhost"; then
+    echo "⚠️  $vhost still asks for the password with the browser's window (Basic): it has no sign-in page."
+    echo "   Replace the <Location \"/admin/\"> and <Location \"/play/\"> blocks and add /login/do, /login/long and"
+    echo "   /logout, as in vps/virtualhost.conf.template (DEPLOYMENT.md \"Login\"), then:"
+    echo "     sudo apache2ctl configtest && sudo systemctl reload apache2"
+elif [ -f "$vhost" ] && ! grep -q "$SESSION_KEY" "$vhost"; then
+    echo "⚠️  $vhost does not use $SESSION_KEY: see DEPLOYMENT.md \"Login\""
+else
+    echo "✅ Sign-in page configured (form login, passphrase in $SESSION_KEY)"
+fi
 sleep 3
 if docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
     if docker exec "$CONTAINER" cat /proc/1/cmdline | tr '\0' ' ' | grep -q -- '-H X-WEBAUTH-USER' \

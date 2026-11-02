@@ -44,6 +44,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <a class="key key-small" href="/game.html" data-server-link="game.html"><span data-i18n="nav.play">Play</span></a>
     <a class="key key-small" href="/hall.html"><span data-i18n="nav.hall">Hall</span></a>
     <a class="key key-small" href="/signup.html" data-server-link="signup.html"><span data-i18n="nav.join">Join</span></a>
+    <a class="key key-small" id="logout" href="/logout"><span data-i18n="nav.logout">Sign out</span></a>
   </nav>
   <select class="select" data-lang-menu aria-label="Language" data-i18n-title="index.language"></select>
 </header>
@@ -138,6 +139,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
       };
       return fetch(path, opts).then(function (r) {
+        // No session (or it ended): Apache sends the sign-in page instead of the answer
+        if (r.redirected && /\/login\.html/.test(r.url)) {
+          location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
+          return { ok: false, error: 'unauthenticated' };
+        }
         if (r.status === 401 || r.status === 403) return { ok: false, error: 'forbidden' };
         return r.json().catch(function () { return { ok: false, error: 'server' }; });
       });

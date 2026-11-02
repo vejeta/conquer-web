@@ -84,7 +84,7 @@
   "copy": "Copy address",
   "copied": "Copied",
   "cred_account_t": "Your account for this website",
-  "cred_account": "Opens the door of this site: your browser asks for it when you press Play. One per player; it is not your nation.",
+  "cred_account": "Opens the door of this site: the sign-in page asks for it when you press Play. One per player; it is not your nation.",
   "cred_nation_t": "Your nation's password",
   "cred_nation": "Part of the original 1987 game: it guards your nation inside the world, as it did on the Unix machines it was written for.",
   "trailer": "&#9654; Watch the trailer (40 s)",
@@ -215,12 +215,29 @@
   "e_server": "Something went wrong on the server. Try again, or write to the administrator.",
   "e_network": "The server did not answer. Check your connection and try again.",
   "step1_t": "Your account for this website",
-  "step1": "A name and a password that open the door of the site. Your browser asks for them in a small window each time you press Play. It is not your nation: other players never see it.",
+  "step1": "A name and a password that open the door of the site: the sign-in page asks for them when you press Play, and can remember you for 30 days. It is not your nation: other players never see it.",
   "step2_t": "Your nation, later",
   "step2": "Once you are approved, the game asks you to found your nation: its name (up to 9 letters, it can differ from your account), race, class, and a nation password the game asks for every time you play. At any turn: if the game is already under way, a late nation starts with extra points to catch up.",
-  "done_private": "If the browser does not ask and signs you in as someone else (it remembers the last account used on this site), open this site in a private window.",
+  "done_private": "To play with another account, press Sign out (in the game's bar) and sign in again.",
   "howto": "Watch how a nation is founded (2 minutes)",
   "howto_note": "The game's own nation builder, as the game shows it the first time you play."
+ },
+ "login": {
+  "page_title": "Sign in",
+  "title": "The Doors of Durin",
+  "lede": "Speak, friend, and enter: sign in with the account you made on this site.",
+  "doors": "The closed doors of Durin, with the sign-in form in front",
+  "l_account": "Account",
+  "l_password": "Password",
+  "remember": "Remember me",
+  "h_remember": "Stays signed in on this device for 30 days. Do not use it on a shared computer.",
+  "go": "Speak friend and enter",
+  "failed": "The doors stay shut: wrong account or password.",
+  "loggedout": "You are signed out. The doors are closed again.",
+  "opening": "The doors open...",
+  "neterror": "The server did not answer. Check your connection and try again.",
+  "no_account": "No account yet?",
+  "ask_seat": "Ask for your seat"
  },
  "admin": {
   "page_title": "Administration",
@@ -418,7 +435,8 @@
   "hall": "Hall",
   "join": "Join",
   "design": "Design",
-  "main": "Main menu"
+  "main": "Main menu",
+  "logout": "Sign out"
  },
  "race": {
   "human": "Human",

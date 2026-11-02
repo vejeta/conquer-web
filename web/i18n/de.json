@@ -84,7 +84,7 @@
   "copy": "Adresse kopieren",
   "copied": "Kopiert",
   "cred_account_t": "Dein Konto für diese Website",
-  "cred_account": "Öffnet die Tür der Seite: Der Browser fragt danach, wenn du auf Spielen drückst. Eins pro Spieler; es ist nicht deine Nation.",
+  "cred_account": "Öffnet die Tür der Seite: Die Anmeldeseite fragt danach, wenn du auf Spielen drückst. Eins pro Spieler; es ist nicht deine Nation.",
   "cred_nation_t": "Das Passwort deiner Nation",
   "cred_nation": "Teil des Originalspiels von 1987: Es schützt deine Nation in der Welt, wie auf den Unix-Rechnern, für die es geschrieben wurde.",
   "trailer": "&#9654; Trailer ansehen (40 s)",
@@ -215,12 +215,29 @@
   "e_server": "Auf dem Server ist etwas schiefgegangen. Versuch es erneut oder schreib dem Spielleiter.",
   "e_network": "Der Server antwortet nicht. Prüf deine Verbindung und versuch es erneut.",
   "step1_t": "Dein Konto für diese Website",
-  "step1": "Ein Name und ein Passwort, die die Tür der Website öffnen. Dein Browser fragt in einem kleinen Fenster danach, sooft du Spielen drückst. Es ist nicht deine Nation: Andere Spieler sehen es nie.",
+  "step1": "Ein Name und ein Passwort, die die Tür der Website öffnen: Die Anmeldeseite fragt danach, wenn du Spielen drückst, und kann dich 30 Tage lang merken. Es ist nicht deine Nation: Andere Spieler sehen es nie.",
   "step2_t": "Deine Nation, später",
   "step2": "Sobald du freigegeben bist, bittet dich das Spiel, deine Nation zu gründen: Name (bis zu 9 Buchstaben, er darf vom Kontonamen abweichen), Rasse, Klasse und ein Nationspasswort, nach dem das Spiel bei jedem Spielen fragt. In jedem Zug möglich: Läuft die Partie schon, startet eine späte Nation mit Extrapunkten zum Aufholen.",
-  "done_private": "Wenn der Browser nicht fragt und dich mit einem anderen Konto anmeldet (er merkt sich das zuletzt benutzte), öffne die Seite in einem privaten Fenster.",
+  "done_private": "Um mit einem anderen Konto zu spielen, drücke Abmelden (in der Leiste des Spiels) und melde dich neu an.",
   "howto": "Sieh dir an, wie man eine Nation gründet (2 Minuten)",
   "howto_note": "Der Nationen-Baukasten des Spiels, so wie er beim ersten Spiel erscheint."
+ },
+ "login": {
+  "page_title": "Anmelden",
+  "title": "Die Tore von Durin",
+  "lede": "Sprich «Freund» und tritt ein: Melde dich mit dem Konto an, das du auf dieser Seite angelegt hast.",
+  "doors": "Die geschlossenen Tore von Durin, davor das Anmeldeformular",
+  "l_account": "Konto",
+  "l_password": "Passwort",
+  "remember": "Angemeldet bleiben",
+  "h_remember": "Bleibt auf diesem Gerät 30 Tage angemeldet. Nicht auf einem gemeinsam genutzten Rechner verwenden.",
+  "go": "Sprich Freund und tritt ein",
+  "failed": "Die Tore bleiben verschlossen: falsches Konto oder falsches Passwort.",
+  "loggedout": "Du bist abgemeldet. Die Tore sind wieder geschlossen.",
+  "opening": "Die Tore öffnen sich...",
+  "neterror": "Der Server antwortet nicht. Prüfe deine Verbindung und versuche es erneut.",
+  "no_account": "Noch kein Konto?",
+  "ask_seat": "Frage einen Platz an"
  },
  "admin": {
   "page_title": "Verwaltung",
@@ -418,7 +435,8 @@
   "hall": "Ruhmeshalle",
   "join": "Beitreten",
   "design": "Design",
-  "main": "Hauptmenü"
+  "main": "Hauptmenü",
+  "logout": "Abmelden"
  },
  "race": {
   "human": "Mensch",

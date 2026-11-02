@@ -138,13 +138,75 @@
     # Log format for monitoring
     LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" combined
 
+    # Sign-in: a page of the site (/login.html) and a session cookie, instead of
+    # the browser's password window (mod_auth_form). Apache reads the same
+    # account file as before. The cookie holds the account and the password
+    # encrypted with the passphrase file (mod_session_crypto); it is
+    # httponly, secure and same-site, and is not passed on to the game.
+    # (These directives are not allowed outside a <Location>, so each one
+    # repeats the common lines.)
+    # The login form posts here (fields httpd_username, httpd_password,
+    # httpd_location); a wrong password goes back to the page with failed=1.
+    # /login/do gives a session cookie (gone when the browser closes);
+    # /login/long, chosen by "Remember me", lasts 30 days.
+    <Location "/login/do">
+        SetHandler form-login-handler
+        AuthType form
+        AuthName "Conquer"
+        AuthFormProvider file
+        AuthUserFile "/etc/apache2/conquer-web.htpasswd"
+        Session On
+        SessionCookieName conquer_session path=/;httponly;secure;samesite=lax
+        SessionCryptoPassphraseFile "/etc/apache2/conquer-web.session"
+        Require all granted
+        SessionMaxAge 0
+        AuthFormLoginRequiredLocation "/login.html?failed=1&%{QUERY_STRING}"
+        AuthFormLoginSuccessLocation "/play/"
+    </Location>
+    <Location "/login/long">
+        SetHandler form-login-handler
+        AuthType form
+        AuthName "Conquer"
+        AuthFormProvider file
+        AuthUserFile "/etc/apache2/conquer-web.htpasswd"
+        Session On
+        SessionCookieName conquer_session path=/;httponly;secure;samesite=lax
+        SessionCryptoPassphraseFile "/etc/apache2/conquer-web.session"
+        Require all granted
+        SessionMaxAge 2592000
+        AuthFormLoginRequiredLocation "/login.html?failed=1&%{QUERY_STRING}"
+        AuthFormLoginSuccessLocation "/play/"
+    </Location>
+    <Location "/logout">
+        SetHandler form-logout-handler
+        AuthType form
+        AuthName "Conquer"
+        AuthFormProvider file
+        AuthUserFile "/etc/apache2/conquer-web.htpasswd"
+        Session On
+        SessionCookieName conquer_session path=/;httponly;secure;samesite=lax
+        SessionCryptoPassphraseFile "/etc/apache2/conquer-web.session"
+        Require all granted
+        SessionMaxAge 1
+        AuthFormLogoutLocation "/login.html?loggedout=1"
+    </Location>
+
     # Administrator page and its API: the same accounts as the game; the gate
     # lets in only the ones marked "*" (manage-players.sh assign NAME --admin)
     <Location "/admin/">
-        AuthType Basic
+        AuthType form
         AuthName "Conquer"
-        AuthBasicProvider file
+        AuthFormProvider file
         AuthUserFile "/etc/apache2/conquer-web.htpasswd"
+        Session On
+        SessionCookieName conquer_session path=/;httponly;secure;samesite=lax
+        SessionCryptoPassphraseFile "/etc/apache2/conquer-web.session"
+        # No SessionMaxAge here: the lifetime is the one the login gave
+        # (/login/long: 30 days from the login, /login/do: the browser's
+        # session), and the cookie is not rewritten at every request
+        # The browser's cookie is not passed on to the game or the gate
+        SessionCookieRemove On
+        AuthFormLoginRequiredLocation "/login.html?next=%{escape:%{REQUEST_URI}}"
         Require valid-user
         RequestHeader set X-WEBAUTH-USER "%{REMOTE_USER}s"
         # Keep search engines out of the administration
@@ -157,10 +219,19 @@
     # order, so a later <Location /> with "Require all granted" would
     # silently remove the password from the game.
     <Location "/play/">
-        AuthType Basic
+        AuthType form
         AuthName "Conquer"
-        AuthBasicProvider file
+        AuthFormProvider file
         AuthUserFile "/etc/apache2/conquer-web.htpasswd"
+        Session On
+        SessionCookieName conquer_session path=/;httponly;secure;samesite=lax
+        SessionCryptoPassphraseFile "/etc/apache2/conquer-web.session"
+        # No SessionMaxAge here: the lifetime is the one the login gave
+        # (/login/long: 30 days from the login, /login/do: the browser's
+        # session), and the cookie is not rewritten at every request
+        # The browser's cookie is not passed on to the game or the gate
+        SessionCookieRemove On
+        AuthFormLoginRequiredLocation "/login.html?next=%{escape:%{REQUEST_URI}}"
         Require valid-user
         RequestHeader set X-WEBAUTH-USER "%{REMOTE_USER}s"
         # Keep search engines out of the game terminal

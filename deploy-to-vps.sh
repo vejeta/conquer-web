@@ -94,6 +94,13 @@ configure_apache() {
     a2enmod proxy_wstunnel
     a2enmod rewrite
     a2enmod headers
+    # The site's sign-in page and session cookie (mod_auth_form)
+    a2enmod auth_form session session_cookie session_crypto request
+    # The passphrase that encrypts the session cookie
+    if [ ! -s /etc/apache2/conquer-web.session ]; then
+        openssl rand -base64 48 > /etc/apache2/conquer-web.session
+    fi
+    chmod 600 /etc/apache2/conquer-web.session
 
     # Add security configuration
     cat > /etc/apache2/conf-available/conquer-security.conf << 'EOF'

@@ -73,7 +73,7 @@
 
   // The rest of the header's buttons, as they are now (Next turn only when
   // the practice world offers it), and the options
-  var EXTRA = ['turn', 'reset', 'moves-toggle', 'toggle-keys', 'toggle'];
+  var EXTRA = ['turn', 'reset', 'moves-toggle', 'toggle-keys', 'toggle', 'logout'];
   function showMenu(show) {
     if (show) {
       list.textContent = '';
