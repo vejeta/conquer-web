@@ -78,6 +78,7 @@
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px;
   --ease: 120ms ease;
   --mountains: url(mountains.svg);
+  --bgmap: url(bg/map-human.webp);
 }
 
 /* Phosphor by race. Human is the default above (no attribute). Set
@@ -93,6 +94,7 @@
   --ok: #a9d3e6; --warn: #e0c98a;
   --line: rgba(147, 163, 173, .45);
   --mountains: url(mountains-elf.svg);
+  --bgmap: url(bg/map-elf.webp);
 }
 [data-race="dwarf"] {          /* the console of Khazad-dum: forge amber on dark rock */
   --bg: #100e0b; --bg-2: #1a1611; --screen: #070605;
@@ -103,6 +105,7 @@
   --ok: #f2a93b; --warn: #e3c56a;
   --line: rgba(138, 127, 115, .45);
   --mountains: url(mountains-dwarf.svg);
+  --bgmap: url(bg/map-dwarf.webp);
 }
 [data-race="orc"] {            /* rust and ember on ash black */
   --bg: #0e0b0b; --bg-2: #171212; --screen: #070404;
@@ -114,6 +117,7 @@
   --bad: #ff9d8a;                /* a paler salmon, so errors stay apart from the rust accent */
   --line: rgba(125, 114, 114, .45);
   --mountains: url(mountains-orc.svg);
+  --bgmap: url(bg/map-orc.webp);
 }
 
 /* Parchment: long-reading pages (guide, tutorial). Only colours change. */
@@ -337,8 +341,25 @@ textarea.input { min-height: 5.5em; resize: vertical; }
 [data-theme="parchment"] .mountains { background-image: none; }
 .site-header.mountains { border-bottom: var(--bezel) solid var(--line); }
 .hero { padding: var(--s6) var(--s4) 96px; border-bottom: 1px solid var(--line); border-radius: var(--radius) var(--radius) 0 0; }
-.site-footer { height: 140px; border-top: 1px solid var(--line); background-position: center bottom; }
+/* Hero and footer show the whole silhouette (6:1), cropped at the sides on phones. */
+.hero.mountains, .site-footer.mountains { background-size: max(100%, 720px) auto; }
+.site-footer { height: clamp(140px, 17vw, 300px); border-top: 1px solid var(--line); }
 /* Three-peak divider between sections. */
 .divider { display: flex; align-items: center; gap: var(--s3); color: var(--stone); }
 .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 .divider svg { width: 40px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+
+/* 11. World-map texture at the edges ------------------------------------- */
+/* The game's world map as terminal glyphs (bg/map-<race>.webp, made by
+   tools/hero/build-bg.py), fixed behind everything at a few percent. It only
+   shows in the margins: the page column, header, hero, footer, panels and
+   terminals all paint their own opaque --bg/--bg-2, so no text ever sits on
+   it and no contrast changes. A soft shadow feathers the column's edge. */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: var(--bgmap) center / cover no-repeat; opacity: .2;
+}
+main { background: var(--bg); box-shadow: 0 0 36px 28px var(--bg); }
+[data-theme="parchment"] body::before { display: none; }
+@media (max-width: 600px) { body::before { display: none; } }   /* phones: never under running text */
+@media (prefers-contrast: more) { body::before { display: none; } }
