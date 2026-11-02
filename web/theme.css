@@ -14,7 +14,7 @@
  *   3. Base and focus   6. Keycaps, chips, d-pad     9. Terminal, .crt, sheet
  *
  * v3 adds section 12 (the seeing stone, parchment scroll, ledge, compass,
- * plaque) and web/frame-<race>.svg (9-slice stone frames). It stays in this
+ * plaque) and (v4) web/arch/<race>-*.svg (sculpted frames). It stays in this
  * file (about 1000 lines in all); split into artefact.css if it outgrows 1200.
  *
  * Rules: phosphor green is the one accent (interactive, focus, cursor,
@@ -88,7 +88,7 @@
   --ease: 120ms ease;
   --mountains: url(mountains.svg);
   --bgmap: url(bg/map-human.webp);
-  --frame: url("frame-human.svg"); --frame-s: url("frame-human.svg#svgView(viewBox(192,0,192,192))");
+ 
   --bevel-hi: #87939a; --bevel-lo: #273031;   /* plain frame bevel */
   --paper: #efe6cf; --paper-ink: #2b2415; --paper-bold: #14100a; --paper-cursor: #7a4a00;
 }
@@ -108,7 +108,7 @@
   --mountains: url(mountains-elf.svg);
   --bgmap: url(bg/map-elf.webp);
   --paper: #f4f0e1; --paper-ink: #1f2a22; --paper-bold: #0c130e; --paper-cursor: #1f6b35;
-  --frame: url("frame-elf.svg"); --frame-s: url("frame-elf.svg#svgView(viewBox(192,0,192,192))");
+ 
   --bevel-hi: #8fa0ab; --bevel-lo: #2a353d;
 }
 [data-race="dwarf"] {          /* the console of Khazad-dum: forge amber on dark rock */
@@ -122,7 +122,7 @@
   --mountains: url(mountains-dwarf.svg);
   --bgmap: url(bg/map-dwarf.webp);
   --paper: #e3d3a8; --paper-ink: #1d1a14; --paper-bold: #0a0805; --paper-cursor: #8a2a10;
-  --frame: url("frame-dwarf.svg"); --frame-s: url("frame-dwarf.svg#svgView(viewBox(192,0,192,192))");
+ 
   --bevel-hi: #94887a; --bevel-lo: #2b231b;
 }
 [data-race="orc"] {            /* rust and ember on ash black */
@@ -137,7 +137,7 @@
   --mountains: url(mountains-orc.svg);
   --bgmap: url(bg/map-orc.webp);
   --paper: #4a3424; --paper-ink: #ece3cb; --paper-bold: #ffffff; --paper-cursor: #ffb870;
-  --frame: url("frame-orc.svg"); --frame-s: url("frame-orc.svg#svgView(viewBox(192,0,192,192))");
+ 
   --bevel-hi: #6a5f5f; --bevel-lo: #1d1616;
 }
 
@@ -401,28 +401,51 @@ main { background: var(--bg); box-shadow: 0 0 36px 28px var(--bg); }
 .gamescreen { container: gamescreen / inline-size; }
 .gs { display: grid; gap: var(--s4); grid-template-columns: minmax(0, 1fr); align-items: start; }
 .stone {
-  --fw: 12px; --recess: 3px;
-  position: relative; isolation: isolate; min-width: 0; padding: calc(var(--fw) + var(--recess));
+  --fw: 14px; --recess: 3px; --C: 6px; --L: 36px; --S: 18px; --K: 0px; --ov: 0px; --ovl: 0px;
+  position: relative; isolation: isolate; min-width: 0; margin: var(--ov);
+  padding: calc(var(--L) + var(--recess)) calc(var(--C) + var(--recess)) calc(var(--S) + var(--recess));
   filter: drop-shadow(0 8px 14px rgba(0, 0, 0, .55));
   transition: filter 240ms ease;
 }
-@container gamescreen (min-width: 700px) { .stone { --fw: 28px; --recess: 4px; } }
-@container gamescreen (min-width: 1100px) { .stone { --fw: 40px; --recess: 5px; } }
-/* The bezel: a carved 9-slice frame (corners 64 units, repeating edges). Phones use the
-   plain-edge variant of the same file, so only the corners carry ornament there. */
-.stone::before {
-  content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none;
-  border: var(--fw) solid transparent;
-  border-image: var(--frame-s) 64 / var(--fw) round;
-  transition: opacity 240ms ease;
+@container gamescreen (min-width: 700px) { .stone { --C: 44px; --L: 56px; --S: 36px; --K: 62px; --ov: 9px; --recess: 4px; } }
+@container gamescreen (min-width: 1100px) { .stone { --C: 72px; --L: 88px; --S: 56px; --K: 100px; --ov: 14px; --recess: 5px; } }
+/* v4: the frame is architecture. Per race an SVG lintel, sill, column and two corner sculptures
+   (web/arch/<race>-*.svg, set in section 12c). Each SVG is a small sprite sheet cut with #svgView:
+   lintel = centre emblem 616 + repeating tile 88; sill = emblem 560 + tile 112;
+   column = capital 64 + shaft tile 72 + base 48 (a 72-unit wide column). */
+.arch { position: absolute; inset: 0; z-index: 2; pointer-events: none; transition: opacity 240ms ease; }
+.arch i { position: absolute; display: block; background-repeat: no-repeat; }
+.arch .lintel { left: 0; right: 0; top: 0; height: var(--L); z-index: 1;
+  background: var(--a-lem) 50% 0 / calc(var(--L) * 616 / 88) 100% no-repeat, var(--a-lt) 50% 0 / var(--L) 100% repeat-x; }
+.arch .sill { left: 0; right: 0; bottom: 0; height: var(--S); z-index: 1;
+  background: var(--a-sem) 50% 0 / calc(var(--S) * 560 / 56) 100% no-repeat, var(--a-st) 50% 0 / calc(var(--S) * 2) 100% repeat-x; }
+.arch .col { top: calc(var(--L) - var(--ovl)); bottom: calc(var(--S) - var(--ovl)); width: var(--C); z-index: 2;
+  background: var(--a-cap) 0 0 / 100% calc(var(--C) * 64 / 72) no-repeat, var(--a-base) 0 100% / 100% calc(var(--C) * 48 / 72) no-repeat,
+    var(--a-tile) 0 calc(var(--C) * 64 / 72) / 100% var(--C) repeat-y; }
+.arch .col.l { left: 0; } .arch .col.r { right: 0; transform: scaleX(-1); }
+.arch .cor { width: var(--K); height: var(--K); z-index: 3; background: var(--a-cor) 0 0 / 100% 100% no-repeat; }
+.arch .cor.b { background-image: var(--a-corb); }
+.arch .tl { left: calc(-1 * var(--ov)); top: calc(-1 * var(--ov)); }
+.arch .tr { right: calc(-1 * var(--ov)); top: calc(-1 * var(--ov)); transform: scaleX(-1); }
+.arch .bl { left: calc(-1 * var(--ov)); bottom: calc(-1 * var(--ov)); }
+.arch .br { right: calc(-1 * var(--ov)); bottom: calc(-1 * var(--ov)); transform: scaleX(-1); }
+/* Phones: no columns or corners, a thin lintel with the emblem, a thin sill, a plain stone strip at the sides. */
+@container gamescreen (max-width: 699.98px) {
+  .arch .cor { display: none; }
+  .arch .col { background: linear-gradient(90deg, var(--st-d), var(--st-m) 50%, var(--st-d)); }
+  .arch .col.r { transform: none; }
 }
-@container gamescreen (min-width: 700px) { .stone::before { border-image-source: var(--frame); } }
+/* The old bezel slot stays for the parchment edges (elf, orc) and the plain frame. */
+.stone::before {
+  content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: 0;
+  border: var(--fw) solid transparent; transition: opacity 240ms ease;
+}
 /* Plain frame: a thin bevel, no ornament. */
-.stone.plain { --fw: 7px; --recess: 3px; }
+.stone.plain { --fw: 7px; --recess: 3px; --ov: 0px; padding: calc(var(--fw) + var(--recess)); }
+.stone.plain .arch { opacity: 0; visibility: hidden; }
 .stone.plain::before {
-  border-image: none; border-style: solid; border-radius: 3px;
+  opacity: 1; border-style: solid; border-radius: 3px;
   border-color: var(--bevel-hi) var(--bevel-lo) var(--bevel-lo) var(--bevel-hi);
-  background: none;
 }
 /* The glass. */
 .stone .terminal {
@@ -464,7 +487,8 @@ main { background: var(--bg); box-shadow: 0 0 36px 28px var(--bg); }
   clip-path: polygon(0.00% 3.0px,2.27% 2.0px,4.55% 1.5px,6.82% 0.0px,9.09% 1.0px,11.36% 1.0px,13.64% 3.0px,15.91% 0.0px,18.18% 4.0px,20.45% 0.0px,22.73% 1.0px,25.00% 1.5px,27.27% 1.5px,29.55% 1.0px,31.82% 4.0px,34.09% 1.0px,36.36% 1.5px,38.64% 0.0px,40.91% 1.0px,43.18% 4.0px,45.45% 0.0px,47.73% 1.5px,50.00% 0.0px,52.27% 4.0px,54.55% 0.0px,56.82% 2.0px,59.09% 5.0px,61.36% 1.5px,63.64% 2.0px,65.91% 1.0px,68.18% 5.0px,70.45% 2.0px,72.73% 1.0px,75.00% 4.0px,77.27% 3.0px,79.55% 1.0px,81.82% 1.0px,84.09% 0.0px,86.36% 4.0px,88.64% 6.0px,90.91% 1.5px,93.18% 3.0px,95.45% 6.0px,97.73% 6.0px,100.00% 3.0px,100.00% calc(100% - 5.0px),97.73% calc(100% - 4.0px),95.45% calc(100% - 0.0px),93.18% calc(100% - 6.0px),90.91% calc(100% - 1.0px),88.64% calc(100% - 2.0px),86.36% calc(100% - 3.0px),84.09% calc(100% - 6.0px),81.82% calc(100% - 0.0px),79.55% calc(100% - 3.0px),77.27% calc(100% - 1.5px),75.00% calc(100% - 5.0px),72.73% calc(100% - 6.0px),70.45% calc(100% - 5.0px),68.18% calc(100% - 0.0px),65.91% calc(100% - 1.0px),63.64% calc(100% - 6.0px),61.36% calc(100% - 5.0px),59.09% calc(100% - 1.0px),56.82% calc(100% - 1.0px),54.55% calc(100% - 6.0px),52.27% calc(100% - 6.0px),50.00% calc(100% - 3.0px),47.73% calc(100% - 3.0px),45.45% calc(100% - 3.0px),43.18% calc(100% - 1.0px),40.91% calc(100% - 0.0px),38.64% calc(100% - 1.5px),36.36% calc(100% - 6.0px),34.09% calc(100% - 2.0px),31.82% calc(100% - 3.0px),29.55% calc(100% - 2.0px),27.27% calc(100% - 1.5px),25.00% calc(100% - 1.0px),22.73% calc(100% - 1.0px),20.45% calc(100% - 5.0px),18.18% calc(100% - 6.0px),15.91% calc(100% - 3.0px),13.64% calc(100% - 6.0px),11.36% calc(100% - 5.0px),9.09% calc(100% - 1.0px),6.82% calc(100% - 4.0px),4.55% calc(100% - 2.0px),2.27% calc(100% - 4.0px),0.00% calc(100% - 5.0px));
   transition: opacity 240ms ease;
 }
-.stone.parchment { --fw: 14px; --recess: 6px; filter: drop-shadow(0 8px 12px rgba(0, 0, 0, .5)); }
+.stone.parchment { --fw: 14px; --recess: 6px; --ov: 0px; padding: calc(var(--fw) + var(--recess)); filter: drop-shadow(0 8px 12px rgba(0, 0, 0, .5)); }
+.stone.parchment .arch { opacity: 0; visibility: hidden; }
 .stone.parchment::before { opacity: 0; }
 .stone.parchment::after { opacity: 1; }
 .stone.parchment .terminal {
@@ -580,28 +604,22 @@ button.plaque:hover, a.plaque:hover { text-decoration: none; filter: brightness(
 [data-race="elf"] .stone::after { background: radial-gradient(ellipse at center, transparent 60%, rgba(70, 110, 90, .16)), linear-gradient(180deg, #ece7d6, var(--paper) 14%, var(--paper) 86%, #e9e3cf); }
 
 /* Dwarf: the Doors of Durin */
-[data-race="dwarf"] .stone { padding-top: calc(var(--fw) + var(--recess) + 34px); padding-inline: calc(var(--fw) + var(--recess) + 10px);
-  background:
-    repeating-linear-gradient(90deg, rgba(0, 0, 0, .35) 0 2px, transparent 2px 5px) var(--fw) var(--fw) / 10px calc(100% - 2 * var(--fw)) no-repeat,
-    repeating-linear-gradient(90deg, rgba(0, 0, 0, .35) 0 2px, transparent 2px 5px) calc(100% - var(--fw)) var(--fw) / 10px calc(100% - 2 * var(--fw)) no-repeat,
-    linear-gradient(90deg, #5d5247, #8a7d6c 40%, #5d5247) var(--fw) var(--fw) / 10px calc(100% - 2 * var(--fw)) no-repeat,
-    linear-gradient(90deg, #5d5247, #8a7d6c 60%, #5d5247) calc(100% - var(--fw)) var(--fw) / 10px calc(100% - 2 * var(--fw)) no-repeat; }
-@container gamescreen (min-width: 700px) { [data-race="dwarf"] .stone { padding-top: calc(var(--fw) + var(--recess) + 52px); padding-inline: calc(var(--fw) + var(--recess) + 14px); } }
 [data-race="dwarf"] .stone .runes {
-  display: block; position: absolute; z-index: 1; top: calc(var(--fw) + 4px); left: calc(var(--fw) + 14px); right: calc(var(--fw) + 14px); height: 32px;
-  font-size: 1.05rem; line-height: 32px; background: linear-gradient(180deg, #0d0b09, #1b1713); border: 2px solid #4a4036; border-radius: 80px 80px 0 0 / 32px 32px 0 0;
-  box-shadow: inset 0 3px 8px rgba(0, 0, 0, .8);
+  display: block; position: absolute; z-index: 4; top: calc(var(--L) * .70); height: calc(var(--L) * .24);
+  left: calc(var(--C) + var(--recess) + 8px); right: calc(var(--C) + var(--recess) + 8px);
+  font-size: calc(var(--L) * .17); line-height: calc(var(--L) * .24); letter-spacing: .4em;
+  background: linear-gradient(180deg, #0a0807, #17130f); border-radius: 1px; box-shadow: inset 0 2px 5px rgba(0, 0, 0, .9);
 }
-@container gamescreen (min-width: 700px) { [data-race="dwarf"] .stone .runes { height: 46px; line-height: 46px; font-size: 1.5rem; letter-spacing: .4em; border-radius: 160px 160px 0 0 / 46px 46px 0 0; } }
+@container gamescreen (max-width: 699.98px) { [data-race="dwarf"] .stone .runes { display: none; } }
 [data-race="dwarf"] .stone .terminal { border-radius: 0; }
-[data-race="dwarf"] .stone.parchment { --fw: 22px; padding-top: calc(var(--fw) + var(--recess)); padding-inline: calc(var(--fw) + var(--recess)); background: none; }
+[data-race="dwarf"] .stone.parchment { --fw: 22px; background: none; }
 [data-race="dwarf"] .stone.parchment .runes { display: none; }
 [data-race="dwarf"] .stone::after { background: radial-gradient(ellipse at center, transparent 40%, rgba(90, 40, 8, .5) 78%, rgba(20, 8, 0, .85) 100%), var(--paper); }
 [data-race="dwarf"] .stone.parchment .terminal { box-shadow: inset 0 0 0 1px rgba(60, 35, 10, .35); }
 
 /* Orc: the iron window */
 [data-race="orc"] .stone .slit {
-  display: block; position: absolute; z-index: 2; left: calc(var(--fw) + 14%); right: calc(var(--fw) + 14%); bottom: calc(var(--fw) + 1px); height: 3px; border-radius: 2px; pointer-events: none;
+  display: block; position: absolute; z-index: 2; left: calc(var(--C) + 14%); right: calc(var(--C) + 14%); bottom: calc(var(--S) + 1px); height: 3px; border-radius: 2px; pointer-events: none;
   background: linear-gradient(90deg, transparent, #ff8a4a 25%, #ffb870 50%, #ff8a4a 75%, transparent); box-shadow: 0 0 10px 2px rgba(255, 110, 50, .55), 0 -6px 14px rgba(255, 90, 30, .25); opacity: .85;
   animation: ember 5s ease-in-out infinite;
 }
@@ -630,22 +648,58 @@ button.plaque:hover, a.plaque:hover { text-decoration: none; filter: brightness(
     linear-gradient(180deg, #e6d9b6, var(--paper) 12%, var(--paper) 88%, #e2d3ac);
 }
 
+
+/* 12c. Sculpted frames (v4) -------------------------------------------------
+   The sprite cuts per race; stone tones feed the phone strip. :root is the human set. */
+:root { --st-d: #4f4b44; --st-m: #9a958a; }
+[data-race="elf"] { --st-d: #46514c; --st-m: #8c9a94; }
+[data-race="dwarf"] { --st-d: #2b2724; --st-m: #5a534b; --ovl: 0px; }
+[data-race="orc"] { --st-d: #110f0e; --st-m: #2b2624; }
+[data-race="elf"] .stone { --ovl: 8px; }
+:root, [data-race="human"] {
+  --a-cap: url("arch/human-column.svg#svgView(viewBox(0,0,72,64))"); --a-tile: url("arch/human-column.svg#svgView(viewBox(0,64,72,72))"); --a-base: url("arch/human-column.svg#svgView(viewBox(0,136,72,48))");
+  --a-lem: url("arch/human-lintel.svg#svgView(viewBox(0,0,616,88))"); --a-lt: url("arch/human-lintel.svg#svgView(viewBox(616,0,88,88))");
+  --a-sem: url("arch/human-sill.svg#svgView(viewBox(0,0,560,56))"); --a-st: url("arch/human-sill.svg#svgView(viewBox(560,0,112,56))");
+  --a-cor: url("arch/human-corner.svg"); --a-corb: url("arch/human-corner.svg");
+}
+[data-race="elf"] {
+  --a-cap: url("arch/elf-column.svg#svgView(viewBox(0,0,72,64))"); --a-tile: url("arch/elf-column.svg#svgView(viewBox(0,64,72,72))"); --a-base: url("arch/elf-column.svg#svgView(viewBox(0,136,72,48))");
+  --a-lem: url("arch/elf-lintel.svg#svgView(viewBox(0,0,616,88))"); --a-lt: url("arch/elf-lintel.svg#svgView(viewBox(616,0,88,88))");
+  --a-sem: url("arch/elf-sill.svg#svgView(viewBox(0,0,560,56))"); --a-st: url("arch/elf-sill.svg#svgView(viewBox(560,0,112,56))");
+  --a-cor: url("arch/elf-corner.svg"); --a-corb: url("arch/elf-corner.svg");
+}
+[data-race="dwarf"] {
+  --a-cap: url("arch/dwarf-column.svg#svgView(viewBox(0,0,72,64))"); --a-tile: url("arch/dwarf-column.svg#svgView(viewBox(0,64,72,72))"); --a-base: url("arch/dwarf-column.svg#svgView(viewBox(0,136,72,48))");
+  --a-lem: url("arch/dwarf-lintel.svg#svgView(viewBox(0,0,616,88))"); --a-lt: url("arch/dwarf-lintel.svg#svgView(viewBox(616,0,88,88))");
+  --a-sem: url("arch/dwarf-sill.svg#svgView(viewBox(0,0,560,56))"); --a-st: url("arch/dwarf-sill.svg#svgView(viewBox(560,0,112,56))");
+  --a-cor: url("arch/dwarf-corner.svg"); --a-corb: url("arch/dwarf-corner-b.svg");
+}
+[data-race="orc"] {
+  --a-cap: url("arch/orc-column.svg#svgView(viewBox(0,0,72,64))"); --a-tile: url("arch/orc-column.svg#svgView(viewBox(0,64,72,72))"); --a-base: url("arch/orc-column.svg#svgView(viewBox(0,136,72,48))");
+  --a-lem: url("arch/orc-lintel.svg#svgView(viewBox(0,0,616,88))"); --a-lt: url("arch/orc-lintel.svg#svgView(viewBox(616,0,88,88))");
+  --a-sem: url("arch/orc-sill.svg#svgView(viewBox(0,0,560,56))"); --a-st: url("arch/orc-sill.svg#svgView(viewBox(560,0,112,56))");
+  --a-cor: url("arch/orc-corner.svg"); --a-corb: url("arch/orc-corner.svg");
+}
+
 /* The gate: the Doors of Durin as the login dialog (race-independent) */
 .gate { max-width: 880px; width: 100%; }
-.gate-stage { position: relative; overflow: hidden; perspective: 1400px; background: #0d0b09; border: 2px solid #4a4036; border-radius: 120px 120px 6px 6px / 90px 90px 6px 6px; min-height: 440px; isolation: isolate; }
-.gate-stage > .runes { display: block; position: absolute; z-index: 3; top: 14px; left: 40px; right: 40px; height: 40px; line-height: 40px; font-size: clamp(1rem, 4vw, 1.5rem); background: linear-gradient(180deg, #0d0b09, #1b1713); border-bottom: 2px solid #4a4036; }
-.gate .behind { position: relative; z-index: 0; padding: 64px var(--s3) var(--s3); }
-.gate .behind .stone { width: 100%; }
-.gate .leaf { position: absolute; z-index: 2; top: 64px; bottom: 0; width: 50%; transition: transform 600ms cubic-bezier(.5, 0, .2, 1); backface-visibility: hidden;
+.gate-stage { --C: clamp(20px, 7vw, 72px); --L: clamp(40px, 10vw, 88px); --S: clamp(24px, 5vw, 56px); --K: clamp(48px, 9vw, 100px); --ov: 0px; --ovl: 0px;
+  position: relative; overflow: hidden; perspective: 1400px; background: #0d0b09; min-height: 440px; isolation: isolate; }
+.gate-stage > .runes { display: block; position: absolute; z-index: 5; top: calc(var(--L) * .70); height: calc(var(--L) * .24); left: calc(var(--C) + 12px); right: calc(var(--C) + 12px);
+  font-size: calc(var(--L) * .17); line-height: calc(var(--L) * .24); letter-spacing: .4em; background: linear-gradient(180deg, #0a0807, #17130f); box-shadow: inset 0 2px 5px rgba(0, 0, 0, .9); }
+.gate .behind { position: relative; z-index: 0; padding: var(--L) var(--C) var(--S); }
+.gate .behind .stone { --C: 0px; --L: 0px; --S: 0px; --ov: 0px; --recess: 4px; width: 100%; }
+.gate .behind .stone .arch, .gate .behind .stone .runes { display: none; }
+.gate .leaf { position: absolute; z-index: 2; top: var(--L); bottom: var(--S); width: calc((100% - 2 * var(--C)) / 2); transition: transform 600ms cubic-bezier(.5, 0, .2, 1); backface-visibility: hidden;
   background:
     repeating-linear-gradient(90deg, rgba(0, 0, 0, .22) 0 2px, transparent 2px 14px),
     linear-gradient(180deg, #6f6558, #51483e 45%, #3d362e);
   box-shadow: inset 0 0 0 4px rgba(0, 0, 0, .35), inset 0 0 0 6px rgba(239, 230, 207, .08), inset 0 0 40px rgba(0, 0, 0, .55); }
 .gate .leaf::before { content: ""; position: absolute; inset: 16% 18%; border: 2px solid rgba(239, 230, 207, .12); border-radius: 50% 50% 0 0 / 30% 30% 0 0; box-shadow: inset 0 0 0 6px rgba(0, 0, 0, .12); }
-.gate .leaf.l { left: 0; transform-origin: 0 50%; border-right: 2px solid #1c1812; }
-.gate .leaf.r { right: 0; transform-origin: 100% 50%; border-left: 2px solid #1c1812; }
+.gate .leaf.l { left: var(--C); transform-origin: 0 50%; border-right: 2px solid #1c1812; }
+.gate .leaf.r { right: var(--C); transform-origin: 100% 50%; border-left: 2px solid #1c1812; }
 .gate.open .leaf.l { transform: rotateY(-105deg); } .gate.open .leaf.r { transform: rotateY(105deg); }
-.gate .login { position: absolute; z-index: 4; left: 50%; top: calc(64px + 50%); transform: translate(-50%, -50%); width: min(300px, 80%); background: var(--bg-2); border: 2px solid var(--stone); border-radius: 6px; padding: var(--s4); box-shadow: 0 8px 24px rgba(0, 0, 0, .7), inset 0 0 0 1px var(--hair); transition: opacity 300ms ease, visibility 0s linear 300ms; }
+.gate .login { position: absolute; z-index: 4; left: 50%; top: calc(var(--L) + (100% - var(--L) - var(--S)) / 2); transform: translate(-50%, -50%); width: min(300px, 80%); background: var(--bg-2); border: 2px solid var(--stone); border-radius: 6px; padding: var(--s4); box-shadow: 0 8px 24px rgba(0, 0, 0, .7), inset 0 0 0 1px var(--hair); transition: opacity 300ms ease, visibility 0s linear 300ms; }
 .gate .login .form { gap: var(--s3); }
 .gate.open .login { opacity: 0; visibility: hidden; }
 .gate-actions { margin-top: var(--s3); }
