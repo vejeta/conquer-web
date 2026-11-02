@@ -269,6 +269,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
       if (email) body.email = email;
       if (message) body.message = message;
       if (code) body.code = code;
+      body.lang = conquerI18n.lang();
       fetch('join/api/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

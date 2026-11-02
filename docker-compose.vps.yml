@@ -31,6 +31,7 @@ services:
       - DOMAIN=${DOMAIN:-}
       - SITE_URL=${SITE_URL:-}
       - NOTIFY_EMAIL=${NOTIFY_EMAIL:-}
+      - NOTIFY_LANG=${NOTIFY_LANG:-en}
       - SMTP_HOST=${SMTP_HOST:-}
       - SMTP_USER=${SMTP_USER:-}
       - SMTP_PASSWORD=${SMTP_PASSWORD:-}
