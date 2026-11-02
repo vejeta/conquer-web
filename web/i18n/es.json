@@ -207,7 +207,7 @@
   "e_account_taken": "Ese nombre de cuenta ya existe. Elige otro.",
   "e_bad_account": "Usa solo letras, cifras, puntos, guiones y guiones bajos (hasta 32).",
   "e_short_password": "La contraseña debe tener al menos 8 caracteres.",
-  "e_bad_password": "Esa contraseña no sirve: como mucho 128 caracteres, en una sola línea.",
+  "e_bad_password": "Esa contraseña no sirve: como mucho 72 bytes, en una sola línea.",
   "e_bad_email": "Ese correo no parece correcto. Corrígelo o déjalo en blanco.",
   "e_mismatch": "Las dos contraseñas no coinciden.",
   "e_closed": "Las altas están cerradas en este servidor ahora mismo.",

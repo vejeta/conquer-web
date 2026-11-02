@@ -12,8 +12,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOCKER_LIB_DIR="$SCRIPT_DIR/data/lib"
 BACKUP_DIR="$SCRIPT_DIR/backups"
 
+# Backups hold the nations' password hashes: private to this user
+umask 077
+
 # Create backup directory
 mkdir -p "$BACKUP_DIR"
+chmod 700 "$BACKUP_DIR"
 
 # Check if world data exists
 if [ ! -d "$DOCKER_LIB_DIR" ] || [ ! "$(ls -A "$DOCKER_LIB_DIR" 2>/dev/null)" ]; then

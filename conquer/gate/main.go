@@ -302,7 +302,7 @@ func (g *gate) signup(w http.ResponseWriter, r *http.Request) {
 	case len(in.Password) < 8:
 		fail(w, http.StatusBadRequest, "short_password")
 		return
-	case len(in.Password) > 128 || strings.ContainsAny(in.Password, "\r\n\x00"):
+	case len(in.Password) > 72 || strings.ContainsAny(in.Password, "\r\n\x00"):
 		fail(w, http.StatusBadRequest, "bad_password")
 		return
 	case email != "" && !validEmail(email):

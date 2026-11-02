@@ -74,7 +74,7 @@ becoming players without the administrator's approval.
 - A request cannot take an existing name (account file and `.players` are both
   checked under a lock), cannot be `*`, and approving or rejecting works only on
   accounts marked `?` (waiting).
-- Passwords: 8 to 128 characters on one line, passed to `htpasswd -niB -C 10` on
+- Passwords: 8 to 72 bytes on one line, passed to `htpasswd -niB -C 10` on
   standard input (never in a command line or a log), stored as bcrypt.
 - Sizes: request body 8 KB, message 500 characters on one line, email 120
   characters with no whitespace, quotes, commas, angle brackets; language from a
@@ -179,6 +179,14 @@ approval flows. A step fails if the password shows up in a container log.
   That is Apache only, on the local Docker network or on the VPS loopback. Other
   local users of the VPS, or another container on the same Docker network, could
   send `X-WEBAUTH-USER` themselves.
+- **No idle timeout for terminals.** An open session keeps its slot until the
+  browser closes it; `SESSION_TIMEOUT` is only a ping interval.
+- **No shared-secret header between Apache and the gate/ttyd.** The network
+  position above is the only check on `X-WEBAUTH-USER`.
+- **The container's root filesystem is writable** (it is not `read_only`),
+  though the game user can write only to its own directories.
+- **The lock files live in `/run/conquer`,** a directory the game user owns, so
+  a process of that user can hold the join and account locks.
 - **Waiting accounts can open a terminal.** A visitor's account exists (waiting,
   `?`) as soon as the request is made, so the menu and the practice world are
   open to it. Each uses one of the `MAX_CLIENTS` slots while connected.
@@ -189,9 +197,9 @@ approval flows. A step fails if the password shows up in a container log.
   file or a backup can guess them offline. God's password is the strongest case,
   see below. Treat `data/lib` and `data/backups` as secrets.
 - **The shipped worlds.** `conquer/lib` and `conquer/practice-world` ship with
-  god locked. The sample nations in them were created with the world and carry
-  one shared hash; no account is assigned to them and `trainee` in the practice
-  world is public on purpose (`train1`).
+  god and every sample nation locked (`conqpasswd -l`), so no password opens
+  them; CI checks this. The one exception is `trainee` in the practice world,
+  which is public on purpose (`train1`).
 - **Personal data.** Emails and messages are kept in `lib/.requests` until the
   request is decided, and in backups. The gate logs the account name and the
   client address of sign-ups and refusals.

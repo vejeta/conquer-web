@@ -207,7 +207,7 @@
   "e_account_taken": "That account name is taken. Choose another.",
   "e_bad_account": "Use only letters, digits, dots, dashes and underscores (up to 32).",
   "e_short_password": "Use at least 8 characters for the password.",
-  "e_bad_password": "That password cannot be used: use at most 128 characters, on one line.",
+  "e_bad_password": "That password cannot be used: use at most 72 bytes, on one line.",
   "e_bad_email": "That email address does not look right. Fix it, or leave it empty.",
   "e_mismatch": "The two passwords do not match.",
   "e_closed": "Sign-up is closed on this server right now.",

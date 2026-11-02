@@ -207,7 +207,7 @@
   "e_account_taken": "Dieser Kontoname ist vergeben. Wähle einen anderen.",
   "e_bad_account": "Nur Buchstaben, Ziffern, Punkte, Binde- und Unterstriche (bis 32).",
   "e_short_password": "Das Passwort braucht mindestens 8 Zeichen.",
-  "e_bad_password": "Dieses Passwort geht nicht: höchstens 128 Zeichen, in einer Zeile.",
+  "e_bad_password": "Dieses Passwort geht nicht: höchstens 72 Bytes, in einer Zeile.",
   "e_bad_email": "Diese E-Mail-Adresse sieht nicht richtig aus. Korrigiere sie oder lass das Feld leer.",
   "e_mismatch": "Die beiden Passwörter stimmen nicht überein.",
   "e_closed": "Auf diesem Server ist die Anmeldung gerade geschlossen.",
