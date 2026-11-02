@@ -527,6 +527,16 @@
           try { a.setVolume(prefs.volume); } catch (e) {}
         });
         row(T('opt_volume'), vol, 'touch-opt-volume');
+        var pv = el('button', 'touch-reset', { type: 'button', id: 'touch-opt-preview' });
+        pv.textContent = T('opt_preview');
+        pv.addEventListener('click', function () {
+          try {
+            a.enable(true); prefs.sound = true; save();
+            var sb = document.getElementById('touch-opt-sound'); if (sb) sb.checked = true;
+            if (a._demo) a._demo();
+          } catch (e) {}
+        });
+        panel.appendChild(pv);
       }
       row(T('opt_scan'), checkbox('touch-opt-scan', prefs.scan, function (on) { prefs.scan = on; save(); applyPrefs(); }), 'touch-opt-scan');
       var ph = el('select', '', { id: 'touch-opt-phos' });

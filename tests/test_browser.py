@@ -941,6 +941,9 @@ def test_screenshots(site, browser, where, viewport):
     page.click("#touch-gear")
     page.wait_for_timeout(300)
     page.screenshot(path=os.path.join(SHOTS, "%s-%s-options.png" % (where, viewport)))
+    page.evaluate("conquerAudio.enable(true)")
+    page.evaluate("document.getElementById('touch-opt-sound').checked = true")
+    page.screenshot(path=os.path.join(SHOTS, "integrated-%s-%s-options-sound.png" % (where, viewport)))
     page.keyboard.press("Escape")
     page.locator("#touch-chips .touch-chip", has_text="More").click()
     page.wait_for_timeout(300)
@@ -1002,3 +1005,29 @@ def test_audio_without_web_audio_is_silent(site, browser):
     page.wait_for_timeout(200)
     assert errors == []
     page.close()
+
+
+def test_touch_layer_and_sound_work_together(site, browser):
+    errors = []
+    ctx, page, target = touch_page(site, browser, "try", "desktop", errors=errors)
+    page.evaluate("""() => { window.__aud = []; const a = window.conquerAudio;
+        const s = a.screen, e = a.event;
+        a.screen = n => { window.__aud.push(['screen', n]); return s.call(a, n); };
+        a.event = n => { window.__aud.push(['event', n]); return e.call(a, n); }; }""")
+    page.click("#touch-gear")
+    page.click("#touch-opt-sound")
+    assert page.evaluate("conquerAudio.enabled()") is True
+    assert page.is_visible("#touch-opt-preview")
+    page.keyboard.press("Escape")
+    show(page, target, FIRST_TURN["budget"])
+    wait_where(page, "report")
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    log = page.evaluate("window.__aud")
+    screens = [n for k, n in log if k == "screen"]
+    assert screens.index("report") < screens.index("map", screens.index("report"))
+    page.evaluate("window.__aud.length = 0")
+    page.locator("#touch-chips .touch-chip").first.click()
+    assert ["event", "ui"] in page.evaluate("window.__aud")
+    assert errors == []
+    ctx.close()
