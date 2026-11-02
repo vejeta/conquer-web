@@ -1,7 +1,7 @@
 # Languages of the player menu
 
-Texts of the player menu (`menu.sh`) and the invite-code wizard
-(`join.sh`), one file per language: `en.sh` (English, the reference),
+Texts of the player menu (`menu.sh`) and the wizard that has an approved
+player found their nation (`join.sh`), one file per language: `en.sh` (English, the reference),
 `es.sh` (Spanish)... The image installs them in
 `/usr/local/share/conquer-web/i18n/`, and `scripts/i18n.sh` loads English
 and then the player's language on top, so a text a language does not have

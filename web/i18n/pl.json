@@ -207,7 +207,7 @@
   "e_account_taken": "Ta nazwa konta jest zajęta. Wybierz inną.",
   "e_bad_account": "Używaj tylko liter, cyfr, kropek, myślników i podkreśleń (do 32).",
   "e_short_password": "Hasło musi mieć co najmniej 8 znaków.",
-  "e_bad_password": "Tego hasła nie da się użyć: najwyżej 128 znaków, w jednym wierszu.",
+  "e_bad_password": "Tego hasła nie da się użyć: najwyżej 72 bajtów, w jednym wierszu.",
   "e_bad_email": "Ten adres e-mail wygląda niepoprawnie. Popraw go albo zostaw pole puste.",
   "e_mismatch": "Hasła się różnią.",
   "e_closed": "Zapisy na tym serwerze są teraz zamknięte.",

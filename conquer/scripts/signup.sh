@@ -30,6 +30,9 @@ PLAYERS_FILE="$WORLD_DIR/.players"
 REQUESTS_FILE="$WORLD_DIR/.requests"
 HTPASSWD_FILE="${HTPASSWD_FILE:-$PREFIX/auth/htpasswd}"
 LOCK_FILE="${CONQUER_RUN:-/run/conquer}/join.lock.accounts"
+# Requests waiting for the administrator: past this the page says sign-up is
+# closed, so nobody can fill the account file and the disk with accounts
+MAX_PENDING=200
 TAB=$'\t'
 
 # Remove the line whose first field (separated by $3, default ":") is $2
@@ -59,8 +62,12 @@ read_password() {
     [ ${#password} -ge 8 ] || exit 1
 }
 
+# The first character is a letter or digit: "-name" would be read as an
+# option by htpasswd, and "." or ".." must never become a directory name
+# (the menu's practice world is named after the account). Same rule as
+# accountRe in the gate and valid_name in manage-players.sh.
 valid_account() {
-    [[ "$1" =~ ^[A-Za-z0-9_.-]{1,32}$ ]]
+    [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]{0,31}$ ]]
 }
 
 # Create web account $1 marked $2 in .players (the caller holds the lock).
@@ -112,6 +119,7 @@ request)
     [ -w "$HTPASSWD_FILE" ] || exit 5
     (
         flock 9 || exit 1
+        if [ -s "$REQUESTS_FILE" ] && [ "$(wc -l < "$REQUESTS_FILE")" -ge "$MAX_PENDING" ]; then exit 5; fi
         create_account "$account" '?'
         touch "$REQUESTS_FILE" 2>/dev/null
         chmod 640 "$REQUESTS_FILE" 2>/dev/null
@@ -129,7 +137,7 @@ invite)
     [ -w "$HTPASSWD_FILE" ] || exit 5
     (
         flock 9 || exit 1
-        grep -qx -- "$code" "$INVITES_FILE" 2>/dev/null || exit 2
+        grep -qxF -- "$code" "$INVITES_FILE" 2>/dev/null || exit 2
         [ -w "$INVITES_FILE" ] || exit 1
         create_account "$account" '+'
         drop_line "$INVITES_FILE" "$code" || exit 1

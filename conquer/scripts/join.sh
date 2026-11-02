@@ -108,6 +108,16 @@ result=/run/conquer/join.$$
     after=$(nations)
     nation=$(comm -13 <(printf '%s\n' "$before") <(printf '%s\n' "$after") | head -n 1)
     [ -n "$nation" ] || exit 4
+    # The player types the nation's name and the game takes any printable
+    # character: "*:x" would read as "*" (an administrator) in lib/.players,
+    # "+:x" as a seat that may found another nation. Link only names the
+    # tools accept; for any other the account waits ("?") until the
+    # administrator assigns the nation (manage-players.sh assign).
+    if ! [[ "$nation" =~ ^[A-Za-z0-9_.-]{1,9}$ ]]; then
+        printf '%s\n' "$nation" > "$result"
+        ( flock 8 && set_nation "$ACCOUNT" '?' ) 8> "$LOCK_FILE.accounts"
+        exit 5
+    fi
     (
         flock 8 || exit 1
         set_nation "$ACCOUNT" "$nation"

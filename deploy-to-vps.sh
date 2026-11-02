@@ -117,7 +117,7 @@ setup_player_accounts() {
     local file=/etc/apache2/conquer-web.htpasswd
     if [ ! -s "$file" ]; then
         echo "👤 Creating the administrator web account '$TTYD_USERNAME'..."
-        printf '%s\n' "$TTYD_PASSWORD" | htpasswd -ciB "$file" "$TTYD_USERNAME"
+        printf '%s\n' "$TTYD_PASSWORD" | htpasswd -ciB -C 10 "$file" "$TTYD_USERNAME"
     fi
     # Each account opens only its own nation; the administrator any nation
     local players="$PROJECT_DIR/data/lib/.players"
@@ -273,7 +273,6 @@ ExecStart=/bin/bash -c 'cd $PROJECT_DIR && /usr/bin/docker-compose -f docker-com
 ExecStop=/bin/bash -c 'cd $PROJECT_DIR && /usr/bin/docker-compose -f docker-compose.vps.yml down'
 
 # Security settings
-NoNewPrivileges=false
 PrivateTmp=true
 ProtectSystem=strict
 ReadWritePaths=$PROJECT_DIR

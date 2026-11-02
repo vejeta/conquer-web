@@ -287,7 +287,11 @@ show_keys() {
 # Practice world of the signed-in account
 practice_dir() {
     local name="${PLAYER:-guest}"
-    echo "$PRACTICE_ROOT/${name//[^A-Za-z0-9_.-]/_}"
+    name="${name//[^A-Za-z0-9_.-]/_}"
+    # "." and ".." are not names: new_practice_world runs rm -rf on this
+    # directory. Accounts cannot start with a dot or a dash, older ones might.
+    case "$name" in [.-]*) name="_$name" ;; esac
+    echo "$PRACTICE_ROOT/$name"
 }
 
 new_practice_world() {

@@ -31,7 +31,6 @@ ExecStart=/bin/bash -c 'cd /home/conquer/conquer-web && /usr/bin/docker-compose 
 ExecStop=/bin/bash -c 'cd /home/conquer/conquer-web && /usr/bin/docker-compose -f docker-compose.vps.yml down'
 
 # Security settings
-NoNewPrivileges=false
 PrivateTmp=true
 ProtectSystem=strict
 ReadWritePaths=/home/conquer/conquer-web

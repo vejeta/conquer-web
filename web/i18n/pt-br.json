@@ -207,7 +207,7 @@
   "e_account_taken": "Esse nome de conta já existe. Escolha outro.",
   "e_bad_account": "Use só letras, números, pontos, hífens e sublinhados (até 32).",
   "e_short_password": "A senha precisa de pelo menos 8 caracteres.",
-  "e_bad_password": "Essa senha não pode ser usada: no máximo 128 caracteres, em uma linha.",
+  "e_bad_password": "Essa senha não pode ser usada: no máximo 72 bytes, em uma linha.",
   "e_bad_email": "Esse e-mail não parece correto. Corrija-o ou deixe o campo vazio.",
   "e_mismatch": "As duas senhas não coincidem.",
   "e_closed": "As inscrições estão fechadas neste servidor agora.",

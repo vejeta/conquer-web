@@ -69,14 +69,15 @@ validate_backup() {
 backup_current() {
     if [ -d "$DOCKER_LIB_DIR" ] && [ "$(ls -A "$DOCKER_LIB_DIR" 2>/dev/null)" ]; then
         echo "💾 Backing up current world before restore..."
-        mkdir -p "$BACKUP_DIR"
+        (umask 077 && mkdir -p "$BACKUP_DIR")
+        chmod 700 "$BACKUP_DIR"
 
         local timestamp
         timestamp=$(date +%Y%m%d_%H%M%S)
         local backup_file="$BACKUP_DIR/world_backup_pre_restore_$timestamp.tar.gz"
 
         cd "$SCRIPT_DIR"
-        if tar -czf "$backup_file" -C data lib/; then
+        if (umask 077 && tar -czf "$backup_file" -C data lib/); then
             echo "✅ Current world backed up to: $(basename "$backup_file")"
         else
             echo "⚠️  Warning: Failed to backup current world"

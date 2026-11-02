@@ -47,7 +47,7 @@
     Header always set X-Content-Type-Options nosniff
     Header always set X-XSS-Protection "1; mode=block"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' wss:; font-src 'self'; frame-ancestors 'self'"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' wss:; font-src 'self'; frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'"
 
     # Hide server information
     ServerSignature Off
@@ -69,6 +69,14 @@
 
     # Enable rewrite engine for WebSocket upgrade
     RewriteEngine on
+
+    # A browser sends the player's saved password along with a WebSocket that
+    # any web page opens, so only the game's own page may open one: its
+    # Origin must be this site (the test string is "origin|https://host",
+    # equal halves pass)
+    RewriteCond %{HTTP:Upgrade} websocket [NC]
+    RewriteCond "%{HTTP:Origin}|https://%{HTTP_HOST}" "!^(.+)\|\1$" [NC]
+    RewriteRule ^/play/ - [F,L]
 
     # WebSocket upgrade handling
     RewriteCond %{HTTP:Upgrade} websocket [NC]

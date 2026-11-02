@@ -29,7 +29,7 @@ elif docker ps --format "table {{.Names}}" | grep -q "conquer-vps"; then
 else
     echo ""
     echo "ℹ️  No Conquer Web environment is currently running"
-    echo "   Start with: ./start-local.sh or ./start-production.sh"
+    echo "   Start with: ./start-local.sh (local) or sudo systemctl start conquer-web (VPS)"
     exit 0
 fi
 
@@ -51,7 +51,7 @@ if [ -f "$CERT_PATH/fullchain.pem" ]; then
     if ! openssl x509 -checkend 2592000 -noout -in "$CERT_PATH/fullchain.pem" > /dev/null 2>&1; then
         echo "   ⚠️  Certificate expires within 30 days!"
         if [ "$CERT_TYPE" = "letsencrypt" ]; then
-            echo "   Run: ./renew-certs.sh"
+            echo "   Run: sudo certbot renew"
         fi
     fi
 else
@@ -146,7 +146,7 @@ if [ "$DOMAIN" != "localhost" ] && [ "$ENV" = "local" ]; then
         echo "   Domain ($DOMAIN): ❌ Not responding"
         echo "   💡 Make sure '$DOMAIN' is in your /etc/hosts file"
     fi
-elif [ "$ENV" = "production" ]; then
+elif [ "$ENV" = "vps" ]; then
     if curl -s --connect-timeout 10 "https://$DOMAIN" > /dev/null 2>&1; then
         echo "   Domain ($DOMAIN): ✅ Responding"
     else

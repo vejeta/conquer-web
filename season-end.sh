@@ -70,4 +70,4 @@ mv -f "$list.tmp" "$list"
 chmod 644 "$SEASONS"/*.json
 
 echo "✅ \"$NAME\" is in the hall of fame ($SEASONS/$slug.json)"
-echo "   Start the next season with ./generate-world.sh or ./reset-to-default-world.sh"
+echo "   ./new-season.sh does this step and starts the next world"

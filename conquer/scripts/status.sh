@@ -162,6 +162,8 @@ if [ -n "$turn" ]; then
         awk -v t="$turn" 'NF >= 6 && $1 ~ /^[0-9]+$/ && $6 ~ /^[0-9]+$/ { print t "\t" $2 "\t" $6 }' <<< "$scores"
     } | sort -t "$(printf '\t')" -k1,1n -k2,2 > "$HISTORY_FILE.tmp" && mv -f "$HISTORY_FILE.tmp" "$HISTORY_FILE"
     awk -F'\t' '
+        # Nation names are typed by players: a quote or backslash must not break the JSON
+        function json(s) { gsub(/\\/, "\\\\", s); gsub(/"/, "\\\"", s); return "\"" s "\"" }
         { if (!($1 in seen_t)) { seen_t[$1] = 1; turns[++nt] = $1 }
           if (!($2 in seen_n)) { seen_n[$2] = 1; names[++nn] = $2 }
           score[$1, $2] = $3 }
@@ -170,7 +172,7 @@ if [ -n "$turn" ]; then
             for (i = 1; i <= nt; i++) printf "%s%d", (i > 1 ? "," : ""), turns[i]
             printf "],\"nations\":{"
             for (j = 1; j <= nn; j++) {
-                printf "%s\"%s\":[", (j > 1 ? "," : ""), names[j]
+                printf "%s%s:[", (j > 1 ? "," : ""), json(names[j])
                 for (i = 1; i <= nt; i++)
                     printf "%s%s", (i > 1 ? "," : ""), ((turns[i], names[j]) in score ? score[turns[i], names[j]] : "null")
                 printf "]"

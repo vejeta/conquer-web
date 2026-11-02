@@ -44,7 +44,8 @@ if [ ! -f "$WORLD_DIR/data" ]; then
 fi
 
 # Help files must match the compiled binary, refresh them on every start
-cp "$PREFIX"/share/help[0-5] "$WORLD_DIR/"
+# (root writing into a directory the game user owns: replace a link, never follow it)
+cp --remove-destination "$PREFIX"/share/help[0-5] "$WORLD_DIR/"
 
 # The game user must own the world, the published status and the backups
 # (worlds from older images or restored backups may belong to root)

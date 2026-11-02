@@ -1,434 +1,236 @@
-# Security Enhancements Guide
+# Security
 
 <!--
 SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
 SPDX-License-Identifier: GPL-3.0-or-later
 -->
 
-This guide provides additional security hardening steps for production deployments of Conquer Web.
-
-## 🛡️ Rate Limiting & Brute Force Protection
-
-### Option 1: fail2ban (Recommended)
-
-fail2ban monitors log files and temporarily bans IPs that show malicious behavior.
-
-#### Installation
-
-```bash
-# Install fail2ban
-sudo apt update
-sudo apt install fail2ban
-
-# Start and enable service
-sudo systemctl start fail2ban
-sudo systemctl enable fail2ban
-```
-
-#### Configuration for Conquer Web
-
-Create a custom jail for Apache authentication failures:
-
-```bash
-sudo nano /etc/fail2ban/jail.d/conquer-web.conf
-```
-
-Add the following configuration:
-
-```ini
-# Conquer Web fail2ban configuration
-
-[apache-auth-conquer]
-enabled = true
-port = http,https
-filter = apache-auth
-logpath = /var/log/apache2/conquer_*_error.log
-maxretry = 3
-bantime = 3600
-findtime = 600
-action = iptables-multiport[name=apache-auth-conquer, port="http,https", protocol=tcp]
-
-[apache-dos-conquer]
-enabled = true
-port = http,https
-filter = apache-dos-conquer
-logpath = /var/log/apache2/conquer_*_access.log
-maxretry = 200
-bantime = 1800
-findtime = 300
-action = iptables-multiport[name=apache-dos-conquer, port="http,https", protocol=tcp]
-
-[ttyd-auth]
-enabled = true
-port = http,https
-filter = ttyd-auth
-logpath = /var/log/apache2/conquer_*_error.log
-maxretry = 5
-bantime = 7200
-findtime = 900
-action = iptables-multiport[name=ttyd-auth, port="http,https", protocol=tcp]
-```
-
-#### Custom Filters
-
-Create filters for ttyd authentication failures and DoS protection:
-
-**ttyd Authentication Filter:**
-```bash
-sudo nano /etc/fail2ban/filter.d/ttyd-auth.conf
-```
-
-```ini
-# fail2ban filter for ttyd authentication failures
-
-[Definition]
-failregex = ^.* \[client <HOST>:\d+\] client sent HTTP code 401.*
-            ^.* \[client <HOST>:\d+\] AH01617: user .*: authentication failure.*
-            ^.* \[client <HOST>:\d+\] AH01618: user .* not found.*
-            ^.* \[client <HOST>:\d+\] AH01797: client denied by server configuration.*
-            ^.* \[client <HOST>:\d+\] AH01630: client denied by server configuration.*
-
-ignoreregex =
-```
-
-**DoS Protection Filter:**
-```bash
-sudo nano /etc/fail2ban/filter.d/apache-dos-conquer.conf
-```
-
-```ini
-# fail2ban filter for DoS attacks via Apache access logs
-
-[Definition]
-failregex = ^<HOST> -.*"(GET|POST).*" (200|206|301|302) .*$
-
-ignoreregex =
-```
-
-#### Test and Activate
-
-```bash
-# Test configuration
-sudo fail2ban-client -t
-
-# Restart fail2ban
-sudo systemctl restart fail2ban
-
-# Check status
-sudo fail2ban-client status
-sudo fail2ban-client status apache-auth-conquer
-```
-
-### Option 2: mod_evasive (Alternative)
-
-mod_evasive provides real-time DoS protection at the Apache level.
-
-#### Installation
-
-```bash
-# Install mod_evasive
-sudo apt install libapache2-mod-evasive
-
-# Enable module
-sudo a2enmod evasive
-```
-
-#### Configuration
-
-```bash
-sudo nano /etc/apache2/mods-enabled/evasive.conf
-```
-
-```apache
-<IfModule mod_evasive24.c>
-    # Page hit limit per interval
-    DOSPageCount        3
-    DOSPageInterval     1
-
-    # Site hit limit per interval
-    DOSSiteCount        50
-    DOSSiteInterval     1
-
-    # Blocking period (seconds)
-    DOSBlockingPeriod   3600
-
-    # Hash table size
-    DOSHashTableSize    4096
-
-    # Log directory
-    DOSLogDir           /var/log/apache2/evasive
-
-    # Email alerts (optional)
-    # DOSEmailNotify      admin@yourdomain.com
-
-    # Whitelist localhost and your IP
-    DOSWhitelist        127.0.0.1
-    DOSWhitelist        ::1
-    # DOSWhitelist      YOUR_ADMIN_IP
-</IfModule>
-```
-
-Create log directory:
-
-```bash
-sudo mkdir -p /var/log/apache2/evasive
-sudo chown www-data:www-data /var/log/apache2/evasive
-```
-
-Restart Apache:
-
-```bash
-sudo systemctl restart apache2
-```
-
-## 🔒 Additional Apache Security
-
-### Enhanced Security Headers
-
-Add to your Apache virtual host or in `/etc/apache2/conf-available/security.conf`:
-
-```apache
-# Additional security headers
-Header always set X-Robots-Tag "noindex, nofollow"
-Header always set X-Permitted-Cross-Domain-Policies "none"
-Header always set Cross-Origin-Embedder-Policy "require-corp"
-Header always set Cross-Origin-Opener-Policy "same-origin"
-Header always set Cross-Origin-Resource-Policy "same-origin"
-
-# Remove server signatures
-Header always unset X-Powered-By
-Header always unset Server
-ServerTokens Prod
-```
-
-### Request Filtering
-
-Add to your virtual host configuration:
-
-```apache
-# Block suspicious request patterns
-<LocationMatch "(\.php|\.asp|\.jsp|wp-admin|phpmyadmin|\.git|\.env)">
-    Require all denied
-</LocationMatch>
-
-# Block common attack patterns in URLs
-RewriteEngine On
-RewriteCond %{QUERY_STRING} (union.*select|concat.*\(|script.*>) [NC,OR]
-RewriteCond %{QUERY_STRING} (\.\.\/|\.\.\\|etc\/passwd|boot\.ini) [NC,OR]
-RewriteCond %{QUERY_STRING} (<script|javascript:|vbscript:|onload|onerror) [NC]
-RewriteRule .* - [F,L]
-
-# Limit request methods (applied globally)
-<Location />
-    <RequireAll>
-        Require method GET POST HEAD OPTIONS
-    </RequireAll>
-</Location>
-```
-
-## 🔍 Monitoring & Alerting
-
-### Log Monitoring with logwatch
-
-```bash
-# Install logwatch
-sudo apt install logwatch
-
-# Configure for daily reports
-sudo nano /etc/logwatch/conf/logwatch.conf
-```
-
-Edit the configuration:
-```
-Detail = High
-MailTo = your-email@domain.com
-Range = yesterday
-Service = All
-```
-
-### Real-time Log Monitoring
-
-Monitor authentication attempts in real-time:
-
-```bash
-# Watch Apache error logs
-sudo tail -f /var/log/apache2/conquer_*_error.log
-
-# Watch fail2ban logs
-sudo tail -f /var/log/fail2ban.log
-
-# Monitor active bans
-sudo fail2ban-client status apache-auth-conquer
-```
-
-## 🛠️ Automated Setup Script
-
-Create an automated security setup script:
-
-```bash
-sudo nano /home/conquer/conquer-web/setup-security.sh
-```
-
-```bash
-#!/bin/bash
-# SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
-# SPDX-License-Identifier: GPL-3.0-or-later
-
-set -e
-
-echo "🛡️ Conquer Web Security Enhancement Setup"
-echo "========================================"
-
-# Check if running as root
-if [ "$EUID" -ne 0 ]; then
-    echo "❌ This script must be run as root"
-    echo "   Run with: sudo $0"
-    exit 1
-fi
-
-# Install fail2ban
-echo "📦 Installing fail2ban..."
-apt update
-apt install -y fail2ban
-
-# Create fail2ban configuration
-echo "🔧 Configuring fail2ban..."
-cat > /etc/fail2ban/jail.d/conquer-web.conf << 'EOF'
-[apache-auth-conquer]
-enabled = true
-port = http,https
-filter = apache-auth
-logpath = /var/log/apache2/conquer_*_error.log
-maxretry = 3
-bantime = 3600
-findtime = 600
-action = iptables-multiport[name=apache-auth-conquer, port="http,https", protocol=tcp]
-
-[ttyd-auth]
-enabled = true
-port = http,https
-filter = ttyd-auth
-logpath = /var/log/apache2/conquer_*_error.log
-maxretry = 5
-bantime = 7200
-findtime = 900
-action = iptables-multiport[name=ttyd-auth, port="http,https", protocol=tcp]
-EOF
-
-# Create ttyd filter
-cat > /etc/fail2ban/filter.d/ttyd-auth.conf << 'EOF'
-[Definition]
-failregex = ^.* \[client <HOST>:\d+\] client sent HTTP code 401.*
-            ^.* \[client <HOST>:\d+\] AH01617: user .*: authentication failure.*
-            ^.* \[client <HOST>:\d+\] AH01618: user .* not found.*
-            ^.* \[client <HOST>:\d+\] AH01797: client denied by server configuration.*
-
-ignoreregex =
-EOF
-
-# Enable and start fail2ban
-systemctl enable fail2ban
-systemctl restart fail2ban
-
-# Install logwatch
-echo "📊 Installing logwatch..."
-apt install -y logwatch
-
-# Test fail2ban configuration
-echo "🧪 Testing fail2ban configuration..."
-if fail2ban-client -t; then
-    echo "✅ fail2ban configuration is valid"
-else
-    echo "❌ fail2ban configuration has errors"
-    exit 1
-fi
-
-echo ""
-echo "🎉 Security enhancements installed successfully!"
-echo ""
-echo "📋 Next steps:"
-echo "1. Check fail2ban status: sudo fail2ban-client status"
-echo "2. Monitor logs: sudo tail -f /var/log/fail2ban.log"
-echo "3. View banned IPs: sudo fail2ban-client status apache-auth-conquer"
-echo "4. Consider setting up email alerts in logwatch"
-echo ""
-echo "🔒 Your Conquer Web installation is now better protected!"
-```
-
-Make it executable:
-
-```bash
-chmod +x /home/conquer/conquer-web/setup-security.sh
-```
-
-## 🚨 Security Monitoring Commands
-
-### Daily Security Checks
-
-```bash
-# Check fail2ban status
-sudo fail2ban-client status
-
-# View banned IPs
-sudo fail2ban-client status apache-auth-conquer
-
-# Check recent authentication failures
-sudo grep "401" /var/log/apache2/conquer_*_access.log | tail -20
-
-# Check for suspicious activity
-sudo grep -i "attack\|hack\|exploit" /var/log/apache2/conquer_*_error.log
-
-# Monitor system resources
-htop
-df -h
-```
-
-### Unban IP (if needed)
-
-```bash
-# Unban specific IP
-sudo fail2ban-client set apache-auth-conquer unbanip 192.168.1.100
-
-# Clear all bans for a jail
-sudo fail2ban-client reload apache-auth-conquer
-```
-
-## 🎯 Security Testing
-
-### Test Rate Limiting
-
-```bash
-# Test with curl (should get banned after few attempts)
-for i in {1..10}; do
-    curl -u wronguser:wrongpass https://your-domain.com
-    sleep 1
-done
-```
-
-### Monitor During Test
-
-```bash
-# Watch fail2ban logs during testing
-sudo tail -f /var/log/fail2ban.log
-
-# Check if IP gets banned
-sudo fail2ban-client status apache-auth-conquer
-```
-
-## 📋 Security Checklist
-
-After implementing these enhancements:
-
-- [ ] fail2ban installed and configured
-- [ ] Custom filters for ttyd authentication created
-- [ ] Rate limiting tested and working
-- [ ] Log monitoring setup
-- [ ] Email alerts configured (optional)
-- [ ] Security testing performed
-- [ ] Documentation updated with admin procedures
-- [ ] Backup procedures include security configurations
-
-## 🔑 Late nations and god's password
+What Conquer Web protects, from whom, how, and what it does not do. It
+describes the code in this repository; a server you run is only as safe as
+its host and its settings, see "Hardening a server" below.
+
+## Reporting a problem
+
+Please do not open a public issue for a vulnerability. Use GitHub's private
+reporting (Security tab of <https://github.com/vejeta/conquer-web>, "Report a
+vulnerability"), or write to the maintainer (address in `AUTHORS.md`) with
+what you found, how to reproduce it and which version. You get an answer
+within a few days; a fix is released before details are published. Never
+include a real password or a player's data in a report.
+
+## Threat model
+
+| Who | Trusted with | Not trusted to |
+|---|---|---|
+| Host root (the person running the VPS) | everything: the host, Docker, Apache, the account file, the world | (trusted) |
+| The game user inside the container (`conquer`, uid 1000) | the world files, `lib/.players`, the account file, the mail settings in its environment: gate, ttyd, menu, game and cron all run as it | (trusted, and it is the boundary below) |
+| Administrators of the site (accounts marked `*` in `lib/.players`) | approving or rejecting seats, making invite codes, opening any nation at its password prompt | anything on the host |
+| Players (approved accounts) | their own nation, once they give its password; a practice world of their own | other nations, other accounts, the files, a shell |
+| Visitors (nobody, or a pending account) | asking for a seat; the public pages and status; the menu and a practice world | everything else |
+
+The main boundary is between a player and the game user. Players get a
+terminal menu, never a shell: if they could break out of it they would be the
+game user and could edit the world, the accounts and the administrators. The
+controls below exist to keep that boundary, and to keep visitors from
+becoming players without the administrator's approval.
+
+## Controls, layer by layer
+
+### Browser and Apache (`vps/virtualhost.conf.template`, `apache/local.conf`)
+
+- HTTPS only; the plain HTTP vhost redirects (and serves Let's Encrypt
+  challenges). TLS 1.2+ with AEAD ciphers, HSTS (one year), no session tickets.
+- Headers: `X-Content-Type-Options`, `X-Frame-Options: SAMEORIGIN`,
+  `Referrer-Policy`, and a Content-Security-Policy (`default-src 'self'`,
+  `frame-ancestors 'self'`, `object-src 'none'`, `base-uri 'self'`,
+  `form-action 'self'`; inline scripts are still allowed, the pages use them).
+- `/play/` and `/admin/` require a valid account (Basic auth against the
+  htpasswd file). They are the last `<Location>` blocks of the vhost; CI checks
+  that `/play/` stays last, because a later block could silently lift the
+  password.
+- Identity: Apache sets `X-WEBAUTH-USER` from the signed-in account after
+  `RequestHeader unset X-WEBAUTH-USER early`, so a header sent by a client never
+  survives. ttyd (`-H X-WEBAUTH-USER`) answers 407 to a request without it; the
+  gate treats the header as the administrator's identity. Only Apache may reach
+  ports 7681 and 7682: the local setup does not publish them, the VPS setup
+  binds them to `127.0.0.1`.
+- Cross-site WebSocket hijacking: a browser sends a player's saved password
+  with a WebSocket that any web page opens. Apache refuses a WebSocket to
+  `/play/` whose `Origin` is not this site (403, before any proxying).
+- Requests: 1 MB body limit, 60 s timeout, sensitive file names and
+  `.git`/`.env` denied, noisy bots blocked.
+- The pages put server text in the DOM with `textContent` (account names,
+  emails and messages on the administrator page, nation names and news on the
+  landing page); the news pages escape HTML.
+
+### Sign-up service (`conquer/gate`, Go, standard library only)
+
+- Public: `POST /join/api/request` and `/signup`. Administrator: `/admin/api/*`,
+  allowed only when `X-WEBAUTH-USER` names an account marked exactly `*`.
+- Account names: letters, digits, `. _ -`, 1 to 32 characters, **starting with a
+  letter or digit** (so never an option for `htpasswd`, never `.` or `..`);
+  `god root admin conquer join` are reserved. The same rule is in the gate,
+  `signup.sh` and `manage-players.sh`, and `tests/test_security.py` checks it.
+- A request cannot take an existing name (account file and `.players` are both
+  checked under a lock), cannot be `*`, and approving or rejecting works only on
+  accounts marked `?` (waiting).
+- Passwords: 8 to 72 bytes on one line, passed to `htpasswd -niB -C 10` on
+  standard input (never in a command line or a log), stored as bcrypt.
+- Sizes: request body 8 KB, message 500 characters on one line, email 120
+  characters with no whitespace, quotes, commas, angle brackets; language from a
+  fixed list.
+- Rate limits per client address (the one Apache adds last to
+  `X-Forwarded-For`): 20 requests per 10 minutes, 5 wrong or malformed invite
+  codes per hour, 120 administrator actions per 10 minutes. At most 200
+  requests wait for approval at once, after which the page says sign-up is
+  closed.
+- POSTs are refused when the browser's `Origin` is another site.
+- Invite codes: 8 characters from a 32-letter alphabet read from
+  `/dev/urandom` (40 bits), stored in `lib/.invites`, used once (removed under
+  the lock together with the account creation), guessable only at five tries an
+  hour per address.
+- Mail (`notify.go`): the recipient is the administrator's configured address,
+  or the visitor's address after approval; subject is one encoded line, no
+  header can be injected (addresses and text cannot carry a line break), the
+  body is plain text. SMTP uses STARTTLS or implicit TLS with certificate
+  verification unless `SMTP_STARTTLS=off`. The webhook gets only the account
+  name and the admin URL.
+
+### Scripts and the terminal menu (`conquer/scripts`)
+
+- No shell for players: ttyd runs `conquer-menu` directly, not a shell. The menu
+  reads a key at a time and calls fixed programs. A Ctrl-C ends the menu and the
+  ttyd session; there is no shell to fall back to.
+- The pager for the scores runs with `LESSSECURE=1` and `LESSKEY=/dev/null`, so
+  `!`, `|`, `v`, `:e` and `s` do nothing (checked by hand, and CI-checked that
+  every pager call sets it). The game itself has no shell escape: its few
+  `system()` calls use fixed commands and names the game builds.
+- The nation builder runs under `env -i`, with CPU and file size limits and a
+  time limit, once per account, for accounts marked `+`.
+- Values from the network reach the scripts as arguments or standard input, never
+  through `eval` or a shell string. Everything that goes into the tab- or
+  colon-separated files (`.players`, `.requests`, `.invites`, the account file)
+  is validated first: names by the rule above, free text collapsed to one line.
+- The language of the menu (`/play/?arg=`) is used only if it matches a language
+  code that has a catalog file.
+- Practice worlds live in `practice/<account>`; the directory name is sanitized
+  and never `.` or `..` (the menu deletes and recreates it).
+- Nation names are typed by the player and the game accepts any printable
+  character. `conquer-join` links a nation to the account only if the name is
+  letters, digits, `. _ -` (up to 9): a name like `*:x` would otherwise read as
+  an administrator in `.players`. Otherwise the account waits until the
+  administrator assigns the nation.
+- State files are updated under `flock`; the account file is rewritten in
+  place so the bind mount keeps working.
+
+### Container (`docker-compose.*.yml`, `conquer/Dockerfile`, `entrypoint.sh`)
+
+- The entrypoint runs as root only to prepare volumes and cron; ttyd, the gate,
+  the menu, the game and every turn update run as uid 1000 (`setpriv`). PID 1
+  holds no capability (CI checks it).
+- `cap_drop: ALL` with only what the root part of the entrypoint needs,
+  `no-new-privileges`, `pids_limit`, `mem_limit`, log rotation.
+- ttyd: at most `MAX_CLIENTS` terminals at once, pinned release with a checked
+  SHA-256. `SESSION_TIMEOUT` is ttyd's WebSocket ping interval, not an idle
+  timeout.
+- The gate is a static Go binary built in a separate stage; the image has no
+  compiler.
+- Backups made before each turn are mode 600 in a 700 directory (they hold the
+  nations' password hashes, emails and unused invite codes).
+
+### Host
+
+- Ports published on `127.0.0.1` only (VPS). The account file is owned by the
+  game user and the `www-data` group, mode 640.
+- `manage-players.sh` and the other tools that run as root on files the game
+  user owns refuse symbolic links in the world directory.
+- `update-vps.sh` runs git as the owner of the checkout, and its backups are in
+  a 700 directory under `/root`; `offsite-backup.sh` encrypts what it sends.
+- `check-security.sh`, `setup-security-basic.sh` and `setup-security.sh` install
+  and report fail2ban.
+
+### Data published on purpose
+
+`status/status.json`, `history.json` and the news pages hold the turn, the
+schedule, nation names, race, class, alignment, scores, and the news with the
+captured-sector list left out. They never hold account names, emails, requests
+or the invite codes. `ADMIN_CONTACT`, if you set it, is public.
+
+### CI
+
+`ci.yml` has read-only repository permissions, no secrets, no `set -x`; its
+only password is the throwaway `ci-password` of a container that exists for the
+run. It checks the Apache password rule, a forged identity header, the
+WebSocket origin check, the container's capabilities and the sign-up and
+approval flows. A step fails if the password shows up in a container log.
+
+## Known limits
+
+- **Basic auth.** The browser keeps the password for the session and resends it;
+  there is no log-out, no second factor and no lockout inside the application.
+  Brute force is limited only by fail2ban if you install it (below). Use long
+  passwords; the sign-up page asks for 8 or more, bcrypt uses the first 72 bytes.
+- **Everything in the container is one user.** The gate, ttyd, the menu, the game,
+  cron and the mail password (`SMTP_PASSWORD` is in the container environment)
+  share uid 1000. A way out of the menu would give the world, the account file
+  and the administrators' marks. The second line of defense is that the
+  container has no capabilities and cannot gain any.
+- **The identity header is trusted from whoever can reach ports 7681 and 7682.**
+  That is Apache only, on the local Docker network or on the VPS loopback. Other
+  local users of the VPS, or another container on the same Docker network, could
+  send `X-WEBAUTH-USER` themselves.
+- **No idle timeout for terminals.** An open session keeps its slot until the
+  browser closes it; `SESSION_TIMEOUT` is only a ping interval.
+- **No shared-secret header between Apache and the gate/ttyd.** The network
+  position above is the only check on `X-WEBAUTH-USER`.
+- **The container's root filesystem is writable** (it is not `read_only`),
+  though the game user can write only to its own directories.
+- **The lock files live in `/run/conquer`,** a directory the game user owns, so
+  a process of that user can hold the join and account locks.
+- **Waiting accounts can open a terminal.** A visitor's account exists (waiting,
+  `?`) as soon as the request is made, so the menu and the practice world are
+  open to it. Each uses one of the `MAX_CLIENTS` slots while connected.
+- **Accounts can be guessed from the sign-up page** ("name taken"), as on any
+  site that lets you choose a name.
+- **Passwords in the game.** Conquer keeps at most 7 characters of a nation's
+  password as a DES `crypt` hash in the world file. Anyone who reads a world
+  file or a backup can guess them offline. God's password is the strongest case,
+  see below. Treat `data/lib` and `data/backups` as secrets.
+- **The shipped worlds.** `conquer/lib` and `conquer/practice-world` ship with
+  god and every sample nation locked (`conqpasswd -l`), so no password opens
+  them; CI checks this. The one exception is `trainee` in the practice world,
+  which is public on purpose (`train1`).
+- **Personal data.** Emails and messages are kept in `lib/.requests` until the
+  request is decided, and in backups. The gate logs the account name and the
+  client address of sign-ups and refusals.
+- **Git history.** The first commits held a self-signed certificate key for
+  `conquer.local` and, in the first world files, a god password hash. Neither is
+  in use; do not reuse that password anywhere.
+- **The administrator page** is protected by the same account system as the
+  game; one stolen administrator password approves seats and makes invite codes.
+
+## Hardening a server
+
+- Keep the game user's uid equal to the owner of `data/` so backup scripts need
+  no root, and keep `data/` and `/etc/apache2/conquer-web.htpasswd` unreadable
+  to other users (`chmod 700 data`).
+- Install fail2ban: `sudo ./setup-security-basic.sh` (standard Apache filters:
+  failed logins, bad bots) or `sudo ./setup-security.sh`, then
+  `./check-security.sh` to see the bans. The authentication jail should watch
+  `conquer_*_error.log` for `AH01617`/`AH01618` and ban after about five misses.
+  Do not ban on every `200` or `206` of the access log: the tutorial videos are
+  served in ranges.
+- Set `SMTP_STARTTLS` on (the default), and give the mail account only the right
+  to send.
+- Put a limit on connections per account or per address in front of `/play/` if
+  you see abuse (`mod_qos`, `mod_evasive`, or the firewall).
+- Set the god password after the first start: `./set-nation-password.sh god`.
+- Update the base image and rebuild now and then (`./update-vps.sh --rebuild`);
+  ttyd and the Debian image are pinned, not auto-updated.
+- Back up `data/` and the account file; restore only archives you made. An
+  archive made by the game user is treated as untrusted when restored as root.
+
+## Late nations and god's password
 
 The game's nation builder (`conqrun -a`) asks for the super user (god)
 password once the game is past turn 5, so that on a classic multi-user host
@@ -453,17 +255,12 @@ This does not weaken the world:
 A nation that starts late gets the game's own extra points
 (`newlogin.c`, "points added for starting late").
 
-## 🔄 Maintenance
+## Checklist
 
-### Weekly Tasks
-- Review fail2ban logs for patterns
-- Check banned IP lists
-- Monitor authentication failure trends
-
-### Monthly Tasks
-- Update security configurations
-- Review and rotate logs
-- Test backup and restore procedures
-- Update fail2ban rules if needed
-
-This completes the security enhancement setup for your Conquer Web installation. Your system now has multiple layers of protection against brute force attacks and suspicious activity.
+- [ ] HTTPS works, HSTS header present, `/play/` and `/admin/` answer 401 without a password
+- [ ] God password set on the server (`conqpasswd -q god` says "set")
+- [ ] fail2ban installed and `./check-security.sh` clean
+- [ ] Administrator accounts few, with long passwords
+- [ ] `data/` and the account file not readable by other host users
+- [ ] Backups (`data/backups`, off-site) work and a restore was tried
+- [ ] `docker compose ps` shows the game ports bound to `127.0.0.1` (VPS) or not published (local)
