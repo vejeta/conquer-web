@@ -59,8 +59,11 @@ object Site {
      */
     fun practicePage(lang: String): String = "try/?lang=$lang&app=1&autostart=1"
 
-    /** The story (intro) of the practice world, shown again on request ("story=1"). */
-    fun storyPage(lang: String): String = "try/?lang=$lang&app=1&story=1"
+    /**
+     * The story (web/story.html), from the app's own copy: eight scenes with
+     * the game's sound. Its Play and Skip go to the app's Home (bridge "home").
+     */
+    fun storyPage(lang: String): String = "story.html?app=1&lang=$lang"
 
     /** The home page of the online site (opened in the system's browser). */
     fun siteUrl(lang: String): String = "$URL/?lang=$lang"

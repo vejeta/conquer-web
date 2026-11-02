@@ -9,6 +9,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <string name="btn_practice">Тренировочный мир</string>
     <string name="btn_tutorial">Обучение</string>
     <string name="btn_site">Сайт</string>
+    <string name="btn_story">История</string>
     <string name="settings">Настройки</string>
     <string name="forget_account">Забыть аккаунт</string>
     <string name="forgotten">Сохранённый аккаунт удалён</string>

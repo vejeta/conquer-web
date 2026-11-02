@@ -9,6 +9,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <string name="btn_practice">练习世界</string>
     <string name="btn_tutorial">教程</string>
     <string name="btn_site">网站</string>
+    <string name="btn_story">故事</string>
     <string name="settings">设置</string>
     <string name="forget_account">忘记账号</string>
     <string name="forgotten">已删除保存的账号</string>

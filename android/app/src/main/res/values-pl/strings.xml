@@ -9,6 +9,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <string name="btn_practice">Świat treningowy</string>
     <string name="btn_tutorial">Samouczek</string>
     <string name="btn_site">Strona</string>
+    <string name="btn_story">Historia</string>
     <string name="settings">Ustawienia</string>
     <string name="forget_account">Zapomnij konto</string>
     <string name="forgotten">Zapisane konto zostało usunięte</string>

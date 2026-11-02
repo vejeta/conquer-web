@@ -164,6 +164,7 @@ fun Home(
             colors = ButtonDefaults.filledTonalButtonColors(containerColor = colors.surface, contentColor = colors.primary),
         ) { Label(R.string.btn_practice) }
         OutlinedButton(onClick = tapped(onTutorial), modifier = wide.height(64.dp)) { Label(R.string.btn_tutorial) }
+        OutlinedButton(onClick = tapped(onStory), modifier = wide.height(64.dp)) { Label(R.string.btn_story) }
         OutlinedButton(onClick = tapped(onSite), modifier = wide.height(64.dp)) { Label(R.string.btn_site) }
 
         TextButton(onClick = { sound.tap(); sheet = true }) {

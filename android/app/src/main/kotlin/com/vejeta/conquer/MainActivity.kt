@@ -92,6 +92,12 @@ class MainActivity : ComponentActivity() {
             askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
 
+        // First launch: the story opens by itself, once; it is on Home (and in the settings) afterwards
+        if (!prefs.getBoolean("story_seen", false)) {
+            prefs.edit().putBoolean("story_seen", true).apply()
+            url = "${server.origin}/${Site.storyPage(Site.language())}"
+        }
+
         setContent {
             // A race chosen in the settings wins; Auto follows what the page detected
             val shown = Race.fromKey(settings.raceChoice) ?: race
