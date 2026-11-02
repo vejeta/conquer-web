@@ -19,11 +19,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
      Automated browsers (tests, recordings of the game itself) skip it, unless ?story=1. */
   (function () {
     try {
-      var seen = localStorage.getItem('conquer-story-seen'), q = location.search;
-      if (seen || window.top !== window || /[?&]nostory/.test(q) || (navigator.webdriver && !/[?&]story=1/.test(q))) return;
-      var up = location.pathname.indexOf('/try/') >= 0 ? '../' : '';
-      var lang = /[?&]lang=([\w-]+)/.exec(q);
-      location.replace(up + 'story.html?next=' + (up ? 'try/' : 'game.html') + (lang ? '&lang=' + lang[1] : ''));
+      var q = location.search, app = /[?&]app=1(?:&|$)/.test(q) || /Cefrium/i.test(navigator.userAgent || '') || document.documentElement.classList.contains('in-app');
+      try { app = app || sessionStorage.getItem('conquer-app') === '1'; } catch (e) {}
+      /* In the Android app the app owns the first-launch story: the game pages never open it. */
+      if (app || localStorage.getItem('conquer-story-seen') || window.top !== window || /[?&]nostory/.test(q) || (navigator.webdriver && !/[?&]story=1/.test(q))) return;
+      var tryPage = location.pathname.indexOf('/try/') >= 0, up = tryPage ? '../' : '';
+      var lang = /[?&]lang=([\w-]+)/.exec(q) || [0, localStorage.getItem('conquer-lang')];
+      location.replace(up + 'story.html?to=' + (tryPage ? 'try' : 'game') + (lang[1] ? '&lang=' + encodeURIComponent(lang[1]) : ''));
     } catch (e) {}
   })();
   </script>
