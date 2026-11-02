@@ -382,12 +382,15 @@
   function cue(c) {
     var A = window.conquerAudio, p = c.split(':');
     if (!sound || !A) return;
+    if (c === 'screen:map') p = ['race', n === 8 ? raceNow() : 'human'];
     try {
       if (p[0] === 'race') {
-        // the map bed follows the race of the sub-panel that lights up
-        document.documentElement.setAttribute('data-race', p[1]);
-        A.screen('map');
-        document.dispatchEvent(new CustomEvent('conquer:race', { detail: { race: p[1] } }));
+        // the map bed follows the race of the sub-panel that lights up: audio.js reads <html data-race>
+        // when it is asked, so the attribute is set for that call only (the artefacts of the page
+        // are dressed by their own data-race, and an html one would override them all)
+        var root = document.documentElement, was = root.getAttribute('data-race');
+        root.setAttribute('data-race', p[1]);
+        try { A.screen('map'); } finally { if (was === null) root.removeAttribute('data-race'); else root.setAttribute('data-race', was); }
       } else if (p[0] === 'screen') A.screen(p[1]);
       else if (p[0] === 'event') A.event(p[1]);
     } catch (e) {}

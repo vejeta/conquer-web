@@ -214,3 +214,27 @@ def test_play_goes_to_try_when_asked(site, browser):
     context, page, errors = story(browser, site, query="&to=try")
     assert page.locator("#play").get_attribute("href").startswith("try/")
     context.close()
+
+
+def lintel(page, sel):
+    return page.evaluate("(s) => getComputedStyle(document.querySelector(s + ' .arch .lintel')).backgroundImage", sel)
+
+
+def test_each_people_has_its_own_artefact(site, browser):
+    context, page, errors = story(browser, site, dur=",".join(["3"] * 8))
+    page.evaluate(STUB)
+    page.click("#begin")
+    page.evaluate("() => conquerStory.go(3)")
+    page.wait_for_function("() => document.querySelectorAll('.p3 .vig.on').length === 4", timeout=10000)
+    frames = [lintel(page, ".p3 .vig[data-race=%s]" % r) for r in ("human", "elf", "dwarf", "orc")]
+    assert len(set(frames)) == 4
+    for r, f in zip(("human", "elf", "dwarf", "orc"), frames):
+        assert r in f
+    # the audio cue must not dress the whole page: <html> keeps no race of its own
+    assert page.evaluate("() => document.documentElement.getAttribute('data-race')") is None
+    page.evaluate("() => conquerStory.go(6)")
+    page.wait_for_function("() => document.querySelector('.p6 .behind .stone')")
+    assert "dwarf" in lintel(page, ".p6 .behind")
+    assert "dwarf" in lintel(page, ".p6 .gate-stage")
+    assert errors == []
+    context.close()
