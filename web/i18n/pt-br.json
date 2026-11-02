@@ -90,7 +90,8 @@
   "trailer": "&#9654; Ver o trailer (40 s)",
   "trailer_close": "Fechar",
   "m_daily": "todos os dias às {time}, no seu horário",
-  "m_weekly": "toda {day} às {time}, no seu horário"
+  "m_weekly": "toda {day} às {time}, no seu horário",
+  "story_link": "&#9656; A história em 2 minutos"
  },
  "game": {
   "keyboard_title": "Mostrar o teclado do dispositivo",
@@ -475,5 +476,41 @@
   "sound_off": "Som desligado: toque para ligar",
   "kb_hint": "O teclado abre sozinho quando o jogo pede texto. Toque em Teclado para abri-lo quando quiser.",
   "hint_close": "Entendi"
+ },
+ "story": {
+  "title": "A história de Conquer",
+  "skip": "Pular",
+  "begin": "Toque para começar",
+  "play": "Jogar",
+  "replay": "Ver de novo",
+  "sound_on": "Som: ligado",
+  "sound_off": "Som: desligado",
+  "back": "Voltar",
+  "next": "Próxima",
+  "progress": "Cena {n} de {total}",
+  "hint": "Toque ou pressione Espaço para continuar",
+  "r_human": "Homens",
+  "r_elf": "Elfos",
+  "r_dwarf": "Anões",
+  "r_orc": "Orcs",
+  "a_human": "o palantír",
+  "a_elf": "a bacia de prata",
+  "a_dwarf": "as Portas de Durin",
+  "a_orc": "a janela de ferro",
+  "d1a": "login: edb",
+  "d1b": "Conquer v4 — Turn 1",
+  "d2": "comp.sources.games: conquer — rule a nation.",
+  "d4": "sahara muda seu estado com darboth para GUERRA.",
+  "d6": "Diga amigo e entre.",
+  "d7": "Nome da sua nação:",
+  "p1": "Mil novecentos e oitenta e sete. Nos centros de computação das universidades, quando todos os outros iam dormir, os terminais continuavam acesos.",
+  "p2": "Dois estudantes, Ed Barlow e Adam Bryant, publicam na Usenet um jogo de estratégia por turnos para muitos jogadores. Não há gráficos: há um mundo, desenhado com letras.",
+  "p3": "Nesse mundo existem quatro povos. Os homens, que enxergam o futuro numa pedra. Os elfos, que o veem na água. Os anões, que o esculpem na montanha. E os orcs, que o arrancam a ferro.",
+  "p4": "Cada jogador dá suas ordens quando pode. Uma vez por dia, o mundo avança: os exércitos marcham, as colheitas crescem, os tratados são cumpridos ou rompidos. E o jornal conta tudo.",
+  "p5": "As universidades trocaram de máquinas. As mensagens se perderam. Durante trinta anos, Conquer foi a lembrança de poucos.",
+  "p6": "Até que alguém o encontrou, pediu permissão aos autores e o trouxe de volta à luz: o mesmo jogo, o mesmo código, livre para sempre. Hoje a porta volta a se abrir para quem disser a palavra.",
+  "p7": "Agora é a sua vez. Escolha um povo, dê um nome à sua nação e tome um canto do mundo. Os outros já estão aqui: aliados que você ainda não conhece e inimigos que já viram você.",
+  "p8": "Um turno por dia. Uma vida inteira de reinado. Conquer.",
+  "b_people": "Povo:"
  }
 }

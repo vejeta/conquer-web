@@ -14,6 +14,19 @@ SPDX-License-Identifier: GPL-3.0-or-later
   <link rel="stylesheet" href="../vendor/xterm/xterm.css">
   <link rel="stylesheet" href="../theme.css">
   <link rel="stylesheet" href="../touch.css">
+  <script>
+  /* The story is shown once before the first game (story.html sets 'conquer-story-seen').
+     Automated browsers (tests, recordings of the game itself) skip it, unless ?story=1. */
+  (function () {
+    try {
+      var seen = localStorage.getItem('conquer-story-seen'), q = location.search;
+      if (seen || window.top !== window || /[?&]nostory/.test(q) || (navigator.webdriver && !/[?&]story=1/.test(q))) return;
+      var up = location.pathname.indexOf('/try/') >= 0 ? '../' : '';
+      var lang = /[?&]lang=([\w-]+)/.exec(q);
+      location.replace(up + 'story.html?next=' + (up ? 'try/' : 'game.html') + (lang ? '&lang=' + lang[1] : ''));
+    } catch (e) {}
+  })();
+  </script>
   <script src="../race.js"></script>
 </head>
 <body class="game-page">

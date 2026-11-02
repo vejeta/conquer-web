@@ -90,7 +90,8 @@
   "trailer": "&#9654; Trailer ansehen (40 s)",
   "trailer_close": "Schließen",
   "m_daily": "täglich um {time}, in deiner Ortszeit",
-  "m_weekly": "jeden {day} um {time}, in deiner Ortszeit"
+  "m_weekly": "jeden {day} um {time}, in deiner Ortszeit",
+  "story_link": "&#9656; Die Geschichte in 2 Minuten"
  },
  "game": {
   "keyboard_title": "Bildschirmtastatur des Geräts einblenden",
@@ -475,5 +476,41 @@
   "sound_off": "Ton aus: tippen zum Einschalten",
   "kb_hint": "Die Tastatur öffnet sich von selbst, wenn das Spiel Text verlangt. Tippe auf Tastatur, um sie jederzeit zu öffnen.",
   "hint_close": "Verstanden"
+ },
+ "story": {
+  "title": "Die Geschichte von Conquer",
+  "skip": "Überspringen",
+  "begin": "Zum Beginnen tippen",
+  "play": "Spielen",
+  "replay": "Noch einmal ansehen",
+  "sound_on": "Ton: an",
+  "sound_off": "Ton: aus",
+  "back": "Zurück",
+  "next": "Weiter",
+  "progress": "Szene {n} von {total}",
+  "hint": "Tippen oder Leertaste drücken, um fortzufahren",
+  "r_human": "Menschen",
+  "r_elf": "Elfen",
+  "r_dwarf": "Zwerge",
+  "r_orc": "Orks",
+  "a_human": "der Palantír",
+  "a_elf": "die Silberschale",
+  "a_dwarf": "die Tore von Durin",
+  "a_orc": "das Eisenfenster",
+  "d1a": "login: edb",
+  "d1b": "Conquer v4 — Turn 1",
+  "d2": "comp.sources.games: conquer — rule a nation.",
+  "d4": "sahara ändert den Status mit darboth auf KRIEG.",
+  "d6": "Sprich, Freund, und tritt ein.",
+  "d7": "Name deiner Nation:",
+  "p1": "Neunzehnhundertsiebenundachtzig. In den Rechenzentren der Universitäten, wenn alle anderen schlafen gegangen waren, liefen die Terminals weiter.",
+  "p2": "Zwei Studenten, Ed Barlow und Adam Bryant, veröffentlichen im Usenet ein rundenbasiertes Strategiespiel für viele Spieler. Es gibt keine Grafik: Es gibt eine Welt, gezeichnet mit Buchstaben.",
+  "p3": "In dieser Welt gibt es vier Völker. Die Menschen, die die Zukunft in einem Stein sehen. Die Elfen, die sie im Wasser erblicken. Die Zwerge, die sie in den Berg meißeln. Und die Orks, die sie mit Eisen herausreißen.",
+  "p4": "Jeder Spieler gibt seine Befehle, wann er kann. Einmal am Tag rückt die Welt weiter: Armeen marschieren, Ernten wachsen, Verträge werden gehalten oder gebrochen. Und die Zeitung berichtet alles.",
+  "p5": "Die Universitäten wechselten ihre Maschinen. Die Nachrichten gingen verloren. Dreißig Jahre lang war Conquer die Erinnerung weniger.",
+  "p6": "Bis jemand es fand, die Autoren um Erlaubnis bat und es ans Licht zurückbrachte: dasselbe Spiel, derselbe Code, für immer frei. Heute öffnet sich das Tor wieder für jeden, der das Wort spricht.",
+  "p7": "Jetzt bist du an der Reihe. Wähle ein Volk, gib deiner Nation einen Namen und nimm dir einen Winkel der Welt. Die anderen sind schon hier: Verbündete, die du noch nicht kennst, und Feinde, die dich schon gesehen haben.",
+  "p8": "Ein Zug am Tag. Ein ganzes Herrscherleben. Conquer.",
+  "b_people": "Volk:"
  }
 }
