@@ -470,19 +470,31 @@
   function next() { if (!started) return; if (flush()) return; if (n < PANELS) go(n + 1); }
   function back() { if (!started) return; if (n > 1) go(n - 1); }
 
+  // where the story was opened from: ?to=game | try (the older ?next=game.html | try/ still works)
+  function origin() {
+    var to = q.get('to'), nx = q.get('next') || '';
+    if (to === 'game' || to === 'try') return to;
+    if (/^try\//.test(nx)) return 'try';
+    if (/^game\.html/.test(nx)) return 'game';
+    return '';
+  }
+  function inApp() { var A = window.conquerApp; return !!(A && A.is); }
+  // the address Play and Skip lead to: the game or the trial where the story was opened from (carrying the
+  // language, and app=1 in the app); otherwise the site's index (in the app, leave() asks the app's Home instead)
   function target() {
-    var nx = q.get('next'), lang = window.conquerLang(), t;
-    if (nx && /^[\w.\/-]+(\?[\w=&.%-]*)?$/.test(nx) && nx.indexOf('..') < 0) t = nx;
-    else if (q.get('to') === 'try') t = 'try/';
-    else t = window.conquerServerUrl ? window.conquerServerUrl('game.html') : 'game.html';
-    if (lang !== 'en' && !/[?&]lang=/.test(t)) t += (t.indexOf('?') < 0 ? '?' : '&') + 'lang=' + lang;
+    var o = origin(), lang = window.conquerLang(), t;
+    if (o === 'try') t = 'try/';
+    else if (o === 'game') t = window.conquerServerUrl ? window.conquerServerUrl('game.html') : 'game.html';
+    else return 'index.html' + (lang !== 'en' ? '?lang=' + lang : '');
+    t += (t.indexOf('?') < 0 ? '?' : '&') + 'lang=' + lang;
+    if (inApp() && !/[?&]app=1/.test(t)) t += '&app=1';
     return t;
   }
-  // in the Android app the game is not behind a link: leaving goes to the app's Home
+  // in the Android app, without a game to return to, leaving goes to the app's Home
   function leave() {
     store(SEEN, '1');
     var go = function () { location.href = target(); }, A = window.conquerApp;
-    if (A && A.is && A.has && A.has() && A.send({ type: 'home' }, go)) return;
+    if (!origin() && A && A.is && A.has && A.has() && A.send({ type: 'home' }, go)) return;
     go();
   }
 

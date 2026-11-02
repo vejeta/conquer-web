@@ -58,13 +58,13 @@ def test_the_eight_scenes_and_skip(site, browser):
         page.keyboard.press("ArrowRight")
     page.wait_for_function("() => conquerStory.state().n === 8")
     page.wait_for_selector("#actions:not([hidden])", timeout=20000)
-    assert page.locator("#play").get_attribute("href").startswith("game.html")
+    assert page.locator("#play").get_attribute("href").startswith("index.html")
     assert errors == []
     context.close()
 
 
 def test_skip_leaves_and_remembers(site, browser):
-    context, page, errors = story(browser, site, query="&next=try/")
+    context, page, errors = story(browser, site, query="&to=try")
     page.click("#begin")
     page.click("#skip")
     page.wait_for_url("**/try/**")
@@ -109,7 +109,7 @@ def test_the_game_shows_the_story_once(site, browser):
     page = context.new_page()
     page.goto(site + "game.html?story=1")
     page.wait_for_url("**/story.html**")
-    assert "next=game.html" in page.url
+    assert "to=game" in page.url
     context.close()
     context = browser.new_context()
     page = context.new_page()
@@ -293,3 +293,76 @@ def test_the_index_opens_the_story_video(site, browser):
     page.wait_for_timeout(500)
     assert page.locator("#trailer-link").is_hidden()
     app.close()
+
+
+def test_redirect_carries_lang_and_origin(site, browser):
+    context = browser.new_context()
+    page = context.new_page()
+    page.goto(site + "game.html?story=1&lang=es")
+    page.wait_for_url("**/story.html**")
+    assert "to=game" in page.url and "lang=es" in page.url
+    context.close()
+    context = browser.new_context()
+    page = context.new_page()
+    page.goto(site + "try/?story=1&lang=es")
+    page.wait_for_url("**/story.html**")
+    assert "to=try" in page.url and "lang=es" in page.url
+    context.close()
+    # no ?lang: the site's stored language travels
+    context = browser.new_context()
+    page = context.new_page()
+    page.add_init_script("try { localStorage.setItem('conquer-lang', 'es'); } catch (e) {}")
+    page.goto(site + "game.html?story=1")
+    page.wait_for_url("**/story.html**")
+    assert "lang=es" in page.url
+    context.close()
+
+
+def test_no_auto_story_in_app_mode(site, browser):
+    for path in ("game.html?story=1&app=1&lang=es", "try/?story=1&app=1&lang=es"):
+        context = browser.new_context()
+        page = context.new_page()
+        page.goto(site + path)
+        page.wait_for_timeout(1500)
+        assert "story.html" not in page.url
+        context.close()
+
+
+def test_play_and_skip_go_back_where_opened(site, browser):
+    cases = [("&to=game", "game.html", ["lang=en"]), ("&to=game&app=1", "game.html", ["lang=en", "app=1"]),
+             ("&to=try", "try/", ["lang=en"]), ("", "index.html", [])]
+    for query, base, extra in cases:
+        context, page, errors = story(browser, site, query=query)
+        href = page.locator("#play").get_attribute("href")
+        assert href.startswith(base) and all(e in href for e in extra), (query, href)
+        context.close()
+    context, page, errors = story(browser, site, query="&to=game&app=1")
+    page.click("#begin")
+    page.click("#skip")
+    page.wait_for_url("**/game.html**")
+    assert "app=1" in page.url and "lang=en" in page.url
+    context.close()
+
+
+def test_skip_in_app_without_origin_asks_the_app_home(site, browser):
+    context, page, errors = story(browser, site, query="&app=1")
+    page.evaluate("() => { window.__sent = []; window.cefriumQuery = function (o) { window.__sent.push(o.request); o.onSuccess(''); }; }")
+    page.click("#begin")
+    page.click("#skip")
+    page.wait_for_function("() => window.__sent.length")
+    assert json.loads(page.evaluate("() => window.__sent[0]"))["type"] == "home"
+    context.close()
+
+
+def test_story_language_from_query_and_stored(site, browser):
+    context, page, errors = story(browser, site, lang="es")
+    assert page.evaluate("() => document.documentElement.lang") == "es"
+    context.close()
+    context = browser.new_context(locale="en-US")
+    page = context.new_page()
+    page.add_init_script("try { localStorage.setItem('conquer-lang', 'es'); } catch (e) {}")
+    page.goto(site + "story.html?to=game&dur=30,30,30,30,30,30,30,30")
+    page.wait_for_function("() => window.conquerStory && document.getElementById('begin')")
+    assert page.evaluate("() => document.documentElement.lang") == "es"
+    assert "lang=es" in page.locator("#play").get_attribute("href")
+    context.close()
