@@ -492,7 +492,7 @@
   }
   // in the Android app, without a game to return to, leaving goes to the app's Home
   function leave() {
-    store(SEEN, '1');
+    if (origin()) store(SEEN, '1');   // only the once-before-the-first-game show; on demand it neither sets nor reads the flag
     var go = function () { location.href = target(); }, A = window.conquerApp;
     if (!origin() && A && A.is && A.has && A.has() && A.send({ type: 'home' }, go)) return;
     go();
@@ -535,7 +535,7 @@
     started = true;
     document.body.classList.add('go');
     $('begin').classList.add('gone');
-    store(SEEN, '1');
+    if (origin()) store(SEEN, '1');   // only the once-before-the-first-game show; on demand it neither sets nor reads the flag
     // the first tap unlocks the narration element for the whole story (iOS, Android autoplay rules)
     if (!RENDER) {
       try {

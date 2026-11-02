@@ -366,3 +366,43 @@ def test_story_language_from_query_and_stored(site, browser):
     assert page.evaluate("() => document.documentElement.lang") == "es"
     assert "lang=es" in page.locator("#play").get_attribute("href")
     context.close()
+
+
+def test_story_on_demand_from_the_index(site, browser):
+    context = browser.new_context()
+    page = context.new_page()
+    page.goto(site + "index.html?lang=es")
+    page.wait_for_function("() => document.getElementById('story-link').href.indexOf('lang=es') > 0")
+    page.click("#story-link")
+    page.wait_for_url("**/story.html?lang=es")
+    page.wait_for_function("() => window.conquerStory && document.getElementById('begin')")
+    assert page.evaluate("() => document.documentElement.lang") == "es"
+    assert page.locator("#play").get_attribute("href").startswith("index.html")
+    page.click("#begin")
+    # on demand it does not mark the story as seen, even when skipped
+    assert page.evaluate("() => localStorage.getItem('conquer-story-seen')") is None
+    page.click("#skip")
+    page.wait_for_url("**/index.html**")
+    assert page.evaluate("() => localStorage.getItem('conquer-story-seen')") is None
+    # so the once-before-the-first-game show still happens
+    page.goto(site + "game.html?story=1&lang=es")
+    page.wait_for_url("**/story.html**")
+    page.wait_for_function("() => window.conquerStory && document.getElementById('begin')")
+    page.click("#begin")
+    assert page.evaluate("() => localStorage.getItem('conquer-story-seen')") == "1"
+    # and afterwards the link on the index still opens it
+    page.goto(site + "index.html?lang=es")
+    page.wait_for_function("() => document.getElementById('story-link').href.indexOf('lang=es') > 0")
+    page.click("#story-link")
+    page.wait_for_url("**/story.html?lang=es")
+    context.close()
+
+
+def test_watch_again_on_the_last_scene(site, browser):
+    context, page, errors = story(browser, site, query="&to=game")
+    page.click("#begin")
+    page.evaluate("() => conquerStory.go(8)")
+    page.wait_for_selector("#actions:not([hidden])", timeout=20000)
+    page.click("#replay")
+    page.wait_for_function("() => conquerStory.state().n === 1")
+    context.close()
