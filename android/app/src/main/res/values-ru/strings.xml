@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <string name="tagline">Стратегия 1987 года у вас в кармане</string>
+    <string name="btn_play">Играть онлайн</string>
+    <string name="btn_practice">Тренировочный мир</string>
+    <string name="btn_tutorial">Обучение</string>
+    <string name="btn_site">Сайт</string>
+    <string name="settings">Настройки</string>
+    <string name="forget_account">Забыть аккаунт</string>
+    <string name="forgotten">Сохранённый аккаунт удалён</string>
+    <string name="login_title">Войдите, чтобы играть онлайн</string>
+    <string name="login_user">Аккаунт</string>
+    <string name="login_password">Пароль</string>
+    <string name="login_remember">Запомнить меня</string>
+    <string name="login_wrong">Сервер не принял эти данные</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Отмена</string>
+    <string name="close">Закрыть</string>
+    <string name="home">Главная</string>
+    <string name="notif_channel">Смена хода</string>
+    <string name="notif_turn">Ход %1$d выполнен</string>
+</resources>

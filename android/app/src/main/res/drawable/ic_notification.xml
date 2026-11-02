@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- A "C": a ring with an opening on the right -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M17.66,6.34 A8,8 0 1,0 17.66,17.66 L15.54,15.54 A5,5 0 1,1 15.54,8.46 Z" />
+</vector>

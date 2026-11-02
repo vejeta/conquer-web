@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <string name="tagline">O jogo de estratégia de 1987, no seu bolso</string>
+    <string name="btn_play">Jogar online</string>
+    <string name="btn_practice">Mundo de treino</string>
+    <string name="btn_tutorial">Tutorial</string>
+    <string name="btn_site">Site</string>
+    <string name="settings">Ajustes</string>
+    <string name="forget_account">Esquecer conta</string>
+    <string name="forgotten">A conta salva foi removida</string>
+    <string name="login_title">Entre para jogar online</string>
+    <string name="login_user">Conta</string>
+    <string name="login_password">Senha</string>
+    <string name="login_remember">Lembrar de mim</string>
+    <string name="login_wrong">O servidor não aceitou estas credenciais</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancelar</string>
+    <string name="close">Fechar</string>
+    <string name="home">Início</string>
+    <string name="notif_channel">Mudanças de turno</string>
+    <string name="notif_turn">O turno %1$d foi executado</string>
+</resources>
