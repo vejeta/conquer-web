@@ -91,6 +91,8 @@
  
   --bevel-hi: #87939a; --bevel-lo: #273031;   /* plain frame bevel */
   --paper: #efe6cf; --paper-ink: #2b2415; --paper-bold: #14100a; --paper-cursor: #7a4a00;
+  /* categorical series of the score chart (validated against --bg-2, light on dark) */
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500; --series-5: #d55181;
 }
 
 /* Phosphor by race. Human is the default above (no attribute). Set
@@ -749,3 +751,25 @@ button.plaque:hover, a.plaque:hover { text-decoration: none; filter: brightness(
 .gate-actions { margin-top: var(--s3); }
 @media (prefers-reduced-motion: reduce) { .gate .leaf, .gate .login { transition: none; } .runes { transition: none; } }
 [data-race="orc"] .stone .roll { display: none !important; }
+
+/* 13. Page chrome shared by every page ------------------------------------
+   Layout only (widths, spacing, the footer's content, the reading block);
+   no page adds a colour of its own. */
+.page { max-width: 880px; margin: 0 auto; padding: var(--s6) var(--s4) 64px; display: flex; flex-direction: column; gap: var(--s5); }
+.page.narrow { max-width: 600px; }
+.page.wide { max-width: 1180px; }
+.page > h1, .page > .lede { margin: 0; }
+.page > .lede { max-width: 62ch; }
+.crumbs { color: var(--ink-dim); font-size: .9rem; margin: 0; }
+.err, .page .error { color: var(--bad); font-weight: 600; margin: 0; }
+.site-header .site-name { margin-right: var(--s2); }
+.site-header .select { margin-left: 0; }
+.site-footer { display: flex; flex-direction: column; align-items: center; gap: var(--s1); padding: var(--s4) var(--s4) 0; text-align: center; font-size: .85rem; color: var(--ink-dim); }
+.site-footer p { margin: 0; max-width: 70ch; }
+.site-footer .foot-links { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s1) var(--s4); }
+/* A long-reading block: set data-theme="parchment" on it. Paper, dark ink. */
+.reading { background: var(--bg); color: var(--ink); border: var(--bezel) solid var(--line); border-radius: var(--radius); padding: var(--s5) var(--s4); box-shadow: inset 0 0 0 1px var(--hair); }
+.reading kbd { display: inline-block; min-width: 1.8em; text-align: center; padding: 0 .4em; background: var(--bg-2); border: 1px solid var(--line); border-bottom: 3px solid var(--stone); border-radius: 4px; white-space: nowrap; }
+.reading pre { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--s3) var(--s4); overflow-x: auto; }
+.reading hr { border: 0; border-top: 1px solid var(--line); }
+@media (min-width: 700px) { .reading { padding: var(--s6); } }

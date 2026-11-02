@@ -9,54 +9,10 @@ SPDX-License-Identifier: GPL-3.0-or-later
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Conquer Player's Guide</title>
   <meta name="description" content="How to play Conquer in your browser: its history since 1987, a step-by-step tutorial with screenshots, advice for your first seasons and the tournament formats of the 2026-2027 seasons.">
+  <link rel="stylesheet" href="theme.css">
+  <script src="race.js"></script>
   <style>
-    :root {
-      color-scheme: dark;
-      --bg: #0d1117;
-      --panel: #161b22;
-      --border: #30363d;
-      --text: #e6edf3;
-      --muted: #8b949e;
-      --accent: #3fb950;
-      --accent-text: #0d1117;
-      --warn: #d29922;
-      --term: #2b2b2b;
-    }
-    @media (prefers-color-scheme: light) {
-      :root:not([data-theme="dark"]) {
-        color-scheme: light;
-        --bg: #f6f8fa;
-        --panel: #ffffff;
-        --border: #d0d7de;
-        --text: #1f2328;
-        --muted: #57606a;
-        --accent: #1a7f37;
-        --accent-text: #ffffff;
-        --warn: #9a6700;
-        --term: #2b2b2b;
-      }
-    }
-    :root[data-theme="light"] {
-      color-scheme: light;
-      --bg: #f6f8fa;
-      --panel: #ffffff;
-      --border: #d0d7de;
-      --text: #1f2328;
-      --muted: #57606a;
-      --accent: #1a7f37;
-      --accent-text: #ffffff;
-      --warn: #9a6700;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font: 17px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    }
-    main { max-width: 880px; margin: 0 auto; padding: 32px 16px 64px; }
-    .mono { font-family: ui-monospace, "DejaVu Sans Mono", Menlo, monospace; }
-    a { color: var(--accent); }
+    /* Layout only: colours and fonts come from theme.css */
     h1, h2, h3 { text-wrap: balance; line-height: 1.25; }
     h2 { font-size: 1.5rem; margin: 0 0 16px; }
     h3 { font-size: 1.1rem; margin: 28px 0 8px; }
@@ -64,48 +20,14 @@ SPDX-License-Identifier: GPL-3.0-or-later
     ul, ol { padding-left: 1.3em; margin: 0 0 14px; }
     li { max-width: 66ch; }
     li + li { margin-top: 6px; }
-    kbd {
-      font: 0.85em ui-monospace, "DejaVu Sans Mono", monospace;
-      border: 1px solid var(--border);
-      border-bottom-width: 2px;
-      border-radius: 4px;
-      padding: 1px 6px;
-      white-space: nowrap;
-    }
-    code { font: 0.9em ui-monospace, "DejaVu Sans Mono", monospace; }
-    pre {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 12px 14px;
-      overflow-x: auto;
-      font: 0.85rem/1.5 ui-monospace, "DejaVu Sans Mono", monospace;
-      margin: 0 0 14px;
-    }
 
     /* Opening: the game's own boot line, then the invitation */
-    .hero { padding-block: 24px 40px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
-    .boot { color: var(--muted); font-size: 0.85rem; margin: 0 0 18px; }
-    .boot span { color: var(--accent); }
-    .logo {
-      margin: 0 0 12px;
-      color: var(--accent);
-      font: bold clamp(2.4rem, 10vw, 4.2rem)/1 ui-monospace, "DejaVu Sans Mono", monospace;
-      letter-spacing: 0.3em;
-    }
-    .hero .lede { font-size: 1.25rem; max-width: 36ch; margin-bottom: 24px; }
+    .opening { padding-block: 24px 40px; border-bottom: 1px solid var(--line); margin-bottom: 40px; }
+    .boot { color: var(--ink-dim); font-size: 0.85rem; margin: 0 0 18px; }
+    .boot span { color: var(--phos-text); }
+    .logo { margin: 0 0 12px; color: var(--phos-text); font: 400 clamp(2.6rem, 10vw, 4.4rem)/1 var(--font-title); letter-spacing: .12em; }
+    .opening .lede { font-size: 1.25rem; max-width: 36ch; margin-bottom: 24px; }
     .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-    .play {
-      display: inline-block;
-      padding: 12px 32px;
-      border-radius: 8px;
-      background: var(--accent);
-      color: var(--accent-text);
-      font-weight: 600;
-      text-decoration: none;
-    }
-    .play:hover, .play:focus-visible { filter: brightness(1.1); }
-    .secondary { color: var(--text); }
 
     nav.toc { margin: 0 0 40px; }
     nav.toc ol { columns: 2 16rem; column-gap: 32px; }
@@ -113,27 +35,27 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
     section { margin-bottom: 56px; scroll-margin-top: 16px; }
     .eyebrow {
-      color: var(--muted);
-      font: 600 0.75rem ui-monospace, "DejaVu Sans Mono", monospace;
+      color: var(--ink-dim);
+      font: 1.1rem/1.2 var(--font-mono);
       text-transform: uppercase;
       letter-spacing: 0.08em;
       margin: 0 0 6px;
     }
 
     /* Timeline: years in the terminal face, events beside them */
-    .timeline { list-style: none; padding: 0; margin: 0; border-left: 2px solid var(--border); }
+    .timeline { list-style: none; padding: 0; margin: 0; border-left: 2px solid var(--line); }
     .timeline li { display: grid; grid-template-columns: 7.5rem 1fr; gap: 16px; padding: 0 0 18px 16px; max-width: none; }
     .timeline li + li { margin-top: 0; }
-    .timeline .when { font: 600 0.9rem/1.8 ui-monospace, "DejaVu Sans Mono", monospace; color: var(--accent); }
+    .timeline .when { font: 1.25rem/1.4 var(--font-mono); color: var(--phos-text); }
     .timeline p { margin: 0; }
     @media (max-width: 560px) { .timeline li { grid-template-columns: 1fr; gap: 0; } }
 
     /* The turn cycle */
     .cycle { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 0 0 16px; padding: 0; list-style: none; counter-reset: cycle; }
-    .cycle li { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin: 0; max-width: none; counter-increment: cycle; }
-    .cycle li::before { content: counter(cycle); display: block; font: 700 0.8rem ui-monospace, monospace; color: var(--accent); margin-bottom: 4px; }
+    .cycle li { background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: 14px; margin: 0; max-width: none; counter-increment: cycle; }
+    .cycle li::before { content: counter(cycle); display: block; font: 700 0.8rem var(--font-mono); color: var(--phos-text); margin-bottom: 4px; }
     .cycle strong { display: block; }
-    .cycle span { color: var(--muted); font-size: 0.92rem; }
+    .cycle span { color: var(--ink-dim); font-size: 0.92rem; }
 
     /* Tutorial steps with screenshots */
     .steps { list-style: none; padding: 0; margin: 0; counter-reset: step; }
@@ -142,11 +64,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
     .steps > li > h3::before {
       content: "Step " counter(step);
       flex: none;
-      font: 600 0.75rem ui-monospace, "DejaVu Sans Mono", monospace;
+      font: 600 0.75rem var(--font-mono);
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: var(--accent-text);
-      background: var(--accent);
+      color: var(--on-phos);
+      background: var(--phos);
       border-radius: 4px;
       padding: 2px 8px;
     }
@@ -155,55 +77,70 @@ SPDX-License-Identifier: GPL-3.0-or-later
       display: block;
       max-width: 100%;
       height: auto;
-      border: 1px solid var(--border);
+      border: 1px solid var(--line);
       border-radius: 8px;
-      background: var(--term);
+      background: var(--screen);
     }
-    figcaption { color: var(--muted); font-size: 0.88rem; margin-top: 6px; }
+    figcaption { color: var(--ink-dim); font-size: 0.88rem; margin-top: 6px; }
     .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; align-items: start; }
     .phone img { max-width: 300px; margin-inline: auto; }
     .phone figcaption { text-align: center; }
 
-    .note { border-left: 3px solid var(--warn); padding: 2px 0 2px 12px; color: var(--muted); }
-    .note strong { color: var(--text); }
+    .note { border-left: 3px solid var(--gold); padding: 2px 0 2px 12px; color: var(--ink-dim); }
+    .note strong { color: var(--ink); }
 
     /* Formats */
     .formats { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
-    .format { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+    .format { background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
     .format h3 { margin: 0; }
     .format p { margin: 0; font-size: 0.95rem; }
     .format dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; font-size: 0.88rem; }
-    .format dt { color: var(--muted); }
+    .format dt { color: var(--ink-dim); }
     .format dd { margin: 0; }
     .format code { font-size: 0.82rem; }
 
     .table-wrap { overflow-x: auto; margin-bottom: 14px; }
     table { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
-    th, td { text-align: left; vertical-align: top; padding: 8px; border-bottom: 1px solid var(--border); }
-    th { color: var(--muted); font-weight: 500; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
-    td:first-child { white-space: nowrap; font-family: ui-monospace, "DejaVu Sans Mono", monospace; font-size: 0.85rem; color: var(--accent); }
+    th, td { text-align: left; vertical-align: top; padding: 8px; border-bottom: 1px solid var(--line); }
+    th { color: var(--ink-dim); font-weight: 500; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    td:first-child { white-space: nowrap; font-family: var(--font-mono); font-size: 0.85rem; color: var(--phos-text); }
 
     .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
-    details { border-top: 1px solid var(--border); padding: 10px 0; }
+    details { border-top: 1px solid var(--line); padding: 10px 0; }
     details summary { cursor: pointer; font-weight: 600; }
     details p { margin: 8px 0 0; }
 
-    .closing { border-top: 1px solid var(--border); padding-top: 32px; }
-    footer { color: var(--muted); font-size: 0.85rem; margin-top: 40px; }
-    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .closing { border-top: 1px solid var(--line); padding-top: 32px; }
+  
+    .boot { font-family: var(--font-mono); font-size: 1.1rem; }
+    .format code, td:first-child { font-size: 1.1rem; }
+    .steps > li > h3::before { font: 1.05rem/1.4 var(--font-mono); }
+    .cycle li::before { font: 1.1rem/1 var(--font-mono); }
+    .fine { color: var(--ink-dim); font-size: .85rem; margin-top: 40px; }
   </style>
 </head>
 <body>
-<main>
+<header class="site-header mountains">
+  <a class="site-name" href="index.html">Conquer</a>
+  <span class="spacer"></span>
+  <nav class="nav" aria-label="Main menu">
+    <a class="key key-small" href="game.html" data-server-link="game.html"><span>Play</span></a>
+    <a class="key key-small" href="hall.html"><span>Hall</span></a>
+    <a class="key key-small" href="signup.html" data-server-link="signup.html"><span>Join</span></a>
+  </nav>
+  <select class="select" data-page-menu="guide" aria-label="Language"></select>
+</header>
+<main class="page wide">
+<div class="reading" data-theme="parchment">
 
-  <header class="hero">
+  <header class="opening">
     <p class="boot mono">conquer 4.12: Copyright (c) 1988 Edward M Barlow<br><span>GPL v3 licensed version (c) 2025</span> · <span data-lang-links="guide"></span></p>
     <p class="logo">CONQUER</p>
     <p class="lede">Rule a nation in a shared fantasy world, one turn at a time. Players have been doing it since 1987. Your seat is open.</p>
     <div class="actions">
-      <a class="play" href="game.html" data-server-link="game.html">Play now</a>
-      <a class="secondary" href="try/">Try it now, no account needed</a>
-      <a class="secondary" href="tutorial.html">Play your first turn, key by key</a>
+      <a class="key key-primary" href="game.html" data-server-link="game.html">Play now</a>
+      <a class="key" href="try/">Try it now, no account needed</a>
+      <a class="key" href="tutorial.html">Play your first turn, key by key</a>
     </div>
   </header>
 
@@ -583,16 +520,22 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <h2>Your nation is waiting</h2>
     <p>Pick a race, choose a name of up to nine letters and ask the administrator for an invite code. The world has been turning since 1987.</p>
     <div class="actions">
-      <a class="play" href="game.html" data-server-link="game.html">Play now</a>
-      <a class="secondary" href="index.html">Current game and scores</a>
+      <a class="key key-primary" href="game.html" data-server-link="game.html">Play now</a>
+      <a class="key" href="index.html">Current game and scores</a>
     </div>
   </section>
 
-  <footer>
+  <p class="fine">
     Conquer is free software (GPL-3.0-or-later). Code: <a href="https://github.com/vejeta/conquer">game</a> · <a href="https://github.com/vejeta/conquer-web">web server</a>.
     History sources: the <span class="mono">HISTORY.md</span> and relicensing records of the game repository.
-  </footer>
+  </p>
+</div>
 </main>
+<footer class="site-footer mountains">
+  <p>Conquer is free software (GPL-3.0-or-later).</p>
+  <div class="foot-links"><a href="design.html">Design</a></div>
+</footer>
+
 <script src="server.js"></script>
 <script src="site.js"></script>
 </body>

@@ -344,7 +344,6 @@
   "b_sub": "Cofnij",
   "b_info": "Info",
   "dpad_label": "Ruch",
-  "dpad_grip": "Przeciągnij w drugi róg",
   "dpad_pick": "Wybierz jednostkę",
   "dir_y": "Północny zachód",
   "dir_k": "Północ",
@@ -361,10 +360,6 @@
   "opt_volume": "Głośność",
   "opt_preview": "Odsłuchaj",
   "opt_scan": "Linie skanowania",
-  "opt_phosphor": "Luminofor",
-  "opt_amber": "Bursztyn",
-  "opt_green": "Zielony",
-  "opt_white": "Biały",
   "opt_hints": "Pokaż klawisze",
   "opt_reset": "Przywróć układ",
   "keys": {
@@ -414,6 +409,22 @@
    "Z": "Przesuń cywilów",
    "qm": "Pomoc",
    "redraw": "Odśwież ekran"
-  }
+  },
+  "opt_race": "Rasa",
+  "opt_plain": "Prosta ramka"
+ },
+ "nav": {
+  "play": "Graj",
+  "hall": "Hala sław",
+  "join": "Dołącz",
+  "design": "Wygląd",
+  "main": "Menu główne"
+ },
+ "race": {
+  "human": "Człowiek",
+  "elf": "Elf",
+  "dwarf": "Krasnolud",
+  "orc": "Ork",
+  "auto": "Automatycznie"
  }
 }

@@ -344,7 +344,6 @@
   "b_sub": "Take back",
   "b_info": "Info",
   "dpad_label": "Move",
-  "dpad_grip": "Drag to the other corner",
   "dpad_pick": "Pick unit",
   "dir_y": "North-west",
   "dir_k": "North",
@@ -361,10 +360,6 @@
   "opt_volume": "Volume",
   "opt_preview": "Preview",
   "opt_scan": "Scanlines",
-  "opt_phosphor": "Phosphor",
-  "opt_amber": "Amber",
-  "opt_green": "Green",
-  "opt_white": "White",
   "opt_hints": "Show key hints",
   "opt_reset": "Reset layout",
   "keys": {
@@ -414,6 +409,22 @@
    "Z": "Move civilians",
    "qm": "Help",
    "redraw": "Redraw the screen"
-  }
+  },
+  "opt_race": "Race",
+  "opt_plain": "Plain frame"
+ },
+ "nav": {
+  "play": "Play",
+  "hall": "Hall",
+  "join": "Join",
+  "design": "Design",
+  "main": "Main menu"
+ },
+ "race": {
+  "human": "Human",
+  "elf": "Elf",
+  "dwarf": "Dwarf",
+  "orc": "Orc",
+  "auto": "Automatic"
  }
 }

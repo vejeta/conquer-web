@@ -344,7 +344,6 @@
   "b_sub": "Devolver",
   "b_info": "Info",
   "dpad_label": "Mover",
-  "dpad_grip": "Arraste para o outro canto",
   "dpad_pick": "Escolher unidade",
   "dir_y": "Noroeste",
   "dir_k": "Norte",
@@ -361,10 +360,6 @@
   "opt_volume": "Volume",
   "opt_preview": "Ouvir",
   "opt_scan": "Linhas de varredura",
-  "opt_phosphor": "Fósforo",
-  "opt_amber": "Âmbar",
-  "opt_green": "Verde",
-  "opt_white": "Branco",
   "opt_hints": "Mostrar as teclas",
   "opt_reset": "Restaurar o layout",
   "keys": {
@@ -414,6 +409,22 @@
    "Z": "Mover civis",
    "qm": "Ajuda",
    "redraw": "Redesenhar a tela"
-  }
+  },
+  "opt_race": "Raça",
+  "opt_plain": "Moldura simples"
+ },
+ "nav": {
+  "play": "Jogar",
+  "hall": "Salão",
+  "join": "Entrar",
+  "design": "Design",
+  "main": "Menu principal"
+ },
+ "race": {
+  "human": "Humano",
+  "elf": "Elfo",
+  "dwarf": "Anão",
+  "orc": "Orc",
+  "auto": "Automático"
  }
 }

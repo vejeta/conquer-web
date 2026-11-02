@@ -344,7 +344,6 @@
   "b_sub": "退回",
   "b_info": "说明",
   "dpad_label": "移动",
-  "dpad_grip": "拖到另一角",
   "dpad_pick": "选择部队",
   "dir_y": "西北",
   "dir_k": "北",
@@ -361,10 +360,6 @@
   "opt_volume": "音量",
   "opt_preview": "试听",
   "opt_scan": "扫描线",
-  "opt_phosphor": "荧光色",
-  "opt_amber": "琥珀",
-  "opt_green": "绿色",
-  "opt_white": "白色",
   "opt_hints": "显示按键提示",
   "opt_reset": "重置布局",
   "keys": {
@@ -414,6 +409,22 @@
    "Z": "移动平民",
    "qm": "帮助",
    "redraw": "重绘屏幕"
-  }
+  },
+  "opt_race": "种族",
+  "opt_plain": "简单边框"
+ },
+ "nav": {
+  "play": "开始游戏",
+  "hall": "名人堂",
+  "join": "加入",
+  "design": "设计",
+  "main": "主菜单"
+ },
+ "race": {
+  "human": "人类",
+  "elf": "精灵",
+  "dwarf": "矮人",
+  "orc": "兽人",
+  "auto": "自动"
  }
 }

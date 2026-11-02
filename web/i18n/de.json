@@ -344,7 +344,6 @@
   "b_sub": "Zurück",
   "b_info": "Info",
   "dpad_label": "Bewegen",
-  "dpad_grip": "In die andere Ecke ziehen",
   "dpad_pick": "Einheit wählen",
   "dir_y": "Nordwest",
   "dir_k": "Nord",
@@ -361,10 +360,6 @@
   "opt_volume": "Lautstärke",
   "opt_preview": "Anhören",
   "opt_scan": "Zeilenraster",
-  "opt_phosphor": "Phosphor",
-  "opt_amber": "Bernstein",
-  "opt_green": "Grün",
-  "opt_white": "Weiß",
   "opt_hints": "Tasten anzeigen",
   "opt_reset": "Anordnung zurücksetzen",
   "keys": {
@@ -414,6 +409,22 @@
    "Z": "Zivilisten bewegen",
    "qm": "Hilfe",
    "redraw": "Bildschirm neu zeichnen"
-  }
+  },
+  "opt_race": "Volk",
+  "opt_plain": "Schlichter Rahmen"
+ },
+ "nav": {
+  "play": "Spielen",
+  "hall": "Ruhmeshalle",
+  "join": "Beitreten",
+  "design": "Design",
+  "main": "Hauptmenü"
+ },
+ "race": {
+  "human": "Mensch",
+  "elf": "Elf",
+  "dwarf": "Zwerg",
+  "orc": "Ork",
+  "auto": "Automatisch"
  }
 }

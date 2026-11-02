@@ -344,7 +344,6 @@
   "b_sub": "Quitar",
   "b_info": "Info",
   "dpad_label": "Mover",
-  "dpad_grip": "Arrastra a la otra esquina",
   "dpad_pick": "Elegir unidad",
   "dir_y": "Noroeste",
   "dir_k": "Norte",
@@ -361,10 +360,6 @@
   "opt_volume": "Volumen",
   "opt_preview": "Probar",
   "opt_scan": "Líneas de barrido",
-  "opt_phosphor": "Fósforo",
-  "opt_amber": "Ámbar",
-  "opt_green": "Verde",
-  "opt_white": "Blanco",
   "opt_hints": "Mostrar las teclas",
   "opt_reset": "Restablecer la disposición",
   "keys": {
@@ -414,6 +409,22 @@
    "Z": "Mover civiles",
    "qm": "Ayuda",
    "redraw": "Redibujar la pantalla"
-  }
+  },
+  "opt_race": "Raza",
+  "opt_plain": "Marco sencillo"
+ },
+ "nav": {
+  "play": "Jugar",
+  "hall": "Salón",
+  "join": "Unirse",
+  "design": "Diseño",
+  "main": "Menú principal"
+ },
+ "race": {
+  "human": "Humano",
+  "elf": "Elfo",
+  "dwarf": "Enano",
+  "orc": "Orco",
+  "auto": "Automática"
  }
 }
