@@ -465,7 +465,13 @@
     if (lang !== 'en' && !/[?&]lang=/.test(t)) t += (t.indexOf('?') < 0 ? '?' : '&') + 'lang=' + lang;
     return t;
   }
-  function leave() { store(SEEN, '1'); location.href = target(); }
+  // in the Android app the game is not behind a link: leaving goes to the app's Home
+  function leave() {
+    store(SEEN, '1');
+    var go = function () { location.href = target(); }, A = window.conquerApp;
+    if (A && A.is && A.has && A.has() && A.send({ type: 'home' }, go)) return;
+    go();
+  }
 
   // the player's own choice (audio.js keeps it in localStorage); without one, the story plays with sound
   function audioChoice() { return store(AUDIO_KEY); }
@@ -521,7 +527,7 @@
     var P0 = document.createElement('section'); P0.className = 'panel p1 on'; P0.setAttribute('data-p', '1'); P0.innerHTML = SCENES[1](); $('panels').appendChild(P0); fit(P0);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fit(P0); });
     $('skip').addEventListener('click', function (e) { e.stopPropagation(); leave(); });
-    $('play').addEventListener('click', function () { store(SEEN, '1'); });
+    $('play').addEventListener('click', function (e) { e.preventDefault(); leave(); });
     $('sound').addEventListener('click', function (e) { e.stopPropagation(); setSound(!sound, true); });
     $('back').addEventListener('click', function (e) { e.stopPropagation(); back(); });
     $('replay').addEventListener('click', function (e) { e.stopPropagation(); go(1); });
