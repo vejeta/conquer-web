@@ -170,3 +170,7 @@ Cefrium without the bridge (the app declares `VIBRATE`).
   APK built from this source can be rebuilt with another build of it.
 - VT323 (`res/font/vt323.ttf`, converted from `web/fonts`) is under the SIL
   Open Font License 1.1: see `app/OFL-VT323.txt`.
+
+## Signing
+
+APKs from CI are signed with the committed debug key (`debug.keystore`); to update over a previous install nothing is needed; the first install over an APK signed with another key requires uninstalling.

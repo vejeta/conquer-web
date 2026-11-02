@@ -425,6 +425,11 @@ jobs:
       - name: Debug APK
         run: ./gradlew --no-daemon assembleDebug
 
+      - name: APK ABIs and signing certificate
+        run: |
+          unzip -l app/build/outputs/apk/debug/app-debug.apk | grep -E 'lib/(arm64-v8a|x86_64)/' | head
+          "$ANDROID_HOME/build-tools/37.0.0/apksigner" verify --print-certs app/build/outputs/apk/debug/app-debug.apk
+
       - uses: actions/upload-artifact@v4
         with:
           name: app-debug.apk

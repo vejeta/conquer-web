@@ -8,5 +8,6 @@ build/
 local.properties
 *.keystore
 *.jks
+!debug.keystore
 *.iml
 captures/

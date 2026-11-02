@@ -65,8 +65,20 @@ android {
         }
     }
 
+    // A stable debug key (the Android convention), committed to the repository
+    // so every CI build is signed alike and installs over the previous one
+    signingConfigs {
+        getByName("debug") {
+            storeFile = rootProject.file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         debug {
+            signingConfig = signingConfigs.getByName("debug")
             // The emulator on a PC is x86_64, a phone is arm64. A build type's
             // abiFilters replace the default config's instead of adding to
             // them, so the whole list is given here
