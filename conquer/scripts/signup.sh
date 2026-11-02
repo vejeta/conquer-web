@@ -17,9 +17,9 @@
 #        conquer-signup CODE ACCOUNT                        (same as invite)
 #
 # Exit status: 0 done, 2 unknown or used code (invite) or account not
-# pending (approve, reject), 3 account name taken, 4 too late in the game
-# for new nations (invite only), 5 sign-up closed (the account file cannot
-# be written), 1 anything else.
+# pending (approve, reject), 3 account name taken, 5 sign-up closed (the
+# account file cannot be written), 1 anything else. (4 was "too late in
+# the game"; an approved account can found its nation at any turn now.)
 #
 # Administrators can also use: ./manage-players.sh invite|approve|reject
 
@@ -30,9 +30,6 @@ PLAYERS_FILE="$WORLD_DIR/.players"
 REQUESTS_FILE="$WORLD_DIR/.requests"
 HTPASSWD_FILE="${HTPASSWD_FILE:-$PREFIX/auth/htpasswd}"
 LOCK_FILE="${CONQUER_RUN:-/run/conquer}/join.lock.accounts"
-# New nations may join until this turn; after it only the administrator
-# adds them (conqrun asks for god's password)
-LAST_JOIN_TURN=5
 TAB=$'\t'
 
 # Remove the line whose first field (separated by $3, default ":") is $2
@@ -93,10 +90,6 @@ is_pending() {
     awk -F: -v user="$1" '$1 == user && $2 == "?" { found = 1 } END { exit !found }' "$PLAYERS_FILE" 2>/dev/null
 }
 
-current_turn() {
-    "$PREFIX/bin/conquer" -s 2>/dev/null | sed -n 's/^Conquer .*, Turn \([0-9][0-9]*\)$/\1/p' | head -n 1
-}
-
 cmd="$1"
 if [[ "$cmd" =~ ^[A-Z0-9]{4}-[A-Z0-9]{4}$ ]] && [ $# -eq 2 ]; then
     set -- invite "$@"
@@ -134,8 +127,6 @@ invite)
     [ -n "$code" ] && valid_account "$account" || exit 3
     read_password
     [ -w "$HTPASSWD_FILE" ] || exit 5
-    turn=$(current_turn)
-    [ "${turn:-1}" -le "$LAST_JOIN_TURN" ] || exit 4
     (
         flock 9 || exit 1
         grep -qx -- "$code" "$INVITES_FILE" 2>/dev/null || exit 2

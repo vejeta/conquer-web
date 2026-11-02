@@ -126,7 +126,10 @@ MSG[menu_goodbye]="Goodbye, commander."
 MSG[join_questions]="Questions: ${bold}%s${reset}"
 MSG[join_title]="${bold}${green}Found your nation${reset}"
 MSG[join_welcome]="Welcome, ${bold}%s${reset}. Your account is ready: now found your nation."
-MSG[join_too_late]="This game is at turn %s: after turn 5 new nations need the administrator. Ask them to add yours."
+MSG[join_late]="
+  The game is at turn %s: your nation starts late and the builder gives
+  it extra points to catch up.
+"
 MSG[join_builder]="
   ${bold}Now build your nation${reset} with the game's nation builder.
 

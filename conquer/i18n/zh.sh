@@ -120,7 +120,10 @@ MSG[menu_goodbye]="再见，指挥官。"
 MSG[join_questions]="有疑问请联系：${bold}%s${reset}"
 MSG[join_title]="${bold}${green}建立你的国家${reset}"
 MSG[join_welcome]="欢迎，${bold}%s${reset}。你的账号已就绪：现在来建立你的国家。"
-MSG[join_too_late]="本局已进行到第 %s 回合：第 5 回合之后，新国家需由管理员添加。请联系管理员添加你的国家。"
+MSG[join_late]="
+  本局已进行到第 %s 回合：你的国家会晚些起步，
+  建造器会额外给它一些点数，帮你追赶。
+"
 MSG[join_builder]="
   ${bold}现在用游戏的国家创建器建立你的国家${reset}（其画面为英文）。
 

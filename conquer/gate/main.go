@@ -52,8 +52,9 @@ import (
 	"time"
 )
 
-// New nations may join until this turn; after it only the administrator
-// adds them (conqrun asks for god's password)
+// After this turn a new nation starts late and the game's nation builder
+// gives it extra points. Nobody is turned away: an approved account founds
+// its nation at any turn (conqrun -A, no super user password)
 const lastJoinTurn = 5
 
 var (
@@ -68,7 +69,6 @@ var (
 var helperErrors = map[int]string{
 	2: "bad_code",
 	3: "account_taken",
-	4: "too_late",
 	5: "closed",
 }
 
@@ -216,7 +216,7 @@ func helperStatus(err error, extra map[int]string) (reason string, status int, o
 	switch reason {
 	case "account_taken", "not_pending":
 		status = http.StatusConflict
-	case "too_late", "closed":
+	case "closed":
 		status = http.StatusForbidden
 	}
 	return reason, status, true

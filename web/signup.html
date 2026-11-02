@@ -138,13 +138,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
     </li>
     <li>
       <strong data-i18n="join.step2_t">Your nation, later</strong>
-      <span data-i18n="join.step2">Once you are approved, the game asks you to found your nation: its name (up to 9 letters, it can differ from your account), race, class, and a nation password the game asks for every time you play.</span>
+      <span data-i18n="join.step2">Once you are approved, the game asks you to found your nation: its name (up to 9 letters, it can differ from your account), race, class, and a nation password the game asks for every time you play. At any turn: if the game is already under way, a late nation starts with extra points to catch up.</span>
     </li>
   </ol>
 
   <section class="panel done" id="done-pending" hidden aria-live="polite">
     <h2 data-i18n="join.pending_title">Your seat is pending</h2>
-    <p><span data-i18n="join.pending_text">The administrator approves seats by hand.</span> <span id="pending-mail"></span></p>
+    <p><span data-i18n="join.pending_text">The administrator approves seats by hand. Once you are approved you can found your nation at any turn; a late nation starts with extra points.</span> <span id="pending-mail"></span></p>
     <p data-i18n="join.pending_play">Your website account works already: Play shows the practice world and the state of your seat.</p>
     <p><strong data-i18n="join.pending_meanwhile">Meanwhile:</strong></p>
     <ul class="meanwhile">
@@ -279,7 +279,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
       }).then(function (res) {
         submit.disabled = false;
         if (!res.ok) {
-          var focus = { bad_code: fields.code, too_late: fields.code, account_taken: fields.account,
+          var focus = { bad_code: fields.code, account_taken: fields.account,
                         bad_account: fields.account, short_password: fields.password,
                         bad_password: fields.password, bad_email: fields.email }[res.error];
           if (focus === fields.code) document.getElementById('invite').open = true;

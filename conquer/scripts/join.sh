@@ -6,7 +6,10 @@
 # account created on the sign-up page (web/signup.html, conquer-signup) plays.
 # Such an account is marked "account:+" in lib/.players.
 #
-#  1. Explain the game's nation builder, then run it (conqrun -a).
+#  1. Explain the game's nation builder, then run it (conqrun -a up to turn
+#     LAST_JOIN_TURN; later conqrun -A, which does not ask for the super user
+#     password because the administrator already approved the account: a
+#     nation that starts late gets extra points from the game itself).
 #  2. Link the account to the new nation in lib/.players.
 #
 # usage: conquer-join [LANGUAGE]   (passed on by the menu; the account is
@@ -17,6 +20,8 @@ WORLD_DIR="$PREFIX/lib"
 PLAYERS_FILE="$WORLD_DIR/.players"
 LOCK_FILE=/run/conquer/join.lock
 ACCOUNT="${TTYD_USER:-}"
+# Up to this turn the builder is the game's own "-a"; later "-A" (see
+# patches/0004: the account is approved, the builder needs no password)
 LAST_JOIN_TURN=5
 
 ADMIN_CONTACT=""
@@ -76,8 +81,10 @@ echo
 say "$(t join_welcome "$ACCOUNT")"
 
 turn=$(current_turn)
+builder_flag=-a
 if [ "${turn:-1}" -gt "$LAST_JOIN_TURN" ]; then
-    stop "$(t join_too_late "$turn")"
+    builder_flag=-A
+    t join_late "$turn"; echo
 fi
 
 t join_builder; echo
@@ -94,7 +101,7 @@ result=/run/conquer/join.$$
     (
         ulimit -t 600 -f 65536
         exec env -i HOME="$HOME" TERM="${TERM:-xterm}" PATH=/usr/bin:/bin LANG=C \
-            timeout --foreground 1800 "$PREFIX/bin/conqrun" -a -d "$WORLD_DIR"
+            timeout --foreground 1800 "$PREFIX/bin/conqrun" "$builder_flag" -d "$WORLD_DIR"
     )
     stty sane 2>/dev/null
     tput sgr0 2>/dev/null

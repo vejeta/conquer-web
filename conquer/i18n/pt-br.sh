@@ -126,7 +126,10 @@ MSG[menu_goodbye]="Até logo, comandante."
 MSG[join_questions]="Dúvidas: ${bold}%s${reset}"
 MSG[join_title]="${bold}${green}Funde a sua nação${reset}"
 MSG[join_welcome]="Bem-vindo, ${bold}%s${reset}. A sua conta está pronta: agora funde a sua nação."
-MSG[join_too_late]="A partida está no turno %s: depois do turno 5 as novas nações são adicionadas pelo administrador. Peça que ele adicione a sua."
+MSG[join_late]="
+  A partida está no turno %s: a sua nação começa tarde e o construtor lhe
+  dá pontos extras para você alcançar os outros.
+"
 MSG[join_builder]="
   ${bold}Agora crie sua nação${reset} com o criador de nações do jogo
   (as telas dele estão em inglês).

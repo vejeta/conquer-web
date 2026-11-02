@@ -54,9 +54,8 @@ sudo ./manage-players.sh reject NAME    # deletes the account (no email from her
 ```
 
 An approved player presses **Play** and the game has them found their
-nation. New nations can join until turn 5: after it the request is still
-accepted, but you create the nation yourself (below) and link it with
-`sudo ./manage-players.sh assign ACCOUNT NATION`; `/admin/` reminds you.
+nation, at any turn: after turn 5 the game gives it extra points for
+starting late, and nobody asks for god's password.
 
 **With an invite code** (skips the wait; the player is approved at once):
 
@@ -69,7 +68,7 @@ Send the player the code, or the link `https://YOUR-SITE/signup.html?code=THE-CO
 (codes can also be made at `/admin/`). They ask for their seat with the code
 and press **Play** with that account.
 
-**Or create the nation yourself**:
+**Or create the nation yourself** (the manual way; approval at `/admin/` is the normal one):
 
 ```bash
 sudo ./add-nation.sh                    # the game's nation builder, then the web account

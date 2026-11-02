@@ -28,7 +28,7 @@ var mailTexts = map[string]map[string]string{
 		"subject_approved":    "Conquer: your seat is approved",
 		"site_fallback":       "the game's website",
 		"body_approved_early": "Hello {account},\n\nYour seat in Conquer is approved.\n\nPress Play at {site} with your account and password, and found your nation.\n\nSee you in the game.\n",
-		"body_approved_late":  "Hello {account},\n\nYour seat in Conquer is approved.\n\nThe game is already at turn {turn}, so the administrator will add your nation by hand. Sign in and press Play at {site} to see your status; you will be contacted when it is ready.\n\nSee you in the game.\n",
+		"body_approved_late":  "Hello {account},\n\nYour seat in Conquer is approved.\n\nThe game is at turn {turn}: your nation starts late, with extra points to catch up. Press Play at {site} with your account and password, and found your nation.\n\nSee you in the game.\n",
 	},
 	"es": {
 		"subject_request":     "Conquer: {account} pide una plaza",
@@ -39,7 +39,7 @@ var mailTexts = map[string]map[string]string{
 		"subject_approved":    "Conquer: tu plaza está aprobada",
 		"site_fallback":       "la web del juego",
 		"body_approved_early": "Hola {account}:\n\nTu plaza en Conquer está aprobada.\n\nPulsa Jugar en {site} con tu cuenta y tu contraseña, y funda tu nación.\n\nNos vemos en la partida.\n",
-		"body_approved_late":  "Hola {account}:\n\nTu plaza en Conquer está aprobada.\n\nLa partida ya va por el turno {turn}, así que el administrador añadirá tu nación a mano. Entra y pulsa Jugar en {site} para ver cómo va; te avisaremos cuando esté lista.\n\nNos vemos en la partida.\n",
+		"body_approved_late":  "Hola {account}:\n\nTu plaza en Conquer está aprobada.\n\nLa partida va por el turno {turn}: tu nación empieza tarde, con puntos extra para ponerte al día. Pulsa Jugar en {site} con tu cuenta y tu contraseña, y funda tu nación.\n\nNos vemos en la partida.\n",
 	},
 	"de": {
 		"subject_request":     "Conquer: {account} fragt nach einem Platz",
@@ -50,7 +50,7 @@ var mailTexts = map[string]map[string]string{
 		"subject_approved":    "Conquer: dein Platz ist freigegeben",
 		"site_fallback":       "die Website des Spiels",
 		"body_approved_early": "Hallo {account},\n\ndein Platz in Conquer ist freigegeben.\n\nDrück auf {site} mit deinem Konto und deinem Passwort auf Spielen und gründe deine Nation.\n\nBis gleich im Spiel.\n",
-		"body_approved_late":  "Hallo {account},\n\ndein Platz in Conquer ist freigegeben.\n\nDas Spiel ist schon bei Runde {turn}, deshalb fügt der Spielleiter deine Nation von Hand hinzu. Melde dich an und drück auf {site} auf Spielen, um deinen Stand zu sehen; wir melden uns, sobald sie bereit ist.\n\nBis gleich im Spiel.\n",
+		"body_approved_late":  "Hallo {account},\n\ndein Platz in Conquer ist freigegeben.\n\nDas Spiel ist bei Runde {turn}: Deine Nation startet spät, mit Extrapunkten zum Aufholen. Drück auf {site} mit deinem Konto und deinem Passwort auf Spielen und gründe deine Nation.\n\nBis gleich im Spiel.\n",
 	},
 	"pl": {
 		"subject_request":     "Conquer: {account} prosi o miejsce",
@@ -61,7 +61,7 @@ var mailTexts = map[string]map[string]string{
 		"subject_approved":    "Conquer: twoje miejsce jest zatwierdzone",
 		"site_fallback":       "strona gry",
 		"body_approved_early": "Cześć {account},\n\ntwoje miejsce w Conquer jest zatwierdzone.\n\nKliknij Graj na {site}, zaloguj się swoim kontem i hasłem, i załóż swój naród.\n\nDo zobaczenia w grze.\n",
-		"body_approved_late":  "Cześć {account},\n\ntwoje miejsce w Conquer jest zatwierdzone.\n\nGra jest już w turze {turn}, więc administrator doda twój naród ręcznie. Zaloguj się i kliknij Graj na {site}, żeby zobaczyć swój stan; damy ci znać, gdy będzie gotowy.\n\nDo zobaczenia w grze.\n",
+		"body_approved_late":  "Cześć {account},\n\ntwoje miejsce w Conquer jest zatwierdzone.\n\nGra jest w turze {turn}: twój naród zaczyna późno, z dodatkowymi punktami na nadrobienie zaległości. Kliknij Graj na {site}, zaloguj się swoim kontem i hasłem, i załóż swój naród.\n\nDo zobaczenia w grze.\n",
 	},
 	"pt-br": {
 		"subject_request":     "Conquer: {account} pede uma vaga",
@@ -72,7 +72,7 @@ var mailTexts = map[string]map[string]string{
 		"subject_approved":    "Conquer: a sua vaga foi aprovada",
 		"site_fallback":       "o site do jogo",
 		"body_approved_early": "Olá {account},\n\nA sua vaga no Conquer foi aprovada.\n\nClique em Jogar em {site} com a sua conta e a sua senha, e funde a sua nação.\n\nAté já no jogo.\n",
-		"body_approved_late":  "Olá {account},\n\nA sua vaga no Conquer foi aprovada.\n\nO jogo já está no turno {turn}, então o administrador vai adicionar a sua nação manualmente. Entre e clique em Jogar em {site} para ver como está; entraremos em contato quando ela estiver pronta.\n\nAté já no jogo.\n",
+		"body_approved_late":  "Olá {account},\n\nA sua vaga no Conquer foi aprovada.\n\nO jogo está no turno {turn}: a sua nação começa tarde, com pontos extras para alcançar os outros. Clique em Jogar em {site} com a sua conta e a sua senha, e funde a sua nação.\n\nAté já no jogo.\n",
 	},
 	"ru": {
 		"subject_request":     "Conquer: {account} просит место",
@@ -83,7 +83,7 @@ var mailTexts = map[string]map[string]string{
 		"subject_approved":    "Conquer: ваше место одобрено",
 		"site_fallback":       "сайт игры",
 		"body_approved_early": "Здравствуйте, {account}!\n\nВаше место в Conquer одобрено.\n\nНажмите «Играть» на {site}, войдите со своей учётной записью и паролем и основайте свой народ.\n\nДо встречи в игре.\n",
-		"body_approved_late":  "Здравствуйте, {account}!\n\nВаше место в Conquer одобрено.\n\nИгра уже на ходу {turn}, поэтому администратор добавит ваш народ вручную. Войдите и нажмите «Играть» на {site}, чтобы увидеть своё состояние; мы свяжемся с вами, когда всё будет готово.\n\nДо встречи в игре.\n",
+		"body_approved_late":  "Здравствуйте, {account}!\n\nВаше место в Conquer одобрено.\n\nИгра на ходу {turn}: ваш народ начинает с опозданием, с дополнительными очками, чтобы наверстать. Нажмите «Играть» на {site}, войдите со своей учётной записью и паролем и основайте свой народ.\n\nДо встречи в игре.\n",
 	},
 	"zh": {
 		"subject_request":     "Conquer：{account} 申请席位",
@@ -94,7 +94,7 @@ var mailTexts = map[string]map[string]string{
 		"subject_approved":    "Conquer：你的席位已获批",
 		"site_fallback":       "游戏网站",
 		"body_approved_early": "你好 {account}，\n\n你在 Conquer 中的席位已获批。\n\n请在 {site} 点击“开始游戏”，用你的账号和密码登录，然后建立你的国家。\n\n游戏里见。\n",
-		"body_approved_late":  "你好 {account}，\n\n你在 Conquer 中的席位已获批。\n\n游戏已进行到第 {turn} 回合，所以管理员会手动为你添加国家。请登录并在 {site} 点击“开始游戏”查看状态；准备好后我们会联系你。\n\n游戏里见。\n",
+		"body_approved_late":  "你好 {account}，\n\n你在 Conquer 中的席位已获批。\n\n游戏已进行到第 {turn} 回合：你的国家会晚些起步，并有额外点数帮你追赶。请在 {site} 点击“开始游戏”，用你的账号和密码登录，然后建立你的国家。\n\n游戏里见。\n",
 	},
 }
 

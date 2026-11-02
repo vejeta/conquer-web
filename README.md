@@ -149,10 +149,14 @@ own screens are the original English ones. A daily or weekly
 
 ### Creating nations
 
-During the test phase, nations are created by the administrator, not by players:
+Players found their own nation: the administrator approves their account
+at `/admin/` and the game's nation builder opens the first time they press
+Play, at any turn (a nation that starts after turn 5 gets the game's extra
+points for starting late). `add-nation.sh` is the manual way, for the
+administrator on the host:
 
 ```bash
-./add-nation.sh      # runs "conqrun -a" inside the running container
+./add-nation.sh      # runs "conqrun -A" inside the running container
 ```
 
 After the nation, the script asks for its name and creates the player's web
@@ -171,8 +175,9 @@ password, a player who lost theirs):
 ```
 
 Conquer keeps at most 7 characters of a password (god needs at least 4). The
-new password works at once. God's password is also asked by `add-nation.sh`
-once the game is past turn 5.
+new password works at once. Nothing else asks for god's password: past
+turn 5 the game's `conqrun -a` does, but this server's nation builder runs
+`conqrun -A` (`conquer/patches/0004`) for accounts you approved.
 
 God's password opens every nation, and the game keeps only a short DES
 hash of it, which anyone could guess back from a published world. So the
@@ -220,8 +225,8 @@ administrator approves it (or the player brings an invite code).
    approved, the game has them found their nation with its nation builder,
    links it to the account, and from then on opens it directly.
 
-After turn 5 the game only lets the administrator add nations: /admin/ says
-which commands to run (`add-nation.sh`, `manage-players.sh assign`).
+Approval is the only gate: an approved account founds its nation at any
+turn, and after turn 5 the game gives it extra points for starting late.
 `SIGNUP=off` in the environment file closes requests.
 `sudo ./manage-players.sh list` shows pending accounts with `?` and
 approved ones that have not founded their nation yet with `+`.
