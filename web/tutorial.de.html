@@ -16,97 +16,80 @@ template and the content there, not this file.
   <meta property="og:description" content="Das Usenet-Strategiespiel von 1987, zurück in deinem Browser. Lerne es Taste für Taste.">
   <meta property="og:type" content="article">
   <link rel="stylesheet" href="vendor/asciinema-player/asciinema-player.css">
+  <link rel="stylesheet" href="theme.css">
+  <script src="race.js"></script>
   <style>
-    :root {
-      color-scheme: dark;
-      --bg: #0d1117;
-      --panel: #161b22;
-      --border: #30363d;
-      --text: #e6edf3;
-      --muted: #8b949e;
-      --accent: #3fb950;
-      --accent-text: #0d1117;
-      --warn: #d29922;
-      --term-bg: #1c1c1c;
-      --term-fg: #d7d7d7;
-    }
-    @media (prefers-color-scheme: light) {
-      :root:not([data-theme="dark"]) {
-        color-scheme: light;
-        --bg: #f6f8fa; --panel: #ffffff; --border: #d0d7de; --text: #1f2328;
-        --muted: #57606a; --accent: #1a7f37; --accent-text: #ffffff; --warn: #9a6700;
-      }
-    }
-    :root[data-theme="light"] {
-      color-scheme: light;
-      --bg: #f6f8fa; --panel: #ffffff; --border: #d0d7de; --text: #1f2328;
-      --muted: #57606a; --accent: #1a7f37; --accent-text: #ffffff; --warn: #9a6700;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-    main { max-width: 1180px; margin: 0 auto; padding: 28px 16px 64px; }
-    a { color: var(--accent); }
+    /* Layout only: colours and fonts come from theme.css */
     h1, h2, h3 { text-wrap: balance; line-height: 1.25; }
     p { margin: 0 0 12px; }
     ul { margin: 0 0 12px; padding-left: 1.2em; }
     li + li { margin-top: 4px; }
-    code { font: 0.9em ui-monospace, "DejaVu Sans Mono", monospace; }
     kbd {
       display: inline-block; min-width: 1.8em; text-align: center;
-      font: 600 0.85em ui-monospace, "DejaVu Sans Mono", monospace;
-      border: 1px solid var(--border); border-bottom-width: 3px; border-radius: 5px;
-      padding: 1px 7px; margin: 0 3px 3px 0; background: var(--panel); white-space: nowrap;
+      font: 1.1em var(--font-mono);
+      border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5px;
+      padding: 0 7px; margin: 0 3px 3px 0; background: var(--bg-2); white-space: nowrap;
     }
     kbd.wide { font-style: italic; font-weight: 500; }
-    .crumbs { color: var(--muted); font-size: 0.9rem; margin-bottom: 18px; }
-    .eyebrow { color: var(--accent); font: 600 0.8rem ui-monospace, "DejaVu Sans Mono", monospace; text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 6px; }
-    header h1 { font: 700 clamp(2rem, 5vw, 3rem)/1.1 ui-monospace, "DejaVu Sans Mono", monospace; margin: 0 0 12px; }
-    header .lede { font-size: 1.15rem; max-width: 60ch; color: var(--muted); }
+    .crumbs { margin-bottom: 18px; }
+    .eyebrow { color: var(--phos-text); font: 1.1rem/1.2 var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 6px; }
+    header h1 { margin: 0 0 12px; }
+    header .lede { font-size: 1.15rem; max-width: 60ch; color: var(--ink-dim); }
     .intro { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 28px; align-items: start; margin: 24px 0 48px; }
     @media (max-width: 860px) { .intro { grid-template-columns: 1fr; } }
-    .player { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--term-bg); }
-    .player video { display: block; width: 100%; height: auto; background: #000; }
-    .player-note { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
-    .box { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; }
+    .player { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--screen); }
+    .player video { display: block; width: 100%; height: auto; background: var(--screen); }
+    .player-note { color: var(--ink-dim); font-size: 0.85rem; margin-top: 6px; }
+    .box { background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; }
     .box h2 { font-size: 1.05rem; margin: 0 0 8px; }
     .legend { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; font-size: 0.92rem; margin: 0; }
-    .legend dt { font: 600 1em ui-monospace, "DejaVu Sans Mono", monospace; color: var(--accent); }
+    .legend dt { font: 1.15em var(--font-mono); color: var(--phos-text); }
     .legend dd { margin: 0; }
     h2.section { font-size: 1.5rem; margin: 0 0 18px; }
     .steps { list-style: none; margin: 0; padding: 0; counter-reset: none; }
     .step {
       display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 24px;
-      padding: 24px 0; border-top: 1px solid var(--border); scroll-margin-top: 12px;
+      padding: 24px 0; border-top: 1px solid var(--line); scroll-margin-top: 12px;
     }
     @media (max-width: 860px) { .step { grid-template-columns: 1fr; } }
     .step h3 { margin: 0 0 8px; font-size: 1.2rem; display: flex; gap: 10px; align-items: baseline; }
-    .step .num { font: 700 0.85rem ui-monospace, "DejaVu Sans Mono", monospace; color: var(--accent); }
+    .step .num { font: 1.15rem/1 var(--font-mono); color: var(--phos-text); }
     .step .keys { margin: 0 0 10px; }
-    .nokey { color: var(--muted); font-size: 0.9rem; font-style: italic; }
-    .rule { border-left: 3px solid var(--warn); padding-left: 12px; }
-    .veteran { color: var(--muted); font-size: 0.92rem; }
-    pre.dirs { display: inline-block; font: 600 1rem/1.4 ui-monospace, "DejaVu Sans Mono", monospace; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 6px 14px; margin: 0 0 12px; }
+    .nokey { color: var(--ink-dim); font-size: 0.9rem; font-style: italic; }
+    .rule { border-left: 3px solid var(--gold); padding-left: 12px; }
+    .veteran { color: var(--ink-dim); font-size: 0.92rem; }
+    pre.dirs { display: inline-block; font: 1.25rem/1.2 var(--font-mono); background: var(--bg-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 14px; margin: 0 0 12px; }
     /* Scale the 80-column screen to its column (80 columns = about 48em) */
     .step-screen { overflow-x: auto; container-type: inline-size; }
     pre.screen {
       margin: 0; width: max-content; min-width: 100%;
-      background: var(--term-bg); color: var(--term-fg);
-      border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px;
-      font: min(13px, calc((100cqi - 28px) / 48.5))/1.25 ui-monospace, "DejaVu Sans Mono", Menlo, monospace;
+      background: var(--screen); color: var(--phos);
+      border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+      font: min(20px, calc((100cqi - 28px) / 32.5))/1.1 var(--font-mono);
     }
-    pre.screen .rev { background: var(--term-fg); color: var(--term-bg); }
-    pre.screen .b { font-weight: 700; color: #fff; }
+    pre.screen .rev { background: var(--phos); color: var(--screen); }
+    pre.screen .b { font-weight: 700; color: var(--ink); }
     .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 0 0 48px; }
     .rules .box p { margin: 0; font-size: 0.95rem; }
     .cta { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-top: 32px; }
-    .play { display: inline-block; padding: 12px 30px; border-radius: 8px; background: var(--accent); color: var(--accent-text); font-weight: 600; text-decoration: none; }
-    .play:hover, .play:focus-visible { filter: brightness(1.1); }
-    footer { color: var(--muted); font-size: 0.85rem; margin-top: 48px; }
-    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  
+    .fine { color: var(--ink-dim); font-size: .85rem; margin-top: var(--s6); }
+    .cta .key { text-decoration: none; }
   </style>
 </head>
 <body>
-<main>
+<header class="site-header mountains">
+  <a class="site-name" href="index.html">Conquer</a>
+  <span class="spacer"></span>
+  <nav class="nav" aria-label="Hauptmenü">
+    <a class="key key-small" href="game.html" data-server-link="game.html"><span>Spielen</span></a>
+    <a class="key key-small" href="hall.html"><span>Ruhmeshalle</span></a>
+    <a class="key key-small" href="signup.html" data-server-link="signup.html"><span>Beitreten</span></a>
+  </nav>
+  <select class="select" data-page-menu="tutorial" aria-label="Language"></select>
+</header>
+<main class="page wide">
+<div class="reading" data-theme="parchment">
   <p class="crumbs"><a href="index.html?lang=de">Conquer</a> / <a href="guide.html">Spielerhandbuch (englisch)</a> / Erster Zug · <a href="tutorial.html" hreflang="en" lang="en">English</a> · <a href="tutorial.es.html" hreflang="es" lang="es">Español</a> · <a href="tutorial.pl.html" hreflang="pl" lang="pl">Polski</a> · <a href="tutorial.pt-br.html" hreflang="pt-br" lang="pt-br">Português (Brasil)</a> · <a href="tutorial.ru.html" hreflang="ru" lang="ru">Русский</a> · <a href="tutorial.zh.html" hreflang="zh" lang="zh">简体中文</a></p>
 
   <header>
@@ -702,13 +685,18 @@ Press any key to return to the menu...
   </div>
 
   <div class="cta">
-    <a class="play" href="game.html?coach&amp;lang=de" data-server-link="game.html?coach&amp;lang=de">Mit dem Coach spielen</a>
-    <a href="try/?lang=de">Oder im Browser ausprobieren, ohne Konto</a>
-    <a href="guide.html">Zum Spielerhandbuch (englisch)</a>
+    <a class="key key-primary" href="game.html?coach&amp;lang=de" data-server-link="game.html?coach&amp;lang=de">Mit dem Coach spielen</a>
+    <a class="key" href="try/?lang=de">Oder im Browser ausprobieren, ohne Konto</a>
+    <a class="key" href="guide.html">Zum Spielerhandbuch (englisch)</a>
   </div>
 
-  <footer>Aufgezeichnet mit Conquer 4.12 auf diesem Server. Der Terminal-Player ist <a href="https://asciinema.org">asciinema-player</a> (Apache-2.0).</footer>
+  <p class="fine">Aufgezeichnet mit Conquer 4.12 auf diesem Server. Der Terminal-Player ist <a href="https://asciinema.org">asciinema-player</a> (Apache-2.0).</p>
+</div>
 </main>
+<footer class="site-footer mountains">
+  <p>Conquer ist freie Software (GPL-3.0-or-later). Quellcode: <a href="https://github.com/vejeta/conquer">Spiel</a> &middot; <a href="https://github.com/vejeta/conquer-web">Webserver</a></p>
+  <div class="foot-links"><a href="design.html">Design</a></div>
+</footer>
 <script src="server.js"></script>
 <script src="site.js"></script>
 <script src="moves.js"></script>

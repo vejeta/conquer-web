@@ -69,7 +69,7 @@ def test_builder_is_recognised_only_in_the_builder(track, video):
 
 def test_coach_and_page_use_the_same_builder_pattern():
     assert "BUILDER = /Nation Builder/" in (WEB / "coach.js").read_text()
-    assert "/Nation Builder/.test(text)" in (WEB / "game.html").read_text()
+    assert "BUILDER = /Nation Builder/" in (WEB / "touch.js").read_text()
 
 
 def test_model_matches_coach_js():
@@ -81,12 +81,13 @@ def test_model_matches_coach_js():
 
 
 def test_builder_keys_are_on_the_key_bar():
-    """While the builder is open the phone key bar has its keys (letters of
+    """While the builder is open the touch bar has its keys (letters of
     one choice, like the races, are buttons in the coach itself)."""
-    html = (WEB / "game.html").read_text()
-    bar = re.search(r'<div class="group builder" id="builder-keys" hidden>(.*?)</div>', html, re.S)
-    assert bar, "builder key group missing from game.html"
-    keys = {k.encode().decode("unicode_escape") for k in re.findall(r'data-key="([^"]*)"', bar.group(1))}
+    js = (WEB / "touch.js").read_text()
+    table = re.search(r"var BUILDER_CHIPS = \[(.*?)\n  \];", js, re.S)
+    assert table, "builder chips missing from touch.js"
+    chips = re.findall(r"\['[^']*', '\w+', '((?:\\\\x[0-9a-f]{2}|\\\\r|[^'])*)'", table.group(1))
+    keys = {k.encode().decode("unicode_escape") for k in chips}
     assert set("jkhl?yn") | {" ", "\r", "\x1b", "\x7f"} <= keys
 
 

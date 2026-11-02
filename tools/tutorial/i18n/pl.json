@@ -40,7 +40,13 @@
   "screen_label": "Ekran gry",
   "coach_link": "game.html?coach&amp;lang=pl",
   "try_link": "try/?lang=pl",
-  "guide_link": "guide.html"
+  "guide_link": "guide.html",
+  "nav_play": "Graj",
+  "nav_hall": "Hala sław",
+  "nav_join": "Dołącz",
+  "nav_design": "Wygląd",
+  "nav_main": "Menu główne",
+  "foot": "Conquer to wolne oprogramowanie (GPL-3.0-or-later). Kod źródłowy: <a href=\"https://github.com/vejeta/conquer\">gra</a> · <a href=\"https://github.com/vejeta/conquer-web\">serwer WWW</a>"
  },
  "title": "Twoja pierwsza tura",
  "steps": {

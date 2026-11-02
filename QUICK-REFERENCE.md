@@ -51,3 +51,7 @@ docker exec conquer-vps conquer-gate -test-mail you@example.com
 
 Settings (turn schedule, mail, `SIGNUP=off`...) are in `config/production.env`;
 every variable is described in DEPLOYMENT.md, "Configuration reference".
+
+## Design system
+
+Colours and fonts live only in `web/theme.css`; `web/design.html` shows every component. Rebuild images: `python3 tools/arch/bake.py` (game-screen frames), `python3 tools/hero/build-bg.py` (map texture); tutorial pages: `python3 tools/tutorial/build.py`.

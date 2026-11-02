@@ -40,7 +40,13 @@
   "screen_label": "Pantalla del juego",
   "coach_link": "game.html?coach&amp;lang=es",
   "try_link": "try/?lang=es",
-  "guide_link": "guide.es.html"
+  "guide_link": "guide.es.html",
+  "nav_play": "Jugar",
+  "nav_hall": "Salón",
+  "nav_join": "Unirse",
+  "nav_design": "Diseño",
+  "nav_main": "Menú principal",
+  "foot": "Conquer es software libre (GPL-3.0-or-later). Código: <a href=\"https://github.com/vejeta/conquer\">juego</a> &middot; <a href=\"https://github.com/vejeta/conquer-web\">servidor web</a>"
  },
  "title": "Tu primer turno",
  "steps": {

@@ -1,8 +1,10 @@
 # SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The game page replays the nation builder recording in Chromium: the
-coach follows it and the phone key bar switches to the builder's keys.
-The sign-up page offers the builder video.
+coach follows it and the touch bar switches to the builder's keys.
+The touch layer (web/touch.js) is checked on /try/ and on the game page:
+the screen classifier, the grid over the terminal, tap to move, the chips,
+the options. The sign-up page offers the builder video.
 
 Needs the Python playwright module and Chromium (python3 -m playwright
 install chromium, or CHROMIUM=/path/to/chrome)."""
@@ -10,6 +12,7 @@ import functools
 import http.server
 import json
 import os
+import re
 import threading
 
 import pytest
@@ -99,10 +102,7 @@ def test_coach_follows_the_builder(site, browser, lang, phone):
         except playwright.TimeoutError:
             pass
         assert coach_state(page) == expect, sid
-    # A builder key on the bar reaches the game (on a computer the bar
-    # starts folded)
-    if not phone:
-        page.click("#toggle")
+    # A builder key on the bar reaches the game
     page.locator("#builder-keys button[data-key='j']").click()
     assert game.evaluate("sent") == "j"
     ctx.close()
@@ -143,6 +143,7 @@ def test_resizing_keeps_the_game_screen(site, browser):
     for viewport in ({"width": 844, "height": 390}, {"width": 390, "height": 844}):
         page.set_viewport_size(viewport)
         page.wait_for_timeout(1200)
+        page.evaluate("document.getElementById('site-header').click()")    # sideways, the header folds away: a tap shows it
         page.click("#coach-toggle") if page.locator("#coach-toggle").count() else None
         page.wait_for_timeout(800)
     sizes = game.evaluate("sizes")
@@ -438,3 +439,688 @@ def test_admin_needs_an_administrator(site, browser, status):
     assert "administrator account" in page.inner_text("#signin")
     assert page.evaluate("document.getElementById('app').hidden")
     page.close()
+
+
+# ---------------------------------------------------------------------------
+# The touch layer (web/touch.js) over the terminal, on /try/ and game.html
+
+SHOTS = os.environ.get("TOUCH_SHOTS")     # a folder: the screenshot test writes there
+FIRST_TURN = dict(recorded_screens("first-turn"))
+VIEWPORTS = {"phone": {"width": 390, "height": 844}, "landscape": {"width": 844, "height": 390},
+             "desktop": {"width": 1280, "height": 800}}
+
+# What the classifier says of every recorded screen (touch.js: classify)
+EXPECTED_FIRST_TURN = {
+    "menu": "menu", "password": "prompt_text", "title": "anykey", "map": "map", "mail": "report", "mail2": "report",
+    "budget": "report", "armies": "report", "select": "map", "move": "move", "moved": "map", "draft": "prompt_yn",
+    "drafted": "map", "diplomacy": "report", "quit": "prompt_yn", "done": "anykey", "newturn": "menu",
+}
+
+
+def touch_page(site, browser, where, viewport="desktop", lang=None, errors=None, touch=None):
+    """/try/ (the terminal is window.term) or game.html (it is in the frame of the
+    stand-in for ttyd). Returns (context, page, target), target being where
+    `term` lives: the page or the frame."""
+    size = VIEWPORTS[viewport]
+    touch = viewport != "desktop" if touch is None else touch
+    ctx = browser.new_context(viewport=size, has_touch=touch, is_mobile=touch)
+    page = ctx.new_page()
+    page.route("**/favicon.ico", lambda r: r.fulfill(status=204))
+    if errors is not None:
+        page.on("console", lambda m: m.type == "error" and errors.append(m.text))
+        page.on("pageerror", lambda e: errors.append(str(e)))
+    url = site + ("try/" if where == "try" else "game.html") + ("?lang=" + lang if lang else "")
+    page.goto(url)
+    if where == "try":
+        page.wait_for_function("() => window.touchLayer && window.term")
+        # before the game runs the layer shows the title's one chip: let it read the screen
+        page.evaluate("touchLayer.setMode(null)")
+        target = page
+    else:
+        page.wait_for_function("() => { try { return document.getElementById('game').contentWindow.ready } catch (e) { return false } }")
+        target = next(f for f in page.frames if "/play" in f.url)
+        page.wait_for_function("() => window.touchLayer")
+    page.wait_for_timeout(300)
+    return ctx, page, target
+
+
+def show(page, target, text, cursor=None):
+    """Write a recorded screen into the terminal and put the cursor: at the end
+    of the last line, or at (x, y)."""
+    lines = [l.rstrip() for l in text.split("\n")]
+    if cursor is None:
+        n = len(lines)
+        while n and not lines[n - 1]:
+            n -= 1
+        cursor = (len(lines[n - 1]), n - 1)
+    target.evaluate("""([t, c]) => { term.reset(); return new Promise(r => term.write(t, () => {
+        term.write('\\x1b[' + (c[1] + 1) + ';' + (c[0] + 1) + 'H', r); })); }""", ["\r\n".join(lines), list(cursor)])
+
+
+def wait_where(page, where):
+    page.wait_for_function("w => touchLayer.where() === w", arg=where, timeout=5000)
+
+
+def bar(page):
+    """The labels of the chips on the bar, and where the badge says we are."""
+    return page.evaluate("""() => ({
+        where: document.getElementById('touch-where').textContent,
+        back: !document.getElementById('touch-back').hidden,
+        chips: [...document.querySelectorAll('#touch-chips:not([hidden]) .touch-chip, #builder-keys:not([hidden]) .touch-chip')]
+            .map(b => (b.querySelector('.lb') || {}).textContent || b.getAttribute('aria-label')),
+    })""")
+
+
+def test_classifier_knows_every_recorded_screen(site, browser):
+    """The screen classifier (touch.js) against the recorded screens of the
+    tutorials: what the game shows is told apart by its own text."""
+    page = browser.new_page()
+    page.goto(site + "try/")
+    page.wait_for_function("() => window.conquerTouch")
+    screens = recorded_screens("first-turn")
+    assert {sid for sid, _ in screens} == set(EXPECTED_FIRST_TURN), "a recorded screen has no expected class"
+    for sid, text in screens:
+        lines = [l.rstrip() for l in text.split("\n")]
+        n = len(lines)
+        while n and not lines[n - 1]:
+            n -= 1
+        cursor = {"x": len(lines[n - 1]), "y": n - 1}
+        got = page.evaluate("([l, c]) => conquerTouch.whereAmI(l, c)", [lines, cursor])
+        assert got == EXPECTED_FIRST_TURN[sid], sid
+    for name in ("found-nation", "found-nation-late"):
+        for sid, text in recorded_screens(name):
+            assert page.evaluate("l => conquerTouch.whereAmI(l)", text.split("\n")) == "builder", (name, sid)
+    page.close()
+
+
+@pytest.mark.parametrize("text,want", [
+    ("Enter the amount:\n\nhow many Infantry do you wish to raise:", "prompt_number"),
+    ("Jump to what X location? ", "prompt_number"),
+    ("Is the modification complete? (y or n)", "prompt_yn"),
+    ("Disband your Infantry army 3?", "prompt_yn"),
+    ("Send mail to what nation? ", "prompt_text"),
+    ("Pay him off? (y or n)\nHIT ANY KEY", "anykey"),
+    ("", "unknown"),
+    ("\n".join(["  1) Play", "  2) How to join", "  q) Log out", "", "  Choose an option: "]), "menu"),
+])
+def test_classifier_prompts(site, browser, text, want):
+    page = browser.new_page()
+    page.goto(site + "try/")
+    page.wait_for_function("() => window.conquerTouch")
+    lines = text.split("\n")
+    cursor = {"x": len(lines[-1]), "y": len(lines) - 1}
+    assert page.evaluate("([l, c]) => conquerTouch.whereAmI(l, c)", [lines, cursor]) == want
+    page.close()
+
+
+def grid_boxes(page):
+    """The overlay grid's box and the terminal's text area box, in page pixels."""
+    return page.evaluate("""() => {
+        const g = document.querySelector('.touch-grid').getBoundingClientRect();
+        const frame = document.getElementById('game');
+        let s;
+        if (frame) {
+            const r = frame.contentWindow.term.element.querySelector('.xterm-screen').getBoundingClientRect();
+            const f = frame.getBoundingClientRect(), k = f.width / frame.offsetWidth;
+            s = { left: f.left + r.left * k, top: f.top + r.top * k, width: r.width * k, height: r.height * k };
+        } else {
+            s = term.element.querySelector('.xterm-screen').getBoundingClientRect();
+        }
+        return [[g.left, g.top, g.width, g.height], [s.left, s.top, s.width, s.height]];
+    }""")
+
+
+@pytest.mark.parametrize("where", ["try", "game"])
+@pytest.mark.parametrize("viewport", ["desktop", "phone"])
+def test_grid_covers_the_text_area(site, browser, where, viewport):
+    """The overlay's box is the terminal's text area (within a pixel), before
+    and after zooming the stage on a phone."""
+    ctx, page, target = touch_page(site, browser, where, viewport)
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    page.wait_for_timeout(500)
+    grid, screen = grid_boxes(page)
+    assert grid == pytest.approx(screen, abs=1), (grid, screen)
+    if viewport == "phone":
+        stage = page.evaluate("(() => { const r = document.getElementById('touch-stage').getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; })()")
+        # the stage is scaled to the phone's width ...
+        vp = page.evaluate("document.getElementById('touch-viewport').getBoundingClientRect().width")
+        assert stage[2] == pytest.approx(vp, abs=1) and vp < 390
+        x, y = stage[0] + stage[2] / 2, stage[1] + stage[3] / 2
+        # ... and a double tap zooms it
+        page.touchscreen.tap(x, y)
+        page.touchscreen.tap(x, y)
+        page.wait_for_function("() => document.getElementById('touch-stage').getBoundingClientRect().width > 600", timeout=3000)
+        page.wait_for_timeout(500)
+        grid, screen = grid_boxes(page)
+        assert grid == pytest.approx(screen, abs=1), (grid, screen)
+        assert grid[2] > 600
+        # and another one brings it back to the phone's width
+        page.touchscreen.tap(x, y)
+        page.touchscreen.tap(x, y)
+        page.wait_for_function("() => document.getElementById('touch-stage').getBoundingClientRect().width < 400", timeout=3000)
+        page.wait_for_timeout(500)
+        grid, screen = grid_boxes(page)
+        assert grid == pytest.approx(screen, abs=1), (grid, screen)
+    ctx.close()
+
+
+def cell_point(page, col, row):
+    """The page pixel at the middle of a terminal cell, from the grid's box."""
+    return page.evaluate("""([c, r]) => {
+        const g = document.querySelector('.touch-grid').getBoundingClientRect();
+        const t = window.term || document.getElementById('game').contentWindow.term;
+        return [g.left + (c + 0.5) * g.width / t.cols, g.top + (r + 0.5) * g.height / t.rows];
+    }""", [col, row])
+
+
+def watch_keys(page, target, where):
+    """From now on, collect the keys the layer sends (the page's send is
+    replaced on /try/; on game.html the stand-in for ttyd records them)."""
+    if where == "try":
+        page.evaluate("window.keys = []; touchLayer.options.send = s => { keys.push(s) }; 0")
+    else:
+        target.evaluate("window.sent = ''")
+
+
+def sent_keys(page, target, where):
+    return "".join(page.evaluate("keys")) if where == "try" else target.evaluate("sent")
+
+
+@pytest.mark.parametrize("where,viewport", [("try", "desktop"), ("game", "desktop"), ("game", "phone")])
+def test_tap_the_map_to_move(site, browser, where, viewport):
+    """The cursor is at sector (13, 10); a tap on the cell of sector (15, 7)
+    sends the diagonals first, then the straights; taps outside the map do
+    nothing; a second tap while moving cancels the rest."""
+    ctx, page, target = touch_page(site, browser, where, viewport)
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    page.wait_for_timeout(300)
+    watch_keys(page, target, where)
+
+    def tap(col, row):
+        x, y = cell_point(page, col, row)
+        if viewport == "phone":
+            page.touchscreen.tap(x, y)
+            page.wait_for_timeout(400)           # a phone waits for a possible double tap
+        else:
+            page.mouse.click(x, y)
+        page.wait_for_timeout(500)
+
+    tap(30, 7)
+    assert sent_keys(page, target, where) == "uuk"
+    # the status line, the right panel: nothing
+    watch_keys(page, target, where)
+    cols, rows = target.evaluate("[term.cols, term.rows]")
+    tap(30, rows - 3)
+    tap(cols - 5, 5)
+    assert sent_keys(page, target, where) == ""
+    # a long way (15 keys), cancelled by a second tap
+    if viewport == "desktop":
+        watch_keys(page, target, where)
+        x, y = cell_point(page, 56, 0)
+        page.mouse.click(x, y)
+        page.wait_for_timeout(120)
+        page.mouse.click(x, y)
+        page.wait_for_timeout(800)
+        got = sent_keys(page, target, where)
+        assert 1 <= len(got) < 15 and set(got) <= {"u", "l"}, got
+    ctx.close()
+
+
+def pointer(page, kind, pid, x, y):
+    """A touch pointer event on the grid (Playwright has no multi-touch)."""
+    page.evaluate("""([k, id, x, y]) => { document.querySelector('.touch-grid').dispatchEvent(new PointerEvent(k, {
+        pointerId: id, pointerType: 'touch', clientX: x, clientY: y, bubbles: true, cancelable: true, isPrimary: id === 1 })); }""",
+                  [kind, pid, x, y])
+
+
+def test_drag_the_edge_to_scroll_the_map(site, browser):
+    """A drag on the edge gutter scrolls the map with the shift letters, one
+    key per 120 px; a drag inside the map is not a tap and sends nothing."""
+    ctx, page, target = touch_page(site, browser, "try", "desktop")
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    watch_keys(page, target, "try")
+    x, y = cell_point(page, 1, 10)
+    pointer(page, "pointerdown", 1, x, y)
+    pointer(page, "pointermove", 1, x + 130, y)
+    pointer(page, "pointermove", 1, x + 130, y + 250)
+    pointer(page, "pointerup", 1, x + 130, y + 250)
+    assert sent_keys(page, target, "try") == "HKK"
+    watch_keys(page, target, "try")
+    x, y = cell_point(page, 20, 8)
+    pointer(page, "pointerdown", 1, x, y)
+    pointer(page, "pointermove", 1, x + 60, y)
+    pointer(page, "pointerup", 1, x + 60, y)
+    # two fingers anywhere on the map: the same
+    a, b = cell_point(page, 20, 5), cell_point(page, 24, 5)
+    pointer(page, "pointerdown", 1, a[0], a[1])
+    pointer(page, "pointerdown", 2, b[0], b[1])
+    pointer(page, "pointermove", 1, a[0], a[1] + 130)
+    pointer(page, "pointermove", 2, b[0], b[1] + 130)
+    pointer(page, "pointerup", 1, a[0], a[1] + 130)
+    pointer(page, "pointerup", 2, b[0], b[1] + 130)
+    page.wait_for_timeout(300)
+    assert sent_keys(page, target, "try") == "K"
+    ctx.close()
+
+
+@pytest.mark.parametrize("where", ["try", "game"])
+def test_pinch_zooms_and_a_finger_pans(site, browser, where):
+    """On a phone: two fingers moving apart zoom the stage (up to 2.5 times
+    the fit), one finger pans it, the grid stays over the text."""
+    ctx, page, target = touch_page(site, browser, where, "phone")
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    watch_keys(page, target, where)
+
+    def stage():
+        return page.evaluate("(() => { const r = document.getElementById('touch-stage').getBoundingClientRect(); return [r.left, r.top, r.width]; })()")
+    fit = stage()
+    vp = page.evaluate("(() => { const r = document.getElementById('touch-viewport').getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; })()")
+    assert fit[2] == pytest.approx(vp[2], abs=1)
+    cx, cy = vp[0] + vp[2] / 2, vp[1] + vp[3] / 2
+    pointer(page, "pointerdown", 1, cx - 40, cy)
+    pointer(page, "pointerdown", 2, cx + 40, cy)
+    for step in range(1, 7):
+        pointer(page, "pointermove", 1, cx - 40 - step * 20, cy)
+        pointer(page, "pointermove", 2, cx + 40 + step * 20, cy)
+    pointer(page, "pointerup", 1, cx - 160, cy)
+    pointer(page, "pointerup", 2, cx + 160, cy)
+    zoomed = stage()
+    assert zoomed[2] == pytest.approx(vp[2] * 2.5, abs=2)           # the limit
+    grid, screen = grid_boxes(page)
+    assert grid == pytest.approx(screen, abs=1)
+    # one finger pans: 60 px to the left; not a tap, so no keys
+    pointer(page, "pointerdown", 1, cx + 30, cy)
+    pointer(page, "pointermove", 1, cx, cy)
+    pointer(page, "pointermove", 1, cx - 30, cy)
+    pointer(page, "pointerup", 1, cx - 30, cy)
+    panned = stage()
+    assert panned[0] == pytest.approx(zoomed[0] - 60, abs=2)
+    grid, screen = grid_boxes(page)
+    assert grid == pytest.approx(screen, abs=1)
+    page.wait_for_timeout(500)
+    assert sent_keys(page, target, where) == ""
+    ctx.close()
+
+
+def test_the_rotate_hint_shows_once(site, browser):
+    ctx, page, target = touch_page(site, browser, "try", "phone")
+    assert page.is_visible(".touch-hint")
+    assert "sideways" in page.inner_text(".touch-hint")
+    page.click(".touch-hint button")
+    assert not page.is_visible(".touch-hint")
+    page.reload()
+    page.wait_for_function("() => window.touchLayer")
+    page.wait_for_timeout(500)
+    assert not page.is_visible(".touch-hint")
+    ctx.close()
+    # in landscape there is nothing to say
+    ctx, page, target = touch_page(site, browser, "try", "landscape")
+    assert not page.is_visible(".touch-hint")
+    ctx.close()
+
+
+def test_every_path_is_diagonals_then_straights(site, browser):
+    page = browser.new_page()
+    page.goto(site + "try/")
+    page.wait_for_function("() => window.conquerTouch")
+    got = page.evaluate("[[2, -3], [-4, -1], [0, 5], [-3, 0], [3, 2], [-1, 2], [40, 40], [0, 0]].map(d => conquerTouch.mapPath(d[0], d[1]))")
+    assert got == ["uuk", "yhhh", "jjjjj", "hhh", "nnl", "bj", "n" * 40, ""]
+    page.close()
+
+
+@pytest.mark.parametrize("where", ["try", "game"])
+def test_chips_follow_the_screen(site, browser, where):
+    """The chips and the badge change with what the game shows: a budget
+    report offers its keys and Back; a (y/n) question Yes and No; a prompt
+    for text, Type; for a number, the keypad; the map, its commands."""
+    ctx, page, target = touch_page(site, browser, where, "desktop")
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    state = bar(page)
+    assert state["where"] == "Map" and not state["back"]
+    assert state["chips"][:4] == ["Move", "Armies", "Budget", "Construct"] and "Quit" in state["chips"]
+    show(page, target, FIRST_TURN["budget"])
+    wait_where(page, "report")
+    state = bar(page)
+    assert state["where"] == "Map › Budget" and state["back"]
+    assert state["chips"] == ["Production", "Change", "Home"]
+    show(page, target, FIRST_TURN["quit"])
+    wait_where(page, "prompt_yn")
+    assert bar(page)["chips"] == ["Yes", "No"]
+    show(page, target, FIRST_TURN["password"])
+    wait_where(page, "prompt_text")
+    assert bar(page)["chips"] == ["Type", "Enter", "Delete", "Esc"]
+    show(page, target, "\n\n\nhow many Infantry do you wish to raise:")
+    wait_where(page, "prompt_number")
+    assert bar(page)["chips"][:10] == [str(n % 10) for n in range(1, 11)]
+    show(page, target, FIRST_TURN["menu"])
+    wait_where(page, "menu")
+    chips = bar(page)["chips"]
+    assert chips[0] == "Play" and chips[-1] == "Log out"
+    ctx.close()
+
+
+@pytest.mark.parametrize("where", ["try", "game"])
+def test_chips_send_their_keys(site, browser, where):
+    ctx, page, target = touch_page(site, browser, where, "desktop")
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    watch_keys(page, target, where)
+    page.locator("#touch-chips .touch-chip", has_text="Budget").click()
+    assert sent_keys(page, target, where) == "B"
+    # Back from a report is the key that ends it
+    show(page, target, FIRST_TURN["armies"])
+    wait_where(page, "report")
+    watch_keys(page, target, where)
+    page.click("#touch-back")
+    assert sent_keys(page, target, where) == " "
+    # and More lists every command of the game, each one a key
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    page.locator("#touch-chips .touch-chip", has_text="More").click()
+    page.wait_for_selector(".touch-sheet:not([hidden])")
+    cmds = page.evaluate("[...document.querySelectorAll('.touch-cmd kbd')].map(k => k.textContent)")
+    for key in "abBcCdDfFgGHIJKLmMNpPqrRsStTvwWxXYZ?":
+        assert key in cmds, key
+    watch_keys(page, target, where)
+    page.locator(".touch-cmd", has_text="Go to your capital").click()
+    assert sent_keys(page, target, where) == "X"
+    assert page.evaluate("document.querySelector('.touch-sheet').hidden")
+    ctx.close()
+
+
+def test_the_dpad_moves_and_scrolls(site, browser):
+    """Tap: one step (y u b n h j k l); hold: a page of the map (capitals);
+    the middle one picks the next unit (p)."""
+    ctx, page, target = touch_page(site, browser, "try", "phone")
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    page.evaluate("window.keys = []; touchLayer.options.send = s => { keys.push(s) }; 0")
+    page.wait_for_selector(".touch-dpad:not([hidden])")
+    page.click(".touch-pb[data-key='u']")
+    page.click(".touch-pb[data-key='p']")
+    page.locator(".touch-pb[data-key='h']").dispatch_event("pointerdown", {"pointerType": "touch"})
+    page.wait_for_timeout(700)
+    page.locator(".touch-pb[data-key='h']").dispatch_event("pointerup", {"pointerType": "touch"})
+    assert page.evaluate("keys") == ["u", "p", "H"]
+    # the Move chip hides it
+    page.locator("#touch-chips .touch-chip", has_text="Move").click()
+    assert page.evaluate("document.querySelector('.touch-dpad').hidden")
+    ctx.close()
+
+
+@pytest.mark.parametrize("where", ["try", "game"])
+def test_options_persist(site, browser, where):
+    """Scanlines, the plain frame, the race and the key hints are kept in localStorage
+    (conquer-touch) across a reload."""
+    ctx, page, target = touch_page(site, browser, where, "desktop")
+    page.click("#touch-gear")
+    assert page.evaluate("document.getElementById('touch-gear').getAttribute('aria-expanded')") == "true"
+    page.check("#touch-opt-scan")
+    page.check("#touch-opt-plain")
+    page.select_option("#touch-opt-race", "dwarf")
+    page.uncheck("#touch-opt-hints")
+    assert page.evaluate("document.querySelector('.touch-viewport').classList.contains('touch-scan')")
+    stored = json.loads(page.evaluate("localStorage.getItem('conquer-touch')"))
+    assert stored["scan"] is True and stored["plain"] is True and stored["hints"] is False
+    assert page.get_attribute("html", "data-race") == "dwarf"
+    page.reload()
+    page.wait_for_function("() => window.touchLayer")
+    page.wait_for_timeout(400)
+    assert page.evaluate("document.querySelector('.touch-viewport').classList.contains('touch-scan')")
+    assert page.get_attribute("html", "data-race") == "dwarf"        # the race survives the reload
+    assert page.evaluate("document.getElementById('stone').classList.contains('plain')")
+    assert page.evaluate("document.getElementById('touch-ui').classList.contains('touch-nohints')")
+    page.click("#touch-gear")
+    assert page.is_checked("#touch-opt-scan") and not page.is_checked("#touch-opt-hints")
+    # Escape closes the panel
+    page.keyboard.press("Escape")
+    assert page.evaluate("document.getElementById('touch-panel').hidden")
+    ctx.close()
+
+
+def test_the_keys_button_folds_the_bar(site, browser):
+    ctx, page, target = touch_page(site, browser, "game", "desktop")
+    assert page.is_visible("#touch-ui")
+    page.click("#toggle")
+    assert not page.is_visible("#touch-ui")
+    assert page.get_attribute("#toggle", "aria-expanded") == "false"
+    page.click("#toggle")
+    assert page.is_visible("#touch-ui")
+    ctx.close()
+
+
+@pytest.mark.parametrize("lang,army,budget,where", [
+    ("es", "Ejércitos", "Presupuesto", "Mapa › Presupuesto"),
+    ("zh", "军队", "预算", "地图 › 预算"),
+])
+@pytest.mark.parametrize("page_name", ["try", "game"])
+def test_touch_texts_are_translated(site, browser, page_name, lang, army, budget, where):
+    ctx, page, target = touch_page(site, browser, page_name, "desktop", lang=lang)
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    page.wait_for_function("a => document.getElementById('touch-chips').textContent.includes(a)", arg=army, timeout=5000)
+    assert budget in bar(page)["chips"]
+    show(page, target, FIRST_TURN["budget"])
+    wait_where(page, "report")
+    page.wait_for_function("w => document.getElementById('touch-where').textContent === w", arg=where, timeout=5000)
+    ctx.close()
+
+
+@pytest.mark.parametrize("where", ["try", "game"])
+@pytest.mark.parametrize("viewport", ["phone", "desktop"])
+def test_touch_layer_has_no_console_errors(site, browser, where, viewport):
+    errors = []
+    ctx, page, target = touch_page(site, browser, where, viewport, errors=errors)
+    for name in ("map", "budget", "quit", "password"):
+        show(page, target, FIRST_TURN[name], (26, 10) if name == "map" else None)
+        page.wait_for_timeout(400)
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    page.locator("#touch-chips .touch-chip", has_text="More").click()
+    page.keyboard.press("Escape")
+    page.click("#touch-gear")
+    page.keyboard.press("Escape")
+    page.set_viewport_size({"width": VIEWPORTS["landscape"]["width"], "height": VIEWPORTS["landscape"]["height"]})
+    page.wait_for_timeout(800)
+    assert errors == []
+    ctx.close()
+
+
+@pytest.mark.skipif(not SHOTS, reason="TOUCH_SHOTS=<folder> writes the screenshots")
+@pytest.mark.parametrize("where", ["try", "game"])
+@pytest.mark.parametrize("viewport", ["phone", "landscape", "desktop"])
+def test_screenshots(site, browser, where, viewport):
+    ctx, page, target = touch_page(site, browser, where, viewport)
+    shots = {"map": (FIRST_TURN["map"], (26, 10)), "report": (FIRST_TURN["budget"], None),
+             "prompt": (FIRST_TURN["quit"], None)}
+    os.makedirs(SHOTS, exist_ok=True)
+    for name, (text, cursor) in shots.items():
+        show(page, target, text, cursor)
+        page.wait_for_timeout(700)
+        page.screenshot(path=os.path.join(SHOTS, "%s-%s-%s.png" % (where, viewport, name)))
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    page.wait_for_timeout(500)
+    page.click("#touch-gear")
+    page.wait_for_timeout(300)
+    page.screenshot(path=os.path.join(SHOTS, "%s-%s-options.png" % (where, viewport)))
+    page.evaluate("conquerAudio.enable(true)")
+    page.evaluate("document.getElementById('touch-opt-sound').checked = true")
+    page.screenshot(path=os.path.join(SHOTS, "integrated-%s-%s-options-sound.png" % (where, viewport)))
+    page.keyboard.press("Escape")
+    page.locator("#touch-chips .touch-chip", has_text="More").click()
+    page.wait_for_timeout(300)
+    page.screenshot(path=os.path.join(SHOTS, "%s-%s-more.png" % (where, viewport)))
+    ctx.close()
+
+def audio_page(site, browser, init=None):
+    page = browser.new_page()
+    errors = []
+    page.on("console", lambda m: errors.append(m.text) if m.type == "error" and "404" not in m.text else None)
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    if init:
+        page.add_init_script(init)
+    page.goto(site + "audio-test.html")
+    return page, errors
+
+
+def test_audio_plays_after_a_click(site, browser):
+    page, errors = audio_page(site, browser)
+    assert page.evaluate("conquerAudio.enabled()") is False
+    page.click("#b")
+    page.evaluate("conquerAudio.enable(true)")
+    page.wait_for_function("conquerAudio._state() === 'running'")
+    assert page.evaluate("conquerAudio.enabled()") is True
+    before = page.evaluate("conquerAudio._nodes()")
+    page.evaluate("conquerAudio.event('turn'); conquerAudio.event('bogus'); conquerAudio.screen('map')")
+    page.wait_for_timeout(300)
+    assert page.evaluate("conquerAudio._nodes()") > before
+    assert len(page.evaluate("conquerAudio._demo()")) == 9
+    for s in ("builder", "report_x", "menu", "combat", "off"):
+        page.evaluate("s => conquerAudio.screen(s)", s)
+    page.evaluate("conquerAudio.enable(false)")
+    assert page.evaluate("conquerAudio.enabled()") is False
+    assert errors == []
+    page.close()
+
+
+def test_audio_volume_persists_and_waits_for_a_gesture(site, browser):
+    page, errors = audio_page(site, browser)
+    page.click("#b")
+    page.evaluate("conquerAudio.enable(true); conquerAudio.setVolume(0.2)")
+    page.reload()
+    assert page.evaluate("conquerAudio.volume()") == 0.2
+    # enabled before, but nothing starts until the first click
+    assert page.evaluate("conquerAudio.enabled()") is True
+    assert page.evaluate("conquerAudio._state()") == "none"
+    page.click("#b")
+    page.wait_for_function("conquerAudio._state() === 'running'")
+    assert errors == []
+    page.close()
+
+
+def test_audio_without_web_audio_is_silent(site, browser):
+    page, errors = audio_page(site, browser, "delete window.AudioContext; delete window.webkitAudioContext;")
+    page.click("#b")
+    page.evaluate("""() => { const a = conquerAudio; a.enable(true); a.event('turn'); a.screen('map');
+        a.setVolume(0.3); a._demo(); a.enable(false); }""")
+    assert page.evaluate("conquerAudio.enabled()") is False
+    page.wait_for_timeout(200)
+    assert errors == []
+    page.close()
+
+
+def test_touch_layer_and_sound_work_together(site, browser):
+    errors = []
+    ctx, page, target = touch_page(site, browser, "try", "desktop", errors=errors)
+    page.evaluate("""() => { window.__aud = []; const a = window.conquerAudio;
+        const s = a.screen, e = a.event;
+        a.screen = n => { window.__aud.push(['screen', n]); return s.call(a, n); };
+        a.event = n => { window.__aud.push(['event', n]); return e.call(a, n); }; }""")
+    page.click("#touch-gear")
+    page.click("#touch-opt-sound")
+    assert page.evaluate("conquerAudio.enabled()") is True
+    assert page.is_visible("#touch-opt-preview")
+    page.keyboard.press("Escape")
+    show(page, target, FIRST_TURN["budget"])
+    wait_where(page, "report")
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    log = page.evaluate("window.__aud")
+    screens = [n for k, n in log if k == "screen"]
+    assert screens.index("report") < screens.index("map", screens.index("report"))
+    page.evaluate("window.__aud.length = 0")
+    page.locator("#touch-chips .touch-chip").first.click()
+    assert ["event", "ui"] in page.evaluate("window.__aud")
+    assert errors == []
+    ctx.close()
+
+
+# ---------------------------------------------------------------------------
+# The design system on every page (web/theme.css) and the game screen's artefacts
+
+PAGES = ["index.html", "signup.html", "hall.html", "guide.html", "guide.es.html", "tutorial.html", "tutorial.de.html",
+         "design.html", "game.html", "try/index.html", "admin.html"]
+HEX = re.compile(r"(?<![&\w])#[0-9a-fA-F]{3,8}\b|rgba?\(")
+
+
+@pytest.mark.parametrize("name", PAGES)
+def test_every_page_uses_the_theme_and_has_no_colours_of_its_own(site, browser, name):
+    """theme.css is loaded, the page has a site header and no colour literal
+    in its own markup or styles (theme.css and the xterm themes made from its
+    tokens are the only places colours live), and the console stays quiet."""
+    src = (WEB / name).read_text(encoding="utf-8")
+    assert re.search(r'<link rel="stylesheet" href="(\.\./|/)?theme\.css">', src), name
+    assert 'class="site-header' in src, name
+    assert not HEX.search(re.sub(r"<!--.*?-->", "", src, flags=re.S)), name
+    ctx = browser.new_context(viewport={"width": 1280, "height": 800})
+    page = ctx.new_page()
+    errors = []
+    page.on("console", lambda m: m.type == "error" and "404" not in m.text and errors.append(m.text))
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.route("**/admin/api/state", lambda r: r.fulfill(json={"ok": True, "requests": [], "players": [], "invites": []}))
+    page.goto(site + name)
+    page.wait_for_timeout(500)
+    assert page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--phos').trim()") == "#8fe3a0"
+    assert page.evaluate("!!document.querySelector('.site-header .nav')") or name in ("design.html",)
+    assert not errors, errors
+    ctx.close()
+
+
+def test_long_reading_pages_are_parchment_with_a_dark_header(site, browser):
+    for name in ["guide.html", "guide.es.html", "tutorial.html", "tutorial.de.html"]:
+        page = browser.new_page()
+        page.goto(site + name)
+        assert page.get_attribute(".reading", "data-theme") == "parchment", name
+        assert page.get_attribute("html", "data-theme") is None, name
+        header_bg = page.evaluate("getComputedStyle(document.querySelector('.site-header')).backgroundColor")
+        reading_bg = page.evaluate("getComputedStyle(document.querySelector('.reading')).backgroundColor")
+        assert header_bg != reading_bg, name
+        page.close()
+
+
+def test_race_choice_sets_and_keeps_the_phosphor(site, browser):
+    ctx = browser.new_context()
+    page = ctx.new_page()
+    page.goto(site + "hall.html")
+    assert page.get_attribute("html", "data-race") is None
+    page.evaluate("conquerRace.choose('elf')")
+    assert page.get_attribute("html", "data-race") == "elf"
+    page.reload()
+    assert page.get_attribute("html", "data-race") == "elf"
+    assert page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--phos').trim()") != "#8fe3a0"
+    # what the game shows is used only while nothing was chosen
+    page.evaluate("conquerRace.seen('orc')")
+    assert page.get_attribute("html", "data-race") == "elf"
+    page.evaluate("conquerRace.choose('auto')")
+    assert page.get_attribute("html", "data-race") == "orc"
+    ctx.close()
+
+
+@pytest.mark.parametrize("where", ["try", "game"])
+def test_game_screen_reads_the_race_and_turns_to_parchment(site, browser, where):
+    """The nation's race on screen sets the colours; reports and the builder
+    are read on parchment (the stone and the terminal's own theme together)."""
+    ctx, page, target = touch_page(site, browser, where, "desktop")
+    assert page.evaluate("document.getElementById('stone').classList.contains('parchment')") is False
+    dark = target.evaluate("term.options.theme.background")
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    assert page.evaluate("document.getElementById('stone').classList.contains('parchment')") is False
+    show(page, target, FIRST_TURN["budget"])
+    wait_where(page, "report")
+    page.wait_for_function("() => document.getElementById('stone').classList.contains('parchment')")
+    paper = target.evaluate("term.options.theme.background")
+    assert paper != dark
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    page.wait_for_function("() => !document.getElementById('stone').classList.contains('parchment')")
+    assert target.evaluate("term.options.theme.background") == dark
+    # the nation builder says the race: Dwarf
+    show(page, target, "Nation Builder\n\nNational Race: Dwarf\n")
+    wait_where(page, "builder")
+    page.wait_for_function("() => document.documentElement.getAttribute('data-race') === 'dwarf'")
+    ctx.close()

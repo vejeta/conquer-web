@@ -203,10 +203,31 @@
     });
   }
 
+  // <select data-page-menu="guide"> lists the languages that page is
+  // written in and opens the page in the one chosen (a page per language)
+  function pageMenus() {
+    document.querySelectorAll('select[data-page-menu]').forEach(function (sel) {
+      if (sel.options.length) return;
+      var page = sel.getAttribute('data-page-menu'), here = document.documentElement.lang;
+      LANGUAGES.forEach(function (l) {
+        if (l.pages.indexOf(page) < 0) return;
+        var o = document.createElement('option');
+        o.value = l.code; o.lang = l.code; o.textContent = l.name;
+        sel.appendChild(o);
+      });
+      sel.value = here;
+      sel.addEventListener('change', function () {
+        try { localStorage.setItem(STORE, sel.value); } catch (e) {}
+        location.href = pageUrl(page, sel.value);
+      });
+    });
+  }
+
   function start() {
     fixLinks();
     langLinks();
     langMenus();
+    pageMenus();
     if (lang !== 'en' || document.querySelector('[data-i18n-page]')) ready().then(function () { apply(); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);

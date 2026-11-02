@@ -14,7 +14,7 @@ TUTORIAL = ROOT / "tools" / "tutorial"
 LANGS = sorted(p.stem for p in (WEB / "i18n").glob("*.json"))
 # The coach's tracks: steps file (built by build.py), recorded screens
 TRACKS = {"first-turn": "first-turn", "builder": "found-nation"}
-# Same as BUILDER in web/coach.js and the key bar in web/game.html
+# Same as BUILDER in web/coach.js and web/touch.js (the touch bar)
 BUILDER = re.compile(r"Nation Builder")
 
 
