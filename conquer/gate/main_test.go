@@ -176,3 +176,16 @@ func TestAdminNeedsTheMark(t *testing.T) {
 		}
 	}
 }
+
+func TestNationArgs(t *testing.T) {
+	for _, ok := range []string{"fung", "Anorian", "+", "*", "a.b_c-1"} {
+		if !nationArgRe.MatchString(ok) {
+			t.Errorf("%q should be accepted", ok)
+		}
+	}
+	for _, bad := range []string{"", "toolongname", "a b", "a:b", "+*", "../x", "a\nb"} {
+		if nationArgRe.MatchString(bad) {
+			t.Errorf("%q should be refused", bad)
+		}
+	}
+}

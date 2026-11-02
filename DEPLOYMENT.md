@@ -386,8 +386,11 @@ docker exec conquer-vps conquer-gate -test-mail you@example.com
 A player has two passwords: the **web account** (asked by the site, in
 `/etc/apache2/conquer-web.htpasswd`) and the **nation password** (asked by the
 game). Who plays which nation is in `data/lib/.players`; `sudo ./manage-players.sh list`
-shows each account with its nation, `*` for administrators, `?` waiting for
-approval, `+` approved but with no nation yet.
+shows each account with its nation (`*` administrators, `?` waiting for
+approval, `+` approved but with no nation yet, `-` no assignment) and the nations
+that have no account; `sudo ./manage-players.sh nations` lists every nation of the
+world with race, class and account, and `assign NAME NATION` checks the nation
+exists. The `/admin/` Players tab does the same with a select per account.
 
 **Requests.** A player presses **I want to play** (`/signup.html`) and gets an
 account that waits. You see the request at `/admin/` (accounts marked `*`

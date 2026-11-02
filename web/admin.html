@@ -31,6 +31,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
     .badge.pending { color: var(--gold); }
     .badge.pending::before { background: var(--gold); }
     .badge.plays::before { background: var(--gold); }
+    .assign-cell { display: flex; flex-wrap: wrap; gap: var(--s2); align-items: center; }
+    h2.sub { margin-top: var(--s5); }
     .hint { color: var(--ink-dim); font-size: .85rem; }
     .ok { color: var(--ok); font-weight: 600; margin: 0; }
     .key.danger { color: var(--bad); border-color: var(--bad); border-bottom-color: var(--bad); background: transparent; }
@@ -71,7 +73,10 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
     <section id="panel-players" role="tabpanel" aria-labelledby="tab-players" hidden>
       <p class="hint" id="players-empty" hidden data-i18n="admin.no_players">No accounts yet.</p>
-      <div class="table-wrap"><table class="table"><thead><tr><th data-i18n="admin.tab_players">Players</th><th></th></tr></thead><tbody id="players"></tbody></table></div>
+      <div class="table-wrap"><table class="table"><thead><tr><th data-i18n="admin.col_account">Account</th><th data-i18n="admin.col_state">State</th><th data-i18n="admin.col_nation">Nation</th></tr></thead><tbody id="players"></tbody></table></div>
+      <h2 class="sub" data-i18n="admin.nations_free">Nations without an account</h2>
+      <p class="hint" id="nations-empty" hidden data-i18n="admin.no_free_nations">Every nation has an account.</p>
+      <div class="table-wrap"><table class="table"><thead><tr><th data-i18n="admin.col_nation">Nation</th><th data-i18n="admin.col_race">Race</th><th data-i18n="admin.col_class">Class</th></tr></thead><tbody id="free-nations"></tbody></table></div>
     </section>
 
     <section id="panel-invites" role="tabpanel" aria-labelledby="tab-invites" hidden>
@@ -168,7 +173,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
     function render() {
       if (!state) return;
-      var requests = state.requests || [], players = state.players || [], invites = state.invites || [];
+      var requests = state.requests || [], players = state.players || [], invites = state.invites || [], nations = state.nations || [];
       $('tab-requests').textContent = m('tab_requests') + ' (' + requests.length + ')';
       $('tab-players').textContent = m('tab_players') + ' (' + players.length + ')';
       $('tab-invites').textContent = m('tab_invites') + ' (' + invites.length + ')';
@@ -208,7 +213,19 @@ SPDX-License-Identifier: GPL-3.0-or-later
         else if (p.state === '?') { label = m('st_pending'); cls += ' pending'; }
         else label = m('st_none');
         var last = el('td'); last.appendChild(el('span', cls, label)); li.appendChild(last);
+        li.appendChild(assignCell(p, nations));
         list.appendChild(li);
+      });
+
+      // Nations of the world that no account plays
+      var free = nations.filter(function (n) { return !n.account; });
+      list = $('free-nations');
+      list.textContent = '';
+      $('nations-empty').hidden = free.length > 0 || nations.length === 0;
+      free.forEach(function (n) {
+        var tr = el('tr');
+        [n.name, n.race, n.class].forEach(function (v) { tr.appendChild(el('td', '', v)); });
+        list.appendChild(tr);
       });
 
       list = $('invites');
@@ -220,6 +237,42 @@ SPDX-License-Identifier: GPL-3.0-or-later
         li.appendChild(button(m('copy_link'), 'key', function (b) { copy(code, b); }));
         list.appendChild(li);
       });
+    }
+
+    // The select and button that give an account a nation of the world, a
+    // new nation to found, or the administrator mark
+    function assignCell(p, nations) {
+      var td = el('td', 'assign-cell');
+      var sel = el('select', 'select assign-select');
+      sel.setAttribute('aria-label', m('col_nation') + ': ' + p.account);
+      function option(value, label) { var o = el('option', '', label); o.value = value; sel.appendChild(o); return o; }
+      option('', m('assign_choose'));
+      nations.forEach(function (n) {
+        option('n:' + n.name, m('nation_opt', { name: n.name, race: n.race }) + (n.account ? ' - ' + n.account : ''));
+      });
+      option('+', m('assign_found'));
+      option('*', m('assign_admin'));
+      sel.value = p.state === 'nation' ? 'n:' + p.nation : (p.state === '+' || p.state === '*') ? p.state : '';
+
+      td.appendChild(sel);
+      td.appendChild(button(m('assign'), 'assign key', function (b) { assign(p.account, sel.value, b); }));
+      return td;
+    }
+
+    function assign(account, choice, b) {
+      if (!choice) return;
+      var body = { account: account };
+      if (choice === '+') body.found = true;
+      else if (choice === '*') body.admin = true;
+      else body.nation = choice.slice(2);
+      b.disabled = true;
+      call('/admin/api/assign', body).then(function (res) {
+        b.disabled = false;
+        if (!res.ok) return fail(res.error || 'server');
+        var what = body.found ? m('what_found') : body.admin ? m('what_admin') : m('what_nation', { nation: res.assigned || body.nation });
+        say(info, m('assigned_ok', { account: account, what: what }));
+        return load();
+      }).catch(function () { b.disabled = false; fail('network'); });
     }
 
     function approve(account, b) {

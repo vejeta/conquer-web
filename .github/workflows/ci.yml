@@ -294,6 +294,22 @@ jobs:
           admin -d '{"account":"asker"}' https://localhost/admin/api/approve | jq -e '.error == "not_pending"'
           sudo grep -qx 'asker:+' data/lib/.players
           ! sudo grep -q '^asker' data/lib/.requests
+          # Assigning: the state lists the world's nations; a nation of the world
+          # (any case) is accepted, one that does not exist is refused
+          admin https://localhost/admin/api/state | jq -e '.nations | map(select(.name == "anorian" and .race != null)) | length == 1'
+          admin -d '{"account":"asker","nation":"nowhere"}' https://localhost/admin/api/assign | jq -e '.error == "no_nation"'
+          admin -d '{"account":"asker","nation":"ANORIAN"}' https://localhost/admin/api/assign | jq -e '.ok and .assigned == "anorian"'
+          sudo grep -qx 'asker:anorian' data/lib/.players
+          admin https://localhost/admin/api/state | jq -e '.players | map(select(.account == "asker" and .state == "nation" and .nation == "anorian")) | length == 1'
+          sudo ./manage-players.sh nations | grep -E '^anorian .*asker'
+          sudo ./manage-players.sh list | grep -q 'Nations without an account'
+          msg=$(sudo ./manage-players.sh assign asker nowhere 2>&1) && exit 1
+          grep -q "no nation 'nowhere'" <<< "$msg" && grep -q anorian <<< "$msg"
+          sudo ./manage-players.sh assign asker FUNG
+          sudo grep -qx 'asker:fung' data/lib/.players
+          admin -d '{"account":"asker"}' https://localhost/admin/api/assign | jq -e '.error == "bad_request"'
+          admin -d '{"account":"asker","found":true}' https://localhost/admin/api/assign | jq -e '.ok'
+          sudo grep -qx 'asker:+' data/lib/.players
           # Rejecting deletes the account
           ask '{"account":"asker2","password":"asker-pass"}' | jq -e '.status == "pending"'
           sudo grep -q '^asker2:' data/auth/htpasswd

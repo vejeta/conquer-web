@@ -13,11 +13,13 @@
 #        conquer-signup invite  CODE ACCOUNT                (password on stdin)
 #        conquer-signup approve ACCOUNT
 #        conquer-signup reject  ACCOUNT
+#        conquer-signup assign  ACCOUNT NATION|+|*          (NATION must exist in the world)
 #        conquer-signup invites COUNT                       (prints new codes)
 #        conquer-signup CODE ACCOUNT                        (same as invite)
 #
 # Exit status: 0 done, 2 unknown or used code (invite) or account not
-# pending (approve, reject), 3 account name taken, 5 sign-up closed (the
+# pending (approve, reject) or unknown account (assign), 3 account name
+# taken, 6 no such nation (assign; the nations are printed),  5 sign-up closed (the
 # account file cannot be written), 1 anything else. (4 was "too late in
 # the game"; an approved account can found its nation at any turn now.)
 #
@@ -92,6 +94,11 @@ set_mark() {
     printf '%s\n' "$rest" > "$PLAYERS_FILE"
 }
 
+# Print the world's spelling of nation $1 (any case); fails when there is none
+world_nation() {
+    /usr/local/bin/conquer-status --nations 2>/dev/null | awk -F'\t' -v n="$1" 'tolower($1) == tolower(n) { print $1; found = 1; exit } END { exit !found }'
+}
+
 # Is account $1 waiting for approval?
 is_pending() {
     awk -F: -v user="$1" '$1 == user && $2 == "?" { found = 1 } END { exit !found }' "$PLAYERS_FILE" 2>/dev/null
@@ -163,6 +170,34 @@ reject)
         drop_line "$HTPASSWD_FILE" "$account" || exit 1
         drop_line "$PLAYERS_FILE" "$account" || exit 1
         drop_line "$REQUESTS_FILE" "$account" "$TAB"
+    ) 9> "$LOCK_FILE"
+    ;;
+assign)
+    account="$2" target="$3"
+    valid_account "$account" || exit 2
+    case "$target" in
+        '+'|'*') ;;
+        *)
+            [[ "$target" =~ ^[A-Za-z0-9_.-]{1,9}$ ]] || exit 6
+            nation=$(world_nation "$target") || {
+                echo "Nations: $(/usr/local/bin/conquer-status --nations 2>/dev/null | cut -f1 | paste -sd' ')"
+                exit 6
+            }
+            target="$nation"
+            ;;
+    esac
+    (
+        flock 9 || exit 1
+        has_key "$HTPASSWD_FILE" "$account" || exit 2
+        touch "$PLAYERS_FILE" 2>/dev/null
+        [ -w "$PLAYERS_FILE" ] || exit 1
+        if has_key "$PLAYERS_FILE" "$account"; then
+            set_mark "$account" "$target" || exit 1
+        else
+            printf '%s:%s\n' "$account" "$target" >> "$PLAYERS_FILE" || exit 1
+        fi
+        drop_line "$REQUESTS_FILE" "$account" "$TAB"
+        echo "$target"
     ) 9> "$LOCK_FILE"
     ;;
 invites)

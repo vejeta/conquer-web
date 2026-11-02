@@ -10,14 +10,20 @@
 # Usage:
 #   ./manage-players.sh add NAME [--nation NATION | --admin] [--password-stdin]
 #                                           create or reset an account
-#   ./manage-players.sh assign NAME NATION  assign a nation to an account
+#   ./manage-players.sh password NAME       reset the password of an account
+#                                           (same as add NAME)
+#   ./manage-players.sh assign NAME NATION  assign a nation of the world to an
+#                                           account (see: nations)
 #   ./manage-players.sh assign NAME --admin let an account open any nation
 #   ./manage-players.sh assign NAME --found the account founds a new nation
 #                                           the next time it plays
 #   ./manage-players.sh rename NAME NEWNAME rename an account (same password,
 #                                           same nation)
 #   ./manage-players.sh remove NAME         delete an account
-#   ./manage-players.sh list                list accounts and their nations
+#   ./manage-players.sh list                accounts with their nations, and the
+#                                           nations that have no account
+#   ./manage-players.sh nations             the nations of the world: name, race,
+#                                           class and the account that plays it
 #   ./manage-players.sh invite [COUNT]      create invite codes (default 1)
 #   ./manage-players.sh invites             list the unused invite codes
 #   ./manage-players.sh requests            list the requests waiting for approval
@@ -193,10 +199,74 @@ describe() {
     fi
 }
 
+# The nations of the world, one per line: name<TAB>race<TAB>class. From the
+# game container (conquer-status --nations, which reads "conquer -s", the
+# source of status.json); without a running container, from the nations of
+# data/public/status.json (needs jq). Fails when neither is available.
+world_nations() {
+    local c out
+    if [ -n "$NATIONS_FILE" ]; then cat "$NATIONS_FILE"; return; fi
+    for c in conquer-local conquer-vps; do
+        if docker ps --format '{{.Names}}' 2>/dev/null | grep -qx "$c"; then
+            out=$(docker exec -u conquer "$c" conquer-status --nations 2>/dev/null) && [ -n "$out" ] \
+                && { printf '%s\n' "$out"; return; }
+        fi
+    done
+    local json="${STATUS_JSON:-$SCRIPT_DIR/data/public/status.json}"
+    if [ -r "$json" ] && command -v jq >/dev/null 2>&1; then
+        out=$(jq -r '.nations[]? | [.name, .race, .class] | @tsv' "$json" 2>/dev/null | sort -f) \
+            && [ -n "$out" ] && { printf '%s\n' "$out"; return; }
+    fi
+    return 1
+}
+
+# Account that plays each nation, as "nation<TAB>account" lines: the
+# assignments of .players, and an account without one opens the nation named
+# like it (when the world has one)
+nation_owners() {
+    awk -F: -v players="$PLAYERS_FILE" '
+        BEGIN {
+            while ((getline line < players) > 0) { split(line, f, ":"); mark[f[1]] = f[2] }
+        }
+        {
+            m = ($1 in mark) ? mark[$1] : ""
+            if (m == "") print tolower($1) "\t" $1
+            else if (m != "*" && m != "+" && m != "?") print tolower(m) "\t" $1
+        }' "$HTPASSWD_FILE" 2>/dev/null
+}
+
+cmd_nations() {
+    local nations
+    nations=$(world_nations) || { echo "❌ Cannot read the nations of the world: the game container is not running and there is no data/public/status.json (needs jq)" >&2; exit 1; }
+    printf '%s\n' "$nations" | awk -F'\t' -v owners="$(nation_owners)" '
+        BEGIN {
+            n = split(owners, o, "\n")
+            for (i = 1; i <= n; i++) { split(o[i], f, "\t"); if (f[1] == "") continue; if (f[1] in acc) acc[f[1]] = acc[f[1]] "," f[2]; else acc[f[1]] = f[2] }
+            printf "%-10s %-10s %-10s %s\n", "NATION", "RACE", "CLASS", "ACCOUNT"
+        }
+        NF >= 3 { a = (tolower($1) in acc) ? acc[tolower($1)] : "—"; printf "%-10s %-10s %-10s %s\n", $1, $2, $3, a }' \
+        | { read -r head; echo "$head"; sort -f; }
+}
+
 cmd_assign() {
     local nation
     valid_name "$1" || { echo "❌ Invalid name"; exit 1; }
     nation=$(nation_arg "$2") || exit 1
+    if [ "$nation" != "*" ] && [ "$nation" != "+" ]; then
+        local nations canon
+        if nations=$(world_nations); then
+            canon=$(printf '%s\n' "$nations" | awk -F'\t' -v n="$nation" 'tolower($1) == tolower(n) { print $1; exit }')
+            if [ -z "$canon" ]; then
+                echo "❌ There is no nation '$nation' in the world. Available nations:" >&2
+                printf '%s\n' "$nations" | awk -F'\t' '{ printf "   %-10s %s %s\n", $1, $2, $3 }' >&2
+                echo "   (or --found for a new nation, --admin for an administrator)" >&2
+                exit 1
+            fi
+            nation="$canon"
+        else
+            echo "⚠️  Cannot read the nations of the world: '$nation' is not checked" >&2
+        fi
+    fi
     set_nation "$1" "$nation"
     describe "$1" "$nation"
 }
@@ -243,25 +313,45 @@ cmd_rename() {
 }
 
 cmd_list() {
+    local nations=""
     if [ ! -s "$HTPASSWD_FILE" ]; then
         echo "No accounts yet ($HTPASSWD_FILE)"
-        return
-    fi
-    # Account and its nation ("-" when none is assigned)
-    cut -d: -f1 "$HTPASSWD_FILE" | sort | awk -F: -v players="$PLAYERS_FILE" '
-        BEGIN {
-            while ((getline line < players) > 0) {
-                split(line, f, ":"); nation[f[1]] = f[2]
+    else
+        echo "Accounts"
+        cut -d: -f1 "$HTPASSWD_FILE" | sort | awk -F: -v players="$PLAYERS_FILE" '
+            BEGIN {
+                while ((getline line < players) > 0) {
+                    split(line, f, ":"); nation[f[1]] = f[2]
+                }
+                printf "%-32s %s\n", "ACCOUNT", "NATION"
             }
-            printf "%-32s %s\n", "ACCOUNT", "NATION"
-        }
-        {
-            n = ($1 in nation) ? nation[$1] : "-"
-            if (n == "*") n = "* (administrator)"
-            if (n == "+") n = "+ (signed up, nation not founded yet)"
-            if (n == "?") n = "? (requested, waiting for approval)"
-            printf "%-32s %s\n", $1, n
-        }'
+            {
+                n = ($1 in nation) ? nation[$1] : "-"
+                if (n == "*") n = "* (administrator: may open any nation)"
+                if (n == "+") n = "+ (approved, founds its nation the next time it plays)"
+                if (n == "?") n = "? (requested, waiting for approval)"
+                if (n == "-") n = "- (no nation: opens one named like the account, if it exists)"
+                printf "%-32s %s\n", $1, n
+            }'
+    fi
+    echo
+    echo "Nations without an account"
+    if nations=$(world_nations); then
+        printf '%s\n' "$nations" | awk -F'\t' -v owners="$(nation_owners)" '
+            BEGIN {
+                n = split(owners, o, "\n")
+                for (i = 1; i <= n; i++) { split(o[i], f, "\t"); if (f[1] != "") taken[f[1]] = 1 }
+                printf "%-10s %-10s %s\n", "NATION", "RACE", "CLASS"
+            }
+            NF >= 3 && !(tolower($1) in taken) { printf "%-10s %-10s %s\n", $1, $2, $3; found = 1 }
+            END { if (!found) print "(none: every nation has an account)" }'
+    else
+        echo "(cannot read the nations of the world: the game container is not running)"
+    fi
+    echo
+    echo "Marks: * administrator   + approved, founds a nation   ? waiting for approval"
+    echo "       - no assignment (opens the nation named like the account, if any)"
+    echo "Assign with: $0 assign NAME NATION   (see: $0 nations)"
 }
 
 # Invite codes: players type one on the sign-up page (signup.html) to create
@@ -333,7 +423,8 @@ cmd_reject() {
 }
 
 case "${1:-}" in
-    add) [ -n "$2" ] || usage; shift; cmd_add "$@" ;;
+    add|password) [ -n "$2" ] || usage; shift; cmd_add "$@" ;;
+    nations) cmd_nations ;;
     assign) [ -n "$3" ] || usage; cmd_assign "$2" "$3" ;;
     rename) [ -n "$3" ] || usage; cmd_rename "$2" "$3" ;;
     remove) [ -n "$2" ] || usage; cmd_remove "$2" ;;

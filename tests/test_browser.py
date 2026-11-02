@@ -355,6 +355,9 @@ ADMIN_STATE = {
     "players": [{"account": "ana", "state": "?", "nation": None}, {"account": "root", "state": "*", "nation": None},
                 {"account": "cy", "state": "nation", "nation": "Gondor"}, {"account": "di", "state": "+", "nation": None}],
     "invites": ["K7QM-3XPA", "AAAA-BBBB"],
+    "nations": [{"name": "Gondor", "race": "Human", "class": "Warrior", "account": "cy"},
+                {"name": "Fung", "race": "Dwarf", "class": "Merchant", "account": None},
+                {"name": "Anorian", "race": "Elf", "class": "Mage", "account": None}],
 }
 
 
@@ -403,6 +406,43 @@ def test_admin_page(site, browser):
     body = page.inner_text("body")
     assert "add-nation.sh" not in body and "assign ana" not in body
     assert page.locator("#notes").count() == 0
+    page.close()
+
+
+def test_admin_assigns_nations(site, browser):
+    """Each account has a select with the world's nations (with race), "found a
+    new nation" and "administrator"; Assign posts the choice; the nations
+    without an account are listed."""
+    posts = []
+    page = browser.new_page()
+
+    def api(route):
+        if route.request.method == "POST":
+            posts.append((route.request.url.split("/admin/api/")[1], json.loads(route.request.post_data)))
+            return route.fulfill(content_type="application/json", body='{"ok": true, "assigned": "Fung"}')
+        route.fulfill(content_type="application/json", body=json.dumps(ADMIN_STATE))
+    page.route("**/admin/api/**", api)
+    page.goto(site + "admin.html?lang=en")
+    page.wait_for_selector("#app:not([hidden])")
+    page.click("#tab-players")
+    rows = page.locator("#players tr")
+    assert rows.count() == 4
+    options = rows.nth(0).locator("select option").all_inner_texts()
+    assert "Fung (Dwarf)" in options and "Found a new nation" in options and "Administrator" in options
+    assert rows.nth(2).locator("select").input_value() == "n:Gondor"
+    free = page.inner_text("#free-nations")
+    assert "Fung" in free and "Anorian" in free and "Gondor" not in free
+    page.locator("#players tr").nth(0).locator("select").select_option("n:Fung")
+    page.locator("#players tr").nth(0).locator("button.assign").click()
+    page.wait_for_function("() => document.getElementById('info').textContent.includes('opens Fung')")
+    page.locator("#players tr").nth(3).locator("select").select_option("+")
+    page.locator("#players tr").nth(3).locator("button.assign").click()
+    page.locator("#players tr").nth(1).locator("select").select_option("*")
+    page.locator("#players tr").nth(1).locator("button.assign").click()
+    page.wait_for_function("() => document.getElementById('info').textContent.includes('administrator')")
+    assert posts == [("assign", {"account": "ana", "nation": "Fung"}),
+                     ("assign", {"account": "di", "found": True}),
+                     ("assign", {"account": "root", "admin": True})]
     page.close()
 
 
