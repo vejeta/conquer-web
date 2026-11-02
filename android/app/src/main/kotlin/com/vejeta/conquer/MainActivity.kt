@@ -106,7 +106,7 @@ class MainActivity : ComponentActivity() {
                 val open = url
                 if (open == null) {
                     Home(
-                        onPlayOnline = { url = Site.PLAY },
+                        onPlayOnline = { url = Site.playPage(lang) },
                         onPractice = { url = "${server.origin}/${Site.practicePage(lang)}" },
                         onTutorial = { url = "${server.origin}/${Site.tutorialPage(lang)}" },
                         onSite = { openInBrowser(Site.siteUrl(lang)) },

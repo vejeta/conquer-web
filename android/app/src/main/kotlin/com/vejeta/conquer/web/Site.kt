@@ -14,9 +14,10 @@ object Site {
     /**
      * The game: the touch page (game.html), which frames the terminal at
      * /play/. "app=1" tells the pages they run in the app (no site chrome, a
-     * compact bar, sound on, the bridge).
+     * compact bar, sound on, the bridge); "lang" is the app's language, so the
+     * pages never fall back to English.
      */
-    const val PLAY = "$URL/game.html?app=1"
+    fun playPage(lang: String = language()): String = "$URL/game.html?app=1&lang=$lang"
     const val LOGOUT = "$URL/logout"
     const val STATUS = "$URL/status/status.json"
 

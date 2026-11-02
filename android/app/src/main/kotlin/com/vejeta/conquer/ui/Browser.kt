@@ -216,7 +216,7 @@ fun BrowserScreen(
             if (result is LoginResult.Ok) {
                 sound.doorsOpen()
                 navigator.setCookie(Site.URL, result.name, result.value)
-                navigator.loadUrl(Site.PLAY)
+                navigator.loadUrl(Site.playPage())
                 return@LaunchedEffect
             }
         }
@@ -341,7 +341,7 @@ fun BrowserScreen(
                                 if (remember) credentials.save(account)
                                 auth = null
                                 leaving = doors
-                                navigator.loadUrl(Site.PLAY)
+                                navigator.loadUrl(Site.playPage())
                             }
                             // A new request: the runes flicker and the doors shake
                             is LoginResult.Refused -> {
