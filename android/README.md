@@ -12,8 +12,15 @@ a login for the game server and turn notifications.
 - **Offline**: the practice world (the game compiled to WebAssembly), the
   tutorial, the guide and the hall of fame, all from the app's own copy of
   `web/`.
-- **Online**: the shared game at <https://conquer.vejeta.com/play/> (Basic
-  authentication) and the rest of the site.
+- **Online**: the shared game at <https://conquer.vejeta.com/game.html?app=1>
+  (the touch page; the terminal it frames, `/play/`, has Basic
+  authentication). "The website" opens the site in the system's browser.
+
+The pages know they are in the app (`?app=1`, `window.cefriumQuery` or a
+Cefrium user agent): no site header or footer, a compact bar (Home, Coach,
+Keyboard, Menu), sound on by default, haptics through the bridge. Practice
+opens `try/?app=1&autostart=1` and goes straight to the map. The game is shown
+sideways (sensor landscape); the other screens follow the phone.
 
 Package and application id: `com.vejeta.conquer`. Version 0.1.0.
 
@@ -95,9 +102,12 @@ Apache asks for Basic authentication on `/play/`. The browser screen sets
 `CefriumView`):
 
 1. The challenge is answered only for `conquer.vejeta.com`, never for another
-   host or a proxy.
-2. With a saved account, it is sent at once. If the server asks again within
-   20 seconds, the account was refused: the dialog opens with a warning.
+   host or a proxy. It comes from the terminal's frame inside `game.html`
+   (a sub-frame, and again for the WebSocket), so every challenge is answered,
+   whatever frame asks.
+2. With a saved account, it is sent at once, up to 4 times within 20 seconds.
+   If the server keeps asking, the account was refused: the dialog opens with
+   a warning.
 3. Without an account, the dialog asks for it. "Remember me" is on by
    default and saves the account in `EncryptedSharedPreferences`
    (AES-256-GCM, key in the Android Keystore).
@@ -143,11 +153,12 @@ app({ type: 'race', race: 'elf' });                   // the colours: human, elf
 | `keepAwake` | `on` (boolean)          | `FLAG_KEEP_SCREEN_ON` on or off       |
 | `notify`    | `title`, `body`         | a local notification                  |
 | `race`      | `race`                  | stores the race of the app's colours  |
+| `home`      |                         | leaves the page for the home screen   |
 
 The answer is `{"ok":true}`. Failures: `-1` bad request (not JSON, or an unknown race), `-2`
 unknown `type`, `-3` notifications not allowed (no permission), `-403`
 origin not allowed. The page also keeps the screen on by itself while the
-address contains `/play/` or `/try/`, and `navigator.vibrate` works in
+address contains `/play/`, `/try/` or `/game.html`, and `navigator.vibrate` works in
 Cefrium without the bridge (the app declares `VIBRATE`).
 
 ## Licences

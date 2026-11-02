@@ -24,6 +24,7 @@ import org.json.JSONObject
  *  - {"type":"notify","title":"...","body":"..."}: a local notification
  *  - {"type":"race","race":"elf"}: the race of the colours (human, elf,
  *    dwarf or orc); the app stores it and themes itself with it
+ *  - {"type":"home"}: leave the page for the app's home screen
  *
  * The answer is {"ok":true}, or a failure with a code: -1 bad request, -2
  * unknown type, -3 no permission to notify. The contract is in
@@ -36,6 +37,7 @@ class Bridge(
     context: Context,
     private val onKeepAwake: (Boolean) -> Unit,
     private val onRace: (Race) -> Unit,
+    private val onHome: () -> Unit,
 ) {
     private val context = context.applicationContext
     private val main = Handler(Looper.getMainLooper())
@@ -83,6 +85,10 @@ class Bridge(
                     main.post { onRace(race) }
                     callback.success(OK)
                 }
+            }
+            "home" -> {
+                main.post { onHome() }
+                callback.success(OK)
             }
             else -> callback.failure(-2, "unknown type")
         }

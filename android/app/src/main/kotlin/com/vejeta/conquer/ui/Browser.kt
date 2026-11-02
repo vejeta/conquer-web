@@ -4,6 +4,7 @@
 package com.vejeta.conquer.ui
 
 import android.app.Activity
+import android.content.pm.ActivityInfo
 import android.os.SystemClock
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -62,17 +63,21 @@ internal class AuthRequest(
 )
 
 /**
- * Answers the game server's Basic authentication. The saved account goes out
- * at once, but only to the game server (never to another host, nor to a
- * proxy), and only once in a while: when the server asks again right after,
- * the account was refused and the user is asked, so a wrong password does not
- * loop.
+ * Answers the game server's Basic authentication. The challenge comes from
+ * /play/, the terminal that game.html frames, so it is a sub-frame's, and the
+ * browser may ask again for the next request (the WebSocket): every challenge
+ * from the game server is answered with the saved account, with no regard to
+ * which frame asks. It goes out only to the game server (never to another
+ * host, nor to a proxy), and only [MAX_ANSWERS] times within [RETRY_MS]: when
+ * the server keeps asking, the account was refused and the user is asked, so a
+ * wrong password does not loop.
  */
 private class AuthFlow(
     private val credentials: Credentials,
     private val ask: (AuthRequest) -> Unit,
 ) {
-    private var lastProceed = 0L
+    private var windowStart = 0L
+    private var answers = 0
 
     fun onRequest(
         host: String,
@@ -84,22 +89,29 @@ private class AuthFlow(
             callback.cancel()
             return
         }
-        val recent = SystemClock.elapsedRealtime() - lastProceed < RETRY_MS
+        val now = SystemClock.elapsedRealtime()
+        if (now - windowStart > RETRY_MS) {
+            windowStart = now
+            answers = 0
+        }
         val saved = credentials.load()
-        if (saved != null && !recent) {
-            answered()
+        if (saved != null && answers < MAX_ANSWERS) {
+            answers++
             callback.proceed(saved.user, saved.password)
         } else {
-            ask(AuthRequest(host, realm, recent, callback))
+            ask(AuthRequest(host, realm, answers > 0, callback))
         }
     }
 
+    /** The user typed an account: it gets a fresh count of answers. */
     fun answered() {
-        lastProceed = SystemClock.elapsedRealtime()
+        windowStart = SystemClock.elapsedRealtime()
+        answers = 1
     }
 
     private companion object {
         const val RETRY_MS = 20_000L
+        const val MAX_ANSWERS = 4
     }
 }
 
@@ -109,7 +121,9 @@ private class AuthFlow(
  * then leaves for [onExit].
  *
  * [bridge] answers window.cefriumQuery; [keepAwake] keeps the screen on
- * while the page is the game (/play/ or /try/).
+ * while the page is the game (game.html, /play/ or /try/), which is shown
+ * sideways (either landscape, following the sensor); the other pages turn
+ * with the phone.
  */
 @Composable
 fun BrowserScreen(
@@ -148,10 +162,20 @@ fun BrowserScreen(
 
     // The screen stays on while a game is on it
     val current = state.lastLoadedUrl ?: url
-    val game = "/play/" in current || "/try/" in current
+    val game = "/play/" in current || "/try/" in current || "/game.html" in current
     LaunchedEffect(game) { keepAwake("page", game) }
+    // The game is played sideways; everything else follows the phone
+    DisposableEffect(game) {
+        activity.requestedOrientation = if (game) {
+            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        } else {
+            ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
+        onDispose { }
+    }
     DisposableEffect(Unit) {
         onDispose {
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             keepAwake("page", false)
             keepAwake("bridge", false)
         }

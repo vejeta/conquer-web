@@ -4,7 +4,9 @@
 package com.vejeta.conquer
 
 import android.Manifest
+import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
@@ -15,7 +17,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.vejeta.conquer.auth.Credentials
 import com.vejeta.conquer.bridge.Bridge
@@ -38,6 +39,9 @@ class MainActivity : ComponentActivity() {
     private lateinit var credentials: Credentials
     private lateinit var bridge: Bridge
     private lateinit var prefs: SharedPreferences
+
+    // The page on screen (null: the home screen); the bridge's "home" clears it
+    private var url by mutableStateOf<String?>(null)
 
     // The colours: the race chosen on the site (stored; human until then)
     private var race by mutableStateOf(Race.Human)
@@ -68,6 +72,7 @@ class MainActivity : ComponentActivity() {
                 prefs.edit().putString("race", chosen.key).apply()
                 race = chosen
             },
+            onHome = { url = null },
         )
 
         Notifications.ensureChannel(this)
@@ -78,7 +83,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ConquerTheme(race) {
-                var url by remember { mutableStateOf<String?>(null) }
                 val lang = Site.language()
                 val open = url
                 if (open == null) {
@@ -86,7 +90,7 @@ class MainActivity : ComponentActivity() {
                         onPlayOnline = { url = Site.PLAY },
                         onPractice = { url = "${server.origin}/${Site.practicePage(lang)}" },
                         onTutorial = { url = "${server.origin}/${Site.tutorialPage(lang)}" },
-                        onSite = { url = Site.siteUrl(lang) },
+                        onSite = { openInBrowser(Site.siteUrl(lang)) },
                         onForgetAccount = {
                             credentials.clear()
                             Toast.makeText(this@MainActivity, R.string.forgotten, Toast.LENGTH_SHORT).show()
@@ -102,6 +106,15 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
+        }
+    }
+
+    /** The online site is a website: it opens in the system's browser, not in the game. */
+    private fun openInBrowser(address: String) {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(address)))
+        } catch (e: android.content.ActivityNotFoundException) {
+            Toast.makeText(this, address, Toast.LENGTH_LONG).show()
         }
     }
 
