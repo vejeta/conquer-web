@@ -10,6 +10,14 @@ SPDX-License-Identifier: GPL-3.0-or-later
   <title>Conquer design system</title>
   <meta name="robots" content="noindex">
   <link rel="stylesheet" href="theme.css">
+  <script>
+  /* Apply the saved race before first paint (ES5). */
+  (function () {
+    var r = null, m = /[#&]race=(human|elf|dwarf|orc)/.exec(location.hash);
+    try { r = m ? m[1] : localStorage.getItem('conquer-race'); } catch (e) { r = m ? m[1] : null; }
+    if (r === 'elf' || r === 'dwarf' || r === 'orc') { document.documentElement.setAttribute('data-race', r); }
+  })();
+  </script>
   <style>
     /* Layout only. Colours and fonts come from theme.css. */
     main { max-width: 880px; margin: 0 auto; padding: var(--s5) var(--s4) 64px; display: flex; flex-direction: column; gap: var(--s6); }
@@ -57,12 +65,22 @@ SPDX-License-Identifier: GPL-3.0-or-later
       <button class="key key-small toggle" id="t-crt" type="button" aria-pressed="false" style="width:auto">CRT effect <span class="state">OFF</span></button>
       <button class="key key-small toggle" id="t-parch" type="button" aria-pressed="false" style="width:auto">Parchment reading block <span class="state">OFF</span></button>
     </div>
+    <div class="stack">
+      <h3 style="margin:0">Race</h3>
+      <div class="row" role="group" aria-label="Race" id="races">
+        <button class="key key-small" type="button" data-race-pick="human" aria-pressed="true">Human <span class="hint">1</span></button>
+        <button class="key key-small" type="button" data-race-pick="elf" aria-pressed="false">Elf <span class="hint">2</span></button>
+        <button class="key key-small" type="button" data-race-pick="dwarf" aria-pressed="false">Dwarf <span class="hint">3</span></button>
+        <button class="key key-small" type="button" data-race-pick="orc" aria-pressed="false">Orc <span class="hint">4</span></button>
+      </div>
+      <p class="cap">Each race tints the phosphor, the surfaces, stone and gold. Nothing else moves. Open with <code>#race=elf</code>.</p>
+    </div>
   </section>
 
   <section>
     <h2>Colour</h2>
     <div class="swatches" id="swatches"></div>
-    <p class="cap">Phosphor green is the only accent. Gold marks scores, ranks and founded nations, never buttons. Brick red appears only when something is wrong.</p>
+    <p class="cap">The phosphor is the only accent (green for Humans). Gold marks scores, ranks and founded nations, never buttons. Brick red appears only when something is wrong.</p>
   </section>
 
   <div class="divider" role="separator"><svg viewBox="0 0 40 16" aria-hidden="true"><path d="M2 14 11 4l5 6 5-8 8 12 4-4 5 4"/></svg></div>
@@ -308,9 +326,22 @@ SPDX-License-Identifier: GPL-3.0-or-later
   };
   var all = document.querySelectorAll('.toggle');
   for (var i = 0; i < all.length; i++) {
-    if (all[i].id) continue;
+    if (all[i].id || all[i].hasAttribute('data-race-pick')) continue;
     all[i].onclick = function () { toggle(this, this.getAttribute('aria-pressed') !== 'true'); };
   }
+  var raceKeys = document.querySelectorAll('[data-race-pick]');
+  function setRace(r) {
+    var root = document.documentElement;
+    if (r === 'human') { root.removeAttribute('data-race'); } else { root.setAttribute('data-race', r); }
+    for (var j = 0; j < raceKeys.length; j++) {
+      raceKeys[j].setAttribute('aria-pressed', raceKeys[j].getAttribute('data-race-pick') === r ? 'true' : 'false');
+    }
+    try { localStorage.setItem('conquer-race', r); } catch (e) {}
+  }
+  for (var k = 0; k < raceKeys.length; k++) {
+    raceKeys[k].onclick = function () { setRace(this.getAttribute('data-race-pick')); };
+  }
+  setRace(document.documentElement.getAttribute('data-race') || 'human');
   if (location.hash === '#crt') setCrt(true);
   if (location.hash === '#parchment') { par.onclick(); }
 })();

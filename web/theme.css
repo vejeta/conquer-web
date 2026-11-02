@@ -77,6 +77,43 @@
   /* spacing scale: 4 8 12 16 24 32 */
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px;
   --ease: 120ms ease;
+  --mountains: url(mountains.svg);
+}
+
+/* Phosphor by race. Human is the default above (no attribute). Set
+   data-race="elf|dwarf|orc" on <html>. Only the phosphor and its companions
+   (surfaces, stone, gold, glow, mountains) change; structure, type, spacing
+   and components never do. Parchment mode below wins over all of them. */
+[data-race="elf"] {            /* moonlight on a night-blue glass */
+  --bg: #0b1016; --bg-2: #121a22; --screen: #050709;
+  --ink-dim: #9db0bb;
+  --phos: #a9d3e6; --phos-text: #a9d3e6; --phos-dim: #5a90a8;
+  --phos-glow: rgba(169, 211, 230, .28); --on-phos: #0b1016;
+  --stone: #93a3ad; --gold: #e0c98a;
+  --ok: #a9d3e6; --warn: #e0c98a;
+  --line: rgba(147, 163, 173, .45);
+  --mountains: url(mountains-elf.svg);
+}
+[data-race="dwarf"] {          /* the console of Khazad-dum: forge amber on dark rock */
+  --bg: #100e0b; --bg-2: #1a1611; --screen: #070605;
+  --ink-dim: #aa9f90;
+  --phos: #f2a93b; --phos-text: #f2a93b; --phos-dim: #b67a22;
+  --phos-glow: rgba(242, 169, 59, .28); --on-phos: #100e0b;
+  --stone: #8a7f73; --gold: #e3c56a;
+  --ok: #f2a93b; --warn: #e3c56a;
+  --line: rgba(138, 127, 115, .45);
+  --mountains: url(mountains-dwarf.svg);
+}
+[data-race="orc"] {            /* rust and ember on ash black */
+  --bg: #0e0b0b; --bg-2: #171212; --screen: #070404;
+  --ink-dim: #a89c9a;
+  --phos: #e07a5a; --phos-text: #e07a5a; --phos-dim: #9c4a30;
+  --phos-glow: rgba(224, 122, 90, .2); --on-phos: #0e0b0b;   /* .2: keeps text on a pressed key at 4.5:1 */
+  --stone: #7d7272; --gold: #c9a24a;
+  --ok: #e07a5a; --warn: #c9a24a;
+  --bad: #ff9d8a;                /* a paler salmon, so errors stay apart from the rust accent */
+  --line: rgba(125, 114, 114, .45);
+  --mountains: url(mountains-orc.svg);
 }
 
 /* Parchment: long-reading pages (guide, tutorial). Only colours change. */
@@ -268,13 +305,13 @@ textarea.input { min-height: 5.5em; resize: vertical; }
 
 /* 9. Terminal, .crt, options sheet -------------------------------------- */
 .terminal {
-  position: relative; background: var(--screen); color: #8fe3a0;
+  position: relative; background: var(--screen); color: var(--phos);
   border: var(--bezel) solid var(--line); border-radius: var(--radius);
   box-shadow: inset 0 0 0 1px var(--hair), inset 0 0 40px rgba(0, 0, 0, .6);
   padding: var(--s3); overflow: hidden;
 }
 .terminal pre { margin: 0; font: 1.25rem/1.05 var(--font-mono); white-space: pre; overflow: hidden; }
-.terminal .cursor { background: #8fe3a0; color: var(--screen); animation: blink 1.1s steps(1) infinite; }
+.terminal .cursor { background: var(--phos); color: var(--screen); animation: blink 1.1s steps(1) infinite; }
 @keyframes blink { 50% { background: transparent; color: inherit; } }
 /* CRT effect: off by default. Add .crt to <body> (or any ancestor) to switch on. */
 .crt .terminal::after {
@@ -283,7 +320,7 @@ textarea.input { min-height: 5.5em; resize: vertical; }
     radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .55) 100%),
     repeating-linear-gradient(0deg, rgba(0, 0, 0, .04) 0 1px, transparent 1px 3px);
 }
-.crt .terminal pre { text-shadow: 0 0 6px rgba(143, 227, 160, .28); }
+.crt .terminal pre { text-shadow: 0 0 6px var(--phos-glow); }
 
 /* Options sheet: a bezel panel of toggles that slides up over the keys. */
 .sheet {
@@ -295,8 +332,8 @@ textarea.input { min-height: 5.5em; resize: vertical; }
 
 /* 10. Mountains ---------------------------------------------------------- */
 /* Three low-contrast ridges (bg-2 over bg, far ridge faintest). Colours are
-   baked into mountains.svg, so this is dark mode only. */
-.mountains { background: var(--bg) url(mountains.svg) no-repeat center bottom / cover; }
+   baked into mountains*.svg (one per race, see section 2), so this is dark mode only. */
+.mountains { background: var(--bg) var(--mountains) no-repeat center bottom / cover; }
 [data-theme="parchment"] .mountains { background-image: none; }
 .site-header.mountains { border-bottom: var(--bezel) solid var(--line); }
 .hero { padding: var(--s6) var(--s4) 96px; border-bottom: 1px solid var(--line); border-radius: var(--radius) var(--radius) 0 0; }
