@@ -233,7 +233,7 @@ def status_fixture(tmp_path, **fields):
 
 @pytest.mark.parametrize("fields,want,note", [
     ({"requests_open": True, "turn": 3, "last_join_turn": 5}, "ask for your seat", "invite code you are in at once"),
-    ({"requests_open": True, "turn": 36, "last_join_turn": 5}, "ask for your seat", "The game is at turn 36"),
+    ({"requests_open": True, "turn": 36, "last_join_turn": 5}, "ask for your seat", "The game is at turn 36: a nation founded now starts late, with extra points"),
     ({"requests_open": False, "turn": 3, "last_join_turn": 5}, None, None),
     ({"signup": True, "turn": 3}, "ask for your seat", "invite code you are in at once"),
 ])
@@ -359,7 +359,8 @@ ADMIN_STATE = {
 
 def test_admin_page(site, browser):
     """The three tabs show the state; Approve posts to the API and the page
-    tells how to add the nation when the game is past the last joining turn."""
+    shows no note about adding the nation by hand, even when the game is past
+    the last turn of the early start: approval is the only gate."""
     posts = []
     state = json.loads(json.dumps(ADMIN_STATE))
 
@@ -398,8 +399,9 @@ def test_admin_page(site, browser):
     page.wait_for_function("() => document.querySelectorAll('#requests li').length === 1")
     assert ("approve", {"account": "ana"}) in posts
     assert "approved" in page.inner_text("#info")
-    note = page.inner_text("#notes")
-    assert "turn 36" in note and "add-nation.sh" in note and "assign ana NATION" in note
+    body = page.inner_text("body")
+    assert "add-nation.sh" not in body and "assign ana" not in body
+    assert page.locator("#notes").count() == 0
     page.close()
 
 

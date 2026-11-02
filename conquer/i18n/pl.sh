@@ -125,7 +125,10 @@ MSG[menu_goodbye]="Do zobaczenia, dowódco."
 MSG[join_questions]="Pytania: ${bold}%s${reset}"
 MSG[join_title]="${bold}${green}Załóż swój naród${reset}"
 MSG[join_welcome]="Witaj, ${bold}%s${reset}. Twoje konto jest gotowe: teraz załóż swój naród."
-MSG[join_too_late]="Gra jest w turze %s: po turze 5 nowe narody dodaje administrator. Poproś go o dodanie twojego."
+MSG[join_late]="
+  Gra jest w turze %s: twój naród zaczyna późno, a kreator narodów daje mu
+  dodatkowe punkty, żeby nadrobić zaległości.
+"
 MSG[join_builder]="
   ${bold}Teraz zbuduj swój naród${reset} w kreatorze narodów gry
   (jego ekrany są po angielsku).

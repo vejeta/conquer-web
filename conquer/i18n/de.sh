@@ -125,7 +125,10 @@ MSG[menu_goodbye]="Leb wohl, Feldherr."
 MSG[join_questions]="Fragen: ${bold}%s${reset}"
 MSG[join_title]="${bold}${green}Gründe deine Nation${reset}"
 MSG[join_welcome]="Willkommen, ${bold}%s${reset}. Dein Konto ist bereit: Gründe jetzt deine Nation."
-MSG[join_too_late]="Die Partie ist bei Zug %s: Nach Zug 5 fügt der Spielleiter neue Nationen hinzu. Bitte ihn, deine hinzuzufügen."
+MSG[join_late]="
+  Die Partie ist bei Zug %s: Deine Nation startet spät, und der Baumeister
+  gibt ihr Extrapunkte zum Aufholen.
+"
 MSG[join_builder]="
   ${bold}Jetzt baust du deine Nation${reset} mit dem Nationenbaukasten des Spiels
   (seine Bildschirme sind auf Englisch).

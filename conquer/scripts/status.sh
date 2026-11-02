@@ -13,7 +13,8 @@ fi
 
 PREFIX="${CONQUER_PREFIX:-/opt/conquer}"
 PUBLIC_DIR="${PUBLIC_DIR:-$PREFIX/public}"
-# Keep in step with LAST_JOIN_TURN in signup.sh and the gate
+# After this turn a new nation starts late, with extra points from the game;
+# keep in step with LAST_JOIN_TURN in join.sh and the gate
 LAST_JOIN_TURN=5
 
 TURN_SCHEDULE="" TURN_SCHEDULE_LABEL="" TURN_SCHEDULE_AUTO="" TURN_REPEAT="" TURN_EARLY="" SIGNUP="" HTPASSWD_FILE="" ADMIN_CONTACT=""
@@ -136,7 +137,7 @@ END {
     printf "\"turn_state\":{\"state\":%s,\"time\":%s,\"message\":%s},",
         json(state), json(state_time), json(state_message)
     # Players may ask for a seat (signup.html); "signup" is the old name
-    # of requests_open. After last_join_turn the administrator adds nations.
+    # of requests_open. After last_join_turn new nations start with extra points.
     printf "\"signup\":%s,\"requests_open\":%s,\"last_join_turn\":%d,", signup, signup, last_join_turn
     # How to reach the administrator, for "How to join" on the landing page
     if (contact != "")

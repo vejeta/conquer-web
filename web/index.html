@@ -327,8 +327,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <p class="note" data-i18n="index.note_join">Joining takes three steps: ask for your seat, wait for the administrator to approve it, then found your nation inside the game.</p>
     <ol>
       <li data-i18n="index.join1"><strong>Ask for your seat</strong>: choose <strong>I want to play</strong> (under the buttons at the top), pick an account name and a password, and add your email if you want to be told. An invite link skips the wait.</li>
-      <li data-i18n="index.join2"><strong>The administrator approves it</strong>, by hand. If you gave an email you get a message when it is done. Until then Play shows the practice world and the state of your seat. Your account is for this website only: it opens the door, your browser asks for it when you press Play.</li>
-      <li data-i18n="index.join3"><strong>Your nation</strong>: press <strong>Play now</strong> and sign in with that account. The 1987 game asks you to found your nation: its own name (up to 9 letters), race, class and a nation password. From then on, Play now opens it directly.</li>
+      <li data-i18n="index.join2"><strong>The administrator approves it</strong>. If you gave an email you get a message when it is done. Until then Play shows the practice world and the state of your seat. Your account is for this website only: it opens the door, your browser asks for it when you press Play.</li>
+      <li data-i18n="index.join3"><strong>Your nation</strong>: press <strong>Play now</strong> and sign in with that account. The 1987 game asks you to found your nation: its own name (up to 9 letters), race, class and a nation password. From then on, Play now opens it directly. If the game is already under way, your nation starts late, with extra points to catch up.</li>
     </ol>
     <div class="contact" id="contact" hidden>
       <span data-i18n="index.contact">Game administrator:</span>
@@ -544,8 +544,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
     }
     renderWire(d);
     // Anyone can ask for a seat on signup.html while requests are open;
-    // past the last turn a nation can join by itself, the administrator
-    // adds latecomers' nations. (signup: the field of older servers)
+    // past the last turn a new nation starts late, with extra points from
+    // the game. (signup: the field of older servers)
     var asking = d.requests_open !== undefined ? d.requests_open : d.signup;
     var late = d.turn > (d.last_join_turn || 5);
     document.getElementById('join').hidden = !asking;

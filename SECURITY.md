@@ -428,6 +428,31 @@ After implementing these enhancements:
 - [ ] Documentation updated with admin procedures
 - [ ] Backup procedures include security configurations
 
+## 🔑 Late nations and god's password
+
+The game's nation builder (`conqrun -a`) asks for the super user (god)
+password once the game is past turn 5, so that on a classic multi-user host
+not just anybody with a shell can add a nation to a running world. This
+server does not use that prompt: `conquer/patches/0004` adds `conqrun -A`,
+which behaves like `-a` (same locks) but does not ask, and the terminal
+menu runs it for accounts the administrator approved.
+
+This does not weaken the world:
+
+- Inside the container everything runs as the one game user, who can edit
+  the world files directly. The password prompt never protected the world
+  from that user, only from players with shell access on a multi-user host.
+- Players never get a shell. They reach `conqrun` only through
+  `conquer-join`, which runs the builder only for an account marked `+` in
+  `lib/.players` (approved at `/admin/` or with `manage-players.sh approve`)
+  and only once per account.
+- Approval is therefore the only gate. Keep administrator accounts and the
+  approval page protected as described above; `conqrun -a` still asks for
+  god's password if someone runs it past turn 5.
+
+A nation that starts late gets the game's own extra points
+(`newlogin.c`, "points added for starting late").
+
 ## 🔄 Maintenance
 
 ### Weekly Tasks

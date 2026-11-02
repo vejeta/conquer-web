@@ -250,6 +250,28 @@ jobs:
           sudo ./manage-players.sh approve asker3
           sudo grep -qx 'asker3:+' data/lib/.players
           for a in asker asker3 invited; do sudo ./manage-players.sh remove "$a"; done
+          # Late join: approval is the only gate. The live world must keep its
+          # turn for the steps below, so a copy of it is advanced past turn 5
+          # (the same turn updates the game container runs, conqrun -x)
+          late=/tmp/late-world
+          docker exec -u conquer conquer-local sh -c "set -e; rm -rf $late; cp -a /opt/conquer/lib $late; rm -f $late/lock*; \
+            conqowner -d $late -s \"\$(id -u)\" > /dev/null; \
+            while [ \"\$(conquer -s -d $late | sed -n 's/.*, Turn //p')\" -lt 6 ]; do conqrun -x -d $late > /dev/null; done"
+          docker exec -u conquer conquer-local conquer -s -d "$late" | grep -q 'Turn 6'
+          # A code still makes an account, however late the game is
+          invite=$(admin -d '{"count":1}' https://localhost/admin/api/invite | jq -er '.codes[0]')
+          printf 'late2-pass\n' | docker exec -i -u conquer conquer-local conquer-signup invite "$invite" late2
+          sudo grep -qx 'late2:+' data/lib/.players
+          sudo ./manage-players.sh remove late2
+          # The builder run for an approved account (conqrun -A) never asks for
+          # god's password; -a still does. Nothing is typed, so the builder may
+          # fail afterwards for lack of a name: only its output is checked
+          out=$(printf '' | docker exec -i -u conquer conquer-local conqrun -a -d "$late" 2>&1 || true)
+          grep -q 'super user password' <<< "$out" || { echo "conqrun -a no longer asks for god's password: $out" >&2; exit 1; }
+          out=$(printf '' | docker exec -i -u conquer conquer-local conqrun -A -d "$late" 2>&1 || true)
+          ! grep -q 'super user password' <<< "$out" || { echo "conqrun -A asked for god's password: $out" >&2; exit 1; }
+          grep -q 'no super user password needed' <<< "$out"
+          docker exec -u conquer conquer-local rm -rf "$late"
 
       - name: The nation builder still shows the coach's screens
         run: |

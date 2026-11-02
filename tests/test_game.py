@@ -75,3 +75,15 @@ def test_builder_matches_the_recording(game, tmp_path, recording, turns):
     coach.open_at_screen(screens[0][1])
     for sid, text in screens:
         assert coach.follow(text) == ("points" if sid == "treasury" else sid), "screen %s" % sid
+
+
+def test_approved_player_founds_a_nation_late_without_the_super_user_password(game):
+    """Past turn 5, conqrun -a still asks for god's password; conqrun -A (what
+    the join script runs for an account the administrator approved) does not.
+    Nothing is typed: the builder may fail afterwards for lack of a name."""
+    world = copy_world(6)
+    asked = game_sh("printf '' | conqrun -a -d %s 2>&1" % world).stdout
+    assert "super user password" in asked
+    approved = game_sh("printf '' | conqrun -A -d %s 2>&1" % world).stdout
+    assert "super user password" not in approved
+    assert "no super user password needed" in approved

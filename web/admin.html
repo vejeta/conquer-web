@@ -103,7 +103,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
     </div>
 
     <section id="panel-requests" role="tabpanel" aria-labelledby="tab-requests">
-      <div id="notes"></div>
       <p class="hint" id="requests-empty" hidden data-i18n="admin.no_requests">No requests waiting.</p>
       <ul class="list" id="requests"></ul>
     </section>
@@ -140,15 +139,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
     var $ = function (id) { return document.getElementById(id); };
     var state = null;       // the last reply of /admin/api/state
-    var notes = [];         // accounts approved past the last turn that joins by itself
     var tab = 'requests';
     var info = $('info'), error = $('error'), signin = $('signin');
 
-    function esc(s) {
-      return String(s).replace(/[&<>"']/g, function (c) {
-        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-      });
-    }
     function say(el, text) { info.hidden = el !== info; error.hidden = el !== error; if (el) { el.textContent = text; el.hidden = false; } }
     function fail(code) { var key = 'e_' + code; say(error, m(key) || m('e_server')); }
 
@@ -213,15 +206,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
         $('panel-' + name).hidden = name !== tab;
       });
 
-      var late = state.turn > (state.last_join_turn || 5);
-      var box = $('notes');
-      box.textContent = '';
-      notes.forEach(function (account) {
-        var p = el('p', 'note');
-        p.innerHTML = m('late_note', { n: state.turn, account: esc(account) });
-        box.appendChild(p);
-      });
-
       var list = $('requests');
       list.textContent = '';
       $('requests-empty').hidden = requests.length > 0;
@@ -234,7 +218,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
         li.appendChild(r.email ? el('span', 'meta', r.email) : el('span', 'meta none', m('no_email')));
         li.appendChild(r.message ? el('p', 'text', r.message) : el('p', 'text none', m('no_message')));
         var actions = el('div', 'actions');
-        actions.appendChild(button(m('approve'), 'approve', function (b) { approve(r.account, b, late); }));
+        actions.appendChild(button(m('approve'), 'approve', function (b) { approve(r.account, b); }));
         actions.appendChild(button(m('reject'), 'danger reject', function (b) { reject(r.account, b); }));
         li.appendChild(actions);
         list.appendChild(li);
@@ -267,13 +251,12 @@ SPDX-License-Identifier: GPL-3.0-or-later
       });
     }
 
-    function approve(account, b, late) {
+    function approve(account, b) {
       b.disabled = true;
       call('/admin/api/approve', { account: account }).then(function (res) {
         b.disabled = false;
         if (!res.ok) return fail(res.error || 'server');
         say(info, m(res.emailed ? 'approved_emailed' : 'approved_ok', { account: account }));
-        if (late) notes.push(account);
         return load();
       }).catch(function () { b.disabled = false; fail('network'); });
     }
