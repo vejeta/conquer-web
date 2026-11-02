@@ -179,3 +179,7 @@ body.game-page { display: flex; flex-direction: column; height: 100vh; height: 1
   .touch-stage.touch-anim { transition: none; }
   .game-page .site-header { transition: none; }
 }
+
+/* the length the game accepts for a nation password, above the chips */
+.touch-fieldhint { padding: var(--s1, 4px) var(--s3, 12px); font-size: .85rem; opacity: .85; text-align: center; }
+.touch-fieldhint[hidden] { display: none; }

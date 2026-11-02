@@ -29,6 +29,7 @@
 //	POST /admin/api/approve {"account"}
 //	POST /admin/api/reject  {"account"}
 //	POST /admin/api/invite  {"count"}
+//	POST /admin/api/assign  {"account", "nation" | "found" | "admin"}
 package main
 
 import (
@@ -63,7 +64,9 @@ var (
 	// become a directory name (the menu's practice world is named after it)
 	accountRe = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_.-]{0,31}$`)
 	codeRe    = regexp.MustCompile(`^[A-Z0-9]{4}-[A-Z0-9]{4}$`)
-	turnRe    = regexp.MustCompile(`(?m)^Conquer .*, Turn ([0-9]+)$`)
+	// A nation name (up to 9 characters), "+" (found one) or "*" (administrator)
+	nationArgRe = regexp.MustCompile(`^([A-Za-z0-9_.-]{1,9}|[+*])$`)
+	turnRe      = regexp.MustCompile(`(?m)^Conquer .*, Turn ([0-9]+)$`)
 	// Names that must not become player accounts
 	reserved = map[string]bool{"god": true, "root": true, "admin": true, "conquer": true, "join": true}
 )
@@ -73,6 +76,7 @@ var helperErrors = map[int]string{
 	2: "bad_code",
 	3: "account_taken",
 	5: "closed",
+	6: "no_nation",
 }
 
 // limiter allows each client address a number of events per window
@@ -219,7 +223,7 @@ func helperStatus(err error, extra map[int]string) (reason string, status int, o
 	}
 	status = http.StatusBadRequest
 	switch reason {
-	case "account_taken", "not_pending":
+	case "account_taken", "not_pending", "no_account":
 		status = http.StatusConflict
 	case "closed":
 		status = http.StatusForbidden
@@ -250,6 +254,58 @@ func (g *gate) turn(ctx context.Context) int {
 		return n
 	}
 	return 0
+}
+
+// nation is one nation of the world
+type nation struct {
+	Name    string  `json:"name"`
+	Race    string  `json:"race"`
+	Class   string  `json:"class"`
+	Account *string `json:"account"`
+}
+
+// nations lists the nations of the world from "conquer -s" (id, name, race,
+// class, alignment, score; monsters have no score row), the same source as
+// status.json, each with the account assigned to it
+func (g *gate) nations(ctx context.Context, marks map[string]string, accounts []string) []nation {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	list := []nation{}
+	out, err := exec.CommandContext(ctx, g.conquer, "-s").Output()
+	if err != nil {
+		return list
+	}
+	owner := map[string]string{}
+	for _, acc := range accounts {
+		switch m := marks[acc]; m {
+		case "", "*", "+", "?":
+			// An account with no assignment opens the nation named like it
+			if m == "" {
+				owner[strings.ToLower(acc)] = acc
+			}
+		default:
+			owner[strings.ToLower(m)] = acc
+		}
+	}
+	for _, line := range strings.Split(string(out), "\n") {
+		f := strings.Fields(line)
+		if len(f) < 6 {
+			continue
+		}
+		if _, err := strconv.Atoi(f[0]); err != nil {
+			continue
+		}
+		if _, err := strconv.Atoi(f[5]); err != nil {
+			continue
+		}
+		n := nation{Name: f[1], Race: f[2], Class: f[3]}
+		if acc, ok := owner[strings.ToLower(f[1])]; ok {
+			n.Account = &acc
+		}
+		list = append(list, n)
+	}
+	sort.SliceStable(list, func(i, j int) bool { return strings.ToLower(list[i].Name) < strings.ToLower(list[j].Name) })
+	return list
 }
 
 func (g *gate) signup(w http.ResponseWriter, r *http.Request) {
@@ -467,7 +523,61 @@ func (g *gate) adminState(w http.ResponseWriter, r *http.Request) {
 	reply(w, http.StatusOK, map[string]any{
 		"ok": true, "turn": g.turn(r.Context()), "last_join_turn": lastJoinTurn,
 		"requests": g.pending(), "players": players, "invites": invites,
+		"nations": g.nations(r.Context(), marks, names),
 	})
+}
+
+// adminAssign gives an account a nation of the world, a new nation to found
+// or the administrator mark
+func (g *gate) adminAssign(w http.ResponseWriter, r *http.Request) {
+	if !g.adminOnly(w, r, http.MethodPost) {
+		return
+	}
+	var in struct {
+		Account string `json:"account"`
+		Nation  string `json:"nation"`
+		Found   bool   `json:"found"`
+		Admin   bool   `json:"admin"`
+	}
+	r.Body = http.MaxBytesReader(w, r.Body, 1024)
+	if err := json.NewDecoder(r.Body).Decode(&in); err != nil || !accountRe.MatchString(in.Account) {
+		fail(w, http.StatusBadRequest, "bad_request")
+		return
+	}
+	target, choices := in.Nation, 0
+	if in.Nation != "" {
+		choices++
+	}
+	if in.Found {
+		target = "+"
+		choices++
+	}
+	if in.Admin {
+		target = "*"
+		choices++
+	}
+	if choices != 1 || target == "+" && in.Nation != "" || !nationArgRe.MatchString(target) {
+		fail(w, http.StatusBadRequest, "bad_request")
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
+	defer cancel()
+	out, err := g.runHelper(ctx, "", "assign", in.Account, target)
+	if err != nil {
+		if reason, status, ok := helperStatus(err, map[int]string{2: "no_account"}); ok {
+			fail(w, status, reason)
+			return
+		}
+		log.Printf("admin assign failed: account=%s: %v %s", in.Account, err, out)
+		fail(w, http.StatusInternalServerError, "server")
+		return
+	}
+	log.Printf("admin: assign %s to %s by %s", in.Account, target, r.Header.Get("X-WEBAUTH-USER"))
+	assigned := target
+	if lines := strings.Split(out, "\n"); len(lines) > 0 {
+		assigned = strings.TrimSpace(lines[len(lines)-1])
+	}
+	reply(w, http.StatusOK, map[string]any{"ok": true, "account": in.Account, "assigned": assigned})
 }
 
 // accountAction approves or rejects a pending request
@@ -608,6 +718,7 @@ func main() {
 	mux.HandleFunc("/admin/api/approve", g.accountAction("approve"))
 	mux.HandleFunc("/admin/api/reject", g.accountAction("reject"))
 	mux.HandleFunc("/admin/api/invite", g.adminInvite)
+	mux.HandleFunc("/admin/api/assign", g.adminAssign)
 	srv := &http.Server{
 		Addr:              *listen,
 		Handler:           mux,

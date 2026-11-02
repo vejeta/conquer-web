@@ -355,6 +355,9 @@ ADMIN_STATE = {
     "players": [{"account": "ana", "state": "?", "nation": None}, {"account": "root", "state": "*", "nation": None},
                 {"account": "cy", "state": "nation", "nation": "Gondor"}, {"account": "di", "state": "+", "nation": None}],
     "invites": ["K7QM-3XPA", "AAAA-BBBB"],
+    "nations": [{"name": "Gondor", "race": "Human", "class": "Warrior", "account": "cy"},
+                {"name": "Fung", "race": "Dwarf", "class": "Merchant", "account": None},
+                {"name": "Anorian", "race": "Elf", "class": "Mage", "account": None}],
 }
 
 
@@ -403,6 +406,43 @@ def test_admin_page(site, browser):
     body = page.inner_text("body")
     assert "add-nation.sh" not in body and "assign ana" not in body
     assert page.locator("#notes").count() == 0
+    page.close()
+
+
+def test_admin_assigns_nations(site, browser):
+    """Each account has a select with the world's nations (with race), "found a
+    new nation" and "administrator"; Assign posts the choice; the nations
+    without an account are listed."""
+    posts = []
+    page = browser.new_page()
+
+    def api(route):
+        if route.request.method == "POST":
+            posts.append((route.request.url.split("/admin/api/")[1], json.loads(route.request.post_data)))
+            return route.fulfill(content_type="application/json", body='{"ok": true, "assigned": "Fung"}')
+        route.fulfill(content_type="application/json", body=json.dumps(ADMIN_STATE))
+    page.route("**/admin/api/**", api)
+    page.goto(site + "admin.html?lang=en")
+    page.wait_for_selector("#app:not([hidden])")
+    page.click("#tab-players")
+    rows = page.locator("#players tr")
+    assert rows.count() == 4
+    options = rows.nth(0).locator("select option").all_inner_texts()
+    assert "Fung (Dwarf)" in options and "Found a new nation" in options and "Administrator" in options
+    assert rows.nth(2).locator("select").input_value() == "n:Gondor"
+    free = page.inner_text("#free-nations")
+    assert "Fung" in free and "Anorian" in free and "Gondor" not in free
+    page.locator("#players tr").nth(0).locator("select").select_option("n:Fung")
+    page.locator("#players tr").nth(0).locator("button.assign").click()
+    page.wait_for_function("() => document.getElementById('info').textContent.includes('opens Fung')")
+    page.locator("#players tr").nth(3).locator("select").select_option("+")
+    page.locator("#players tr").nth(3).locator("button.assign").click()
+    page.locator("#players tr").nth(1).locator("select").select_option("*")
+    page.locator("#players tr").nth(1).locator("button.assign").click()
+    page.wait_for_function("() => document.getElementById('info').textContent.includes('administrator')")
+    assert posts == [("assign", {"account": "ana", "nation": "Fung"}),
+                     ("assign", {"account": "di", "found": True}),
+                     ("assign", {"account": "root", "admin": True})]
     page.close()
 
 
@@ -958,7 +998,7 @@ def test_screenshots(site, browser, where, viewport):
     page.wait_for_timeout(300)
     page.screenshot(path=os.path.join(SHOTS, "%s-%s-options.png" % (where, viewport)))
     page.evaluate("conquerAudio.enable(true)")
-    page.evaluate("document.getElementById('touch-opt-sound').checked = true")
+    page.evaluate("document.getElementById('touch-opt-music').checked = true")
     page.screenshot(path=os.path.join(SHOTS, "integrated-%s-%s-options-sound.png" % (where, viewport)))
     page.keyboard.press("Escape")
     page.locator("#touch-chips .touch-chip", has_text="More").click()
@@ -977,38 +1017,84 @@ def audio_page(site, browser, init=None):
     return page, errors
 
 
+def test_nation_password_prompt_says_how_long_it_may_be(site, browser):
+    errors = []
+    ctx, page, target = touch_page(site, browser, "try", "phone", errors=errors)
+    show(page, target, "< Building Country iberia >\n\nEnter National Password: ")
+    page.wait_for_function("() => !document.getElementById('touch-fieldhint').hidden", timeout=5000)
+    assert page.inner_text("#touch-fieldhint") == "2–7 characters"
+    show(page, target, "< Building Country iberia >\n\nEnter a Name for your Country: ")
+    page.wait_for_function("() => document.getElementById('touch-fieldhint').hidden", timeout=5000)
+    assert errors == []
+    ctx.close()
+
+
 def test_audio_plays_after_a_click(site, browser):
     page, errors = audio_page(site, browser)
     assert page.evaluate("conquerAudio.enabled()") is False
     page.click("#b")
     page.evaluate("conquerAudio.enable(true)")
-    page.wait_for_function("conquerAudio._state() === 'running'")
+    page.wait_for_function("() => conquerAudio._state() === 'running'")
     assert page.evaluate("conquerAudio.enabled()") is True
+    # the effects are files: all of them load
+    page.wait_for_function("() => conquerAudio._loaded().length === 13", timeout=15000)
+    assert page.evaluate("conquerAudio._failed()") == []
     before = page.evaluate("conquerAudio._nodes()")
-    page.evaluate("conquerAudio.event('turn'); conquerAudio.event('bogus'); conquerAudio.screen('map')")
-    page.wait_for_timeout(300)
-    assert page.evaluate("conquerAudio._nodes()") > before
-    assert len(page.evaluate("conquerAudio._demo()")) == 9
-    for s in ("builder", "report_x", "menu", "combat", "off"):
+    page.evaluate("conquerAudio.event('turn'); conquerAudio.event('ui'); conquerAudio.event('bogus')")
+    assert page.evaluate("conquerAudio._nodes()") == before + 2
+    # screen() picks the bed; the map's follows the race
+    page.evaluate("conquerAudio.screen('map')")
+    assert page.evaluate("conquerAudio._bed()") == "map-human"
+    page.evaluate("document.documentElement.setAttribute('data-race', 'dwarf'); conquerAudio.screen('map')")
+    assert page.evaluate("conquerAudio._bed()") == "map-dwarf"
+    for s, bed in (("builder", "builder"), ("report_x", "report"), ("combat", "combat"), ("menu", "combat"), ("off", "")):
         page.evaluate("s => conquerAudio.screen(s)", s)
+        assert page.evaluate("conquerAudio._bed()") == bed
+    page.evaluate("conquerAudio.screen('app-home')")
+    assert page.evaluate("conquerAudio._bed()") == "app-home"
+    assert page.evaluate("conquerAudio._failed()") == []
+    assert page.evaluate("conquerAudio._demo()") == ["app-doors-open"]
     page.evaluate("conquerAudio.enable(false)")
+    assert page.evaluate("conquerAudio.enabled()") is False
+    assert page.evaluate("conquerAudio._bed()") == ""
+    assert errors == []
+    page.close()
+
+
+def test_audio_music_and_effects_are_separate_and_persist(site, browser):
+    page, errors = audio_page(site, browser)
+    page.click("#b")
+    page.evaluate("""() => { const a = conquerAudio; a.setMusic(true); a.setEffects(false);
+        a.musicVolume(0.3); a.effectsVolume(0.7); a.setVolume(0.2); }""")
+    assert page.evaluate("[conquerAudio.music(), conquerAudio.effects(), conquerAudio.enabled()]") == [True, False, True]
+    page.wait_for_function("() => conquerAudio._state() === 'running'")
+    page.wait_for_function("() => conquerAudio._loaded().length === 13", timeout=15000)
+    before = page.evaluate("conquerAudio._nodes()")
+    page.evaluate("conquerAudio.event('turn')")           # effects are off: silent
+    assert page.evaluate("conquerAudio._nodes()") == before
+    page.reload()
+    assert page.evaluate("[conquerAudio.music(), conquerAudio.effects()]") == [True, False]
+    assert page.evaluate("[conquerAudio.volume(), conquerAudio.musicVolume(), conquerAudio.effectsVolume()]") == [0.2, 0.3, 0.7]
+    # enabled before, but nothing starts until the first click
+    assert page.evaluate("conquerAudio._state()") == "none"
+    page.click("#b")
+    page.wait_for_function("() => conquerAudio._state() === 'running'")
+    page.evaluate("conquerAudio.setMusic(false)")
     assert page.evaluate("conquerAudio.enabled()") is False
     assert errors == []
     page.close()
 
 
-def test_audio_volume_persists_and_waits_for_a_gesture(site, browser):
-    page, errors = audio_page(site, browser)
+def test_audio_falls_back_to_the_synth_when_a_file_is_missing(site, browser):
+    page, errors = audio_page(site, browser, "localStorage.setItem('conquer-audio', JSON.stringify({music: true, effects: true}))")
+    page.route("**/sound/*.ogg", lambda r: r.fulfill(status=404, body=""))
     page.click("#b")
-    page.evaluate("conquerAudio.enable(true); conquerAudio.setVolume(0.2)")
-    page.reload()
-    assert page.evaluate("conquerAudio.volume()") == 0.2
-    # enabled before, but nothing starts until the first click
-    assert page.evaluate("conquerAudio.enabled()") is True
-    assert page.evaluate("conquerAudio._state()") == "none"
-    page.click("#b")
-    page.wait_for_function("conquerAudio._state() === 'running'")
-    assert errors == []
+    page.wait_for_function("() => conquerAudio._state() === 'running'")
+    page.evaluate("conquerAudio.screen('builder')")
+    page.wait_for_function("() => conquerAudio._failed().length > 0", timeout=15000)
+    page.evaluate("conquerAudio.event('turn')")
+    page.wait_for_timeout(300)
+    assert page.evaluate("conquerAudio._nodes()") > 0
     page.close()
 
 
@@ -1016,7 +1102,7 @@ def test_audio_without_web_audio_is_silent(site, browser):
     page, errors = audio_page(site, browser, "delete window.AudioContext; delete window.webkitAudioContext;")
     page.click("#b")
     page.evaluate("""() => { const a = conquerAudio; a.enable(true); a.event('turn'); a.screen('map');
-        a.setVolume(0.3); a._demo(); a.enable(false); }""")
+        a.setVolume(0.3); a.setMusic(true); a.setEffects(true); a._demo(); a.enable(false); }""")
     assert page.evaluate("conquerAudio.enabled()") is False
     page.wait_for_timeout(200)
     assert errors == []
@@ -1031,8 +1117,15 @@ def test_touch_layer_and_sound_work_together(site, browser):
         a.screen = n => { window.__aud.push(['screen', n]); return s.call(a, n); };
         a.event = n => { window.__aud.push(['event', n]); return e.call(a, n); }; }""")
     page.click("#touch-gear")
-    page.click("#touch-opt-sound")
-    assert page.evaluate("conquerAudio.enabled()") is True
+    page.click("#touch-opt-music")
+    assert page.evaluate("conquerAudio.music()") is True
+    assert page.evaluate("conquerAudio.effects()") is False
+    page.click("#touch-opt-effects")
+    assert page.evaluate("conquerAudio.effects()") is True
+    for i in ("touch-opt-music-volume", "touch-opt-effects-volume"):
+        assert page.is_visible("#" + i)
+    page.fill("#touch-opt-music-volume", "30")
+    assert page.evaluate("conquerAudio.musicVolume()") == 0.3
     assert page.is_visible("#touch-opt-preview")
     page.keyboard.press("Escape")
     show(page, target, FIRST_TURN["budget"])
