@@ -18,7 +18,9 @@
   var $ = function (id) { return document.getElementById(id); };
   var T = function (k, p) { return window.conquerI18n.t('story.' + k, p); };
   var n = 0, timers = [], typers = [], started = false, sound = true, panelStart = 0, panelD = 0, advTimer = 0;
-  var audio = null, narr = {}, gen = 0, ownChoice = false, touched = false;
+  var audio = null, narr = {}, gen = 0, ownChoice = false, touched = false, nel = null;
+  var RENDER = q.get('render') === '1';   // the video driver: no narration, no sound, it advances the scenes itself
+  var SILENT = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
   var AUDIO_KEY = 'conquer-audio';    // audio.js keeps the player's choice here
 
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) {} return null; }
@@ -406,6 +408,7 @@
     var myGen = ++gen;
     clearAll();
     if (audio) { try { audio.pause(); } catch (e) {} audio = null; }
+    voice(false);
     var prev = n; n = k;
     $('story').setAttribute('data-n', n);
     $('back').disabled = n <= 1;
@@ -432,25 +435,32 @@
         });
       });
       if (n === PANELS) after(Math.min(0.5 * D * 1000, 4000), function () { $('actions').hidden = false; });
-      else after((D + 1.0) * 1000, function () { go(n + 1); });
-      if (sound && audio) { var pr = audio.play(); if (pr && pr.catch) pr.catch(function () {}); }
+      else if (!RENDER) after((D + 1.0) * 1000, function () { go(n + 1); });
+      if (sound && audio) {
+        voice(true);
+        audio.onended = function () { voice(false); };
+        var pr = audio.play(); if (pr && pr.catch) pr.catch(function () {});
+      }
     }
     // narration: story/<lang>/<n>.mp3 (or .ogg) when the owner has put one there, else the text
     // alone, timed by its length. A file that is not there is asked for once.
-    var key = window.conquerLang() + '/' + n, a = new Audio(), got = false, exts = ['mp3', 'ogg'], e = 0;
+    var key = window.conquerLang() + '/' + n, a = nel || (nel = new Audio()), got = false, exts = ['mp3', 'ogg'], e = 0;
     function ready() { if (got) return; got = true; narr[key] = true; audio = a; run(a.duration); }
     function fail() { if (got) return; got = true; narr[key] = false; run(0); }
-    if (narr[key] === false) { run(0); return; }
+    if (RENDER || narr[key] === false) { run(0); return; }
     a.preload = 'auto';
-    a.addEventListener('loadedmetadata', function () { if (isFinite(a.duration) && a.duration > 0) ready(); else fail(); });
-    a.addEventListener('error', function () {
+    a.onloadedmetadata = function () { if (isFinite(a.duration) && a.duration > 0) ready(); else fail(); };
+    a.onerror = function () {
       if (got) return;
       if (++e < exts.length) { a.src = 'story/' + key + '.' + exts[e]; a.load(); } else fail();
-    });
+    };
     setTimeout(function () { if (!got) fail(); }, 3000);
     a.src = 'story/' + key + '.' + exts[0];
     a.load();
   }
+
+  // the music bed sinks while the narration speaks (audio.js keeps the player's own volume)
+  function voice(on) { var A = window.conquerAudio; try { if (A && A.underVoice) A.underVoice(on ? 0.35 : 1); } catch (e) {} }
 
   function go(k) {
     if (k < 1 || k > PANELS) return;
@@ -514,6 +524,13 @@
     document.body.classList.add('go');
     $('begin').classList.add('gone');
     store(SEEN, '1');
+    // the first tap unlocks the narration element for the whole story (iOS, Android autoplay rules)
+    if (!RENDER) {
+      try {
+        nel = nel || new Audio(); nel.src = SILENT;
+        var up = nel.play(); nel.pause(); if (up && up.catch) up.catch(function () {});
+      } catch (e) {}
+    }
     setSound(sound, false);
     go(1);
   }
@@ -524,8 +541,9 @@
     $('back').setAttribute('aria-label', T('back'));
     $('play').href = target();
     ownChoice = audioChoice() === null;
-    sound = soundWanted();
+    sound = RENDER ? false : soundWanted();
     paintSound();
+    if (RENDER) ['sound', 'skip', 'back'].forEach(function (id) { $(id).style.visibility = 'hidden'; });
     dots(); n = 0;
     var P0 = document.createElement('section'); P0.className = 'panel p1 on'; P0.setAttribute('data-p', '1'); P0.innerHTML = SCENES[1](); $('panels').appendChild(P0); fit(P0);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fit(P0); });
