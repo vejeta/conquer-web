@@ -250,3 +250,46 @@ def test_spanish_narration_files_are_real_and_the_scene_waits_for_them(site, bro
     assert current(page) == 1                # still on the first scene while the voice speaks
     page.wait_for_function("() => conquerStory.state().n === 2", timeout=int((d + 1.0) * 1000))
     context.close()
+
+
+def test_the_story_video_button_on_the_last_scene(site, browser):
+    """The last scene offers the video on the web, not in the app (?app=1)."""
+    for query, shown in (("", True), ("&app=1", False)):
+        context, page, errors = story(browser, site, query=query)
+        page.click("#begin")
+        page.wait_for_function("() => conquerStory.state().n === 1")
+        page.evaluate("() => conquerStory.go(8)")
+        page.wait_for_function("() => !document.getElementById('actions').hidden", timeout=15000)
+        assert page.locator("#video").is_visible() == shown
+        if shown:
+            assert page.get_attribute("#video", "href") == "story/conquer-story.es.mp4"
+            assert page.inner_text("#video") == "Watch the video"
+        assert not errors
+        context.close()
+
+
+def test_the_index_opens_the_story_video(site, browser):
+    context = browser.new_context(viewport={"width": 1280, "height": 800})
+    page = context.new_page()
+    page.goto(site + "index.html?lang=en")
+    page.wait_for_selector("#trailer-link:not([hidden])")
+    assert "Spanish narration" in page.inner_text("#trailer-link")
+    assert page.get_attribute("#trailer-video", "poster") == "story/poster.jpg"
+    assert page.get_attribute("#trailer-video", "playsinline") is not None
+    page.click("#trailer-link")
+    assert page.get_attribute("#trailer-video", "src") == "story/conquer-story.es.mp4"
+    context.close()
+    phone = browser.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True)
+    page = phone.new_page()
+    page.goto(site + "index.html?lang=es")
+    page.wait_for_selector("#trailer-link:not([hidden])")
+    assert "narración" not in page.inner_text("#trailer-link")
+    page.click("#trailer-link")
+    assert page.get_attribute("#trailer-video", "src") == "story/conquer-story.es.vertical.mp4"
+    phone.close()
+    app = browser.new_context(viewport={"width": 1280, "height": 800})
+    page = app.new_page()
+    page.goto(site + "index.html?app=1")
+    page.wait_for_timeout(500)
+    assert page.locator("#trailer-link").is_hidden()
+    app.close()
