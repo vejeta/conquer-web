@@ -158,7 +158,9 @@ fi
 # it and exports it to the menu as TTYD_USER. Only Apache may reach port
 # 7681: it is not published locally and bound to 127.0.0.1 on the VPS.
 # --url-arg passes the page's language to the menu (/play/?arg=es); the
-# menu accepts only a known language there.
+# menu accepts only a known language there. The Android app's game page
+# adds a second argument, app=1 (/play/?arg=es&arg=app=1), so that the menu
+# does not tell phones to press Ctrl and - (menu.sh, APP_MODE).
 # Log level 3 = errors and warnings, instead of ttyd's chatty default.
 exec "${AS_GAME_USER[@]}" ttyd -p 7681 -W -b /play -d "${TTYD_LOG_LEVEL:-3}" \
     -H X-WEBAUTH-USER \

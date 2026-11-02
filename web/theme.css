@@ -773,3 +773,26 @@ button.plaque:hover, a.plaque:hover { text-decoration: none; filter: brightness(
 .reading pre { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--s3) var(--s4); overflow-x: auto; }
 .reading hr { border: 0; border-top: 1px solid var(--line); }
 @media (min-width: 700px) { .reading { padding: var(--s6); } }
+
+/* 20. In the Android app (site.js: html.in-app) --------------------------- */
+/* The pages lose the site's chrome: header, footer, language, Join, Design,
+   links to other sites. On the game pages the header gives way to a compact
+   bar (appbar.js, 44 px at most). */
+.app-bar, .app-handle { display: none; }
+.in-app .site-header, .in-app .site-footer, .in-app [data-lang-menu], .in-app #lang,
+.in-app [data-server-link="signup.html"], .in-app a[href$="design.html"],
+.in-app a[href^="http"]:not([data-server-link]), .in-app .join, .in-app .story,
+.in-app .hero-inner > :not(.pitch) { display: none !important; }
+.in-app .hero { padding-bottom: var(--s5); }
+.in-app .app-bar {
+  display: flex; align-items: center; gap: var(--s2); position: relative; z-index: 25;
+  flex: none; height: 44px; padding: 0 var(--s2); box-sizing: border-box;
+  background-color: var(--bg-2); border-bottom: var(--bezel) solid var(--line);
+}
+.app-bar .spacer { flex: 1; }
+.app-bar .key { min-height: 36px; white-space: nowrap; padding-inline: var(--s3); }
+.app-menu { position: absolute; top: 100%; right: var(--s2); min-width: 190px; display: flex; flex-direction: column; gap: 1px; padding: var(--s1);
+  background: var(--bg-2); border: var(--bezel) solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 18px rgba(0, 0, 0, .6); }
+.app-menu[hidden] { display: none; }
+.app-item { min-height: 44px; padding: 0 var(--s3); text-align: left; font: 600 .95rem var(--font-text); color: var(--ink); background: transparent; border: 0; border-radius: var(--radius); cursor: pointer; }
+.app-item:hover, .app-item:active { background: var(--hair); }

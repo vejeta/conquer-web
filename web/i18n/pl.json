@@ -426,5 +426,15 @@
   "dwarf": "Krasnolud",
   "orc": "Ork",
   "auto": "Automatycznie"
+ },
+ "app": {
+  "home": "Start",
+  "coach": "Przewodnik",
+  "menu": "Menu",
+  "show_bar": "Pokaż pasek",
+  "sound_on": "Dźwięk włączony: dotknij, by wyciszyć",
+  "sound_off": "Dźwięk wyłączony: dotknij, by włączyć",
+  "kb_hint": "Klawiatura otwiera się sama, gdy gra prosi o tekst. Dotknij Klawiatura, by otworzyć ją w dowolnej chwili.",
+  "hint_close": "Rozumiem"
  }
 }

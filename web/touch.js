@@ -37,6 +37,7 @@
   var STORE = 'conquer-touch';
   var NATW = 660, NATH = 400;       // the stage on a phone held upright (about 84x26 cells)
   var MAXZOOM = 2.5;
+  var AUTOZOOM = 2;                 // a phone held upright starts zoomed on the map: about 40 of the 80 columns
   var STEP_MS = 35, MAX_KEYS = 40;  // tap to move: one key every 35 ms, 40 at most
   var DRAG_PX = 120;                // scrolling: one key per 120 px of drag
   var SLOP = 8;                     // a move over 8 px is a pan, not a tap
@@ -232,6 +233,9 @@
     var state = { where: 'unknown', kind: '', items: [], turn: null, combat: false, prompt: '' };
     var forced = null, lastSig = '', lastTurn = null, rootWhere = null;
     var scaled = false, zoom = 1, tx = 0, ty = 0, fit = 1;
+    var userView = false, autoForce = false, lastAuto = '', gx = 0, gy = 0;
+    var inApp = !!(window.conquerApp && window.conquerApp.is);
+    var shortScreen = false;          // a phone held sideways: the frame thins, the chips go to a rail
     var queue = '', queueTimer = null;
     var kbWanted = false, kbUp = false;
     var destroyed = false;
@@ -261,6 +265,18 @@
       try { if (a && a.event && (!a.enabled || a.enabled())) a.event('ui'); } catch (e) {}
     }
     function tt() { try { return opts.term(); } catch (e) { return null; } }
+    // A tap you can feel: the app's haptic (bridge), else the browser's vibration
+    function buzz(always) {
+      if (window.conquerApp && window.conquerApp.has && window.conquerApp.has()) {
+        window.conquerApp.send({ type: 'haptic', ms: 8 });
+      } else if (always && navigator.vibrate) {
+        try { navigator.vibrate(8); } catch (e) {}
+      }
+    }
+    // The app keeps the screen on while a game page is open
+    function keepAwake(on) {
+      if (window.conquerApp && window.conquerApp.has && window.conquerApp.has()) window.conquerApp.send({ type: 'keepAwake', on: on });
+    }
     function send(s) { if (s) opts.send(s); }
 
     // ---- DOM: the grid over the terminal, scanlines, the bar, the d-pad
@@ -293,6 +309,28 @@ var ui = el('div', 'touch-ui');
     builderBox.hidden = true;
     ledge.appendChild(chipsBox);
     ledge.appendChild(builderBox);
+    // In the app: a speaker to mute the sound (it is on by default there)
+    var speaker = el('button', 'touch-sound key key-small', { type: 'button' });
+    speaker.id = 'touch-sound';
+    speaker.hidden = !inApp || !audio() || !audio().enable;
+    ledge.appendChild(speaker);
+    function paintSpeaker() {
+      var a = audio(), on = !!(a && a.enabled && a.enabled());
+      speaker.textContent = on ? '\u{1F50A}' : '\u{1F507}';
+      speaker.setAttribute('aria-pressed', String(on));
+      var label = conquerI18n.t('app.' + (on ? 'sound_on' : 'sound_off')) || (on ? 'Sound on' : 'Sound off');
+      speaker.setAttribute('aria-label', label);
+      speaker.title = label;
+    }
+    speaker.addEventListener('click', function () {
+      var a = audio();
+      if (!a || !a.enable) return;
+      var on = !(a.enabled && a.enabled());
+      prefs.sound = on; save();
+      try { a.enable(on); } catch (e) {}
+      paintSpeaker();
+      var sb = document.getElementById('touch-opt-sound'); if (sb) sb.checked = on;
+    });
     var panel = el('div', 'touch-panel sheet', { role: 'dialog' });
     panel.id = 'touch-panel';
     panel.hidden = true;
@@ -492,6 +530,7 @@ var ui = el('div', 'touch-ui');
         var k = b.getAttribute('data-key');
         b.setAttribute('aria-label', T(k === 'p' ? 'dpad_pick' : 'dir_' + k) + ' (' + k + ')');
       });
+      paintSpeaker();
       gear.setAttribute('aria-label', T('options'));
       gear.title = T('options');
       hintText.textContent = T('hint_rotate');
@@ -562,6 +601,7 @@ var ui = el('div', 'touch-ui');
       reset.textContent = T('opt_reset');
       reset.addEventListener('click', function () {
         prefs.padOn = null; prefs.hintSeen = false; save();
+        userView = false; autoForce = true;
         zoom = 1; tx = 0; ty = 0; layout(); applyPrefs(); updatePad();
       });
       panel.appendChild(reset);
@@ -584,7 +624,8 @@ var ui = el('div', 'touch-ui');
       viewport.classList.toggle('touch-scan', !!prefs.scan);
       ui.classList.toggle('touch-nohints', !prefs.hints);
       ui.hidden = !prefs.bar;
-      if (stone) stone.classList.toggle('plain', !!prefs.plain);
+      // sideways on a phone, the frame is thin: every row of the screen counts
+      if (stone) stone.classList.toggle('plain', !!prefs.plain || shortScreen);
     }
 
     // ---- the sheet with every command
@@ -638,7 +679,7 @@ var ui = el('div', 'touch-ui');
     function step(k) {
       send(k);
       ev('move');
-      if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) {} }
+      buzz(true);
     }
     padBtns.forEach(function (b) {
       var k = b.getAttribute('data-key'), hold = null, held = false;
@@ -755,7 +796,11 @@ var ui = el('div', 'touch-ui');
         if (c.where !== 'map') cancelMoves();
         // The keyboard opens by itself the first time the game asks for text
         if (c.where === 'prompt_text') {
-          if (coarse && !prefs.kbSeen) { prefs.kbSeen = true; save(); keyboard(); }
+          if (coarse && (!prefs.kbSeen || inApp) && !(opts.skipKeyboard && opts.skipKeyboard())) {
+            var first = !prefs.kbSeen;
+            prefs.kbSeen = true; save(); keyboard();
+            if (first && inApp) showKbHint();
+          }
         } else if (kbWanted && c.where !== 'builder') {
           kbWanted = false; inputMode();
         }
@@ -818,6 +863,7 @@ var ui = el('div', 'touch-ui');
       }
       if (!w || !h) return;
       geom = { cw: w / t.cols, ch: h / t.rows, cols: t.cols, rows: t.rows };
+      gx = x; gy = y;
       var st = grid.style;
       st.left = x + 'px'; st.top = y + 'px'; st.width = w + 'px'; st.height = h + 'px';
     }
@@ -828,7 +874,9 @@ var ui = el('div', 'touch-ui');
       var vw = viewport.clientWidth, vh = viewport.clientHeight;
       if (!vw || !vh) return;
       var was = scaled;
-      scaled = vw < NATW;
+      var sideways = !!(window.matchMedia && window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches);
+      if (sideways !== shortScreen) { shortScreen = sideways; applyPrefs(); }
+      scaled = vw < NATW && !shortScreen;
       viewport.classList.toggle('touch-scaled', scaled);
       if (!scaled) {
         zoom = 1; tx = 0; ty = 0; fit = 1;
@@ -844,6 +892,7 @@ var ui = el('div', 'touch-ui');
         stage.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + s + ')';
       }
       if (was !== scaled) {
+        autoForce = true;
         applyCapture();
         if (scaled && !prefs.hintSeen) hint.hidden = false;
         if (!scaled) hint.hidden = true;
@@ -856,7 +905,56 @@ var ui = el('div', 'touch-ui');
     }
     hintClose.addEventListener('click', function () { hint.hidden = true; prefs.hintSeen = true; save(); });
 
+    // The app says once that the keyboard opens by itself (and where its button is)
+    var kbHint = null;
+    function showKbHint() {
+      if (!kbHint) {
+        kbHint = el('div', 'touch-hint touch-kbhint toast', { role: 'status' });
+        var kt = el('span'), kc = el('button', 'key key-small', { type: 'button' });
+        kc.textContent = '\u00d7';
+        kc.addEventListener('click', function () { kbHint.hidden = true; });
+        kbHint.appendChild(kt); kbHint.appendChild(kc);
+        viewport.appendChild(kbHint);
+        setTimeout(function () { if (kbHint) kbHint.hidden = true; }, 9000);
+      }
+      kbHint.firstChild.textContent = conquerI18n.t('app.kb_hint');
+      kbHint.lastChild.setAttribute('aria-label', conquerI18n.t('app.hint_close'));
+      kbHint.hidden = false;
+    }
+
+    // Held upright, a phone starts on the map zoomed to about 40 columns and
+    // centred on the cursor (and follows it when it leaves the view); other
+    // screens show the whole 80 columns. A pinch, a pan or a double tap is the
+    // player's own view, which this leaves alone.
+    function autoView() {
+      if (!scaled || userView || destroyed) return;
+      var vw = viewport.clientWidth, vh = viewport.clientHeight, force = autoForce;
+      if (!vw || !vh) return;
+      if (state.where !== 'map') {
+        if (zoom !== 1 && !forced) { zoom = 1; tx = 0; ty = 0; stage.classList.add('touch-anim'); layout(); }
+        autoForce = false; lastAuto = '';
+        return;
+      }
+      var t = tt();
+      if (!t || !t.buffer || !geom.cw || !gx && !gy && !grid.style.width) return;
+      var c = t.buffer.active;
+      var px = gx + (c.cursorX + 0.5) * geom.cw, py = gy + (c.cursorY + 0.5) * geom.ch;
+      var key = px + ',' + py;
+      if (!force && key === lastAuto) return;
+      lastAuto = key; autoForce = false;
+      if (!force && zoom > 1.01) {
+        var s0 = fit * zoom, sx = px * s0 + tx, sy = py * s0 + ty;
+        if (sx > vw * 0.15 && sx < vw * 0.85 && sy > vh * 0.15 && sy < vh * 0.85) return;
+      }
+      zoom = AUTOZOOM;
+      var s1 = fit * zoom;
+      tx = vw / 2 - px * s1; ty = vh / 2 - py * s1;
+      stage.classList.toggle('touch-anim', !force);
+      layout();
+    }
+
     function setZoom(z, cx, cy, animate) {
+      userView = true;
       // keep the point of the stage under (cx, cy) in the viewport where it is
       var s0 = fit * zoom, px = (cx - tx) / s0, py = (cy - ty) / s0;
       zoom = clamp(z, 1, MAXZOOM);
@@ -904,7 +1002,7 @@ var ui = el('div', 'touch-ui');
       var dx = Math.floor(cell.col / 2) - Math.floor(cur.cursorX / 2);
       var dy = cell.row - cur.cursorY;
       var keys = mapPath(dx, dy);
-      if (keys) startMoves(keys);
+      if (keys) { startMoves(keys); if (inApp) buzz(false); }
       if (e && e.pointerType === 'mouse') focusTerm();
     }
     function inGutter(cell) {
@@ -966,6 +1064,7 @@ var ui = el('div', 'touch-ui');
         }
         if (!p.moved) return;
         if (g.mode === 'pan') {
+          userView = true;
           tx += dx; ty += dy; layout();
         } else if (g.mode === 'scroll') {
           scrollKeys(dx, dy);
@@ -978,6 +1077,7 @@ var ui = el('div', 'touch-ui');
           else return;
         }
         if (g.mode === 'pinch') {
+          userView = true;
           var c = vpPoint(q.cx, q.cy);
           var s0 = fit * zoom, px = (c.x - tx) / s0, py = (c.y - ty) / s0;
           zoom = clamp(g.z0 * q.d / g.d0, 1, MAXZOOM);
@@ -1046,12 +1146,15 @@ var ui = el('div', 'touch-ui');
       attach();
       update();
       measure();
+      autoView();
+      if (!speaker.hidden) paintSpeaker();
       watchKeyboard();
     }
     timer = setInterval(tick, 250);
 
     applyPrefs();
     renderBar(true);
+    keepAwake(true);
     if (window.conquerI18n) conquerI18n.ready().then(function () { lang = conquerI18n.lang(); renderBar(true); });
     layout();
     tick();
@@ -1083,6 +1186,7 @@ var ui = el('div', 'touch-ui');
       barShown: function () { return !!prefs.bar; },
       destroy: function () {
         destroyed = true;
+        keepAwake(false);
         clearInterval(timer);
         cancelMoves();
         subs.forEach(function (s) { try { s.dispose(); } catch (e) {} });

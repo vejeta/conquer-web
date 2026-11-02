@@ -15,6 +15,9 @@ Powiększ okno przeglądarki albo pomniejsz widok (Ctrl i -).
 
 Naciśnij dowolny klawisz, aby sprawdzić ponownie, albo 'c', aby mimo to
 kontynuować."
+MSG[menu_needs_size_app]="Conquer potrzebuje co najmniej %s kolumn x %s wierszy.
+Obróć telefon poziomo albo zsuń palce, aby pomniejszyć.
+Ekran sprawdzi się ponownie sam."
 MSG[menu_ready_count]="%s z %s"
 MSG[menu_all_ready]="  ${green}${bold}Wszystkie narody są gotowe: rozliczenie tury rusza teraz.${reset}
   Wróć za kilka minut na nową turę."

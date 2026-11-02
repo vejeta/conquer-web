@@ -3,7 +3,8 @@
 //
 // Optional sound for the game pages, synthesised with the Web Audio API
 // (no audio files). Chiptune with a medieval flavour: modal scales, square
-// and triangle waves, a soft noise drum. Off by default and quiet.
+// and triangle waves, a soft noise drum. Off by default and quiet
+// (on by default in the Android app, after the first gesture).
 // window.conquerAudio: enable(on), enabled(), setVolume(v), volume(),
 // event(name), screen(name), _demo(). Every method is a no-op when the
 // browser has no Web Audio.
@@ -20,6 +21,11 @@
       var s = JSON.parse(window.localStorage.getItem(KEY) || '{}');
       if (typeof s.volume === 'number' && s.volume >= 0 && s.volume <= 1) vol = s.volume;
       if (s.enabled === true) on = true;
+    } catch (e) {}
+    // In the app, sound is on until the player turns it off (it starts at
+    // the first gesture); on the web it is off until asked for
+    try {
+      if (window.conquerApp && window.conquerApp.is && window.localStorage.getItem(KEY) === null) on = true;
     } catch (e) {}
   }
   function save() {

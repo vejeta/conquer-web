@@ -14,6 +14,9 @@ MSG[menu_needs_size]="Conquer braucht mindestens %s Spalten x %s Zeilen.
 Vergrößere das Browserfenster oder verkleinere die Ansicht (Strg und -).
 
 Drücke eine Taste, um erneut zu prüfen, oder 'c' für trotzdem weiter."
+MSG[menu_needs_size_app]="Conquer braucht mindestens %s Spalten x %s Zeilen.
+Drehe das Handy quer oder zoome mit zwei Fingern heraus.
+Der Bildschirm prüft von selbst erneut."
 MSG[menu_ready_count]="%s von %s Nationen"
 MSG[menu_all_ready]="  ${green}${bold}Alle Nationen sind fertig: Die Zugauswertung startet jetzt.${reset}
   Schau in ein paar Minuten für den neuen Zug wieder vorbei."

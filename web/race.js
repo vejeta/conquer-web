@@ -30,8 +30,20 @@
   function choice() { return valid(read(CHOSEN)) || 'auto'; }
   function get() { return valid(read(CHOSEN)) || valid(read(SEEN)) || 'human'; }
 
+  // The app themes itself with the race too (android bridge); nothing
+  // happens on the web
+  var sentRace = null;
+  function tellApp(r) {
+    if (r === sentRace || typeof window.cefriumQuery !== 'function') return;
+    sentRace = r;
+    try {
+      window.cefriumQuery({ request: JSON.stringify({ type: 'race', race: r }), onSuccess: function () {}, onFailure: function () {} });
+    } catch (e) {}
+  }
+
   function apply() {
     var r = get(), root = document.documentElement;
+    tellApp(r);
     if (r === 'human') root.removeAttribute('data-race'); else root.setAttribute('data-race', r);
     try { document.dispatchEvent(new CustomEvent('conquer:race', { detail: r })); } catch (e) {}
     return r;

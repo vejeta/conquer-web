@@ -40,6 +40,10 @@ reset=$(tput sgr0 2>/dev/null)
 . /usr/local/lib/conquer-i18n.sh
 load_texts "${1:-}"
 LANG_ARG="${1:-}"
+# The game page of the Android app adds "app=1" (/play/?arg=es&arg=app=1):
+# a phone has no Ctrl, so the size message tells what a phone can do
+APP_MODE=0
+[ "${2:-}" = "app=1" ] && APP_MODE=1
 
 # "Yes" to a question: the language's own key or y
 is_yes() {
@@ -94,8 +98,16 @@ check_terminal_size() {
         clear
         t menu_too_small "${cols}x${rows}"; echo
         echo
-        t menu_needs_size "$MIN_COLS" "$MIN_ROWS"; echo
-        read -r -s -n 1 key
+        if [ "$APP_MODE" = 1 ]; then
+            # The page (game.html) fits the terminal by itself, a moment
+            # after it connects: look again every second, without a key
+            t menu_needs_size_app "$MIN_COLS" "$MIN_ROWS"; echo
+            key=""
+            read -r -s -n 1 -t 1 key
+        else
+            t menu_needs_size "$MIN_COLS" "$MIN_ROWS"; echo
+            read -r -s -n 1 key
+        fi
         [ "$key" = "c" ] && return 0
     done
 }

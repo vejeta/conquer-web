@@ -457,19 +457,23 @@ EXPECTED_FIRST_TURN = {
 }
 
 
-def touch_page(site, browser, where, viewport="desktop", lang=None, errors=None, touch=None):
+def touch_page(site, browser, where, viewport="desktop", lang=None, errors=None, touch=None, query="", init=None):
     """/try/ (the terminal is window.term) or game.html (it is in the frame of the
     stand-in for ttyd). Returns (context, page, target), target being where
     `term` lives: the page or the frame."""
     size = VIEWPORTS[viewport]
     touch = viewport != "desktop" if touch is None else touch
     ctx = browser.new_context(viewport=size, has_touch=touch, is_mobile=touch)
+    if init:
+        ctx.add_init_script(init)
     page = ctx.new_page()
     page.route("**/favicon.ico", lambda r: r.fulfill(status=204))
     if errors is not None:
         page.on("console", lambda m: m.type == "error" and errors.append(m.text))
         page.on("pageerror", lambda e: errors.append(str(e)))
     url = site + ("try/" if where == "try" else "game.html") + ("?lang=" + lang if lang else "")
+    if query:
+        url += ("&" if lang else "?") + query
     page.goto(url)
     if where == "try":
         page.wait_for_function("() => window.touchLayer && window.term")
@@ -582,26 +586,29 @@ def test_grid_covers_the_text_area(site, browser, where, viewport):
     grid, screen = grid_boxes(page)
     assert grid == pytest.approx(screen, abs=1), (grid, screen)
     if viewport == "phone":
-        stage = page.evaluate("(() => { const r = document.getElementById('touch-stage').getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; })()")
-        # the stage is scaled to the phone's width ...
+        stage_width = "document.getElementById('touch-stage').getBoundingClientRect().width"
         vp = page.evaluate("document.getElementById('touch-viewport').getBoundingClientRect().width")
-        assert stage[2] == pytest.approx(vp, abs=1) and vp < 390
-        x, y = stage[0] + stage[2] / 2, stage[1] + stage[3] / 2
-        # ... and a double tap zooms it
-        page.touchscreen.tap(x, y)
-        page.touchscreen.tap(x, y)
+        assert vp < 390
+        # held upright, the map starts zoomed (about 40 columns across the screen) ...
+        assert page.evaluate(stage_width) > 600
+        grid, screen = grid_boxes(page)
+        assert grid == pytest.approx(screen, abs=1), (grid, screen)
+        # ... a double tap brings the whole 80 columns to the phone's width ...
+        page.touchscreen.tap(vp / 2, 300)
+        page.touchscreen.tap(vp / 2, 300)
+        page.wait_for_function("() => document.getElementById('touch-stage').getBoundingClientRect().width < 400", timeout=3000)
+        page.wait_for_timeout(500)
+        grid, screen = grid_boxes(page)
+        assert grid == pytest.approx(screen, abs=1), (grid, screen)
+        assert page.evaluate(stage_width) == pytest.approx(vp, abs=1)
+        # ... and another one zooms in again
+        page.touchscreen.tap(vp / 2, 300)
+        page.touchscreen.tap(vp / 2, 300)
         page.wait_for_function("() => document.getElementById('touch-stage').getBoundingClientRect().width > 600", timeout=3000)
         page.wait_for_timeout(500)
         grid, screen = grid_boxes(page)
         assert grid == pytest.approx(screen, abs=1), (grid, screen)
         assert grid[2] > 600
-        # and another one brings it back to the phone's width
-        page.touchscreen.tap(x, y)
-        page.touchscreen.tap(x, y)
-        page.wait_for_function("() => document.getElementById('touch-stage').getBoundingClientRect().width < 400", timeout=3000)
-        page.wait_for_timeout(500)
-        grid, screen = grid_boxes(page)
-        assert grid == pytest.approx(screen, abs=1), (grid, screen)
     ctx.close()
 
 
@@ -635,11 +642,13 @@ def test_tap_the_map_to_move(site, browser, where, viewport):
     ctx, page, target = touch_page(site, browser, where, viewport)
     show(page, target, FIRST_TURN["map"], (26, 10))
     wait_where(page, "map")
-    page.wait_for_timeout(300)
+    page.wait_for_timeout(1200 if viewport == "phone" else 300)    # the phone's view settles on the cursor
     watch_keys(page, target, where)
 
     def tap(col, row):
         x, y = cell_point(page, col, row)
+        if not page.evaluate("([x, y]) => { const v = document.getElementById('touch-viewport').getBoundingClientRect(); return x > v.left && x < v.right && y > v.top && y < v.bottom; }", [x, y]):
+            return                               # zoomed in on a phone: that cell is off the screen
         if viewport == "phone":
             page.touchscreen.tap(x, y)
             page.wait_for_timeout(400)           # a phone waits for a possible double tap

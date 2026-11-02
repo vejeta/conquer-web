@@ -147,14 +147,33 @@ body.game-page { display: flex; flex-direction: column; height: 100vh; height: 1
   .game-page .site-header { position: absolute; top: 0; left: 0; right: 0; transform: translateY(calc(-100% + 8px)); padding-block: var(--s1); }
   .game-page .site-header.peek, .game-page .site-header:focus-within { transform: none; }
   .game-main { padding: var(--s1) var(--s2); }
-  .game-main .gs { gap: var(--s1); }
-  .game-main .gs > .compass { position: absolute; right: 12px; bottom: 56px; --c: 44px; gap: 6px; padding: 10px; order: 5; }
-  .touch-where { flex-wrap: nowrap; }
+  /* every row of the 80x24 screen must fit: the screen takes the whole height, thin frame, and
+     the plaque and the chips go to a rail beside it */
+  .game-main .gs { gap: var(--s1) var(--s2); grid-template-columns: minmax(0, 1fr) 136px; grid-template-rows: auto minmax(0, 1fr); }
+  .game-main .gs > .stone { grid-column: 1; grid-row: 1 / span 2; }
+  .game-main .gs > .touch-ui > .touch-where { grid-column: 2; grid-row: 1; justify-self: stretch; flex-wrap: wrap; gap: var(--s1); }
+  .game-main .gs > .touch-ui > .touch-ledge { grid-column: 2; grid-row: 2; align-self: stretch; min-height: 0; overflow-y: auto; }
+  .touch-ledge .chips { flex-direction: column; overflow: visible; -webkit-mask-image: none; mask-image: none; padding: var(--s1) var(--s2); }
+  .touch-ledge .chips .key { width: 100%; justify-content: space-between; }
+  .game-main .stone .terminal { padding: 2px; }
+  .game-main .stone.parchment { --fw: 6px; --recess: 2px; margin-inline: 0; }
+  .game-main .stone .roll { display: none !important; }
+  .touch-crumb { font-size: .8rem; }
+  .game-main .gs > .compass { position: absolute; right: 148px; bottom: 12px; --c: 44px; gap: 6px; padding: 10px; order: 5; }
   .touch-panel { bottom: var(--s2); }
   .touch-sheet { align-items: center; }
   .touch-sheet .card { border-radius: var(--radius); border-bottom: var(--bezel) solid var(--line); max-height: 94vh; }
-  .coach { width: 260px; max-height: none; }
+  .coach { width: 230px; max-height: none; }
   .stage { flex-direction: row; }
+}
+/* In the app, held sideways: the bar folds away and a tab brings it back */
+@media (orientation: landscape) and (max-height: 500px) {
+  .in-app .app-bar { position: absolute; top: 0; left: 0; right: 0; transform: translateY(-100%); transition: transform 200ms ease; }
+  .in-app .app-bar.peek { transform: none; }
+  .in-app .app-handle { display: block; position: fixed; top: 0; left: 50%; margin-left: -28px; width: 56px; height: 16px; padding: 0; z-index: 24;
+    border: 0; border-radius: 0 0 10px 10px; background: color-mix(in srgb, var(--bg-2) 85%, transparent); cursor: pointer; }
+  .in-app .app-handle::after { content: ""; display: block; width: 24px; height: 3px; margin: 6px auto 0; border-radius: 2px; background: var(--ink-dim); }
+  .in-app .app-bar.peek ~ .app-handle { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .touch-stage.touch-anim { transition: none; }
