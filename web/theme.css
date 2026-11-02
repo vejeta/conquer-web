@@ -14,7 +14,7 @@
  *   3. Base and focus   6. Keycaps, chips, d-pad     9. Terminal, .crt, sheet
  *
  * v3 adds section 12 (the seeing stone, parchment scroll, ledge, compass,
- * plaque) and (v4) web/arch/<race>-*.svg (sculpted frames). It stays in this
+ * plaque) and (v4/v5) web/arch/<race>-*@2x.webp (sculpted frames, baked by tools/arch/bake.py). It stays in this
  * file (about 1000 lines in all); split into artefact.css if it outgrows 1200.
  *
  * Rules: phosphor green is the one accent (interactive, focus, cursor,
@@ -409,31 +409,38 @@ main { background: var(--bg); box-shadow: 0 0 36px 28px var(--bg); }
 }
 @container gamescreen (min-width: 700px) { .stone { --C: 44px; --L: 56px; --S: 36px; --K: 62px; --ov: 9px; --recess: 4px; } }
 @container gamescreen (min-width: 1100px) { .stone { --C: 72px; --L: 88px; --S: 56px; --K: 100px; --ov: 14px; --recess: 5px; } }
-/* v4: the frame is architecture. Per race an SVG lintel, sill, column and two corner sculptures
-   (web/arch/<race>-*.svg, set in section 12c). Each SVG is a small sprite sheet cut with #svgView:
-   lintel = centre emblem 616 + repeating tile 88; sill = emblem 560 + tile 112;
-   column = capital 64 + shaft tile 72 + base 48 (a 72-unit wide column). */
+/* v5: the frame is architecture, baked. Per race a set of lit raster pieces (web/arch/<race>-*@2x.webp, built by
+   tools/arch/bake.py from the SVG shapes in tools/arch/src; the images are set per race in section 12c).
+   lintel = centre emblem (616 units) + a tile that repeats in whole copies on each side + two end caps;
+   sill   = emblem (560) + tile (112) + end caps; column = capital (64) + shaft tile (72, whole copies) + base (48).
+   The right-hand pieces are separate images (mirrored before lighting) so the light stays top-left everywhere.
+   Frieze motifs are never cut: the tile bands use background-repeat: round, so only whole tiles are shown. */
 .arch { position: absolute; inset: 0; z-index: 2; pointer-events: none; transition: opacity 240ms ease; }
 .arch i { position: absolute; display: block; background-repeat: no-repeat; }
-.arch .lintel { left: 0; right: 0; top: 0; height: var(--L); z-index: 1;
-  background: var(--a-lem) 50% 0 / calc(var(--L) * 616 / 88) 100% no-repeat, var(--a-lt) 50% 0 / var(--L) 100% repeat-x; }
-.arch .sill { left: 0; right: 0; bottom: 0; height: var(--S); z-index: 1;
-  background: var(--a-sem) 50% 0 / calc(var(--S) * 560 / 56) 100% no-repeat, var(--a-st) 50% 0 / calc(var(--S) * 2) 100% repeat-x; }
+.arch .lintel, .arch .sill { left: 0; right: 0; }
+.arch .lintel { top: 0; height: var(--L); z-index: 1; background-position: 50% 0; background-size: calc(var(--L) * 616 / 88) 100%; }
+.arch .sill { bottom: 0; height: var(--S); z-index: 1; background-position: 50% 0; background-size: calc(var(--S) * 560 / 56) 100%; }
+.arch .lintel::before, .arch .lintel::after, .arch .sill::before, .arch .sill::after {
+  content: ""; position: absolute; top: 0; bottom: 0; background-repeat: no-repeat, round no-repeat; background-size: auto 100%, auto 100%; }
+.arch .lintel::before, .arch .lintel::after { width: calc(50% - var(--L) * 308 / 88 + 1px); }
+.arch .sill::before, .arch .sill::after { width: calc(50% - var(--S) * 280 / 56 + 1px); }
+.arch .lintel::before, .arch .sill::before { left: 0; background-position: 0 0, 0 0; }
+.arch .lintel::after, .arch .sill::after { right: 0; background-position: 100% 0, 0 0; }
 .arch .col { top: calc(var(--L) - var(--ovl)); bottom: calc(var(--S) - var(--ovl)); width: var(--C); z-index: 2;
-  background: var(--a-cap) 0 0 / 100% calc(var(--C) * 64 / 72) no-repeat, var(--a-base) 0 100% / 100% calc(var(--C) * 48 / 72) no-repeat,
-    var(--a-tile) 0 calc(var(--C) * 64 / 72) / 100% var(--C) repeat-y; }
-.arch .col.l { left: 0; } .arch .col.r { right: 0; transform: scaleX(-1); }
-.arch .cor { width: var(--K); height: var(--K); z-index: 3; background: var(--a-cor) 0 0 / 100% 100% no-repeat; }
-.arch .cor.b { background-image: var(--a-corb); }
-.arch .tl { left: calc(-1 * var(--ov)); top: calc(-1 * var(--ov)); }
-.arch .tr { right: calc(-1 * var(--ov)); top: calc(-1 * var(--ov)); transform: scaleX(-1); }
-.arch .bl { left: calc(-1 * var(--ov)); bottom: calc(-1 * var(--ov)); }
-.arch .br { right: calc(-1 * var(--ov)); bottom: calc(-1 * var(--ov)); transform: scaleX(-1); }
+  background-repeat: no-repeat; background-position: 0 0, 0 100%; background-size: 100% calc(var(--C) * 64 / 72), 100% calc(var(--C) * 48 / 72); }
+.arch .col::before { content: ""; position: absolute; left: 0; right: 0; top: calc(var(--C) * 64 / 72); bottom: calc(var(--C) * 48 / 72);
+  background-repeat: no-repeat round; background-size: 100% auto; background-position: 0 0; }
+.arch .col.l { left: 0; } .arch .col.r { right: 0; }
+.arch .cor { --kp: calc(var(--K) * .14); width: calc(var(--K) * 1.28); height: calc(var(--K) * 1.28); z-index: 3; background-size: 100% 100%; }
+.arch .tl { left: calc(-1 * (var(--ov) + var(--kp))); top: calc(-1 * (var(--ov) + var(--kp))); }
+.arch .tr { right: calc(-1 * (var(--ov) + var(--kp))); top: calc(-1 * (var(--ov) + var(--kp))); }
+.arch .bl { left: calc(-1 * (var(--ov) + var(--kp))); bottom: calc(-1 * (var(--ov) + var(--kp))); }
+.arch .br { right: calc(-1 * (var(--ov) + var(--kp))); bottom: calc(-1 * (var(--ov) + var(--kp))); }
 /* Phones: no columns or corners, a thin lintel with the emblem, a thin sill, a plain stone strip at the sides. */
 @container gamescreen (max-width: 699.98px) {
   .arch .cor { display: none; }
-  .arch .col { background: linear-gradient(90deg, var(--st-d), var(--st-m) 50%, var(--st-d)); }
-  .arch .col.r { transform: none; }
+  .arch .col { background: linear-gradient(90deg, var(--st-d), var(--st-m) 50%, var(--st-d)) !important; }
+  .arch .col::before { display: none; }
 }
 /* The old bezel slot stays for the parchment edges (elf, orc) and the plain frame. */
 .stone::before {
@@ -656,30 +663,67 @@ button.plaque:hover, a.plaque:hover { text-decoration: none; filter: brightness(
 [data-race="dwarf"] { --st-d: #2b2724; --st-m: #5a534b; --ovl: 0px; }
 [data-race="orc"] { --st-d: #110f0e; --st-m: #2b2624; }
 [data-race="elf"] .stone { --ovl: 8px; }
-:root, [data-race="human"] {
-  --a-cap: url("arch/human-column.svg#svgView(viewBox(0,0,72,64))"); --a-tile: url("arch/human-column.svg#svgView(viewBox(0,64,72,72))"); --a-base: url("arch/human-column.svg#svgView(viewBox(0,136,72,48))");
-  --a-lem: url("arch/human-lintel.svg#svgView(viewBox(0,0,616,88))"); --a-lt: url("arch/human-lintel.svg#svgView(viewBox(616,0,88,88))");
-  --a-sem: url("arch/human-sill.svg#svgView(viewBox(0,0,560,56))"); --a-st: url("arch/human-sill.svg#svgView(viewBox(560,0,112,56))");
-  --a-cor: url("arch/human-corner.svg"); --a-corb: url("arch/human-corner.svg");
-}
-[data-race="elf"] {
-  --a-cap: url("arch/elf-column.svg#svgView(viewBox(0,0,72,64))"); --a-tile: url("arch/elf-column.svg#svgView(viewBox(0,64,72,72))"); --a-base: url("arch/elf-column.svg#svgView(viewBox(0,136,72,48))");
-  --a-lem: url("arch/elf-lintel.svg#svgView(viewBox(0,0,616,88))"); --a-lt: url("arch/elf-lintel.svg#svgView(viewBox(616,0,88,88))");
-  --a-sem: url("arch/elf-sill.svg#svgView(viewBox(0,0,560,56))"); --a-st: url("arch/elf-sill.svg#svgView(viewBox(560,0,112,56))");
-  --a-cor: url("arch/elf-corner.svg"); --a-corb: url("arch/elf-corner.svg");
-}
-[data-race="dwarf"] {
-  --a-cap: url("arch/dwarf-column.svg#svgView(viewBox(0,0,72,64))"); --a-tile: url("arch/dwarf-column.svg#svgView(viewBox(0,64,72,72))"); --a-base: url("arch/dwarf-column.svg#svgView(viewBox(0,136,72,48))");
-  --a-lem: url("arch/dwarf-lintel.svg#svgView(viewBox(0,0,616,88))"); --a-lt: url("arch/dwarf-lintel.svg#svgView(viewBox(616,0,88,88))");
-  --a-sem: url("arch/dwarf-sill.svg#svgView(viewBox(0,0,560,56))"); --a-st: url("arch/dwarf-sill.svg#svgView(viewBox(560,0,112,56))");
-  --a-cor: url("arch/dwarf-corner.svg"); --a-corb: url("arch/dwarf-corner-b.svg");
-}
-[data-race="orc"] {
-  --a-cap: url("arch/orc-column.svg#svgView(viewBox(0,0,72,64))"); --a-tile: url("arch/orc-column.svg#svgView(viewBox(0,64,72,72))"); --a-base: url("arch/orc-column.svg#svgView(viewBox(0,136,72,48))");
-  --a-lem: url("arch/orc-lintel.svg#svgView(viewBox(0,0,616,88))"); --a-lt: url("arch/orc-lintel.svg#svgView(viewBox(616,0,88,88))");
-  --a-sem: url("arch/orc-sill.svg#svgView(viewBox(0,0,560,56))"); --a-st: url("arch/orc-sill.svg#svgView(viewBox(560,0,112,56))");
-  --a-cor: url("arch/orc-corner.svg"); --a-corb: url("arch/orc-corner.svg");
-}
+/* Per-race pieces. The human set also answers when no data-race is set. */
+.arch .lintel { background-image: url("arch/human-lintel-emblem@2x.webp"); }
+.arch .lintel::before { background-image: url("arch/human-lintel-cap-l@2x.webp"), url("arch/human-lintel-tile@2x.webp"); }
+.arch .lintel::after { background-image: url("arch/human-lintel-cap-r@2x.webp"), url("arch/human-lintel-tile@2x.webp"); }
+.arch .sill { background-image: url("arch/human-sill-emblem@2x.webp"); }
+.arch .sill::before { background-image: url("arch/human-sill-cap-l@2x.webp"), url("arch/human-sill-tile@2x.webp"); }
+.arch .sill::after { background-image: url("arch/human-sill-cap-r@2x.webp"), url("arch/human-sill-tile@2x.webp"); }
+.arch .col.l { background-image: url("arch/human-col-cap-l@2x.webp"), url("arch/human-col-base-l@2x.webp"); }
+.arch .col.l::before { background-image: url("arch/human-col-tile-l@2x.webp"); }
+.arch .col.r { background-image: url("arch/human-col-cap-r@2x.webp"), url("arch/human-col-base-r@2x.webp"); }
+.arch .col.r::before { background-image: url("arch/human-col-tile-r@2x.webp"); }
+.arch .tl { background-image: url("arch/human-cor-l@2x.webp"); } .arch .tr { background-image: url("arch/human-cor-r@2x.webp"); }
+.arch .bl { background-image: url("arch/human-cor-l@2x.webp"); } .arch .br { background-image: url("arch/human-cor-r@2x.webp"); }
+[data-race="human"] .arch .lintel { background-image: url("arch/human-lintel-emblem@2x.webp"); }
+[data-race="human"] .arch .lintel::before { background-image: url("arch/human-lintel-cap-l@2x.webp"), url("arch/human-lintel-tile@2x.webp"); }
+[data-race="human"] .arch .lintel::after { background-image: url("arch/human-lintel-cap-r@2x.webp"), url("arch/human-lintel-tile@2x.webp"); }
+[data-race="human"] .arch .sill { background-image: url("arch/human-sill-emblem@2x.webp"); }
+[data-race="human"] .arch .sill::before { background-image: url("arch/human-sill-cap-l@2x.webp"), url("arch/human-sill-tile@2x.webp"); }
+[data-race="human"] .arch .sill::after { background-image: url("arch/human-sill-cap-r@2x.webp"), url("arch/human-sill-tile@2x.webp"); }
+[data-race="human"] .arch .col.l { background-image: url("arch/human-col-cap-l@2x.webp"), url("arch/human-col-base-l@2x.webp"); }
+[data-race="human"] .arch .col.l::before { background-image: url("arch/human-col-tile-l@2x.webp"); }
+[data-race="human"] .arch .col.r { background-image: url("arch/human-col-cap-r@2x.webp"), url("arch/human-col-base-r@2x.webp"); }
+[data-race="human"] .arch .col.r::before { background-image: url("arch/human-col-tile-r@2x.webp"); }
+[data-race="human"] .arch .tl { background-image: url("arch/human-cor-l@2x.webp"); } [data-race="human"] .arch .tr { background-image: url("arch/human-cor-r@2x.webp"); }
+[data-race="human"] .arch .bl { background-image: url("arch/human-cor-l@2x.webp"); } [data-race="human"] .arch .br { background-image: url("arch/human-cor-r@2x.webp"); }
+[data-race="elf"] .arch .lintel { background-image: url("arch/elf-lintel-emblem@2x.webp"); }
+[data-race="elf"] .arch .lintel::before { background-image: url("arch/elf-lintel-cap-l@2x.webp"), url("arch/elf-lintel-tile@2x.webp"); }
+[data-race="elf"] .arch .lintel::after { background-image: url("arch/elf-lintel-cap-r@2x.webp"), url("arch/elf-lintel-tile@2x.webp"); }
+[data-race="elf"] .arch .sill { background-image: url("arch/elf-sill-emblem@2x.webp"); }
+[data-race="elf"] .arch .sill::before { background-image: url("arch/elf-sill-cap-l@2x.webp"), url("arch/elf-sill-tile@2x.webp"); }
+[data-race="elf"] .arch .sill::after { background-image: url("arch/elf-sill-cap-r@2x.webp"), url("arch/elf-sill-tile@2x.webp"); }
+[data-race="elf"] .arch .col.l { background-image: url("arch/elf-col-cap-l@2x.webp"), url("arch/elf-col-base-l@2x.webp"); }
+[data-race="elf"] .arch .col.l::before { background-image: url("arch/elf-col-tile-l@2x.webp"); }
+[data-race="elf"] .arch .col.r { background-image: url("arch/elf-col-cap-r@2x.webp"), url("arch/elf-col-base-r@2x.webp"); }
+[data-race="elf"] .arch .col.r::before { background-image: url("arch/elf-col-tile-r@2x.webp"); }
+[data-race="elf"] .arch .tl { background-image: url("arch/elf-cor-l@2x.webp"); } [data-race="elf"] .arch .tr { background-image: url("arch/elf-cor-r@2x.webp"); }
+[data-race="elf"] .arch .bl { background-image: url("arch/elf-cor-l@2x.webp"); } [data-race="elf"] .arch .br { background-image: url("arch/elf-cor-r@2x.webp"); }
+[data-race="dwarf"] .arch .lintel { background-image: url("arch/dwarf-lintel-emblem@2x.webp"); }
+[data-race="dwarf"] .arch .lintel::before { background-image: url("arch/dwarf-lintel-cap-l@2x.webp"), url("arch/dwarf-lintel-tile@2x.webp"); }
+[data-race="dwarf"] .arch .lintel::after { background-image: url("arch/dwarf-lintel-cap-r@2x.webp"), url("arch/dwarf-lintel-tile@2x.webp"); }
+[data-race="dwarf"] .arch .sill { background-image: url("arch/dwarf-sill-emblem@2x.webp"); }
+[data-race="dwarf"] .arch .sill::before { background-image: url("arch/dwarf-sill-cap-l@2x.webp"), url("arch/dwarf-sill-tile@2x.webp"); }
+[data-race="dwarf"] .arch .sill::after { background-image: url("arch/dwarf-sill-cap-r@2x.webp"), url("arch/dwarf-sill-tile@2x.webp"); }
+[data-race="dwarf"] .arch .col.l { background-image: url("arch/dwarf-col-cap-l@2x.webp"), url("arch/dwarf-col-base-l@2x.webp"); }
+[data-race="dwarf"] .arch .col.l::before { background-image: url("arch/dwarf-col-tile-l@2x.webp"); }
+[data-race="dwarf"] .arch .col.r { background-image: url("arch/dwarf-col-cap-r@2x.webp"), url("arch/dwarf-col-base-r@2x.webp"); }
+[data-race="dwarf"] .arch .col.r::before { background-image: url("arch/dwarf-col-tile-r@2x.webp"); }
+[data-race="dwarf"] .arch .tl { background-image: url("arch/dwarf-cor-l@2x.webp"); } [data-race="dwarf"] .arch .tr { background-image: url("arch/dwarf-cor-r@2x.webp"); }
+[data-race="dwarf"] .arch .bl { background-image: url("arch/dwarf-corb-l@2x.webp"); } [data-race="dwarf"] .arch .br { background-image: url("arch/dwarf-corb-r@2x.webp"); }
+[data-race="orc"] .arch .lintel { background-image: url("arch/orc-lintel-emblem@2x.webp"); }
+[data-race="orc"] .arch .lintel::before { background-image: url("arch/orc-lintel-cap-l@2x.webp"), url("arch/orc-lintel-tile@2x.webp"); }
+[data-race="orc"] .arch .lintel::after { background-image: url("arch/orc-lintel-cap-r@2x.webp"), url("arch/orc-lintel-tile@2x.webp"); }
+[data-race="orc"] .arch .sill { background-image: url("arch/orc-sill-emblem@2x.webp"); }
+[data-race="orc"] .arch .sill::before { background-image: url("arch/orc-sill-cap-l@2x.webp"), url("arch/orc-sill-tile@2x.webp"); }
+[data-race="orc"] .arch .sill::after { background-image: url("arch/orc-sill-cap-r@2x.webp"), url("arch/orc-sill-tile@2x.webp"); }
+[data-race="orc"] .arch .col.l { background-image: url("arch/orc-col-cap-l@2x.webp"), url("arch/orc-col-base-l@2x.webp"); }
+[data-race="orc"] .arch .col.l::before { background-image: url("arch/orc-col-tile-l@2x.webp"); }
+[data-race="orc"] .arch .col.r { background-image: url("arch/orc-col-cap-r@2x.webp"), url("arch/orc-col-base-r@2x.webp"); }
+[data-race="orc"] .arch .col.r::before { background-image: url("arch/orc-col-tile-r@2x.webp"); }
+[data-race="orc"] .arch .tl { background-image: url("arch/orc-cor-l@2x.webp"); } [data-race="orc"] .arch .tr { background-image: url("arch/orc-cor-r@2x.webp"); }
+[data-race="orc"] .arch .bl { background-image: url("arch/orc-cor-l@2x.webp"); } [data-race="orc"] .arch .br { background-image: url("arch/orc-cor-r@2x.webp"); }
 
 /* The gate: the Doors of Durin as the login dialog (race-independent) */
 .gate { max-width: 880px; width: 100%; }
