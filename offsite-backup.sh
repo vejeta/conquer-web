@@ -15,11 +15,18 @@
 #   sudo ./offsite-backup.sh --decrypt FILE  decrypt a copy (writes FILE without .enc)
 #
 # Settings: config/backup.env (see config/backup.env.template)
-#   BACKUP_TARGET    where the copies go: user@host:/path (SSH) or a local
-#                    directory (another disk, a mounted share)
+#   BACKUP_TARGET    where the copies go, one of:
+#                      user@host:/path           over SSH (needs rsync there)
+#                      rsync://USER@HOST/MODULE/path
+#                                                an rsync daemon, for example a
+#                                                Synology NAS (no SSH, no shell)
+#                      /some/directory           another disk, a mounted share
 #   BACKUP_KEEP      how many copies the target keeps (default 30)
 #   BACKUP_SSH_KEY   SSH key for the target (default /root/.ssh/conquer-backup)
 #   BACKUP_SSH_PORT  SSH port of the target (default 22)
+#   BACKUP_RSYNC_PASSWORD_FILE  rsync daemon password, mode 600 (default
+#                    /root/.conquer-backup-rsync)
+#   BACKUP_RSYNC_PORT  port of the rsync daemon (default 873)
 #   BACKUP_PASSWORD_FILE  if set, copies are encrypted with this password
 #                    (openssl, AES-256): keep the password somewhere else too
 #
@@ -52,8 +59,22 @@ usage() {
 [ "$EUID" -eq 0 ] || [ -n "$OFFSITE_TEST" ] || { echo "❌ Run it with sudo"; exit 1; }
 
 BACKUP_TARGET="" BACKUP_KEEP=30 BACKUP_SSH_KEY=/root/.ssh/conquer-backup BACKUP_SSH_PORT=22 BACKUP_PASSWORD_FILE=""
+BACKUP_RSYNC_PASSWORD_FILE=/root/.conquer-backup-rsync BACKUP_RSYNC_PORT=873
 # shellcheck source=/dev/null
 [ -f "$CONFIG" ] && . "$CONFIG"
+BACKUP_TARGET="${BACKUP_TARGET%/}"
+
+# The copies beyond the newest $1, from the file names on stdin (one per
+# line). The names carry the date and time, so the newest sort last by name;
+# only names of our own copies are considered, whatever else the target holds.
+select_old() {
+    LC_ALL=C grep -E '^conquer-[A-Za-z0-9._-]+\.tar\.gz(\.enc)?$' | LC_ALL=C sort -r | tail -n +$(($1 + 1))
+}
+
+# rsync to a daemon (BACKUP_TARGET=rsync://USER@HOST/MODULE/path)
+rsync_daemon() {
+    rsync --port="$BACKUP_RSYNC_PORT" --password-file="$BACKUP_RSYNC_PASSWORD_FILE" "$@"
+}
 
 ssh_opts() {
     printf '%s\n' -i "$BACKUP_SSH_KEY" -p "$BACKUP_SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new
@@ -88,6 +109,10 @@ case "${1:-}" in
         openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass "file:$BACKUP_PASSWORD_FILE" \
             -in "$2" -out "${2%.enc}"
         echo "✅ ${2%.enc}"
+        exit 0 ;;
+    --select-old)  # for the tests: names on stdin, the ones beyond the newest $2
+        [ -n "$OFFSITE_TEST" ] && [[ "${2:-}" =~ ^[0-9]+$ ]] || usage
+        select_old "$2"
         exit 0 ;;
     "") ;;
     *) usage ;;
@@ -136,23 +161,54 @@ fi
 chmod 600 "$file"
 echo "   $(basename "$file") ($(du -h "$file" | cut -f1))"
 
-# Send it, then keep the newest BACKUP_KEEP copies at the target
-if [[ "$BACKUP_TARGET" == *:* ]]; then
+# Send it, then keep the newest BACKUP_KEEP copies at the target. Every kind
+# of target lists its file names and select_old picks the ones to drop; only
+# plain POSIX tools run on the target (a NAS or BusyBox may lack GNU ones).
+if [[ "$BACKUP_TARGET" == rsync://* ]]; then
+    [ -s "$BACKUP_RSYNC_PASSWORD_FILE" ] || { echo "❌ $BACKUP_RSYNC_PASSWORD_FILE is empty or missing (the rsync password, mode 600)"; exit 1; }
+    mkdir "$stage/empty"
+    # The folders of the path inside the module (rsync makes one level a time)
+    rest="${BACKUP_TARGET#rsync://}"           # USER@HOST/MODULE/a/b
+    dir="rsync://${rest%%/*}"                  # rsync://USER@HOST
+    rest="${rest#*/}"                          # MODULE/a/b
+    dir="$dir/${rest%%/*}"                     # rsync://USER@HOST/MODULE
+    if [ "$rest" != "${rest%%/*}" ]; then
+        IFS=/ read -ra parts <<< "${rest#*/}"
+        for part in "${parts[@]}"; do
+            [ -n "$part" ] || continue
+            dir="$dir/$part"
+            rsync_daemon -r "$stage/empty/" "$dir/" >/dev/null 2>&1 || true
+        done
+    fi
+    rsync_daemon -a --no-owner --no-group "$file" "$BACKUP_TARGET/"
+    # The names listed are the last column of "rsync --list-only"; they are
+    # dropped with rsync itself: an empty directory is synchronised over the
+    # target with --delete, and the filter lets it touch only the names in
+    # the include list ("- *" protects every other file and folder)
+    rsync_daemon --list-only "$BACKUP_TARGET/" | awk '{ print $NF }' | select_old "$BACKUP_KEEP" > "$stage/old"
+    if [ -s "$stage/old" ]; then
+        sed 's|^|+ /|' "$stage/old" > "$stage/filter"
+        echo '- *' >> "$stage/filter"
+        rsync_daemon -r --delete --filter="merge $stage/filter" "$stage/empty/" "$BACKUP_TARGET/"
+    fi
+elif [[ "$BACKUP_TARGET" == *:* ]]; then
     host="${BACKUP_TARGET%%:*}" path="${BACKUP_TARGET#*:}"
     mapfile -t opts < <(ssh_opts)
     # shellcheck disable=SC2029  # the path is meant to expand here
     ssh "${opts[@]}" "$host" "mkdir -p '$path'"
     rsync -a -e "ssh ${opts[*]}" "$file" "$BACKUP_TARGET/"
     # shellcheck disable=SC2029
-    ssh "${opts[@]}" "$host" "cd '$path' && ls -1t conquer-*.tar.gz* 2>/dev/null | tail -n +$((BACKUP_KEEP + 1)) | xargs -r rm -f --"
+    ssh "${opts[@]}" "$host" "cd '$path' && ls -1" | select_old "$BACKUP_KEEP" > "$stage/old"
+    if [ -s "$stage/old" ]; then
+        # shellcheck disable=SC2029
+        ssh "${opts[@]}" "$host" "cd '$path' && while read -r f; do rm -f -- \"\$f\"; done" < "$stage/old"
+    fi
 else
     mkdir -p "$BACKUP_TARGET"
     cp -p "$file" "$BACKUP_TARGET/"
-    (cd "$BACKUP_TARGET" && find . -maxdepth 1 -name 'conquer-*.tar.gz*' -printf '%T@ %f\n' | sort -rn \
-        | tail -n +$((BACKUP_KEEP + 1)) | cut -d' ' -f2- | xargs -r rm -f --)
+    ls -1 "$BACKUP_TARGET" | select_old "$BACKUP_KEEP" | while read -r f; do rm -f -- "$BACKUP_TARGET/$f"; done
 fi
 
 # Here, the last three are enough
-find "$LOCAL_DIR" -maxdepth 1 -name 'conquer-*.tar.gz*' -printf '%T@ %p\n' | sort -rn | tail -n +4 \
-    | cut -d' ' -f2- | xargs -r rm -f --
+ls -1 "$LOCAL_DIR" | select_old 3 | while read -r f; do rm -f -- "$LOCAL_DIR/$f"; done
 echo "✅ Copy sent to $BACKUP_TARGET (keeping the last $BACKUP_KEEP there)"

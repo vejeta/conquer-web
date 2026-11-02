@@ -1,9 +1,9 @@
 # First-turn tutorial
 
-`web/tutorial.html` and `web/tutorial.es.html` (the page in English and
-Spanish), `web/tutorial/first-turn.cast` (the terminal
-recording) and `web/tutorial/first-turn.json` (the steps for the in-game
-coach) are generated from a real game session.
+`web/tutorial.html` and `web/tutorial.<language>.html` (the page in every
+language), `web/tutorial/first-turn.cast` (the terminal recording) and
+`web/tutorial/first-turn.json` (the steps for the in-game coach) are
+generated from a real game session.
 
 | File | What it is |
 |------|------------|
@@ -33,8 +33,9 @@ the capital with water to the south: pick another direction in the steps).
 
 ### The nation builder
 
-The coach also follows the game's own nation builder (`conqrun -a`), which
-a new player meets the first time they play. Its steps are
+The coach also follows the game's own nation builder (`conqrun -a`, or `-A`
+after turn 5: same screens), which a new player meets the first time they
+play. Its steps are
 `found-nation.content.json` (and `found_title`, `found_steps` in
 `i18n/<language>.json`); `build.py` writes `web/tutorial/found-nation[.language].json`.
 `found-nation.steps.json` records the builder founding `iberia` on a world
