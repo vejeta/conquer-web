@@ -1,144 +1,162 @@
 /* SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
    SPDX-License-Identifier: GPL-3.0-or-later
 
-   The touch layer over the game screen (touch.js): the stage that zooms,
-   the grid that takes the taps, the bar of command chips, the d-pad, the
-   options panel. The chips look like a 1987 monitor: phosphor on black. */
-@font-face {
-  font-family: "VT323"; font-display: swap;
-  src: url(fonts/vt323-latin.woff2) format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+   The game screen's page layout and the touch layer (touch.js). Colours,
+   fonts and the look of keys, chips, the compass, the plaque and the panel
+   come from theme.css (load it first); this file only places things. */
+
+/* ---- the page: header, then the game screen and the coach ---- */
+body.game-page { display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
+.game-page .site-header { flex: none; position: relative; z-index: 20; transition: transform 240ms ease; }
+.game-page .site-header .key { min-height: 36px; }
+.game-main { flex: 1; min-height: 0; box-shadow: none; padding: var(--s2) var(--s3) calc(var(--s2) + env(safe-area-inset-bottom)); display: flex; }
+.stage { flex: 1; display: flex; gap: var(--s4); min-height: 0; min-width: 0; }
+.game-main .gamescreen { flex: 1; min-width: 0; min-height: 0; }
+.game-main .gs { height: 100%; grid-template-rows: auto minmax(0, 1fr); position: relative; align-content: stretch; }
+.game-main .gs > .touch-ui { display: contents; }
+.game-main .gs > .touch-ui[hidden] { display: none; }
+.game-main .gs .touch-where { order: 1; }
+.game-main .gs > .stone { order: 2; align-self: stretch; display: flex; min-height: 0; }
+.game-main .gs .touch-ledge { order: 3; }
+.game-main .gs > .compass { order: 4; }
+.game-main .stone .terminal { flex: 1; display: flex; min-height: 0; min-width: 0; }
+/* theme.css places the plaque, ledge and compass as children of .gs; here they sit in .touch-ui (display: contents) */
+@container gamescreen (min-width: 700px) {
+  .gs.has-compass > .touch-ui > .touch-where { grid-column: 1 / -1; }
 }
+@container gamescreen (min-width: 1100px) {
+  /* wide: the ledge is a column beside the stone, the compass under it (by the width of the screen's own box, so it never lags) */
+  .game-main .gs { grid-template-columns: minmax(0, 1fr) 232px; grid-template-rows: auto minmax(0, 1fr) auto; }
+  .gs > .touch-ui > .touch-where { grid-column: 1 / -1; justify-self: start; }
+  .game-main .gs > .stone { grid-column: 1; grid-row: 2 / span 2; }
+  .gs > .touch-ui > .touch-ledge { grid-column: 2; grid-row: 2; align-self: start; max-height: 100%; overflow-y: auto; }
+  .gs > .compass { grid-column: 2; grid-row: 3; justify-self: center; }
+  .touch-ledge .chips { flex-direction: column; overflow: visible; -webkit-mask-image: none; mask-image: none; padding: var(--s2) var(--s3); }
+  .touch-ledge .chips .key { width: 100%; justify-content: space-between; }
+}
+
+/* the aside of the coach is a panel; below the screen on small windows */
+.coach { width: 330px; flex: none; overflow-y: auto; font-size: .92rem; line-height: 1.5; }
+.coach[hidden] { display: none; }
+.coach .head { display: flex; justify-content: space-between; align-items: center; color: var(--ink-dim); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; }
+.coach .bar { height: 4px; background: var(--hair); border-radius: 2px; margin: var(--s2) 0 var(--s3); }
+.coach .bar span { display: block; height: 100%; background: var(--phos); border-radius: 2px; box-shadow: 0 0 6px var(--phos-glow); transition: width .3s; }
+.coach h2 { font-size: 1.15rem; margin: 0 0 var(--s2); }
+.coach p, .coach ul { margin: 0 0 var(--s3); }
+.coach ul { padding-left: 1.1em; }
+.coach pre { background: var(--bg); border: 1px solid var(--line); padding: var(--s1) var(--s3); border-radius: var(--radius); display: inline-block; }
+.coach kbd { padding: 0 .35em; border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 4px; }
+.coach .rule { border-left: 3px solid var(--gold); padding-left: var(--s3); color: var(--ink-dim); }
+.coach .press { display: flex; flex-wrap: wrap; gap: var(--s2); margin: var(--s3) 0; align-items: center; }
+.coach .press span { color: var(--ink-dim); font-size: .8rem; }
+.coach .press button { min-height: 36px; padding: 0 var(--s3); font: 600 .95rem var(--font-text); color: var(--phos-text); background: var(--bg); border: 1px solid var(--phos-dim); border-radius: var(--radius); cursor: pointer; }
+.coach .press .typed { font-style: italic; color: var(--ink-dim); }
+.coach .nav { display: flex; gap: var(--s2); }
+.coach .nav button, .coach .close { min-height: 36px; padding: 0 var(--s3); font: 600 .9rem var(--font-text); color: var(--ink); background: var(--bg-2); border: 1px solid var(--line); border-bottom-width: 3px; border-radius: var(--radius); cursor: pointer; }
+.coach .close { min-width: 36px; padding: 0; font-size: 1.2rem; }
+.coach .auto { color: var(--ink-dim); font-size: .8rem; margin: var(--s3) 0 0; }
+@media (max-width: 800px) {
+  .stage { flex-direction: column; gap: var(--s2); }
+  .coach { width: auto; max-height: 36vh; }
+  .nav-extra { display: none; }
+}
+/* /try/: the practice game's own bar */
+.try-note { color: var(--ink-dim); font-size: .85rem; }
+.try-note b { color: var(--ink); font-weight: 600; }
+@media (max-width: 900px) { .try-note { display: none; } }
+.moves-panel { position: fixed; inset: 0; z-index: 50; background: color-mix(in srgb, var(--screen) 60%, transparent); display: flex; align-items: center; justify-content: center; padding: var(--s3); }
+.moves-panel[hidden] { display: none; }
+.moves-panel .card { max-width: 760px; max-height: 100%; overflow: auto; background: var(--bg-2); }
+.moves-panel .ok { margin-top: var(--s4); }
 
 /* ---- the terminal's frame: the viewport clips, the stage zooms ---- */
 .touch-viewport { position: relative; flex: 1; min-width: 0; min-height: 0; overflow: hidden; }
 .touch-stage { position: absolute; left: 0; top: 0; width: 100%; height: 100%; transform-origin: 0 0; }
 .touch-stage.touch-anim { transition: transform 0.2s ease-out; }
 .touch-stage > iframe, .touch-stage > #terminal { width: 100%; height: 100%; border: 0; display: block; }
+#terminal { padding: 0; }
 
 /* the grid sits exactly over the text area (touch.js sets its box) */
-.touch-grid { position: absolute; left: 0; top: 0; pointer-events: none; touch-action: none; -webkit-tap-highlight-color: transparent; }
+.touch-grid { position: absolute; z-index: 4; left: 0; top: 0; pointer-events: none; touch-action: none; -webkit-tap-highlight-color: transparent; }
 .touch-grid.capture { pointer-events: auto; }
 .touch-crt { position: absolute; inset: 0; pointer-events: none; display: none;
-  background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0.22) 3px),
-              radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.35) 100%); }
+  background: repeating-linear-gradient(to bottom, transparent 0, transparent 2px, color-mix(in srgb, var(--screen) 22%, transparent) 3px),
+              radial-gradient(ellipse at center, transparent 60%, color-mix(in srgb, var(--screen) 35%, transparent) 100%); }
 .touch-scan .touch-crt { display: block; }
+.stone.parchment .touch-crt { display: none; }
 
 /* ---- "turn your phone" ---- */
-.touch-hint { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 6; display: flex; align-items: center; gap: 8px;
-  padding: 8px 8px 8px 12px; border: 1px solid var(--tc); border-radius: 8px; background: var(--tc-bg); color: var(--tc);
-  font: 14px/1.3 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.touch-hint { position: absolute; left: var(--s2); right: var(--s2); bottom: var(--s2); z-index: 6; justify-content: space-between; font-size: .9rem; line-height: 1.3; }
 .touch-hint[hidden] { display: none; }
-.touch-hint:not([hidden]) ~ .touch-dpad { bottom: 64px; }
 .touch-hint span { flex: 1; }
-.touch-hint button { min-width: 32px; height: 32px; border: 0; border-radius: 6px; background: transparent; color: inherit; font-size: 20px; cursor: pointer; }
+.touch-hint .key { min-width: 36px; min-height: 36px; padding: 0; font-size: 1.2rem; }
 
-/* ---- the bar under the terminal ---- */
-.touch-viewport, .touch-ui, .touch-sheet { --tc: #ffb340; --tc-dim: #80581f; --tc-bg: #120d05; --tc-hi: #2a1c08; }
-[data-phosphor="green"] { --tc: #4cf26b; --tc-dim: #1d6a2c; --tc-bg: #07120a; --tc-hi: #0e2a14; }
-[data-phosphor="white"] { --tc: #e6edf3; --tc-dim: #6e7681; --tc-bg: #0d1117; --tc-hi: #21262d; }
-.touch-ui {
-  position: relative; flex: none; background: #0b0905; border-top: 1px solid var(--tc-dim);
-  padding: 4px 6px calc(4px + env(safe-area-inset-bottom)); color: var(--tc);
-  font: 14px/1.2 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; user-select: none; -webkit-user-select: none; }
-.touch-ui[hidden] { display: none; }
-.touch-ui button { font-family: inherit; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-.touch-ui kbd, .touch-sheet kbd, .touch-dpad kbd { font-family: "VT323", ui-monospace, "DejaVu Sans Mono", monospace; font-weight: 400; }
-
-.touch-where { display: flex; align-items: center; gap: 8px; min-height: 28px; }
-.touch-crumb { font: 400 18px/1 "VT323", ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: 0.06em; text-transform: uppercase;
-  text-shadow: 0 0 6px color-mix(in srgb, var(--tc) 55%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+/* ---- the plaque row: where am I, back, options ---- */
+.touch-where { display: flex; align-items: center; gap: var(--s2); min-width: 0; flex-wrap: wrap; }
+.touch-crumb { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; max-width: 100%; }
 .touch-spacer { flex: 1; }
-.touch-back, .touch-gear { height: 30px; min-width: 34px; padding: 0 10px; border: 1px solid var(--tc-dim); border-radius: 6px;
-  background: var(--tc-bg); color: var(--tc); font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
 .touch-back[hidden] { display: none; }
-.touch-gear { font-size: 18px; justify-content: center; }
-.touch-back .ic { font-size: 20px; line-height: 1; }
-.touch-back:hover, .touch-gear:hover, .touch-back:focus-visible, .touch-gear:focus-visible { background: var(--tc-hi); outline: none; border-color: var(--tc); }
+.touch-back .ic { font-size: 1.3rem; line-height: 1; }
+.touch-gear { font-size: 1.15rem; padding: 0; }
 
-.touch-chips { display: flex; gap: 6px; overflow-x: auto; overflow-y: hidden; padding: 4px 2px 3px; margin-top: 2px;
-  scrollbar-width: thin; scrollbar-color: var(--tc-dim) transparent; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
-.touch-chips[hidden] { display: none; }
-.touch-chips.keypad { flex-wrap: wrap; overflow: visible; justify-content: center; }
-.touch-chips.keypad .touch-chip { flex: 0 0 calc((100% - 5 * 6px) / 6); min-width: 0; justify-content: center; }
-.touch-chip { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 44px; min-width: 44px; padding: 0 12px;
-  border: 1px solid var(--tc-dim); border-radius: 8px; background: var(--tc-bg); color: var(--tc); cursor: pointer; font-size: 14px; white-space: nowrap; }
-.touch-chip:hover { background: var(--tc-hi); border-color: var(--tc); }
-.touch-chip:active { background: var(--tc); color: #0b0905; }
-.touch-chip:focus-visible { outline: 2px solid var(--tc); outline-offset: 1px; }
-.touch-chip .ic { font-size: 18px; line-height: 1; min-width: 1em; text-align: center; }
-.touch-chip .kh, .touch-back .kh { font-size: 15px; line-height: 1; padding: 1px 4px 0; border: 1px solid var(--tc-dim); border-radius: 3px; color: var(--tc); opacity: 0.85; }
-.touch-chip:active .kh { color: #0b0905; border-color: #0b0905; }
-.touch-chip.main { border-color: var(--tc); background: var(--tc-hi); }
-.touch-chip.warn .ic, .touch-chip.warn .lb { color: #ff7a66; }
-.touch-chip.digit { height: 46px; font: 400 26px/1 "VT323", ui-monospace, monospace; padding: 0 4px; }
-.touch-chip.digit .ic { font-size: 26px; }
-.touch-chip.digit .lb { font: 400 28px/1 "VT323", ui-monospace, monospace; }
+/* ---- the ledge: command chips ---- */
+.touch-ledge[hidden], .touch-chips[hidden] { display: none; }
+.touch-chips.keypad { flex-wrap: wrap; overflow: visible; justify-content: center; -webkit-mask-image: none; mask-image: none; }
+.touch-chips.keypad .touch-chip { flex: 0 0 calc((100% - 5 * var(--s2)) / 6); min-width: 0; justify-content: center; }
+.touch-chip .ic { font-size: 1.1rem; line-height: 1; min-width: 1em; text-align: center; }
+.touch-chip .lb { white-space: nowrap; }
+.touch-chip.main { border-color: var(--phos); }
+.touch-chip.warn .ic, .touch-chip.warn .lb { color: var(--bad); }
+.touch-chip.digit { padding: 0; font-family: var(--font-mono); }
+.touch-chip.digit .lb, .touch-chip.digit .ic { font: 1.7rem/1 var(--font-mono); }
 .touch-nohints .kh { display: none; }
+.touch-chip:active .kh { color: inherit; }
 
-/* ---- the d-pad ---- */
-.touch-dpad { position: absolute; bottom: 8px; z-index: 5; display: grid; grid-template-columns: repeat(3, 52px); gap: 4px; padding: 6px;
-  border: 1px solid var(--tc-dim); border-radius: 12px; background: rgba(11, 9, 5, 0.82); touch-action: none; user-select: none; -webkit-user-select: none; }
-.touch-dpad[hidden] { display: none; }
-.touch-dpad[data-side="left"] { left: 8px; }
-.touch-dpad[data-side="right"] { right: 8px; }
-.touch-grip { grid-column: 1 / 4; height: 18px; min-width: 0; padding: 0; border: 0; background: transparent; color: var(--tc-dim); font-size: 16px; line-height: 1; cursor: grab; touch-action: none; }
-.touch-pb { position: relative; width: 52px; height: 52px; padding: 0; border: 1px solid var(--tc-dim); border-radius: 10px; background: var(--tc-bg); color: var(--tc); cursor: pointer;
-  display: flex; align-items: center; justify-content: center; touch-action: none; -webkit-tap-highlight-color: transparent; }
-.touch-pb .ar { font-size: 24px; line-height: 1; }
-.touch-pb kbd { position: absolute; right: 4px; bottom: 1px; font-size: 14px; line-height: 1; opacity: 0.7; }
-.touch-pb.mid { border-radius: 26px; }
-.touch-pb:active { background: var(--tc); color: #0b0905; }
-.touch-pb:focus-visible { outline: 2px solid var(--tc); outline-offset: 1px; }
+/* ---- the compass ---- */
+.touch-dpad .touch-pb .ar { font: 1.7rem/.9 var(--font-mono); }
+.touch-pb { touch-action: none; }
 
-/* ---- options panel ---- */
-.touch-panel { color-scheme: dark; position: absolute; right: 6px; bottom: 100%; z-index: 30; width: min(320px, calc(100vw - 12px)); max-height: 70vh; overflow: auto;
-  margin-bottom: 4px; padding: 10px 14px 12px; background: var(--tc-bg); border: 1px solid var(--tc); border-radius: 10px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6); }
+/* ---- options panel: a sheet over the corner ---- */
+.touch-panel { position: fixed; right: var(--s3); bottom: var(--s3); z-index: 30; width: min(340px, calc(100vw - 2 * var(--s3))); max-height: 80vh; overflow: auto; border-radius: var(--radius); }
 .touch-panel[hidden] { display: none; }
-.touch-panel h2 { margin: 0 0 8px; font: 400 22px/1 "VT323", ui-monospace, monospace; letter-spacing: 0.08em; text-transform: uppercase; }
-.touch-panel .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; }
-.touch-panel label { flex: 1; font-size: 14px; }
-.touch-panel input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--tc); }
-.touch-panel input[type="range"] { width: 140px; accent-color: var(--tc); }
-.touch-panel select { height: 34px; background: #0b0905; color: var(--tc); border: 1px solid var(--tc-dim); border-radius: 6px; padding: 0 8px; font: inherit; }
-.touch-reset { margin-top: 8px; width: 100%; height: 38px; border: 1px solid var(--tc-dim); border-radius: 8px; background: transparent; color: var(--tc); cursor: pointer; }
-.touch-reset:hover { background: var(--tc-hi); }
-.touch-panel :focus-visible { outline: 2px solid var(--tc); outline-offset: 1px; }
+.touch-panel h2 { margin: 0 0 var(--s2); font-size: 1.3rem; }
+.touch-panel .row { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); min-height: 40px; }
+.touch-panel label { flex: 1; }
+.touch-panel input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--phos); }
+.touch-panel input[type="range"] { width: 140px; accent-color: var(--phos); }
+.touch-panel select { min-height: 40px; }
+.touch-reset { width: 100%; margin-top: var(--s2); }
 
 /* ---- every command ---- */
-.touch-sheet { position: fixed; inset: 0; z-index: 40; background: rgba(0, 0, 0, 0.62); display: flex; align-items: flex-end; justify-content: center; }
+.touch-sheet { position: fixed; inset: 0; z-index: 40; background: color-mix(in srgb, var(--screen) 62%, transparent); display: flex; align-items: flex-end; justify-content: center; }
 .touch-sheet[hidden] { display: none; }
-.touch-sheet .card { position: relative; width: min(720px, 100%); max-height: 86vh; overflow: auto; padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
-  background: var(--tc-bg); color: var(--tc); border: 1px solid var(--tc-dim); border-bottom: 0; border-radius: 14px 14px 0 0; }
-.touch-sheet h2 { margin: 0 40px 10px 2px; font: 400 24px/1 "VT323", ui-monospace, monospace; letter-spacing: 0.08em; text-transform: uppercase; }
-.touch-sheet .x { position: absolute; top: 8px; right: 8px; width: 38px; height: 38px; border: 0; border-radius: 8px; background: transparent; color: inherit; font-size: 26px; cursor: pointer; }
-.touch-sheet .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
-.touch-cmd { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 4px 10px; border: 1px solid var(--tc-dim); border-radius: 8px; background: #0b0905; color: var(--tc);
-  font: 14px/1.25 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; text-align: left; cursor: pointer; touch-action: manipulation; }
-.touch-cmd kbd { flex: none; min-width: 28px; text-align: center; font-size: 20px; line-height: 1; padding: 2px 4px 0; border: 1px solid var(--tc-dim); border-radius: 4px; }
-.touch-cmd:hover, .touch-cmd:focus-visible { background: var(--tc-hi); border-color: var(--tc); outline: none; }
-.touch-cmd:active { background: var(--tc); color: #0b0905; }
+.touch-sheet .card { position: relative; width: min(720px, 100%); max-height: 86vh; overflow: auto; padding: var(--s4) var(--s4) calc(var(--s4) + env(safe-area-inset-bottom));
+  background: var(--bg-2); color: var(--ink); border: var(--bezel) solid var(--line); border-bottom: 0; border-radius: var(--radius) var(--radius) 0 0; }
+.touch-sheet h2 { margin: 0 48px var(--s3) 2px; font-size: 1.4rem; }
+.touch-sheet .x { position: absolute; top: var(--s2); right: var(--s2); width: 44px; height: 44px; border: 0; border-radius: var(--radius); background: transparent; color: inherit; font-size: 1.6rem; cursor: pointer; }
+.touch-sheet .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--s2); }
+.touch-cmd { display: flex; align-items: center; gap: var(--s3); min-height: 44px; padding: var(--s1) var(--s3); border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); color: var(--ink);
+  font: .92rem/1.25 var(--font-text); text-align: left; cursor: pointer; touch-action: manipulation; }
+.touch-cmd kbd { flex: none; min-width: 28px; text-align: center; font-size: 1.25rem; line-height: 1; padding: 2px 4px 0; border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 4px; color: var(--phos-text); }
+.touch-cmd:hover { background: var(--hair); border-color: var(--phos-dim); }
+.touch-cmd:active { background: var(--phos); color: var(--on-phos); }
+.touch-cmd:active kbd { color: inherit; }
 
-/* ---- phones held sideways: one row, the badge on the left ---- */
+/* ---- phones held sideways: the header folds away, the compass floats ---- */
 @media (orientation: landscape) and (max-height: 500px) {
-  .touch-ui { display: flex; align-items: center; gap: 8px; padding: 2px 6px calc(2px + env(safe-area-inset-bottom)); }
-  .touch-where { flex: none; max-width: 38%; min-height: 0; }
-  .touch-where .touch-spacer { display: none; }
-  .touch-where .touch-gear { order: 3; }
-  .touch-chips { flex: 1; margin-top: 0; min-width: 0; }
-  .touch-chip { height: 38px; }
-  .touch-chips.keypad { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; }
-  .touch-chips.keypad .touch-chip { flex: none; min-width: 40px; }
-  .touch-panel { bottom: 100%; }
-  .touch-dpad { grid-template-columns: repeat(3, 44px); gap: 3px; padding: 4px; }
-  .touch-pb { width: 44px; height: 44px; }
-  .touch-grip { height: 14px; }
+  .game-page .site-header { position: absolute; top: 0; left: 0; right: 0; transform: translateY(calc(-100% + 8px)); padding-block: var(--s1); }
+  .game-page .site-header.peek, .game-page .site-header:focus-within { transform: none; }
+  .game-main { padding: var(--s1) var(--s2); }
+  .game-main .gs { gap: var(--s1); }
+  .game-main .gs > .compass { position: absolute; right: 12px; bottom: 56px; --c: 44px; gap: 6px; padding: 10px; order: 5; }
+  .touch-where { flex-wrap: nowrap; }
+  .touch-panel { bottom: var(--s2); }
   .touch-sheet { align-items: center; }
-  .touch-sheet .card { border-radius: 14px; border-bottom: 1px solid var(--tc-dim); max-height: 94vh; }
-}
-@media (max-width: 420px) {
-  .touch-chip { padding: 0 10px; }
+  .touch-sheet .card { border-radius: var(--radius); border-bottom: var(--bezel) solid var(--line); max-height: 94vh; }
+  .coach { width: 260px; max-height: none; }
+  .stage { flex-direction: row; }
 }
 @media (prefers-reduced-motion: reduce) {
   .touch-stage.touch-anim { transition: none; }
+  .game-page .site-header { transition: none; }
 }

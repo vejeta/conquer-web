@@ -79,7 +79,7 @@ def web():
     names |= {"cmd_" + m for m in re.findall(r"\['\w+', '[^']+', '(\w+)', (?:'.'|null)\]", touch)}
     names |= {"where_" + m for m in re.findall(r"\['(\w+)', /", touch)}
     names |= {"dir_" + m for m in "ykuhlbjn"}
-    names |= {"opt_amber", "opt_green", "opt_white", "dpad_pick", "dpad_label", "dpad_grip", "where_report"}
+    names |= {"dpad_pick", "dpad_label", "where_report"}
     all_keys = re.search(r"var ALL_KEYS = \[(.*?)\];", touch, re.S).group(1)
     names |= {"keys." + ("qm" if k == "?" else k) for k in re.findall(r"'(.+?)'", all_keys)}
     for sub in re.findall(r"\[\s*'(\w+)', '[^']*', '[^']*', '[^']*', '(\w+)'\]", touch):

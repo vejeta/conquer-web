@@ -12,6 +12,7 @@ import functools
 import http.server
 import json
 import os
+import re
 import threading
 
 import pytest
@@ -142,6 +143,7 @@ def test_resizing_keeps_the_game_screen(site, browser):
     for viewport in ({"width": 844, "height": 390}, {"width": 390, "height": 844}):
         page.set_viewport_size(viewport)
         page.wait_for_timeout(1200)
+        page.evaluate("document.getElementById('site-header').click()")    # sideways, the header folds away: a tap shows it
         page.click("#coach-toggle") if page.locator("#coach-toggle").count() else None
         page.wait_for_timeout(800)
     sizes = game.evaluate("sizes")
@@ -582,7 +584,8 @@ def test_grid_covers_the_text_area(site, browser, where, viewport):
     if viewport == "phone":
         stage = page.evaluate("(() => { const r = document.getElementById('touch-stage').getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; })()")
         # the stage is scaled to the phone's width ...
-        assert stage[2] == pytest.approx(390, abs=1)
+        vp = page.evaluate("document.getElementById('touch-viewport').getBoundingClientRect().width")
+        assert stage[2] == pytest.approx(vp, abs=1) and vp < 390
         x, y = stage[0] + stage[2] / 2, stage[1] + stage[3] / 2
         # ... and a double tap zooms it
         page.touchscreen.tap(x, y)
@@ -593,8 +596,8 @@ def test_grid_covers_the_text_area(site, browser, where, viewport):
         assert grid == pytest.approx(screen, abs=1), (grid, screen)
         assert grid[2] > 600
         # and another one brings it back to the phone's width
-        page.touchscreen.tap(200, 150)
-        page.touchscreen.tap(200, 150)
+        page.touchscreen.tap(x, y)
+        page.touchscreen.tap(x, y)
         page.wait_for_function("() => document.getElementById('touch-stage').getBoundingClientRect().width < 400", timeout=3000)
         page.wait_for_timeout(500)
         grid, screen = grid_boxes(page)
@@ -715,8 +718,9 @@ def test_pinch_zooms_and_a_finger_pans(site, browser, where):
     def stage():
         return page.evaluate("(() => { const r = document.getElementById('touch-stage').getBoundingClientRect(); return [r.left, r.top, r.width]; })()")
     fit = stage()
-    assert fit[2] == pytest.approx(390, abs=1)
-    cx, cy = 195, 150
+    vp = page.evaluate("(() => { const r = document.getElementById('touch-viewport').getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; })()")
+    assert fit[2] == pytest.approx(vp[2], abs=1)
+    cx, cy = vp[0] + vp[2] / 2, vp[1] + vp[3] / 2
     pointer(page, "pointerdown", 1, cx - 40, cy)
     pointer(page, "pointerdown", 2, cx + 40, cy)
     for step in range(1, 7):
@@ -725,14 +729,14 @@ def test_pinch_zooms_and_a_finger_pans(site, browser, where):
     pointer(page, "pointerup", 1, cx - 160, cy)
     pointer(page, "pointerup", 2, cx + 160, cy)
     zoomed = stage()
-    assert zoomed[2] == pytest.approx(390 * 2.5, abs=2)           # the limit
+    assert zoomed[2] == pytest.approx(vp[2] * 2.5, abs=2)           # the limit
     grid, screen = grid_boxes(page)
     assert grid == pytest.approx(screen, abs=1)
     # one finger pans: 60 px to the left; not a tap, so no keys
-    pointer(page, "pointerdown", 1, 300, 150)
-    pointer(page, "pointermove", 1, 270, 150)
-    pointer(page, "pointermove", 1, 240, 150)
-    pointer(page, "pointerup", 1, 240, 150)
+    pointer(page, "pointerdown", 1, cx + 30, cy)
+    pointer(page, "pointermove", 1, cx, cy)
+    pointer(page, "pointermove", 1, cx - 30, cy)
+    pointer(page, "pointerup", 1, cx - 30, cy)
     panned = stage()
     assert panned[0] == pytest.approx(zoomed[0] - 60, abs=2)
     grid, screen = grid_boxes(page)
@@ -851,22 +855,25 @@ def test_the_dpad_moves_and_scrolls(site, browser):
 
 @pytest.mark.parametrize("where", ["try", "game"])
 def test_options_persist(site, browser, where):
-    """Scanlines, the phosphor and the key hints are kept in localStorage
+    """Scanlines, the plain frame, the race and the key hints are kept in localStorage
     (conquer-touch) across a reload."""
     ctx, page, target = touch_page(site, browser, where, "desktop")
     page.click("#touch-gear")
     assert page.evaluate("document.getElementById('touch-gear').getAttribute('aria-expanded')") == "true"
     page.check("#touch-opt-scan")
-    page.select_option("#touch-opt-phos", "green")
+    page.check("#touch-opt-plain")
+    page.select_option("#touch-opt-race", "dwarf")
     page.uncheck("#touch-opt-hints")
     assert page.evaluate("document.querySelector('.touch-viewport').classList.contains('touch-scan')")
     stored = json.loads(page.evaluate("localStorage.getItem('conquer-touch')"))
-    assert stored["scan"] is True and stored["phos"] == "green" and stored["hints"] is False
+    assert stored["scan"] is True and stored["plain"] is True and stored["hints"] is False
+    assert page.get_attribute("html", "data-race") == "dwarf"
     page.reload()
     page.wait_for_function("() => window.touchLayer")
     page.wait_for_timeout(400)
     assert page.evaluate("document.querySelector('.touch-viewport').classList.contains('touch-scan')")
-    assert page.get_attribute("#touch-ui", "data-phosphor") == "green"
+    assert page.get_attribute("html", "data-race") == "dwarf"        # the race survives the reload
+    assert page.evaluate("document.getElementById('stone').classList.contains('plain')")
     assert page.evaluate("document.getElementById('touch-ui').classList.contains('touch-nohints')")
     page.click("#touch-gear")
     assert page.is_checked("#touch-opt-scan") and not page.is_checked("#touch-opt-hints")
@@ -1030,4 +1037,90 @@ def test_touch_layer_and_sound_work_together(site, browser):
     page.locator("#touch-chips .touch-chip").first.click()
     assert ["event", "ui"] in page.evaluate("window.__aud")
     assert errors == []
+    ctx.close()
+
+
+# ---------------------------------------------------------------------------
+# The design system on every page (web/theme.css) and the game screen's artefacts
+
+PAGES = ["index.html", "signup.html", "hall.html", "guide.html", "guide.es.html", "tutorial.html", "tutorial.de.html",
+         "design.html", "game.html", "try/index.html", "admin.html"]
+HEX = re.compile(r"(?<![&\w])#[0-9a-fA-F]{3,8}\b|rgba?\(")
+
+
+@pytest.mark.parametrize("name", PAGES)
+def test_every_page_uses_the_theme_and_has_no_colours_of_its_own(site, browser, name):
+    """theme.css is loaded, the page has a site header and no colour literal
+    in its own markup or styles (theme.css and the xterm themes made from its
+    tokens are the only places colours live), and the console stays quiet."""
+    src = (WEB / name).read_text(encoding="utf-8")
+    assert re.search(r'<link rel="stylesheet" href="(\.\./|/)?theme\.css">', src), name
+    assert 'class="site-header' in src, name
+    assert not HEX.search(re.sub(r"<!--.*?-->", "", src, flags=re.S)), name
+    ctx = browser.new_context(viewport={"width": 1280, "height": 800})
+    page = ctx.new_page()
+    errors = []
+    page.on("console", lambda m: m.type == "error" and "404" not in m.text and errors.append(m.text))
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.route("**/admin/api/state", lambda r: r.fulfill(json={"ok": True, "requests": [], "players": [], "invites": []}))
+    page.goto(site + name)
+    page.wait_for_timeout(500)
+    assert page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--phos').trim()") == "#8fe3a0"
+    assert page.evaluate("!!document.querySelector('.site-header .nav')") or name in ("design.html",)
+    assert not errors, errors
+    ctx.close()
+
+
+def test_long_reading_pages_are_parchment_with_a_dark_header(site, browser):
+    for name in ["guide.html", "guide.es.html", "tutorial.html", "tutorial.de.html"]:
+        page = browser.new_page()
+        page.goto(site + name)
+        assert page.get_attribute(".reading", "data-theme") == "parchment", name
+        assert page.get_attribute("html", "data-theme") is None, name
+        header_bg = page.evaluate("getComputedStyle(document.querySelector('.site-header')).backgroundColor")
+        reading_bg = page.evaluate("getComputedStyle(document.querySelector('.reading')).backgroundColor")
+        assert header_bg != reading_bg, name
+        page.close()
+
+
+def test_race_choice_sets_and_keeps_the_phosphor(site, browser):
+    ctx = browser.new_context()
+    page = ctx.new_page()
+    page.goto(site + "hall.html")
+    assert page.get_attribute("html", "data-race") is None
+    page.evaluate("conquerRace.choose('elf')")
+    assert page.get_attribute("html", "data-race") == "elf"
+    page.reload()
+    assert page.get_attribute("html", "data-race") == "elf"
+    assert page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--phos').trim()") != "#8fe3a0"
+    # what the game shows is used only while nothing was chosen
+    page.evaluate("conquerRace.seen('orc')")
+    assert page.get_attribute("html", "data-race") == "elf"
+    page.evaluate("conquerRace.choose('auto')")
+    assert page.get_attribute("html", "data-race") == "orc"
+    ctx.close()
+
+
+@pytest.mark.parametrize("where", ["try", "game"])
+def test_game_screen_reads_the_race_and_turns_to_parchment(site, browser, where):
+    """The nation's race on screen sets the colours; reports and the builder
+    are read on parchment (the stone and the terminal's own theme together)."""
+    ctx, page, target = touch_page(site, browser, where, "desktop")
+    assert page.evaluate("document.getElementById('stone').classList.contains('parchment')") is False
+    dark = target.evaluate("term.options.theme.background")
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    assert page.evaluate("document.getElementById('stone').classList.contains('parchment')") is False
+    show(page, target, FIRST_TURN["budget"])
+    wait_where(page, "report")
+    page.wait_for_function("() => document.getElementById('stone').classList.contains('parchment')")
+    paper = target.evaluate("term.options.theme.background")
+    assert paper != dark
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    page.wait_for_function("() => !document.getElementById('stone').classList.contains('parchment')")
+    assert target.evaluate("term.options.theme.background") == dark
+    # the nation builder says the race: Dwarf
+    show(page, target, "Nation Builder\n\nNational Race: Dwarf\n")
+    wait_where(page, "builder")
+    page.wait_for_function("() => document.documentElement.getAttribute('data-race') === 'dwarf'")
     ctx.close()

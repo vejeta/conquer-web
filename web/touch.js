@@ -4,7 +4,7 @@
 // The touch layer: Conquer's curses screen (80x24) stays exactly as the
 // game draws it, and a transparent layer over it makes it playable with a
 // finger: tap the map to go there, command chips with names (and the
-// original key in small type), a d-pad, a "where am I / back" badge, zoom
+// original key in small type), a compass (d-pad), a "where am I / back" plaque, zoom
 // and pan on phones, and the soft keyboard only when the game asks for
 // text. Every key still works.
 //
@@ -17,6 +17,11 @@
 //     lang      language of the texts (default: the page's)
 //     relayout  optional: called when the stage changes size, so the page
 //               can fit the terminal again
+//     gs        the element (.gs of theme.css) that holds the stone: the
+//               "where am I" plaque goes before it, the ledge of chips and
+//               the compass after it. Without it they go to the page's body.
+//     stone     the .stone around the terminal: gets .parchment on reports
+//               and the builder (and the terminal's colours with it), .plain
 //   returns { refresh(), setMode(name|null), destroy(), where(), keyboard(),
 //             toggleBar(), options }
 //
@@ -219,7 +224,7 @@
     var viewport = stage.parentNode;                    // .touch-viewport
     var lang = opts.lang || (window.conquerLang ? window.conquerLang() : 'en');
     var coarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
-    var DEFAULTS = { sound: false, volume: 0.6, scan: false, phos: 'amber', hints: true, pad: null, padOn: null,
+    var DEFAULTS = { sound: false, volume: 0.6, scan: false, plain: false, hints: true, padOn: null,
       bar: true, hintSeen: false, kbSeen: false };
     var prefs = load();
 
@@ -265,14 +270,14 @@
     stage.appendChild(crt);
     viewport.classList.add('touch-on');
 
-    var ui = el('div', 'touch-ui');
+var ui = el('div', 'touch-ui');
     ui.id = 'touch-ui';
     var whereRow = el('div', 'touch-where');
-    var crumb = el('span', 'touch-crumb', { 'aria-live': 'polite' });
+    var crumb = el('span', 'touch-crumb plaque', { 'aria-live': 'polite' });
     crumb.id = 'touch-where';
-    var backBtn = el('button', 'touch-back', { type: 'button' });
+    var backBtn = el('button', 'touch-back key key-small', { type: 'button' });
     backBtn.id = 'touch-back';
-    var gear = el('button', 'touch-gear', { type: 'button', 'aria-expanded': 'false', 'aria-controls': 'touch-panel' });
+    var gear = el('button', 'touch-gear key key-small', { type: 'button', 'aria-expanded': 'false', 'aria-controls': 'touch-panel' });
     gear.id = 'touch-gear';
     gear.textContent = '⚙︎';
     var spacer = el('span', 'touch-spacer');
@@ -280,49 +285,55 @@
     whereRow.appendChild(backBtn);
     whereRow.appendChild(spacer);
     whereRow.appendChild(gear);
-    var chipsBox = el('div', 'touch-chips', { role: 'toolbar' });
+    var ledge = el('div', 'ledge touch-ledge');
+    var chipsBox = el('div', 'chips touch-chips', { role: 'toolbar' });
     chipsBox.id = 'touch-chips';
-    var builderBox = el('div', 'touch-chips builder', { role: 'toolbar' });
+    var builderBox = el('div', 'chips touch-chips builder', { role: 'toolbar' });
     builderBox.id = 'builder-keys';
     builderBox.hidden = true;
-    var panel = el('div', 'touch-panel', { role: 'dialog' });
+    ledge.appendChild(chipsBox);
+    ledge.appendChild(builderBox);
+    var panel = el('div', 'touch-panel sheet', { role: 'dialog' });
     panel.id = 'touch-panel';
     panel.hidden = true;
     ui.appendChild(panel);
     ui.appendChild(whereRow);
-    ui.appendChild(chipsBox);
-    ui.appendChild(builderBox);
-    (opts.ui || document.body).appendChild(ui);
+    ui.appendChild(ledge);
+    var gs = opts.gs || null, stone = opts.stone || null;
+    if (gs) gs.insertBefore(ui, gs.firstChild); else document.body.appendChild(ui);
 
-    var hint = el('div', 'touch-hint', { role: 'status' });
+    var hint = el('div', 'touch-hint toast', { role: 'status' });
     hint.hidden = true;
     var hintText = el('span');
-    var hintClose = el('button', '', { type: 'button' });
+    var hintClose = el('button', 'key key-small', { type: 'button' });
     hintClose.textContent = '×';
     hint.appendChild(hintText);
     hint.appendChild(hintClose);
     viewport.appendChild(hint);
 
-    var pad = el('div', 'touch-dpad', { role: 'group' });
+    // The compass: the d-pad as eight points and a needle (theme.css .compass)
+    var pad = el('div', 'touch-dpad compass', { role: 'group' });
     pad.hidden = true;
-    var grip = el('button', 'touch-grip', { type: 'button', tabindex: '-1' });
-    grip.textContent = '⠇';
-    pad.appendChild(grip);
+    pad.innerHTML = '<svg viewBox="0 0 232 232" aria-hidden="true"><circle class="rose-line" cx="116" cy="116" r="88" stroke-width="2" opacity=".5"/>' +
+      '<circle class="rose-line" cx="116" cy="116" r="62" stroke-width="1.5" opacity=".4"/><g class="rose-stone">' +
+      '<path d="M116 4 130 102 228 116 130 130 116 228 102 130 4 116 102 102Z" opacity=".85"/>' +
+      '<path d="M116 116 190 42 130 102ZM116 116 190 190 130 130ZM116 116 42 190 102 130ZM116 116 42 42 102 102Z" opacity=".5"/></g>' +
+      '<circle class="needle-dot" cx="116" cy="116" r="4"/></svg>';
     var padBtns = [];
     DPAD.forEach(function (d) {
-      var b = el('button', 'touch-pb' + (d[0] === 'p' ? ' mid' : ''), { type: 'button' });
+      var b = el('button', 'touch-pb key' + (d[0] === 'p' ? ' needle' : '') + ('ykbn'.indexOf(d[0]) >= 0 ? ' diag' : ''), { type: 'button' });
       b.setAttribute('data-key', d[0]);
-      b.innerHTML = '<span class="ar">' + d[1] + '</span><kbd>' + d[0] + '</kbd>';
+      b.innerHTML = '<span class="ar" aria-hidden="true">' + d[1] + '</span><small aria-hidden="true">' + d[0] + '</small>';
       pad.appendChild(b);
       padBtns.push(b);
     });
-    viewport.appendChild(pad);
+    if (gs) gs.appendChild(pad); else viewport.appendChild(pad);
 
     var sheet = null;
 
     // ---- chips
     function chip(c) {
-      var b = el('button', 'touch-chip' + (c.cls ? ' ' + c.cls : ''), { type: 'button' });
+      var b = el('button', 'touch-chip key key-small' + (c.cls ? ' ' + c.cls : ''), { type: 'button' });
       if (c.key != null) b.setAttribute('data-key', esc(c.key));
       if (c.id) b.setAttribute('data-chip', c.id);
       var label = c.label || '';
@@ -330,7 +341,7 @@
       var h = '';
       if (c.icon) h += '<span class="ic" aria-hidden="true">' + c.icon + '︎</span>';
       if (label) h += '<span class="lb"></span>';
-      if (hintTxt) h += '<kbd class="kh"></kbd>';
+      if (hintTxt) h += '<span class="hint kh"></span>';
       b.innerHTML = h;
       if (label) b.querySelector('.lb').textContent = label;
       if (hintTxt) b.querySelector('.kh').textContent = hintTxt;
@@ -471,14 +482,12 @@
       backBtn.hidden = !bk;
       if (bk) {
         var hk = bk === CANCEL_NUMBER ? '⏎' : (HINT_KEY[bk] || bk);
-        backBtn.innerHTML = '<span class="ic" aria-hidden="true">‹</span><span class="lb"></span><kbd class="kh"></kbd>';
+        backBtn.innerHTML = '<span class="ic" aria-hidden="true">‹</span><span class="lb"></span><span class="hint kh"></span>';
         backBtn.querySelector('.lb').textContent = T('back');
         backBtn.querySelector('.kh').textContent = hk;
         backBtn.setAttribute('aria-label', T('back') + ' (' + hk + ')');
       }
       pad.setAttribute('aria-label', T('dpad_label'));
-      grip.setAttribute('aria-label', T('dpad_grip'));
-      grip.title = T('dpad_grip');
       padBtns.forEach(function (b) {
         var k = b.getAttribute('data-key');
         b.setAttribute('aria-label', T(k === 'p' ? 'dpad_pick' : 'dir_' + k) + ' (' + k + ')');
@@ -527,7 +536,7 @@
           try { a.setVolume(prefs.volume); } catch (e) {}
         });
         row(T('opt_volume'), vol, 'touch-opt-volume');
-        var pv = el('button', 'touch-reset', { type: 'button', id: 'touch-opt-preview' });
+        var pv = el('button', 'touch-reset key key-small', { type: 'button', id: 'touch-opt-preview' });
         pv.textContent = T('opt_preview');
         pv.addEventListener('click', function () {
           try {
@@ -539,19 +548,20 @@
         panel.appendChild(pv);
       }
       row(T('opt_scan'), checkbox('touch-opt-scan', prefs.scan, function (on) { prefs.scan = on; save(); applyPrefs(); }), 'touch-opt-scan');
-      var ph = el('select', '', { id: 'touch-opt-phos' });
-      ['amber', 'green', 'white'].forEach(function (p) {
-        var o = el('option'); o.value = p; o.textContent = T('opt_' + p);
-        if (prefs.phos === p) o.selected = true;
-        ph.appendChild(o);
+      var rc = el('select', 'select', { id: 'touch-opt-race' });
+      ['auto'].concat(window.conquerRace ? conquerRace.races : []).forEach(function (r) {
+        var o = el('option'); o.value = r; o.textContent = conquerI18n.t('race.' + r) || r;
+        if ((window.conquerRace ? conquerRace.choice() : 'auto') === r) o.selected = true;
+        rc.appendChild(o);
       });
-      ph.addEventListener('change', function () { prefs.phos = ph.value; save(); applyPrefs(); });
-      row(T('opt_phosphor'), ph, 'touch-opt-phos');
+      rc.addEventListener('change', function () { if (window.conquerRace) conquerRace.choose(rc.value); });
+      if (window.conquerRace) row(T('opt_race'), rc, 'touch-opt-race');
+      row(T('opt_plain'), checkbox('touch-opt-plain', prefs.plain, function (on) { prefs.plain = on; save(); applyPrefs(); }), 'touch-opt-plain');
       row(T('opt_hints'), checkbox('touch-opt-hints', prefs.hints, function (on) { prefs.hints = on; save(); applyPrefs(); }), 'touch-opt-hints');
-      var reset = el('button', 'touch-reset', { type: 'button' });
+      var reset = el('button', 'touch-reset key key-small', { type: 'button' });
       reset.textContent = T('opt_reset');
       reset.addEventListener('click', function () {
-        prefs.pad = null; prefs.padOn = null; prefs.hintSeen = false; save();
+        prefs.padOn = null; prefs.hintSeen = false; save();
         zoom = 1; tx = 0; ty = 0; layout(); applyPrefs(); updatePad();
       });
       panel.appendChild(reset);
@@ -571,13 +581,10 @@
     }
 
     function applyPrefs() {
-      ui.setAttribute('data-phosphor', prefs.phos);
-      viewport.setAttribute('data-phosphor', prefs.phos);
-      if (sheet) sheet.setAttribute('data-phosphor', prefs.phos);
       viewport.classList.toggle('touch-scan', !!prefs.scan);
       ui.classList.toggle('touch-nohints', !prefs.hints);
       ui.hidden = !prefs.bar;
-      pad.setAttribute('data-side', padSide());
+      if (stone) stone.classList.toggle('plain', !!prefs.plain);
     }
 
     // ---- the sheet with every command
@@ -588,7 +595,6 @@
         document.body.appendChild(sheet);
         sheet.addEventListener('click', function (e) { if (e.target === sheet) closeSheet(); });
       }
-      sheet.setAttribute('data-phosphor', prefs.phos);
       sheet.textContent = '';
       var card = el('div', 'card');
       var h = el('h2'); h.textContent = T('more_title');
@@ -615,7 +621,6 @@
     function closeSheet() { if (sheet) sheet.hidden = true; }
 
     // ---- the d-pad
-    function padSide() { return prefs.pad || (scaled ? 'left' : 'right'); }
     function padWanted() {
       return prefs.padOn === null ? coarse : !!prefs.padOn;
     }
@@ -626,7 +631,7 @@
     function updatePad() {
       var show = padWanted() && (state.where === 'map' || state.where === 'move') && !kbUp && !forced;
       pad.hidden = !show;
-      pad.setAttribute('data-side', padSide());
+      if (gs) gs.classList.toggle('has-compass', show);
       var mv = chipsBox.querySelector('[data-chip="move"]');
       if (mv) mv.setAttribute('aria-pressed', String(padWanted()));
     }
@@ -659,31 +664,6 @@
         if (e.detail === 0) { if (k === 'p') send('p'); else step(k); }
       });
     });
-    // Dragging the pad to the other corner
-    (function () {
-      var drag = null;
-      grip.addEventListener('pointerdown', function (e) {
-        drag = { x: e.clientX, y: e.clientY };
-        try { grip.setPointerCapture(e.pointerId); } catch (x) {}
-        e.preventDefault();
-      });
-      grip.addEventListener('pointermove', function (e) {
-        if (!drag) return;
-        pad.style.transform = 'translate(' + (e.clientX - drag.x) + 'px,' + (e.clientY - drag.y) + 'px)';
-      });
-      function drop(e) {
-        if (!drag) return;
-        var r = viewport.getBoundingClientRect();
-        prefs.pad = e.clientX < r.left + r.width / 2 ? 'left' : 'right';
-        save();
-        drag = null;
-        pad.style.transform = '';
-        pad.setAttribute('data-side', padSide());
-      }
-      grip.addEventListener('pointerup', drop);
-      grip.addEventListener('pointercancel', function () { drag = null; pad.style.transform = ''; });
-    })();
-
     // ---- the soft keyboard: only when the game asks for text
     function inputMode() {
       var t = tt();
@@ -750,6 +730,12 @@
       if (sig === lastSig) return;
       lastSig = sig;
       var c = classify(sc.lines, sc.cursor);
+      // The nation's race, when the game shows it (the builder's "National
+      // Race: Human", the nation's own report): the site takes its colours
+      if (window.conquerRace && (c.where === 'builder' || (c.where === 'report' && c.kind === 'nation'))) {
+        var rc = conquerRace.detect(sc.lines.join('\n'), c.where === 'report');
+        if (rc) conquerRace.seen(rc);
+      }
       setState(c);
     }
 
@@ -774,6 +760,7 @@
           kbWanted = false; inputMode();
         }
         applyCapture();
+        paper(c.where === 'report' || c.where === 'builder');
       }
       if (c.turn != null) {
         if (lastTurn != null && c.turn !== lastTurn) ev('turn');
@@ -782,6 +769,31 @@
       if (c.combat && !prev.combat) ev('combat');
       renderBar(false);
     }
+
+    // Reports and the builder are read on parchment: the stone's paper and
+    // the terminal's own colours change together (theme.css .stone.parchment)
+    var onPaper = null;
+    function paper(on) {
+      if (forced) on = false;
+      if (on === onPaper) return;
+      onPaper = on;
+      if (stone) stone.classList.toggle('parchment', on);
+      syncTerminal();
+    }
+    function syncTerminal() {
+      var t = tt();
+      if (!window.conquerRace || !t || !t.options) return;
+      var next = conquerRace.terminal(!!onPaper), cur = t.options.theme || {}, merged = {}, k;
+      for (k in cur) merged[k] = cur[k];
+      for (k in next) merged[k] = next[k];
+      try { t.options.theme = merged; } catch (e) {}
+      // In ttyd's frame the page around the terminal takes the same colour
+      try {
+        var d = t.element && t.element.ownerDocument;
+        if (d && d !== document) d.documentElement.style.background = d.body.style.background = next.background;
+      } catch (e) {}
+    }
+    document.addEventListener('conquer:race', function () { setTimeout(syncTerminal, 0); });
 
     // The grid takes the pointer on the map, and on a phone's scaled stage
     // (pinch and pan); elsewhere the terminal gets the clicks and selection
@@ -816,7 +828,7 @@
       var vw = viewport.clientWidth, vh = viewport.clientHeight;
       if (!vw || !vh) return;
       var was = scaled;
-      scaled = vw < NATW && vh >= vw;
+      scaled = vw < NATW;
       viewport.classList.toggle('touch-scaled', scaled);
       if (!scaled) {
         zoom = 1; tx = 0; ty = 0; fit = 1;
@@ -833,7 +845,6 @@
       }
       if (was !== scaled) {
         applyCapture();
-        pad.setAttribute('data-side', padSide());
         if (scaled && !prefs.hintSeen) hint.hidden = false;
         if (!scaled) hint.hidden = true;
       }
@@ -1058,10 +1069,12 @@
         lastSig = '';
         if (forced) { state = { where: 'unknown', kind: '', items: [], turn: null, combat: false, prompt: '' }; }
         rendered = '';
+        paper(false);
         renderBar(true);
         if (!forced) update();
       },
       keyboard: keyboard,
+      theme: syncTerminal,
       toggleBar: function () {
         prefs.bar = !prefs.bar; save(); applyPrefs();
         if (opts.relayout) setTimeout(opts.relayout, 50);
