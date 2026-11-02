@@ -13,6 +13,10 @@
  *   2. Tokens           5. Header and nav            8. Cards, tables, notices
  *   3. Base and focus   6. Keycaps, chips, d-pad     9. Terminal, .crt, sheet
  *
+ * v3 adds section 12 (the seeing stone, parchment scroll, ledge, compass,
+ * plaque) and web/frame-<race>.svg (9-slice stone frames). It stays in this
+ * file (about 1000 lines in all); split into artefact.css if it outgrows 1200.
+ *
  * Rules: phosphor green is the one accent (interactive, focus, cursor,
  * progress). Gold is only for scores, ranks and "approved/founded"
  * highlights, never on buttons. --ok/--warn/--bad carry meaning only. Every text/background pair
@@ -34,6 +38,11 @@
 @font-face {
   font-family: "IM Fell English SC"; font-display: swap;
   src: url(fonts/im-fell-english-sc-latin.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "Noto Sans Runic"; font-display: swap;
+  src: url(fonts/noto-sans-runic.woff2) format("woff2");   /* Runic block only, OFL */
 }
 
 /* 2. Tokens ------------------------------------------------------------- */
@@ -79,6 +88,9 @@
   --ease: 120ms ease;
   --mountains: url(mountains.svg);
   --bgmap: url(bg/map-human.webp);
+  --frame: url("frame-human.svg"); --frame-s: url("frame-human.svg#svgView(viewBox(192,0,192,192))");
+  --bevel-hi: #87939a; --bevel-lo: #273031;   /* plain frame bevel */
+  --paper: #efe6cf; --paper-ink: #2b2415; --paper-bold: #14100a; --paper-cursor: #7a4a00;
 }
 
 /* Phosphor by race. Human is the default above (no attribute). Set
@@ -95,6 +107,9 @@
   --line: rgba(147, 163, 173, .45);
   --mountains: url(mountains-elf.svg);
   --bgmap: url(bg/map-elf.webp);
+  --paper: #f4f0e1; --paper-ink: #1f2a22; --paper-bold: #0c130e; --paper-cursor: #1f6b35;
+  --frame: url("frame-elf.svg"); --frame-s: url("frame-elf.svg#svgView(viewBox(192,0,192,192))");
+  --bevel-hi: #8fa0ab; --bevel-lo: #2a353d;
 }
 [data-race="dwarf"] {          /* the console of Khazad-dum: forge amber on dark rock */
   --bg: #100e0b; --bg-2: #1a1611; --screen: #070605;
@@ -106,6 +121,9 @@
   --line: rgba(138, 127, 115, .45);
   --mountains: url(mountains-dwarf.svg);
   --bgmap: url(bg/map-dwarf.webp);
+  --paper: #e3d3a8; --paper-ink: #1d1a14; --paper-bold: #0a0805; --paper-cursor: #8a2a10;
+  --frame: url("frame-dwarf.svg"); --frame-s: url("frame-dwarf.svg#svgView(viewBox(192,0,192,192))");
+  --bevel-hi: #94887a; --bevel-lo: #2b231b;
 }
 [data-race="orc"] {            /* rust and ember on ash black */
   --bg: #0e0b0b; --bg-2: #171212; --screen: #070404;
@@ -118,6 +136,9 @@
   --line: rgba(125, 114, 114, .45);
   --mountains: url(mountains-orc.svg);
   --bgmap: url(bg/map-orc.webp);
+  --paper: #4a3424; --paper-ink: #ece3cb; --paper-bold: #ffffff; --paper-cursor: #ffb870;
+  --frame: url("frame-orc.svg"); --frame-s: url("frame-orc.svg#svgView(viewBox(192,0,192,192))");
+  --bevel-hi: #6a5f5f; --bevel-lo: #1d1616;
 }
 
 /* Parchment: long-reading pages (guide, tutorial). Only colours change. */
@@ -363,3 +384,270 @@ main { background: var(--bg); box-shadow: 0 0 36px 28px var(--bg); }
 [data-theme="parchment"] body::before { display: none; }
 @media (max-width: 600px) { body::before { display: none; } }   /* phones: never under running text */
 @media (prefers-contrast: more) { body::before { display: none; } }
+
+
+/* 12. The seeing stone, the parchment, the compass (v3) ----------------- */
+/* Markup:
+     <div class="gamescreen"><div class="gs [has-compass] [has-column]">   container: its width sets the frame width
+       <a class="plaque">...</a>
+       <div class="stone [parchment] [plain]">
+         <span class="roll l"></span><span class="roll r"></span>
+         <div class="terminal"><pre>80x24</pre></div>
+       </div>
+       <div class="ledge [column]"><div class="chips">keys</div></div>
+       <div class="compass">...</div>
+     </div></div>
+   The terminal stays exactly as before; the stone only adds glass and frame. */
+.gamescreen { container: gamescreen / inline-size; }
+.gs { display: grid; gap: var(--s4); grid-template-columns: minmax(0, 1fr); align-items: start; }
+.stone {
+  --fw: 12px; --recess: 3px;
+  position: relative; isolation: isolate; min-width: 0; padding: calc(var(--fw) + var(--recess));
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, .55));
+  transition: filter 240ms ease;
+}
+@container gamescreen (min-width: 700px) { .stone { --fw: 28px; --recess: 4px; } }
+@container gamescreen (min-width: 1100px) { .stone { --fw: 40px; --recess: 5px; } }
+/* The bezel: a carved 9-slice frame (corners 64 units, repeating edges). Phones use the
+   plain-edge variant of the same file, so only the corners carry ornament there. */
+.stone::before {
+  content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  border: var(--fw) solid transparent;
+  border-image: var(--frame-s) 64 / var(--fw) round;
+  transition: opacity 240ms ease;
+}
+@container gamescreen (min-width: 700px) { .stone::before { border-image-source: var(--frame); } }
+/* Plain frame: a thin bevel, no ornament. */
+.stone.plain { --fw: 7px; --recess: 3px; }
+.stone.plain::before {
+  border-image: none; border-style: solid; border-radius: 3px;
+  border-color: var(--bevel-hi) var(--bevel-lo) var(--bevel-lo) var(--bevel-hi);
+  background: none;
+}
+/* The glass. */
+.stone .terminal {
+  position: relative; z-index: 1; border: 0; border-radius: 3px; padding: 6px;
+  color: var(--term-fg, var(--phos)); background-color: var(--term-bg, var(--screen));
+  box-shadow:
+    inset 0 0 24px color-mix(in srgb, var(--phos) 17%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--phos) 40%, transparent),
+    0 0 0 var(--recess) var(--recess-c, rgba(0, 0, 0, .7));
+  animation: breathe 8s ease-in-out infinite;
+  transition: color 240ms ease, background-color 240ms ease, box-shadow 240ms ease;
+}
+@container gamescreen (min-width: 700px) { .stone .terminal { padding: 12px; } }
+@container gamescreen (min-width: 1100px) { .stone .terminal { padding: 16px; } }
+@keyframes breathe {
+  0%, 100% { box-shadow: inset 0 0 24px color-mix(in srgb, var(--phos) 17%, transparent), 0 0 0 1px color-mix(in srgb, var(--phos) 40%, transparent), 0 0 0 var(--recess) var(--recess-c, rgba(0, 0, 0, .7)); }
+  50%      { box-shadow: inset 0 0 24px color-mix(in srgb, var(--phos) 28%, transparent), 0 0 0 1px color-mix(in srgb, var(--phos) 40%, transparent), 0 0 0 var(--recess) var(--recess-c, rgba(0, 0, 0, .7)); }
+}
+/* Vignette and specular highlight sit above the text but never change its colour by more than 7%. */
+.stone .terminal::before {
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: inherit;
+  background:
+    radial-gradient(ellipse 35% 16% at 50% 5%, rgba(255, 255, 255, .07), transparent),
+    radial-gradient(ellipse farthest-corner at 50% 50%, transparent 66%, rgba(0, 0, 0, .55));
+  transition: opacity 240ms ease;
+}
+.stone .terminal pre { margin: 0 auto; width: max-content; font-size: var(--fit, 1.15rem); line-height: 1.05; }
+.stone .terminal b { color: var(--term-bold, inherit); }
+.stone .terminal .cursor { background: var(--term-cursor, var(--phos)); color: var(--term-bg, var(--screen)); }
+.stone.parchment .terminal::after { display: none; }
+
+/* The parchment: the same wrapper when the game shows a report. */
+.stone .roll { display: none; }
+.stone::after {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0;
+  background:
+    radial-gradient(ellipse at center, transparent 55%, rgba(120, 80, 20, .28) 100%),
+    linear-gradient(180deg, #e6d9b6, var(--paper) 12%, var(--paper) 88%, #e2d3ac);
+  clip-path: polygon(0.00% 3.0px,2.27% 2.0px,4.55% 1.5px,6.82% 0.0px,9.09% 1.0px,11.36% 1.0px,13.64% 3.0px,15.91% 0.0px,18.18% 4.0px,20.45% 0.0px,22.73% 1.0px,25.00% 1.5px,27.27% 1.5px,29.55% 1.0px,31.82% 4.0px,34.09% 1.0px,36.36% 1.5px,38.64% 0.0px,40.91% 1.0px,43.18% 4.0px,45.45% 0.0px,47.73% 1.5px,50.00% 0.0px,52.27% 4.0px,54.55% 0.0px,56.82% 2.0px,59.09% 5.0px,61.36% 1.5px,63.64% 2.0px,65.91% 1.0px,68.18% 5.0px,70.45% 2.0px,72.73% 1.0px,75.00% 4.0px,77.27% 3.0px,79.55% 1.0px,81.82% 1.0px,84.09% 0.0px,86.36% 4.0px,88.64% 6.0px,90.91% 1.5px,93.18% 3.0px,95.45% 6.0px,97.73% 6.0px,100.00% 3.0px,100.00% calc(100% - 5.0px),97.73% calc(100% - 4.0px),95.45% calc(100% - 0.0px),93.18% calc(100% - 6.0px),90.91% calc(100% - 1.0px),88.64% calc(100% - 2.0px),86.36% calc(100% - 3.0px),84.09% calc(100% - 6.0px),81.82% calc(100% - 0.0px),79.55% calc(100% - 3.0px),77.27% calc(100% - 1.5px),75.00% calc(100% - 5.0px),72.73% calc(100% - 6.0px),70.45% calc(100% - 5.0px),68.18% calc(100% - 0.0px),65.91% calc(100% - 1.0px),63.64% calc(100% - 6.0px),61.36% calc(100% - 5.0px),59.09% calc(100% - 1.0px),56.82% calc(100% - 1.0px),54.55% calc(100% - 6.0px),52.27% calc(100% - 6.0px),50.00% calc(100% - 3.0px),47.73% calc(100% - 3.0px),45.45% calc(100% - 3.0px),43.18% calc(100% - 1.0px),40.91% calc(100% - 0.0px),38.64% calc(100% - 1.5px),36.36% calc(100% - 6.0px),34.09% calc(100% - 2.0px),31.82% calc(100% - 3.0px),29.55% calc(100% - 2.0px),27.27% calc(100% - 1.5px),25.00% calc(100% - 1.0px),22.73% calc(100% - 1.0px),20.45% calc(100% - 5.0px),18.18% calc(100% - 6.0px),15.91% calc(100% - 3.0px),13.64% calc(100% - 6.0px),11.36% calc(100% - 5.0px),9.09% calc(100% - 1.0px),6.82% calc(100% - 4.0px),4.55% calc(100% - 2.0px),2.27% calc(100% - 4.0px),0.00% calc(100% - 5.0px));
+  transition: opacity 240ms ease;
+}
+.stone.parchment { --fw: 14px; --recess: 6px; filter: drop-shadow(0 8px 12px rgba(0, 0, 0, .5)); }
+.stone.parchment::before { opacity: 0; }
+.stone.parchment::after { opacity: 1; }
+.stone.parchment .terminal {
+  --term-fg: var(--paper-ink); --term-bg: var(--paper); --term-bold: var(--paper-bold); --term-cursor: var(--paper-cursor);
+  --phos: var(--paper-ink); animation: none;
+  box-shadow: inset 0 0 0 1px rgba(90, 60, 15, .28), inset 0 0 26px rgba(120, 80, 20, .16), 0 0 0 var(--recess) transparent;
+}
+.stone.parchment .terminal::before { opacity: 0; }
+.stone.parchment .terminal .cursor { color: var(--paper); }
+@container gamescreen (min-width: 700px) {
+  .stone.parchment { margin-inline: 30px; }
+  .stone .roll {
+    display: block; position: absolute; z-index: 4; top: -8px; bottom: -8px; width: 34px; border-radius: 17px / 9px;
+    opacity: 0; pointer-events: none; transition: opacity 240ms ease;
+    background:
+      linear-gradient(90deg, #6b5120 0, #b79a55 18%, #e9d8a4 38%, #cdb571 62%, #8d6f31 85%, #4d3813 100%);
+    box-shadow: 0 0 0 1px rgba(40, 25, 5, .6), 0 6px 10px rgba(0, 0, 0, .4);
+  }
+  .stone .roll::before, .stone .roll::after {
+    content: ""; position: absolute; left: 2px; right: 2px; height: 14px; border-radius: 50%;
+    background: radial-gradient(ellipse at center, #3e2c0e 0 18%, #b99a52 20% 38%, #6e5424 40% 56%, #d3bb7c 58% 100%);
+    box-shadow: 0 0 0 1px rgba(40, 25, 5, .6);
+  }
+  .stone .roll::before { top: -7px; } .stone .roll::after { bottom: -7px; }
+  .stone .roll.l { left: -30px; } .stone .roll.r { right: -30px; }
+  .stone.parchment .roll { opacity: 1; }
+}
+
+/* Rune ledge: the chip bar sits on a carved stone shelf. */
+.ledge {
+  position: relative; padding: var(--s2) 0 var(--s3);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-2) 80%, var(--stone)), var(--bg-2) 40%);
+  border: 1px solid var(--line); border-radius: 4px;
+  box-shadow: inset 0 1px 0 rgba(239, 230, 207, .12), 0 6px 10px -2px rgba(0, 0, 0, .65);
+}
+.ledge::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: 5px; height: 2px; background: rgba(0, 0, 0, .45); border-radius: 1px; box-shadow: 0 1px 0 rgba(239, 230, 207, .08); pointer-events: none; }
+.ledge .chips { padding-block: var(--s1); }
+.ledge.column .chips { flex-direction: column; overflow: visible; -webkit-mask-image: none; mask-image: none; padding: var(--s2) var(--s3); }
+.ledge.column .key { width: 100%; justify-content: space-between; }
+@container gamescreen (min-width: 700px) {
+  .gs.has-compass { grid-template-columns: minmax(0, 1fr) auto; }
+  .gs.has-compass > .compass { justify-self: end; }
+  .gs.has-compass > :where(:not(.ledge):not(.compass)) { grid-column: 1 / -1; }
+}
+@container gamescreen (min-width: 1100px) {
+  .gs.has-column { grid-template-columns: minmax(0, 1fr) 232px; align-items: start; }
+  .gs.has-column > .plaque { grid-column: 1 / -1; justify-self: start; }
+  .gs.has-column > .stone { grid-column: 1; grid-row: 2 / span 2; }
+  .gs.has-column > .ledge { grid-column: 2; grid-row: 2; }
+  .gs.has-column > .compass { grid-column: 2; grid-row: 3; justify-self: center; }
+}
+
+/* Compass rose: the d-pad as eight points. The centre key is the needle. */
+.compass {
+  --c: 56px; position: relative; display: grid; grid-template-columns: repeat(3, var(--c)); gap: 14px; padding: 18px; justify-self: center;
+  background: radial-gradient(circle at center, var(--bg-2) 0 60%, transparent 61%);
+}
+.compass > svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.compass .key {
+  position: relative; z-index: 1; width: var(--c); height: var(--c); min-width: 44px; min-height: 44px; padding: 0;
+  flex-direction: column; gap: 0; font: 1.7rem/.9 var(--font-mono);
+}
+.compass .key small { font: 1rem/1 var(--font-mono); color: var(--ink-dim); }
+.compass .key.needle { border-radius: 50%; border-color: var(--phos); color: var(--phos-text); background: var(--bg); box-shadow: 0 0 12px var(--phos-glow), inset 0 0 0 1px var(--hair); }
+.compass .key.diag { opacity: .96; }
+.compass .rose-stone { fill: var(--stone); } .compass .rose-line { stroke: var(--stone); fill: none; }
+.compass .needle-dot { fill: var(--phos); }
+
+/* Plaque: a small brass plate for "where am I / back". */
+.plaque {
+  position: relative; display: inline-flex; align-items: center; gap: var(--s2); min-height: 32px; padding: 2px 26px; font: 1.3rem/1.2 var(--font-mono); letter-spacing: .05em;
+  color: var(--gold); text-decoration: none; background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 14%, var(--bg-2)), var(--bg-2));
+  border: 1px solid var(--gold); border-radius: 3px; box-shadow: inset 0 1px 0 rgba(239, 230, 207, .18), 0 2px 4px rgba(0, 0, 0, .5); justify-self: start;
+}
+button.plaque, a.plaque { min-height: 44px; cursor: pointer; }
+button.plaque:hover, a.plaque:hover { text-decoration: none; filter: brightness(1.15); }
+.plaque::before, .plaque::after {
+  content: ""; position: absolute; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff3c4, var(--gold) 45%, #5a4416); box-shadow: 0 0 0 1px rgba(0, 0, 0, .55);
+}
+.plaque::before { left: 8px; } .plaque::after { right: 8px; }
+
+/* 12b. One artefact per race (v3.1) ---------------------------------------
+   Same wrapper, same classes; [data-race] changes how the stone is dressed.
+   human  palantir (above)      elf    Galadriel's mirror, a silver basin
+   dwarf  the Doors of Durin    orc    the iron window */
+.stone .runes, .stone .slit { display: none; }
+.runes {
+  font-family: "Noto Sans Runic", serif; letter-spacing: .32em; text-align: center; white-space: nowrap; overflow: hidden;
+  color: var(--stone); text-shadow: none; transition: color 700ms ease, text-shadow 700ms ease;
+}
+.runes.lit, .stone:hover .runes, .stone:focus-within .runes { color: var(--phos); text-shadow: 0 0 6px var(--phos), 0 0 18px var(--phos-glow); }
+.runes.flicker { animation: flicker 1.4s steps(1) forwards; }
+@keyframes flicker { 0% { color: var(--phos); } 12% { color: var(--stone); } 24% { color: var(--phos); } 36% { color: var(--stone); } 48% { color: var(--phos); } 62% { color: var(--stone); } 100% { color: var(--stone); text-shadow: none; } }
+
+/* Elf: Galadriel's mirror */
+[data-race="elf"] .stone { --recess: 6px; --recess-c: #aab8c2; }
+[data-race="elf"] .stone .terminal { border-radius: 14px; background-color: var(--term-bg, #060c14); overflow: hidden; }
+[data-race="elf"] .stone .terminal::before {
+  border-radius: inherit;
+  background:
+    radial-gradient(ellipse 70% 45% at 14% 0%, rgba(205, 228, 255, .10), transparent),
+    radial-gradient(ellipse farthest-corner at 50% 50%, transparent 66%, rgba(0, 0, 0, .5));
+}
+[data-race="elf"] .stone .terminal::after {
+  content: ""; position: absolute; z-index: 3; left: var(--rx, 50%); top: var(--ry, 50%); width: 20px; height: 20px; margin: -10px 0 0 -10px;
+  border-radius: 50%; border: 2px solid rgba(205, 228, 255, .7); pointer-events: none; opacity: 0;
+}
+[data-race="elf"] .stone .terminal.rippling::after { animation: ripple 900ms ease-out; }
+@keyframes ripple { from { transform: scale(1); opacity: .8; } to { transform: scale(22); opacity: 0; border-width: .3px; } }
+[data-race="elf"] .stone.parchment { --fw: 18px; }
+[data-race="elf"] .stone.parchment::before { opacity: 1; inset: 5px; border-width: 18px; border-image: url(paper-elf.svg) 64 / 18px round; }
+[data-race="elf"] .stone::after { background: radial-gradient(ellipse at center, transparent 60%, rgba(70, 110, 90, .16)), linear-gradient(180deg, #ece7d6, var(--paper) 14%, var(--paper) 86%, #e9e3cf); }
+
+/* Dwarf: the Doors of Durin */
+[data-race="dwarf"] .stone { padding-top: calc(var(--fw) + var(--recess) + 34px); padding-inline: calc(var(--fw) + var(--recess) + 10px);
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .35) 0 2px, transparent 2px 5px) var(--fw) var(--fw) / 10px calc(100% - 2 * var(--fw)) no-repeat,
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .35) 0 2px, transparent 2px 5px) calc(100% - var(--fw)) var(--fw) / 10px calc(100% - 2 * var(--fw)) no-repeat,
+    linear-gradient(90deg, #5d5247, #8a7d6c 40%, #5d5247) var(--fw) var(--fw) / 10px calc(100% - 2 * var(--fw)) no-repeat,
+    linear-gradient(90deg, #5d5247, #8a7d6c 60%, #5d5247) calc(100% - var(--fw)) var(--fw) / 10px calc(100% - 2 * var(--fw)) no-repeat; }
+@container gamescreen (min-width: 700px) { [data-race="dwarf"] .stone { padding-top: calc(var(--fw) + var(--recess) + 52px); padding-inline: calc(var(--fw) + var(--recess) + 14px); } }
+[data-race="dwarf"] .stone .runes {
+  display: block; position: absolute; z-index: 1; top: calc(var(--fw) + 4px); left: calc(var(--fw) + 14px); right: calc(var(--fw) + 14px); height: 32px;
+  font-size: 1.05rem; line-height: 32px; background: linear-gradient(180deg, #0d0b09, #1b1713); border: 2px solid #4a4036; border-radius: 80px 80px 0 0 / 32px 32px 0 0;
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, .8);
+}
+@container gamescreen (min-width: 700px) { [data-race="dwarf"] .stone .runes { height: 46px; line-height: 46px; font-size: 1.5rem; letter-spacing: .4em; border-radius: 160px 160px 0 0 / 46px 46px 0 0; } }
+[data-race="dwarf"] .stone .terminal { border-radius: 0; }
+[data-race="dwarf"] .stone.parchment { --fw: 22px; padding-top: calc(var(--fw) + var(--recess)); padding-inline: calc(var(--fw) + var(--recess)); background: none; }
+[data-race="dwarf"] .stone.parchment .runes { display: none; }
+[data-race="dwarf"] .stone::after { background: radial-gradient(ellipse at center, transparent 40%, rgba(90, 40, 8, .5) 78%, rgba(20, 8, 0, .85) 100%), var(--paper); }
+[data-race="dwarf"] .stone.parchment .terminal { box-shadow: inset 0 0 0 1px rgba(60, 35, 10, .35); }
+
+/* Orc: the iron window */
+[data-race="orc"] .stone .slit {
+  display: block; position: absolute; z-index: 2; left: calc(var(--fw) + 14%); right: calc(var(--fw) + 14%); bottom: calc(var(--fw) + 1px); height: 3px; border-radius: 2px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, #ff8a4a 25%, #ffb870 50%, #ff8a4a 75%, transparent); box-shadow: 0 0 10px 2px rgba(255, 110, 50, .55), 0 -6px 14px rgba(255, 90, 30, .25); opacity: .85;
+  animation: ember 5s ease-in-out infinite;
+}
+@keyframes ember { 50% { opacity: .5; } }
+[data-race="orc"] .stone.parchment .slit { display: none; }
+@container gamescreen (min-width: 700px) {
+  [data-race="orc"] .stone .terminal {
+    padding-inline: 40px;
+    background-image:
+      linear-gradient(90deg, #2a2323 0 4px, #55484a 4px 5px, transparent 5px), linear-gradient(90deg, #2a2323 0 4px, #55484a 4px 5px, transparent 5px), linear-gradient(90deg, #2a2323 0 4px, #55484a 4px 5px, transparent 5px),
+      linear-gradient(90deg, #2a2323 0 4px, #55484a 4px 5px, transparent 5px), linear-gradient(90deg, #2a2323 0 4px, #55484a 4px 5px, transparent 5px);
+    background-size: 5px 100%; background-repeat: no-repeat;
+    background-position: 8px 0, 20px 0, calc(100% - 8px) 0, calc(100% - 20px) 0, 0 0;
+  }
+  [data-race="orc"] .stone.parchment .terminal { background-image: none; padding-inline: 12px; }
+}
+[data-race="orc"] .stone.parchment { --fw: 20px; }
+[data-race="orc"] .stone.parchment::before { opacity: 1; inset: 8px; border: 2px dashed #cdb98f; border-image: none; border-radius: 4px; }
+[data-race="orc"] .stone::after { background: radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, .05), transparent 50%), radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .35)), var(--paper); }
+
+/* Human parchment: a wax seal at the corner */
+:root:not([data-race]) .stone::after, [data-race="human"] .stone::after {
+  background:
+    radial-gradient(circle at calc(100% - 13px) calc(100% - 13px), var(--gold) 0 2px, var(--bad) 3px 6px, rgba(0, 0, 0, .35) 7px, transparent 8px),
+    radial-gradient(ellipse at center, transparent 55%, rgba(120, 80, 20, .28) 100%),
+    linear-gradient(180deg, #e6d9b6, var(--paper) 12%, var(--paper) 88%, #e2d3ac);
+}
+
+/* The gate: the Doors of Durin as the login dialog (race-independent) */
+.gate { max-width: 880px; width: 100%; }
+.gate-stage { position: relative; overflow: hidden; perspective: 1400px; background: #0d0b09; border: 2px solid #4a4036; border-radius: 120px 120px 6px 6px / 90px 90px 6px 6px; min-height: 440px; isolation: isolate; }
+.gate-stage > .runes { display: block; position: absolute; z-index: 3; top: 14px; left: 40px; right: 40px; height: 40px; line-height: 40px; font-size: clamp(1rem, 4vw, 1.5rem); background: linear-gradient(180deg, #0d0b09, #1b1713); border-bottom: 2px solid #4a4036; }
+.gate .behind { position: relative; z-index: 0; padding: 64px var(--s3) var(--s3); }
+.gate .behind .stone { width: 100%; }
+.gate .leaf { position: absolute; z-index: 2; top: 64px; bottom: 0; width: 50%; transition: transform 600ms cubic-bezier(.5, 0, .2, 1); backface-visibility: hidden;
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .22) 0 2px, transparent 2px 14px),
+    linear-gradient(180deg, #6f6558, #51483e 45%, #3d362e);
+  box-shadow: inset 0 0 0 4px rgba(0, 0, 0, .35), inset 0 0 0 6px rgba(239, 230, 207, .08), inset 0 0 40px rgba(0, 0, 0, .55); }
+.gate .leaf::before { content: ""; position: absolute; inset: 16% 18%; border: 2px solid rgba(239, 230, 207, .12); border-radius: 50% 50% 0 0 / 30% 30% 0 0; box-shadow: inset 0 0 0 6px rgba(0, 0, 0, .12); }
+.gate .leaf.l { left: 0; transform-origin: 0 50%; border-right: 2px solid #1c1812; }
+.gate .leaf.r { right: 0; transform-origin: 100% 50%; border-left: 2px solid #1c1812; }
+.gate.open .leaf.l { transform: rotateY(-105deg); } .gate.open .leaf.r { transform: rotateY(105deg); }
+.gate .login { position: absolute; z-index: 4; left: 50%; top: calc(64px + 50%); transform: translate(-50%, -50%); width: min(300px, 80%); background: var(--bg-2); border: 2px solid var(--stone); border-radius: 6px; padding: var(--s4); box-shadow: 0 8px 24px rgba(0, 0, 0, .7), inset 0 0 0 1px var(--hair); transition: opacity 300ms ease, visibility 0s linear 300ms; }
+.gate .login .form { gap: var(--s3); }
+.gate.open .login { opacity: 0; visibility: hidden; }
+.gate-actions { margin-top: var(--s3); }
+@media (prefers-reduced-motion: reduce) { .gate .leaf, .gate .login { transition: none; } .runes { transition: none; } }
+[data-race="orc"] .stone .roll { display: none !important; }
