@@ -40,6 +40,8 @@ abstract class CopyWeb : DefaultTask() {
             from(webDir) {
                 exclude("status/**", "server.js", "admin.html", "signup.html")
                 exclude("tutorial/*.mp4", "tutorial/*.vtt", "**/*.md")
+                // the story videos (23 MB): the app has no link to them (html.in-app)
+                exclude("story/**/*.mp4")
             }
             into(target.asFile)
         }
