@@ -111,6 +111,7 @@ internal fun DoorsDialog(
     request: AuthRequest,
     saved: Account?,
     opening: Boolean,
+    busy: Boolean = false,
     onSpeak: (Account, Boolean) -> Unit,
     onCancel: () -> Unit,
 ) {
@@ -264,7 +265,7 @@ internal fun DoorsDialog(
                         singleLine = true,
                         textStyle = centered,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                        enabled = !opening,
+                        enabled = !opening && !busy,
                         modifier = Modifier.fillMaxWidth().onFocusChanged { userFocus = it.isFocused },
                     )
                     OutlinedTextField(
@@ -275,7 +276,7 @@ internal fun DoorsDialog(
                         textStyle = centered,
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        enabled = !opening,
+                        enabled = !opening && !busy,
                         modifier = Modifier.fillMaxWidth().onFocusChanged { passwordFocus = it.isFocused },
                     )
                     Row(
@@ -291,9 +292,9 @@ internal fun DoorsDialog(
                     }
                     Button(
                         onClick = { onSpeak(Account(user.trim(), password), rememberMe) },
-                        enabled = !opening && user.isNotBlank() && password.isNotEmpty(),
+                        enabled = !opening && !busy && user.isNotBlank() && password.isNotEmpty(),
                     ) { Text(stringResource(R.string.login_speak), fontFamily = Retro, fontSize = 22.sp) }
-                    TextButton(onClick = onCancel, enabled = !opening) {
+                    TextButton(onClick = onCancel, enabled = !opening && !busy) {
                         Text(stringResource(R.string.cancel), color = race.inkDim)
                     }
                 }

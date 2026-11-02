@@ -24,4 +24,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <string name="home">Start</string>
     <string name="notif_channel">Zugwechsel</string>
     <string name="notif_turn">Zug %1$d wurde ausgeführt</string>
+    <string name="sign_out">Abmelden</string>
+    <string name="sign_out_text">Du wirst vom Spielserver abgemeldet. Das gespeicherte Konto kann für das nächste Mal bleiben oder vergessen werden.</string>
+    <string name="sign_out_forget">Abmelden und vergessen</string>
 </resources>

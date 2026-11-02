@@ -24,4 +24,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <string name="home">Главная</string>
     <string name="notif_channel">Смена хода</string>
     <string name="notif_turn">Ход %1$d выполнен</string>
+    <string name="sign_out">Выйти</string>
+    <string name="sign_out_text">Вы выйдете из сервера игры. Сохранённый аккаунт можно оставить на следующий раз или забыть.</string>
+    <string name="sign_out_forget">Выйти и забыть</string>
 </resources>

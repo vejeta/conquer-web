@@ -24,4 +24,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <string name="home">Início</string>
     <string name="notif_channel">Mudanças de turno</string>
     <string name="notif_turn">O turno %1$d foi executado</string>
+    <string name="sign_out">Sair</string>
+    <string name="sign_out_text">Sua sessão no servidor do jogo será encerrada. A conta salva pode ficar para a próxima vez ou ser esquecida.</string>
+    <string name="sign_out_forget">Sair e esquecer</string>
 </resources>

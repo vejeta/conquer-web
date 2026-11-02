@@ -24,4 +24,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <string name="home">首页</string>
     <string name="notif_channel">回合更新</string>
     <string name="notif_turn">第 %1$d 回合已执行</string>
+    <string name="sign_out">退出登录</string>
+    <string name="sign_out_text">将退出游戏服务器。已保存的账号可以留到下次，也可以忘记。</string>
+    <string name="sign_out_forget">退出并忘记账号</string>
 </resources>

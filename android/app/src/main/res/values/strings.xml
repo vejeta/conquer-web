@@ -25,4 +25,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <string name="home">Home</string>
     <string name="notif_channel">Turn updates</string>
     <string name="notif_turn">Turn %1$d has run</string>
+    <string name="sign_out">Sign out</string>
+    <string name="sign_out_text">You will be signed out of the game server. The saved account can stay for the next time or be forgotten.</string>
+    <string name="sign_out_forget">Sign out and forget</string>
 </resources>

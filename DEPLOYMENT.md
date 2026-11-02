@@ -332,9 +332,10 @@ Then `sudo apache2ctl configtest && sudo systemctl reload apache2`. Check:
 - A wrong password goes back to `/login.html?failed=1`; without JavaScript the
   form still works (plain POST, always the session cookie, always to `/play/`).
 - `SessionCookieRemove On` keeps the cookie from the game and the gate.
-- Android: the app's Doors dialog still uses the old Basic prompt; it should
-  POST the same form (`httpd_username`, `httpd_password`, `httpd_location`) to
-  `/login/long`: the cookie then works for `/play/` and `game.html`.
+- Android: the app's Doors dialog posts the same form (`httpd_username`,
+  `httpd_password`, `httpd_location`) to `/login/long` ("remember me") or
+  `/login/do` from Kotlin and puts the `conquer_session` cookie into the
+  engine; Basic stays as a fallback.
 
 ## Email notifications
 

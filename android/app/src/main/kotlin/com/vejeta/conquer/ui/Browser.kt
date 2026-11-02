@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +32,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -50,8 +52,11 @@ import com.cefrium.compose.rememberCefriumNavigator
 import com.cefrium.compose.rememberCefriumViewState
 import com.vejeta.conquer.R
 import com.vejeta.conquer.auth.Credentials
+import com.vejeta.conquer.auth.LoginResult
+import com.vejeta.conquer.auth.SiteLogin
 import com.vejeta.conquer.web.Site
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /** A Basic authentication challenge the user has to answer. */
 internal class AuthRequest(
@@ -59,7 +64,8 @@ internal class AuthRequest(
     val realm: String,
     /** The server just refused the credentials that were sent. */
     val wrong: Boolean,
-    val callback: CefriumBrowser.HttpAuthCallback,
+    /** Null when the doors answer the site's login form instead of a Basic challenge. */
+    val callback: CefriumBrowser.HttpAuthCallback?,
 )
 
 /**
@@ -139,6 +145,11 @@ fun BrowserScreen(
     var auth by remember { mutableStateOf<AuthRequest?>(null) }
     // The doors stay on screen while they swing open after "Speak friend"
     var leaving by remember { mutableStateOf<AuthRequest?>(null) }
+    val scope = rememberCoroutineScope()
+    var busy by remember { mutableStateOf(false) }
+    // The user cancelled the doors on the login page: the web form stays
+    var loginDismissed by remember { mutableStateOf(false) }
+    var signOut by remember { mutableStateOf(false) }
     val flow = remember {
         AuthFlow(credentials) { request ->
             auth?.callback?.cancel()
@@ -164,6 +175,29 @@ fun BrowserScreen(
     val current = state.lastLoadedUrl ?: url
     val game = "/play/" in current || "/try/" in current || "/game.html" in current
     LaunchedEffect(game) { keepAwake("page", game) }
+
+    // The server sent us to the login page (no session cookie): the doors
+    // answer it instead of the web form, first with the saved account
+    val onLogin = Site.isLoginPage(current)
+    val wantsDoors = onLogin && "loggedout=" !in current && "failed=" !in current
+    LaunchedEffect(onLogin) {
+        if (!onLogin) loginDismissed = false
+    }
+    LaunchedEffect(wantsDoors) {
+        if (!wantsDoors || loginDismissed || auth != null) return@LaunchedEffect
+        val saved = credentials.load()
+        if (saved != null) {
+            busy = true
+            val result = SiteLogin.login(saved, true)
+            busy = false
+            if (result is LoginResult.Ok) {
+                navigator.setCookie(Site.URL, result.name, result.value)
+                navigator.loadUrl(Site.PLAY)
+                return@LaunchedEffect
+            }
+        }
+        auth = AuthRequest(Site.HOST, "", false, null)
+    }
     // The game is played sideways; everything else follows the phone
     DisposableEffect(game) {
         activity.requestedOrientation = if (game) {
@@ -221,6 +255,7 @@ fun BrowserScreen(
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f),
                         )
+                        TextButton(onClick = { signOut = true }) { Text(stringResource(R.string.sign_out)) }
                         TextButton(onClick = { navigator.reload() }) { Text("↻") }
                     }
                     if (state.isLoading) LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -254,16 +289,69 @@ fun BrowserScreen(
             request = doors,
             saved = credentials.load(),
             opening = auth == null,
+            busy = busy,
             onSpeak = { account, remember ->
-                auth = null
-                leaving = doors
-                flow.answered()
-                if (remember) credentials.save(account)
-                doors.callback.proceed(account.user, account.password)
+                val callback = doors.callback
+                if (callback != null) {
+                    // A Basic challenge (a server not yet on the form login)
+                    auth = null
+                    leaving = doors
+                    flow.answered()
+                    if (remember) credentials.save(account)
+                    callback.proceed(account.user, account.password)
+                } else {
+                    // The site's form: posted from here, the session cookie
+                    // goes into the browser's cookie store
+                    scope.launch {
+                        busy = true
+                        val result = SiteLogin.login(account, remember)
+                        busy = false
+                        when (result) {
+                            is LoginResult.Ok -> {
+                                navigator.setCookie(Site.URL, result.name, result.value)
+                                if (remember) credentials.save(account)
+                                auth = null
+                                leaving = doors
+                                navigator.loadUrl(Site.PLAY)
+                            }
+                            // A new request: the runes flicker and the doors shake
+                            is LoginResult.Refused ->
+                                auth = AuthRequest(doors.host, doors.realm, true, null)
+                            // Not the form login (or no answer): the page's own way
+                            is LoginResult.Unavailable -> {
+                                loginDismissed = true
+                                auth = null
+                            }
+                        }
+                    }
+                }
             },
             onCancel = {
                 auth = null
-                doors.callback.cancel()
+                if (doors.callback == null) loginDismissed = true else doors.callback.cancel()
+            },
+        )
+    }
+    if (signOut) {
+        AlertDialog(
+            onDismissRequest = { signOut = false },
+            title = { Text(stringResource(R.string.sign_out)) },
+            text = { Text(stringResource(R.string.sign_out_text)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    signOut = false
+                    navigator.loadUrl(Site.LOGOUT)
+                }) { Text(stringResource(R.string.sign_out)) }
+            },
+            dismissButton = {
+                Row {
+                    TextButton(onClick = { signOut = false }) { Text(stringResource(R.string.cancel)) }
+                    TextButton(onClick = {
+                        signOut = false
+                        credentials.clear()
+                        navigator.loadUrl(Site.LOGOUT)
+                    }) { Text(stringResource(R.string.sign_out_forget)) }
+                }
             },
         )
     }

@@ -17,7 +17,16 @@ object Site {
      * compact bar, sound on, the bridge).
      */
     const val PLAY = "$URL/game.html?app=1"
+    const val LOGOUT = "$URL/logout"
     const val STATUS = "$URL/status/status.json"
+
+    /**
+     * True for the site's login page, where the server sends a visitor
+     * without a session (and after Sign out, "?loggedout=1", or a wrong
+     * password, "?failed=1").
+     */
+    fun isLoginPage(url: String?): Boolean =
+        url != null && url.startsWith("$URL/login.html")
 
     /** Codes of web/site.js (LANGUAGES); the tutorial is written in all of them. */
     private val LANGUAGES = setOf("en", "es", "de", "pt-br", "pl", "ru", "zh")

@@ -24,4 +24,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <string name="home">Start</string>
     <string name="notif_channel">Zmiany tury</string>
     <string name="notif_turn">Rozegrano turę %1$d</string>
+    <string name="sign_out">Wyloguj</string>
+    <string name="sign_out_text">Zostaniesz wylogowany z serwera gry. Zapisane konto może zostać na następny raz albo zostać zapomniane.</string>
+    <string name="sign_out_forget">Wyloguj i zapomnij</string>
 </resources>
