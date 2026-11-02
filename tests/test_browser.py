@@ -946,3 +946,59 @@ def test_screenshots(site, browser, where, viewport):
     page.wait_for_timeout(300)
     page.screenshot(path=os.path.join(SHOTS, "%s-%s-more.png" % (where, viewport)))
     ctx.close()
+
+def audio_page(site, browser, init=None):
+    page = browser.new_page()
+    errors = []
+    page.on("console", lambda m: errors.append(m.text) if m.type == "error" and "404" not in m.text else None)
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    if init:
+        page.add_init_script(init)
+    page.goto(site + "audio-test.html")
+    return page, errors
+
+
+def test_audio_plays_after_a_click(site, browser):
+    page, errors = audio_page(site, browser)
+    assert page.evaluate("conquerAudio.enabled()") is False
+    page.click("#b")
+    page.evaluate("conquerAudio.enable(true)")
+    page.wait_for_function("conquerAudio._state() === 'running'")
+    assert page.evaluate("conquerAudio.enabled()") is True
+    before = page.evaluate("conquerAudio._nodes()")
+    page.evaluate("conquerAudio.event('turn'); conquerAudio.event('bogus'); conquerAudio.screen('map')")
+    page.wait_for_timeout(300)
+    assert page.evaluate("conquerAudio._nodes()") > before
+    assert len(page.evaluate("conquerAudio._demo()")) == 9
+    for s in ("builder", "report_x", "menu", "combat", "off"):
+        page.evaluate("s => conquerAudio.screen(s)", s)
+    page.evaluate("conquerAudio.enable(false)")
+    assert page.evaluate("conquerAudio.enabled()") is False
+    assert errors == []
+    page.close()
+
+
+def test_audio_volume_persists_and_waits_for_a_gesture(site, browser):
+    page, errors = audio_page(site, browser)
+    page.click("#b")
+    page.evaluate("conquerAudio.enable(true); conquerAudio.setVolume(0.2)")
+    page.reload()
+    assert page.evaluate("conquerAudio.volume()") == 0.2
+    # enabled before, but nothing starts until the first click
+    assert page.evaluate("conquerAudio.enabled()") is True
+    assert page.evaluate("conquerAudio._state()") == "none"
+    page.click("#b")
+    page.wait_for_function("conquerAudio._state() === 'running'")
+    assert errors == []
+    page.close()
+
+
+def test_audio_without_web_audio_is_silent(site, browser):
+    page, errors = audio_page(site, browser, "delete window.AudioContext; delete window.webkitAudioContext;")
+    page.click("#b")
+    page.evaluate("""() => { const a = conquerAudio; a.enable(true); a.event('turn'); a.screen('map');
+        a.setVolume(0.3); a._demo(); a.enable(false); }""")
+    assert page.evaluate("conquerAudio.enabled()") is False
+    page.wait_for_timeout(200)
+    assert errors == []
+    page.close()
