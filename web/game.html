@@ -8,6 +8,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Conquer</title>
+  <link rel="stylesheet" href="touch.css">
   <style>
     :root {
       --bg: #1e1e1e;
@@ -27,6 +28,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
     }
     .stage { flex: 1; display: flex; min-height: 0; }
     iframe { flex: 1; width: 100%; border: 0; display: block; min-height: 0; min-width: 0; }
+    /* The terminal sits in a viewport that clips and a stage that zooms (touch.js) */
+    .stage > .touch-viewport { background: #000; }
     /* Coach: step-by-step help next to the terminal (below it on phones) */
     .coach {
       width: 330px; flex: none; overflow-y: auto; padding: 14px 16px;
@@ -64,19 +67,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
     }
     .top a { color: var(--muted); text-decoration: none; }
     .top .spacer { flex: 1; }
-    .keys {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      justify-content: center;
-      align-items: center;
-      padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
-      background: var(--bar);
-    }
-    .pad { display: grid; grid-template-columns: repeat(3, 40px); gap: 4px; }
-    .pad button { font-size: 1.25em; }
-    .pad small { font-size: 0.55em; opacity: 0.65; margin-left: 2px; }
-    .group { display: flex; flex-wrap: wrap; gap: 6px; max-width: 330px; justify-content: center; }
     button {
       min-width: 40px;
       height: 36px;
@@ -92,28 +82,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
     button:active { background: var(--key-active); color: #0d1117; }
     .top button { height: 28px; font: 13px system-ui, sans-serif; }
     [hidden] { display: none !important; }
-    /* Phones in landscape: keys in a side column so the terminal keeps its height */
+    /* Phones in landscape: the coach beside the terminal, a thin top bar */
     @media (orientation: landscape) and (max-height: 500px) {
-      body {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        grid-template-rows: auto 1fr;
-      }
-      .top { grid-column: 1 / 3; padding: 2px 8px; }
-      .stage { grid-column: 1; grid-row: 2; height: 100%; min-height: 0; }
+      .top { padding: 2px 8px; }
       .coach { width: 260px; max-height: none; border-top: 0; border-left: 1px solid var(--key); }
       .stage { flex-direction: row; }
-      .keys {
-        grid-column: 2;
-        grid-row: 2;
-        flex-direction: column;
-        flex-wrap: nowrap;
-        justify-content: flex-start;
-        overflow-y: auto;
-        padding: 6px calc(6px + env(safe-area-inset-right)) 6px 6px;
-      }
-      .pad { grid-template-columns: repeat(3, 36px); }
-      .group { max-width: 120px; gap: 4px; }
       button { min-width: 36px; height: 30px; padding: 0 6px; font-size: 13px; }
     }
   </style>
@@ -124,11 +97,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <span class="spacer"></span>
     <button id="coach-toggle" type="button" aria-controls="coach" aria-expanded="false" title="Step-by-step help for your first turn" data-i18n-title="coach.toggle_title">Coach</button>
     <button id="keyboard" type="button" title="Show the device keyboard" data-i18n-title="game.keyboard_title" data-i18n="game.keyboard">Keyboard</button>
-    <button id="toggle" type="button" aria-controls="keys" aria-expanded="false" data-i18n="game.toggle">Keys</button>
+    <button id="toggle" type="button" aria-controls="touch-ui" aria-expanded="true" data-i18n="game.toggle">Keys</button>
   </div>
 
   <div class="stage">
-    <iframe id="game" title="Conquer game terminal" data-i18n-title="game.game_title"></iframe>
+    <div class="touch-viewport" id="touch-viewport"><div class="touch-stage" id="touch-stage">
+      <iframe id="game" title="Conquer game terminal" data-i18n-title="game.game_title"></iframe>
+    </div></div>
     <aside class="coach" id="coach" hidden aria-live="polite">
       <div class="head"><span id="coach-count"></span><button class="close" id="coach-close" type="button" title="Close the coach" data-i18n-title="coach.close_title">&times;</button></div>
       <div class="bar"><span id="coach-progress"></span></div>
@@ -143,56 +118,17 @@ SPDX-License-Identifier: GPL-3.0-or-later
     </aside>
   </div>
 
-  <div class="keys" id="keys" hidden>
-    <!-- While the game's nation builder is on screen: its own keys -->
-    <div class="group builder" id="builder-keys" hidden>
-      <button data-key="k" title="Up" data-i18n-title="game.key_up_title">k &uarr;</button>
-      <button data-key="j" title="Down" data-i18n-title="game.key_down_title">j &darr;</button>
-      <button data-key=" " title="Buy one more" data-i18n-title="game.key_buy_title" data-i18n="game.key_space">Space</button>
-      <button data-key="h" title="Switch to adding" data-i18n-title="game.key_add_title">h +</button>
-      <button data-key="l" title="Switch to taking back" data-i18n-title="game.key_sub_title">l &minus;</button>
-      <button data-key="?" title="Explain the line" data-i18n-title="game.key_info_title">?</button>
-      <button data-key="\x1b" title="Escape">Esc</button>
-      <button data-key="\r" title="Enter">Enter</button>
-      <button data-key="\x7f" title="Backspace" data-i18n-title="game.key_backspace_title">&#9003;</button>
-      <button data-key="y">y</button>
-      <button data-key="n">n</button>
-    </div>
-    <div class="pad" aria-label="Move">
-      <button data-key="y" title="Move north-west" data-i18n-title="game.key_nw_title">↖<small>y</small></button>
-      <button data-key="k" title="Move north" data-i18n-title="game.key_n_title">↑<small>k</small></button>
-      <button data-key="u" title="Move north-east" data-i18n-title="game.key_ne_title">↗<small>u</small></button>
-      <button data-key="h" title="Move west" data-i18n-title="game.key_w_title">←<small>h</small></button>
-      <button data-key="p" title="Pick next unit" data-i18n-title="game.key_pick_title">p</button>
-      <button data-key="l" title="Move east" data-i18n-title="game.key_e_title">→<small>l</small></button>
-      <button data-key="b" title="Move south-west" data-i18n-title="game.key_sw_title">↙<small>b</small></button>
-      <button data-key="j" title="Move south" data-i18n-title="game.key_s_title">↓<small>j</small></button>
-      <button data-key="n" title="Move south-east" data-i18n-title="game.key_se_title">↘<small>n</small></button>
-    </div>
-    <div class="group">
-      <button data-key="\x1b" title="Escape">Esc</button>
-      <button data-key="\r" title="Enter">Enter</button>
-      <button data-key=" " title="Space" data-i18n-title="game.key_space_title" data-i18n="game.key_space">Space</button>
-      <button data-key="\x7f" title="Backspace" data-i18n-title="game.key_backspace_title">&#9003;</button>
-      <button data-key="\x0c" title="Redraw the screen (Ctrl-L)" data-i18n-title="game.key_redraw_title" data-i18n="game.key_redraw">Redraw</button>
-      <button data-key="?" title="Help" data-i18n-title="game.key_help_title">?</button>
-      <button data-key="m" title="Move selected unit" data-i18n-title="game.key_move_title">m</button>
-      <button data-key="a" title="Army report" data-i18n-title="game.key_army_title">a</button>
-      <button data-key="q" title="Quit the game" data-i18n-title="game.key_quit_title">q</button>
-    </div>
-  </div>
 
 <script src="server.js"></script>
 <script src="site.js"></script>
 <script src="coach.js"></script>
 <script src="arrows.js"></script>
 <script src="moves.js"></script>
+<script src="touch.js"></script>
 <script>
   (function () {
     var frame = document.getElementById('game');
-    var keys = document.getElementById('keys');
     var toggle = document.getElementById('toggle');
-    var STORE = 'conquer-keybar';
 
     // The terminal menu speaks the language of the pages: ttyd passes the
     // "arg" parameter to it (ttyd --url-arg)
@@ -201,11 +137,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
     // ttyd exposes the xterm.js instance as window.term in the same-origin frame
     function term() {
       try { return frame.contentWindow.term || null; } catch (e) { return null; }
-    }
-
-    function decode(s) {
-      return s.replace(/\\x([0-9a-f]{2})/gi, function (_, h) { return String.fromCharCode(parseInt(h, 16)); })
-              .replace(/\\r/g, '\r');
     }
 
     // Conquer needs an 80x24 screen: on small screens shrink the font until
@@ -248,32 +179,20 @@ SPDX-License-Identifier: GPL-3.0-or-later
       t._conquerLast = { size: t.options.fontSize, cols: t.cols, rows: t.rows, w: w, h: h };
     }
 
-    function showKeys(show) {
-      keys.hidden = !show;
-      toggle.setAttribute('aria-expanded', String(show));
-      try { localStorage.setItem(STORE, show ? '1' : '0'); } catch (e) {}
-      // let the terminal re-fit to the new height
-      setTimeout(fitColumns, 50);
-    }
-
-    var saved = null;
-    try { saved = localStorage.getItem(STORE); } catch (e) {}
-    // Show the key bar by default on touch devices only
-    showKeys(saved !== null ? saved === '1' : window.matchMedia('(pointer: coarse)').matches);
-
-    toggle.addEventListener('click', function () { showKeys(keys.hidden); });
-
-    document.getElementById('keyboard').addEventListener('click', function () {
-      var t = term();
-      if (t) t.focus();
+    // The touch layer (touch.js): taps on the map, command chips, d-pad,
+    // zoom. "Keys" shows or hides its bar; "Keyboard" opens the soft
+    // keyboard (it opens by itself only when the game asks for text).
+    var touch = conquerTouch({
+      term: term, host: frame, lang: conquerLang(), relayout: fitColumns,
+      send: function (k) { var t = term(); if (t) t.input(k, true); }
+    });
+    window.touchLayer = touch;
+    toggle.setAttribute('aria-expanded', String(touch.barShown()));
+    toggle.addEventListener('click', function () {
+      toggle.setAttribute('aria-expanded', String(touch.toggleBar()));
     });
 
-    keys.addEventListener('click', function (ev) {
-      var btn = ev.target.closest('button[data-key]');
-      var t = term();
-      if (!btn || !t) return;
-      t.input(decode(btn.getAttribute('data-key')), true);
-    });
+    document.getElementById('keyboard').addEventListener('click', function () { touch.keyboard(); });
 
     // Keep the terminal sized to the frame when the window changes
     window.addEventListener('resize', function () { setTimeout(fitColumns, 50); });
@@ -290,25 +209,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
     // Step-by-step coach next to the terminal (coach.js): the first turn,
     // and the game's nation builder while it is on screen
     conquerCoach(term, fitColumns, 'tutorial/first-turn.json', 'tutorial/found-nation.json');
-
-    // The key bar follows the screen: the nation builder's keys while it is
-    // open, the map's keys otherwise
-    var builderKeys = document.getElementById('builder-keys');
-    var mapKeys = keys.querySelectorAll('.pad, .group:not(.builder)');
-    setInterval(function () {
-      var t = term();
-      if (!t || !t.buffer) return;
-      var buf = t.buffer.active, text = '';
-      for (var y = 0; y < t.rows; y++) {
-        var line = buf.getLine(buf.viewportY + y);
-        if (line) text += line.translateToString(true) + '\n';
-      }
-      var building = /Nation Builder/.test(text);
-      if (building === !builderKeys.hidden) return;
-      builderKeys.hidden = !building;
-      for (var i = 0; i < mapKeys.length; i++) mapKeys[i].hidden = building;
-      setTimeout(fitColumns, 50);
-    }, 700);
 
     // Keep fitting while ttyd connects and applies its settings
     var tries = 0;
