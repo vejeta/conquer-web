@@ -53,7 +53,7 @@ def test_the_eight_scenes_and_skip(site, browser):
     page.wait_for_function("() => conquerStory.state().n === 3")
     assert page.locator("#dots i.on").count() == 1
     assert page.locator("#dots i.done").count() == 2
-    assert page.locator("#cap-text").inner_text().startswith("In that world there are four peoples")
+    page.wait_for_function("() => document.getElementById('cap-text').textContent.startsWith('In that world there are four peoples')")
     for _ in range(5):
         page.keyboard.press("ArrowRight")
     page.wait_for_function("() => conquerStory.state().n === 8")
