@@ -32,6 +32,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +50,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.vejeta.conquer.R
+import com.vejeta.conquer.settings.AppSettings
+import com.vejeta.conquer.sound.AppSound
 
 /** The retro font of the site's title (web/fonts/vt323). */
 val Retro = FontFamily(Font(R.font.vt323))
@@ -93,8 +97,18 @@ fun Home(
     onTutorial: () -> Unit,
     onSite: () -> Unit,
     onForgetAccount: () -> Unit,
+    onStory: () -> Unit,
+    settings: AppSettings,
+    sound: AppSound,
+    detected: Race,
 ) {
-    var settings by remember { mutableStateOf(false) }
+    DisposableEffect(Unit) {
+        sound.setHome(true)
+        onDispose { sound.setHome(false) }
+    }
+    LaunchedEffect(settings.version) { sound.refresh() }
+    val tapped = { action: () -> Unit -> { sound.tap(); action() } }
+    var sheet by remember { mutableStateOf(false) }
     val wide = Modifier
         .fillMaxWidth()
         .widthIn(max = 480.dp)
@@ -143,32 +157,31 @@ fun Home(
         )
         Spacer(Modifier.height(8.dp))
 
-        Button(onClick = onPlayOnline, modifier = wide.height(64.dp)) { Label(R.string.btn_play) }
+        Button(onClick = tapped(onPlayOnline), modifier = wide.height(64.dp)) { Label(R.string.btn_play) }
         FilledTonalButton(
-            onClick = onPractice,
+            onClick = tapped(onPractice),
             modifier = wide.height(64.dp),
             colors = ButtonDefaults.filledTonalButtonColors(containerColor = colors.surface, contentColor = colors.primary),
         ) { Label(R.string.btn_practice) }
-        OutlinedButton(onClick = onTutorial, modifier = wide.height(64.dp)) { Label(R.string.btn_tutorial) }
-        OutlinedButton(onClick = onSite, modifier = wide.height(64.dp)) { Label(R.string.btn_site) }
+        OutlinedButton(onClick = tapped(onTutorial), modifier = wide.height(64.dp)) { Label(R.string.btn_tutorial) }
+        OutlinedButton(onClick = tapped(onSite), modifier = wide.height(64.dp)) { Label(R.string.btn_site) }
 
-        TextButton(onClick = { settings = true }) {
+        TextButton(onClick = { sound.tap(); sheet = true }) {
             Text(stringResource(R.string.settings), color = colors.onSurfaceVariant)
         }
     }
     }
 
-    if (settings) {
-        ModalBottomSheet(onDismissRequest = { settings = false }, containerColor = colors.surface) {
-            Column(Modifier.padding(horizontal = 24.dp, vertical = 8.dp).navigationBarsPadding()) {
-                TextButton(onClick = {
-                    onForgetAccount()
-                    settings = false
-                }) {
-                    Text(stringResource(R.string.forget_account), color = colors.onSurface)
-                }
-            }
-        }
+    if (sheet) {
+        SettingsSheet(
+            settings = settings,
+            sound = sound,
+            detected = detected,
+            onWatchStory = onStory,
+            onSignOut = null,
+            onForgetAccount = onForgetAccount,
+            onClose = { sheet = false },
+        )
     }
 }
 

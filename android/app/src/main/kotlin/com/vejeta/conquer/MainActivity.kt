@@ -24,6 +24,8 @@ import com.vejeta.conquer.ui.BrowserScreen
 import com.vejeta.conquer.ui.ConquerTheme
 import com.vejeta.conquer.ui.Home
 import com.vejeta.conquer.ui.Race
+import com.vejeta.conquer.settings.AppSettings
+import com.vejeta.conquer.sound.AppSound
 import com.vejeta.conquer.web.LoopbackServer
 import com.vejeta.conquer.web.Site
 import com.vejeta.conquer.work.Notifications
@@ -39,6 +41,8 @@ class MainActivity : ComponentActivity() {
     private lateinit var credentials: Credentials
     private lateinit var bridge: Bridge
     private lateinit var prefs: SharedPreferences
+    private lateinit var settings: AppSettings
+    private lateinit var sound: AppSound
 
     // The page on screen (null: the home screen); the bridge's "home" clears it
     private var url by mutableStateOf<String?>(null)
@@ -64,6 +68,13 @@ class MainActivity : ComponentActivity() {
         prefs.edit().putInt("port", server.port).apply()
 
         credentials = Credentials(this)
+        settings = AppSettings(prefs)
+        sound = AppSound(this, settings)
+        // First launch: sound is on, and the player is told once where to change it
+        if (!prefs.getBoolean("sound_toast", false)) {
+            prefs.edit().putBoolean("sound_toast", true).apply()
+            Toast.makeText(this, R.string.sound_on_toast, Toast.LENGTH_LONG).show()
+        }
         race = Race.fromKey(prefs.getString("race", null)) ?: Race.Human
         bridge = Bridge(
             this,
@@ -82,7 +93,9 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            ConquerTheme(race) {
+            // A race chosen in the settings wins; Auto follows what the page detected
+            val shown = Race.fromKey(settings.raceChoice) ?: race
+            ConquerTheme(shown) {
                 val lang = Site.language()
                 val open = url
                 if (open == null) {
@@ -91,6 +104,10 @@ class MainActivity : ComponentActivity() {
                         onPractice = { url = "${server.origin}/${Site.practicePage(lang)}" },
                         onTutorial = { url = "${server.origin}/${Site.tutorialPage(lang)}" },
                         onSite = { openInBrowser(Site.siteUrl(lang)) },
+                        onStory = { url = "${server.origin}/${Site.storyPage(lang)}" },
+                        settings = settings,
+                        sound = sound,
+                        detected = race,
                         onForgetAccount = {
                             credentials.clear()
                             Toast.makeText(this@MainActivity, R.string.forgotten, Toast.LENGTH_SHORT).show()
@@ -103,6 +120,10 @@ class MainActivity : ComponentActivity() {
                         credentials = credentials,
                         keepAwake = this@MainActivity::keepAwake,
                         onExit = { url = null },
+                        settings = settings,
+                        sound = sound,
+                        detected = race,
+                        onStory = { url = "${server.origin}/${Site.storyPage(lang)}" },
                     )
                 }
             }
@@ -127,7 +148,18 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        sound.setForeground(true)
+    }
+
+    override fun onPause() {
+        sound.setForeground(false)
+        super.onPause()
+    }
+
     override fun onDestroy() {
+        sound.release()
         server.close()
         super.onDestroy()
     }

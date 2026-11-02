@@ -22,7 +22,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.sp
+import com.vejeta.conquer.settings.AppSettings
+import com.vejeta.conquer.sound.AppSound
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -138,7 +145,12 @@ fun BrowserScreen(
     credentials: Credentials,
     keepAwake: (source: String, on: Boolean) -> Unit,
     onExit: () -> Unit,
+    settings: AppSettings,
+    sound: AppSound,
+    detected: Race,
+    onStory: () -> Unit,
 ) {
+    val backLabel = stringResource(R.string.back)
     val state = rememberCefriumViewState(url)
     val navigator = rememberCefriumNavigator()
     var barVisible by remember { mutableStateOf(true) }
@@ -150,6 +162,7 @@ fun BrowserScreen(
     // The user cancelled the doors on the login page: the web form stays
     var loginDismissed by remember { mutableStateOf(false) }
     var signOut by remember { mutableStateOf(false) }
+    var sheet by remember { mutableStateOf(false) }
     val flow = remember {
         AuthFlow(credentials) { request ->
             auth?.callback?.cancel()
@@ -158,8 +171,18 @@ fun BrowserScreen(
         }
     }
 
-    BackHandler {
-        if (state.canGoBack) navigator.navigateBack() else onExit()
+    // Web history first, then the home screen (and from there the system leaves)
+    val goBack = { if (state.canGoBack) navigator.navigateBack() else onExit() }
+    BackHandler { goBack() }
+
+    // The settings go into every page that loads, and again on any change
+    // (a second time shortly after, for pages that set up their audio late)
+    LaunchedEffect(state.isLoading, state.lastLoadedUrl, settings.version) {
+        val at = state.lastLoadedUrl ?: return@LaunchedEffect
+        if (state.isLoading || !(at.startsWith(Site.URL) || at.startsWith("http://127.0.0.1"))) return@LaunchedEffect
+        navigator.evaluateJavaScript(settings.script())
+        delay(1500)
+        navigator.evaluateJavaScript(settings.script())
     }
 
     // Immersive: the page gets the whole screen
@@ -191,6 +214,7 @@ fun BrowserScreen(
             val result = SiteLogin.login(saved, true)
             busy = false
             if (result is LoginResult.Ok) {
+                sound.doorsOpen()
                 navigator.setCookie(Site.URL, result.name, result.value)
                 navigator.loadUrl(Site.PLAY)
                 return@LaunchedEffect
@@ -248,14 +272,17 @@ fun BrowserScreen(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         modifier = Modifier.padding(horizontal = 4.dp),
                     ) {
-                        TextButton(onClick = onExit) { Text("‹ " + stringResource(R.string.home)) }
+                        IconButton(onClick = { sound.tap(); goBack() }, modifier = Modifier.size(48.dp)) {
+                            Text("←", fontSize = 24.sp, modifier = Modifier.semantics { contentDescription = backLabel })
+                        }
+                        TextButton(onClick = { sound.tap(); onExit() }) { Text(stringResource(R.string.home)) }
                         Text(
                             text = state.pageTitle ?: "",
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f),
                         )
-                        TextButton(onClick = { signOut = true }) { Text(stringResource(R.string.sign_out)) }
+                        TextButton(onClick = { sound.tap(); sheet = true }) { Text(stringResource(R.string.settings)) }
                         TextButton(onClick = { navigator.reload() }) { Text("↻") }
                     }
                     if (state.isLoading) LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -296,6 +323,7 @@ fun BrowserScreen(
                     // A Basic challenge (a server not yet on the form login)
                     auth = null
                     leaving = doors
+                    sound.doorsOpen()
                     flow.answered()
                     if (remember) credentials.save(account)
                     callback.proceed(account.user, account.password)
@@ -308,6 +336,7 @@ fun BrowserScreen(
                         busy = false
                         when (result) {
                             is LoginResult.Ok -> {
+                                sound.doorsOpen()
                                 navigator.setCookie(Site.URL, result.name, result.value)
                                 if (remember) credentials.save(account)
                                 auth = null
@@ -315,8 +344,10 @@ fun BrowserScreen(
                                 navigator.loadUrl(Site.PLAY)
                             }
                             // A new request: the runes flicker and the doors shake
-                            is LoginResult.Refused ->
+                            is LoginResult.Refused -> {
+                                sound.doorsFail()
                                 auth = AuthRequest(doors.host, doors.realm, true, null)
+                            }
                             // Not the form login (or no answer): the page's own way
                             is LoginResult.Unavailable -> {
                                 loginDismissed = true
@@ -330,6 +361,17 @@ fun BrowserScreen(
                 auth = null
                 if (doors.callback == null) loginDismissed = true else doors.callback.cancel()
             },
+        )
+    }
+    if (sheet) {
+        SettingsSheet(
+            settings = settings,
+            sound = sound,
+            detected = detected,
+            onWatchStory = onStory,
+            onSignOut = { signOut = true },
+            onForgetAccount = { credentials.clear() },
+            onClose = { sheet = false },
         )
     }
     if (signOut) {

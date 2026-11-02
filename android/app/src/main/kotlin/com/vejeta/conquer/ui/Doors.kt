@@ -239,6 +239,13 @@ internal fun DoorsDialog(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
+                    TextButton(
+                        onClick = onCancel,
+                        enabled = !opening && !busy,
+                        modifier = Modifier.align(Alignment.Start).heightIn(min = 48.dp),
+                    ) {
+                        Text("← " + stringResource(R.string.back), color = race.inkDim)
+                    }
                     Text(
                         stringResource(R.string.login_title),
                         color = race.ink,

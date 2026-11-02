@@ -102,7 +102,7 @@ android {
 
     // Chromium's assets must be stored uncompressed
     androidResources {
-        noCompress += listOf("dat", "pak", "bin")
+        noCompress += listOf("dat", "pak", "bin", "ogg")
     }
 
     // Chromium reads its native libraries from disk (AGP 9 wants this here,

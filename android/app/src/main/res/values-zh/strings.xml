@@ -27,4 +27,24 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <string name="sign_out">退出登录</string>
     <string name="sign_out_text">将退出游戏服务器。已保存的账号可以留到下次，也可以忘记。</string>
     <string name="sign_out_forget">退出并忘记账号</string>
+    <string name="settings_title">设置</string>
+    <string name="set_music">音乐</string>
+    <string name="set_effects">音效</string>
+    <string name="set_volume">音量</string>
+    <string name="set_race">种族</string>
+    <string name="race_auto">自动</string>
+    <string name="race_auto_detected">自动（%1$s）</string>
+    <string name="race_human">人类</string>
+    <string name="race_elf">精灵</string>
+    <string name="race_dwarf">矮人</string>
+    <string name="race_orc">兽人</string>
+    <string name="set_plain">简洁边框</string>
+    <string name="set_plain_hint">终端周围不加装饰</string>
+    <string name="set_crt">CRT 效果</string>
+    <string name="set_story">再看一遍故事</string>
+    <string name="set_about">关于</string>
+    <string name="about_version">版本 %1$s</string>
+    <string name="about_licences">Cefrium (LGPL)、VT323 (OFL)、Noto Sans Runic (OFL)、FluidR3 SoundFont</string>
+    <string name="sound_on_toast">声音已开启——可在设置中更改</string>
+    <string name="back">返回</string>
 </resources>

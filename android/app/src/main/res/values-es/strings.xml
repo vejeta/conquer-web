@@ -27,4 +27,24 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <string name="sign_out">Salir</string>
     <string name="sign_out_text">Se cerrará tu sesión en el servidor del juego. La cuenta guardada puede quedarse para la próxima vez o olvidarse.</string>
     <string name="sign_out_forget">Salir y olvidar</string>
+    <string name="settings_title">Ajustes</string>
+    <string name="set_music">Música</string>
+    <string name="set_effects">Efectos</string>
+    <string name="set_volume">Volumen</string>
+    <string name="set_race">Raza</string>
+    <string name="race_auto">Auto</string>
+    <string name="race_auto_detected">Auto (%1$s)</string>
+    <string name="race_human">Humano</string>
+    <string name="race_elf">Elfo</string>
+    <string name="race_dwarf">Enano</string>
+    <string name="race_orc">Orco</string>
+    <string name="set_plain">Marco sencillo</string>
+    <string name="set_plain_hint">Sin adornos alrededor del terminal</string>
+    <string name="set_crt">Efecto CRT</string>
+    <string name="set_story">Ver la historia otra vez</string>
+    <string name="set_about">Acerca de</string>
+    <string name="about_version">Versión %1$s</string>
+    <string name="about_licences">Cefrium (LGPL), VT323 (OFL), Noto Sans Runic (OFL), FluidR3 SoundFont</string>
+    <string name="sound_on_toast">El sonido está activado: cámbialo en Ajustes</string>
+    <string name="back">Atrás</string>
 </resources>
