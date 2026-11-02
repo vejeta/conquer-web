@@ -426,5 +426,15 @@
   "dwarf": "Zwerg",
   "orc": "Ork",
   "auto": "Automatisch"
+ },
+ "app": {
+  "home": "Start",
+  "coach": "Coach",
+  "menu": "Menü",
+  "show_bar": "Leiste einblenden",
+  "sound_on": "Ton an: tippen zum Stummschalten",
+  "sound_off": "Ton aus: tippen zum Einschalten",
+  "kb_hint": "Die Tastatur öffnet sich von selbst, wenn das Spiel Text verlangt. Tippe auf Tastatur, um sie jederzeit zu öffnen.",
+  "hint_close": "Verstanden"
  }
 }

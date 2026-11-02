@@ -70,6 +70,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 <script src="../moves.js"></script>
 <script src="../audio.js"></script>
 <script src="../touch.js"></script>
+<script src="../appbar.js"></script>
 <script>
   (function () {
     // The world lives in the browser (IndexedDB), under /conquer/lib, where
@@ -104,6 +105,12 @@ SPDX-License-Identifier: GPL-3.0-or-later
     window.addEventListener('resize', fitScreen);
     fitScreen();
 
+    // ?autostart=1 (the app passes it): the game starts at once, types the
+    // practice password and goes past the title, so that the first thing
+    // seen is the map. The coach and "How to move" open only when asked.
+    var autostart = new URLSearchParams(location.search).get('autostart') === '1';
+    var autoPlaying = false;
+
     var running = null;       // the module that has the keyboard
     function send(data) {
       if (!running) { if (data === ' ' || data === '\r') start(); return; }
@@ -116,6 +123,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     // zoom. "Keys" shows or hides its bar.
     var touch = conquerTouch({ term: function () { return term; }, send: send, host: document.getElementById('terminal'),
       lang: conquerLang(), relayout: fitScreen,
+      skipKeyboard: function () { return autoPlaying; },
       gs: document.getElementById('gs'), stone: document.getElementById('stone') });
     window.touchLayer = touch;
     var toggleKeys = document.getElementById('toggle-keys');
@@ -220,10 +228,39 @@ SPDX-License-Identifier: GPL-3.0-or-later
       touch.setMode(null);
       var seen = false;
       try { seen = localStorage.getItem('conquer-moves-seen') === '1'; localStorage.setItem('conquer-moves-seen', '1'); } catch (e) {}
-      if (!seen) setTimeout(function () { showMoves(true); }, 800);
+      if (!seen && !autostart) setTimeout(function () { showMoves(true); }, 800);
       term.focus();
       term.write('\x1b[H\x1b[2J');
-      launch(createConquer, ['-n', NATION]).then(function () { menu(T('saved')); });
+      if (autostart) autoplay();
+      launch(createConquer, ['-n', NATION]).then(function () { autoPlaying = false; menu(T('saved')); });
+    }
+
+    function screenText() {
+      var b = term.buffer.active, out = [];
+      for (var y = 0; y < term.rows; y++) {
+        var l = b.getLine(b.viewportY + y);
+        out.push(l ? l.translateToString(true) : '');
+      }
+      return out.join('\n');
+    }
+
+    // Types the password when the game asks for it and presses a key at the
+    // title, until the map shows (or 60 s pass)
+    function autoplay() {
+      var typed = false, up = false, t0 = Date.now();
+      autoPlaying = true;
+      var iv = setInterval(function () {
+        if (running) up = true;
+        if ((up && !running) || Date.now() - t0 > 60000) { clearInterval(iv); autoPlaying = false; return; }
+        var text = screenText();
+        if (!typed) {
+          if (/Password:/i.test(text)) { typed = true; send('train1\r'); }
+        } else if (/PRESS ANY KEY/i.test(text)) {
+          send(' ');
+        } else if (touch.where() === 'map') {
+          clearInterval(iv); autoPlaying = false;
+        }
+      }, 300);
     }
 
     document.getElementById('turn').addEventListener('click', function () {
@@ -256,6 +293,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
       document.title = T('title');
       menu();
       term.focus();
+      if (autostart) start();
     });
   })();
 </script>

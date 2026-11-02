@@ -426,5 +426,15 @@
   "dwarf": "Enano",
   "orc": "Orco",
   "auto": "Automática"
+ },
+ "app": {
+  "home": "Inicio",
+  "coach": "Guía",
+  "menu": "Menú",
+  "show_bar": "Mostrar la barra",
+  "sound_on": "Sonido activado: toca para silenciar",
+  "sound_off": "Sonido desactivado: toca para activarlo",
+  "kb_hint": "El teclado se abre solo cuando el juego pide texto. Toca Teclado para abrirlo cuando quieras.",
+  "hint_close": "Entendido"
  }
 }

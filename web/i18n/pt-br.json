@@ -426,5 +426,15 @@
   "dwarf": "Anão",
   "orc": "Orc",
   "auto": "Automático"
+ },
+ "app": {
+  "home": "Início",
+  "coach": "Guia",
+  "menu": "Menu",
+  "show_bar": "Mostrar a barra",
+  "sound_on": "Som ligado: toque para silenciar",
+  "sound_off": "Som desligado: toque para ligar",
+  "kb_hint": "O teclado abre sozinho quando o jogo pede texto. Toque em Teclado para abri-lo quando quiser.",
+  "hint_close": "Entendi"
  }
 }

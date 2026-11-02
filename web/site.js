@@ -5,6 +5,34 @@
 // from another site (GitHub Pages), and the language of the pages. Load
 // server.js first.
 (function () {
+  // The Android app (Cefrium) is detected as early as the page allows:
+  // window.cefriumQuery, a "Cefrium" user agent, or ?app=1 (remembered for
+  // the tab, so that navigation keeps it). The pages then drop their site
+  // chrome (theme.css: .in-app) and use the app's bridge.
+  var inApp = false;
+  try {
+    inApp = !!window.cefriumQuery || /Cefrium/i.test(navigator.userAgent || '') ||
+      /(?:^|[?&])app=1(?:&|$)/.test(location.search);
+  } catch (e) {}
+  try {
+    if (inApp) sessionStorage.setItem('conquer-app', '1');
+    else inApp = sessionStorage.getItem('conquer-app') === '1';
+  } catch (e) {}
+  if (inApp) document.documentElement.classList.add('in-app');
+  // conquerApp.is; conquerApp.send({type:"haptic",ms:8}) calls the app (a no-op
+  // outside it, or if the app does not answer); conquerApp.has() tells if it can
+  window.conquerApp = {
+    is: inApp,
+    has: function () { return typeof window.cefriumQuery === 'function'; },
+    send: function (msg, failed) {
+      if (typeof window.cefriumQuery !== 'function') return false;
+      try {
+        window.cefriumQuery({ request: JSON.stringify(msg), onSuccess: function () {}, onFailure: failed || function () {} });
+        return true;
+      } catch (e) { return false; }
+    }
+  };
+
   var cfg = window.CONQUER_CONFIG || {};
   var server = (cfg.server || '').replace(/\/+$/, '');
 

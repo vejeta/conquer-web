@@ -14,6 +14,9 @@ MSG[menu_needs_size]="Conquer necesita al menos %s columnas x %s filas.
 Agranda la ventana del navegador o reduce el zoom (Ctrl y -).
 
 Pulsa una tecla para comprobarlo de nuevo, o 'c' para seguir igualmente."
+MSG[menu_needs_size_app]="Conquer necesita al menos %s columnas x %s filas.
+Gira el teléfono de lado o pellizca para alejar.
+La pantalla se comprueba sola de nuevo."
 MSG[menu_ready_count]="%s de %s naciones"
 MSG[menu_all_ready]="  ${green}${bold}Todas las naciones están listas: el turno se procesa ahora.${reset}
   Vuelve en unos minutos para el nuevo turno."

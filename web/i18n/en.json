@@ -426,5 +426,15 @@
   "dwarf": "Dwarf",
   "orc": "Orc",
   "auto": "Automatic"
+ },
+ "app": {
+  "home": "Home",
+  "coach": "Coach",
+  "menu": "Menu",
+  "show_bar": "Show the menu bar",
+  "sound_on": "Sound on: tap to mute",
+  "sound_off": "Sound off: tap to turn it on",
+  "kb_hint": "The keyboard opens by itself when the game asks for text. Tap Keyboard to open it any time.",
+  "hint_close": "Got it"
  }
 }

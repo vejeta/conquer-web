@@ -61,6 +61,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 <script src="moves.js"></script>
 <script src="audio.js"></script>
 <script src="touch.js"></script>
+<script src="appbar.js"></script>
 <script>
   (function () {
     var frame = document.getElementById('game');
@@ -68,7 +69,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
     // The terminal menu speaks the language of the pages: ttyd passes the
     // "arg" parameter to it (ttyd --url-arg)
-    frame.src = '/play/?arg=' + conquerLang();
+    // In the app a second argument, app=1, makes the menu speak to phones
+    // (it does not tell them to press Ctrl and -)
+    frame.src = '/play/?arg=' + conquerLang() + (window.conquerApp && conquerApp.is ? '&arg=' + encodeURIComponent('app=1') : '');
 
     // ttyd exposes the xterm.js instance as window.term in the same-origin frame
     function term() {
@@ -164,12 +167,14 @@ SPDX-License-Identifier: GPL-3.0-or-later
     // and the game's nation builder while it is on screen
     conquerCoach(term, fitColumns, 'tutorial/first-turn.json', 'tutorial/found-nation.json');
 
-    // Keep fitting while ttyd connects and applies its settings
+    // Keep fitting while ttyd connects and applies its settings: often at
+    // first, so the screen is 80x24 before the menu looks at its size
     var tries = 0;
     var wait = setInterval(function () {
       fitColumns();
-      if (++tries > 20) clearInterval(wait);
-    }, 300);
+      if (++tries > 60) clearInterval(wait);
+    }, 100);
+    frame.addEventListener('load', function () { fitColumns(); setTimeout(fitColumns, 150); });
   })();
 </script>
 </body>

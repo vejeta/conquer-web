@@ -18,6 +18,9 @@ MSG[menu_needs_size]="Conquer needs at least %s columns x %s rows.
 Make the browser window bigger or zoom out (Ctrl and -).
 
 Press any key to check again, or 'c' to continue anyway."
+MSG[menu_needs_size_app]="Conquer needs at least %s columns x %s rows.
+Turn your phone sideways or pinch to zoom out.
+The screen checks again by itself."
 MSG[menu_ready_count]="%s of %s nations"
 MSG[menu_all_ready]="  ${green}${bold}Every nation is ready: the turn update starts now.${reset}
   Come back in a few minutes for the new turn."
