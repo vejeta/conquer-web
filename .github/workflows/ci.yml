@@ -267,9 +267,9 @@ jobs:
           # god's password; -a still does. Nothing is typed, so the builder may
           # fail afterwards for lack of a name: only its output is checked
           out=$(printf '' | docker exec -i -u conquer conquer-local conqrun -a -d "$late" 2>&1 || true)
-          grep -q 'super user password' <<< "$out" || { echo "conqrun -a no longer asks for god's password: $out" >&2; exit 1; }
+          grep -q 'what is conquer super user password' <<< "$out" || { echo "conqrun -a no longer asks for god's password: $out" >&2; exit 1; }
           out=$(printf '' | docker exec -i -u conquer conquer-local conqrun -A -d "$late" 2>&1 || true)
-          ! grep -q 'super user password' <<< "$out" || { echo "conqrun -A asked for god's password: $out" >&2; exit 1; }
+          ! grep -q 'what is conquer super user password' <<< "$out" || { echo "conqrun -A asked for god's password: $out" >&2; exit 1; }
           grep -q 'no super user password needed' <<< "$out"
           docker exec -u conquer conquer-local rm -rf "$late"
 
