@@ -142,7 +142,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
         <small id="join-note"></small>
       </div>
       <div class="links">
-        <a href="#trailer" id="trailer-link" hidden data-i18n="index.trailer">&#9654; Watch the trailer (40 s)</a>
+        <a href="#trailer" id="trailer-link" hidden>&#9654; Watch the trailer (40 s)</a>
         <a href="story.html" id="story-link" data-i18n="index.story_link">&#9656; The story in 2 minutes</a>
         <a href="tutorial.html" data-i18n-page="tutorial" data-i18n="index.tutorial">New here? Play your first turn step by step</a>
         <a href="guide.html" data-i18n-page="guide" data-i18n="index.guide">Player's guide</a>
@@ -273,43 +273,38 @@ SPDX-License-Identifier: GPL-3.0-or-later
 </footer>
 <script src="server.js"></script>
 <dialog class="trailer" id="trailer" aria-label="Conquer">
-  <video id="trailer-video" controls playsinline preload="none"></video>
+  <video id="trailer-video" controls playsinline preload="none" poster="story/poster.jpg">
+    <source src="story/conquer-story.es.vertical.mp4" type="video/mp4" media="(orientation: portrait)">
+    <source src="story/conquer-story.es.mp4" type="video/mp4">
+  </video>
   <form method="dialog"><button class="key" data-i18n="index.trailer_close">Close</button></form>
 </dialog>
 <script src="site.js"></script>
 <script src="moves.js"></script>
 <script>
-  // The trailer (tools/tutorial/video.py --video trailer) in the page's
-  // language, or in English; the link shows once one exists
+  // The story video (tools/story/render.py): narrated in Spanish only for
+  // now, so other languages get the same video and a note saying so. Phones
+  // held upright get the vertical file.
   (function () {
     var link = document.getElementById('trailer-link'), dialog = document.getElementById('trailer');
-    var video = document.getElementById('trailer-video'), src = null;
-    function find(lang) {
-      var tries = lang === 'en' ? ['en'] : [lang, 'en'];
-      (function next() {
-        var l = tries.shift();
-        if (!l) { link.hidden = true; return; }
-        fetch('tutorial/trailer.' + l + '.mp4', { method: 'HEAD' }).then(function (r) {
-          if (!r.ok) return next();
-          src = l;
-          link.hidden = false;
-        }).catch(next);
-      })();
+    var video = document.getElementById('trailer-video');
+    var base = 'story/conquer-story.es';
+    function paint() {
+      var lang = conquerI18n.lang();
+      link.innerHTML = conquerI18n.t('index.trailer') + (lang === 'es' ? '' : ' ' + conquerI18n.t('index.trailer_spanish'));
+      link.setAttribute('data-lang', lang);
     }
-    conquerI18n.ready().then(function () { find(conquerI18n.lang()); });
-    document.addEventListener('conquer:lang', function (e) { find(e.detail); });
+    conquerI18n.ready().then(function () {
+      if (document.documentElement.classList.contains('in-app')) return;  // the app has no video files
+      link.hidden = false; paint();
+    });
+    document.addEventListener('conquer:lang', function () { if (!link.hidden) paint(); });
     link.addEventListener('click', function (e) {
       e.preventDefault();
-      if (!src || !dialog.showModal) return;
-      if (video.getAttribute('data-lang') !== src) {
-        video.textContent = '';
-        video.src = 'tutorial/trailer.' + src + '.mp4';
-        var track = document.createElement('track');
-        track.kind = 'captions'; track.srclang = src; track.label = src;
-        track.src = 'tutorial/trailer.' + src + '.vtt';
-        video.appendChild(track);
-        video.setAttribute('data-lang', src);
-      }
+      if (!dialog.showModal) { location.href = base + '.mp4'; return; }
+      var portrait = window.matchMedia && matchMedia('(orientation: portrait)').matches;
+      var file = base + (portrait ? '.vertical' : '') + '.mp4';
+      if (video.getAttribute('data-file') !== file) { video.src = file; video.setAttribute('data-file', file); }
       dialog.showModal();
       video.play().catch(function () {});
     });

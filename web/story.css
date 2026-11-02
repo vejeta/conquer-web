@@ -20,6 +20,7 @@ body.story-page { margin: 0; -webkit-tap-highlight-color: transparent; user-sele
 .actions { display: flex; gap: var(--s3); justify-content: center; align-items: center; margin-top: var(--s4); }
 .actions .key { min-height: 52px; font-size: 1.15rem; }
 .actions .key-primary { min-width: 160px; font-size: 1.5rem; font-family: var(--font-mono); }
+.in-app .watch-video { display: none !important; }
 .skip, .snd, .back { position: absolute; z-index: 9; min-height: 44px; min-width: 44px; }
 .skip { top: max(12px, env(safe-area-inset-top)); right: 12px; }
 .snd { top: max(12px, env(safe-area-inset-top)); left: 12px; }

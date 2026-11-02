@@ -535,11 +535,18 @@
     go(1);
   }
 
+  // the video of the story: the vertical file for a phone held upright
+  function videoFile() {
+    var portrait = window.matchMedia && matchMedia('(orientation: portrait)').matches;
+    return 'story/conquer-story.es' + (portrait ? '.vertical' : '') + '.mp4';
+  }
+
   function init() {
     document.title = T('title');
     $('story').setAttribute('aria-label', T('title'));
     $('back').setAttribute('aria-label', T('back'));
     $('play').href = target();
+    $('video').href = videoFile();
     ownChoice = audioChoice() === null;
     sound = RENDER ? false : soundWanted();
     paintSound();
@@ -551,6 +558,7 @@
     $('play').addEventListener('click', function (e) { e.preventDefault(); leave(); });
     $('sound').addEventListener('click', function (e) { e.stopPropagation(); setSound(!sound, true); });
     $('back').addEventListener('click', function (e) { e.stopPropagation(); back(); });
+    $('video').addEventListener('click', function (e) { e.stopPropagation(); this.href = videoFile(); });
     $('replay').addEventListener('click', function (e) { e.stopPropagation(); go(1); });
     $('begin').addEventListener('click', function (e) { e.stopPropagation(); start(); });
     $('story').addEventListener('click', function (e) {
