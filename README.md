@@ -82,6 +82,10 @@ Running a public server (Debian VPS with Apache and Docker):
 - **[SECURITY.md](SECURITY.md)** covers hardening (fail2ban, rate limits,
   headers).
 
+## Design system
+
+Every page takes its colours, fonts and spacing from one stylesheet, `web/theme.css`: green phosphor over the mountains, with a phosphor per race (`data-race` on `<html>`: human, elf, dwarf, orc, chosen in the game's options or read from the nation's own screen by `web/race.js`) and parchment (`data-theme="parchment"`) for the long reading pages. `web/design.html` is the living style guide (linked from every footer as "Design"): open it to see every component. The game screen's frames are raster artefacts baked by `python3 tools/arch/bake.py` from the shapes in `tools/arch/src`; the map texture at the page edges comes from `python3 tools/hero/build-bg.py`. Pages add layout only, never colours: a browser test fails on any colour literal in a page.
+
 ## Documentation
 
 | Where | What |
