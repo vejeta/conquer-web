@@ -91,7 +91,13 @@
     var tail = lines.slice(Math.max(0, end - 6), end).join('\n');
     var out = { where: 'unknown', kind: '', items: [], turn: null, prompt: '', combat: COMBAT.test(text) };
 
-    if (BUILDER.test(text)) { out.where = 'builder'; return out; }
+    if (BUILDER.test(text)) {
+      // The builder's status line is always there: the prompt (the nation
+      // password hint reads it) is still the cursor's line, or the last one
+      out.where = 'builder';
+      out.prompt = (cursor && lines[cursor.y]) ? lines[cursor.y] : (end ? lines[end - 1] : '');
+      return out;
+    }
     for (i = 0; i < REPORTS.length; i++) {
       if (REPORTS[i][1].test(text)) { out.where = 'report'; out.kind = REPORTS[i][0]; return out; }
     }

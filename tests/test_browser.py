@@ -1029,6 +1029,18 @@ def test_nation_password_prompt_says_how_long_it_may_be(site, browser):
     ctx.close()
 
 
+def test_nation_password_hint_shows_with_the_builders_status_line(site, browser):
+    """In the real builder the bottom line always says "Nation Builder": the hint
+    must still show at the password prompt (found by the end-to-end rehearsal)."""
+    ctx, page, target = touch_page(site, browser, "try", "desktop")
+    screen = "< Building Country iberia >\n\nEnter National Password: " + "\n" * 20 + " Conquer 4.12: Nation Builder       Country #8"
+    show(page, target, screen, (26, 2))
+    wait_where(page, "builder")
+    page.wait_for_function("() => !document.getElementById('touch-fieldhint').hidden", timeout=5000)
+    assert page.inner_text("#touch-fieldhint") == "2–7 characters"
+    ctx.close()
+
+
 def test_audio_plays_after_a_click(site, browser):
     page, errors = audio_page(site, browser)
     assert page.evaluate("conquerAudio.enabled()") is False
