@@ -39,6 +39,7 @@
 
 set -e
 
+CALLER_DIR="$PWD"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
@@ -104,11 +105,14 @@ case "${1:-}" in
         echo "Then check it with: sudo $0"
         exit 0 ;;
     --decrypt)
-        [ -n "$2" ] && [ -f "$2" ] || usage
+        # A relative FILE is relative to where the command was typed
+        f="${2:-}"; [ -z "$f" ] || [[ "$f" = /* ]] || f="$CALLER_DIR/$f"
+        [ -n "$f" ] || usage
+        [ -f "$f" ] || { echo "❌ No such file: $f"; exit 1; }
         [ -n "$BACKUP_PASSWORD_FILE" ] || { echo "❌ BACKUP_PASSWORD_FILE is not set in $CONFIG"; exit 1; }
         openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass "file:$BACKUP_PASSWORD_FILE" \
-            -in "$2" -out "${2%.enc}"
-        echo "✅ ${2%.enc}"
+            -in "$f" -out "${f%.enc}"
+        echo "✅ ${f%.enc}"
         exit 0 ;;
     --select-old)  # for the tests: names on stdin, the ones beyond the newest $2
         [ -n "$OFFSITE_TEST" ] && [[ "${2:-}" =~ ^[0-9]+$ ]] || usage
