@@ -1,0 +1,44 @@
+# SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Staging for the end-to-end rehearsal (tests/e2e/): the local stack of
+# docker-compose.local.yml plus a mail catcher, with the game's mail settings
+# pointed at it. Nothing leaves the machine.
+#
+#   docker compose -f docker-compose.local.yml -f docker-compose.e2e.yml up -d --build
+#
+# (tests/e2e/up.sh does this, and prepares the throwaway accounts.)
+# Mailpit: SMTP on 1025, web page and API on http://127.0.0.1:8025.
+
+services:
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit-e2e
+    environment:
+      - MP_SMTP_AUTH_ACCEPT_ANY=1
+      - MP_SMTP_AUTH_ALLOW_INSECURE=1
+      - MP_MAX_MESSAGES=5000
+    ports:
+      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:1025:1025"
+    restart: unless-stopped
+    networks:
+      - conquer-local
+
+  conquer:
+    environment:
+      # Many sessions at once (tests/e2e/load.py), no early turn update while
+      # the players of the journey are still arriving
+      - MAX_CLIENTS=${MAX_CLIENTS:-60}
+      - TURN_EARLY=off
+      - TURN_SCHEDULE=off
+      - TURN_SCHEDULE_LABEL=End-to-end staging
+      - NOTIFY_EMAIL=admin@e2e.test
+      - NOTIFY_LANG=en
+      - SMTP_HOST=mailpit:1025
+      - SMTP_STARTTLS=off
+      - SMTP_FROM=conquer@e2e.test
+      - SITE_URL=https://localhost
+      - SIGNUP=on
+    depends_on:
+      - mailpit
