@@ -490,10 +490,16 @@ sudo ./offsite-backup.sh --install-cron               # then one every day at 04
   to add to `~/.ssh/authorized_keys` on the other machine
   (`BACKUP_SSH_KEY`, `BACKUP_SSH_PORT`).
 - `rsync://USER@HOST/MODULE/path`, an rsync daemon, for a NAS such as a
-  Synology, which does not give ordinary users SSH. Enable the NAS's rsync
-  service (in DSM: File Services, rsync), give a user permission on the shared
-  folder (the module is named after it), and put that user's password, alone
-  on one line, in `BACKUP_RSYNC_PASSWORD_FILE` (default
+  Synology, which does not give ordinary users SSH. In DSM: create a shared
+  folder (the module is named after it; DSM may drop dashes, so check the name
+  with `rsync rsync://HOST/`), create a user with Read/Write on that folder
+  only and the rsync application allowed, then in File Services, rsync, enable
+  the rsync service **and** "Enable rsync account", and add that user under
+  "Edit rsync Account" with a password (the daemon on port 873 does not take
+  DSM passwords: without an rsync account it answers "account system
+  disabled"). Toggle the rsync service off and on after creating a folder.
+  Put the rsync account's password, alone on one line, in
+  `BACKUP_RSYNC_PASSWORD_FILE` (default
   `/root/.conquer-backup-rsync`, mode 600). `BACKUP_RSYNC_PORT` is 873 unless
   changed. The daemon protocol is **not encrypted**: use it on a private
   network or VPN, restrict the port to this server, and set

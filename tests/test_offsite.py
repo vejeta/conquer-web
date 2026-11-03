@@ -53,3 +53,21 @@ def test_copy_to_a_directory_prunes_old_copies(tmp_path):
     assert "keep.txt" in left and len(left) == 4
     assert NAMES[-1] in left and NAMES[-2] in left and NAMES[0] not in left
     assert len(list((tmp_path / "local").iterdir())) == 1
+
+
+@pytest.mark.skipif(not shutil.which("openssl"), reason="needs openssl")
+def test_decrypt_a_relative_path_from_where_it_is_typed(tmp_path):
+    pw = tmp_path / "pw"
+    pw.write_text("secret\n")
+    cfg = tmp_path / "backup.env"
+    cfg.write_text(f'BACKUP_PASSWORD_FILE="{pw}"\n')
+    (tmp_path / "copy.tar.gz").write_bytes(b"payload")
+    subprocess.run(["openssl", "enc", "-aes-256-cbc", "-pbkdf2", "-iter", "200000", "-pass", f"file:{pw}",
+                    "-in", "copy.tar.gz", "-out", "copy.tar.gz.enc"], cwd=tmp_path, check=True)
+    (tmp_path / "copy.tar.gz").unlink()
+    full = dict(os.environ, OFFSITE_TEST="1", OFFSITE_CONFIG=str(cfg))
+    done = subprocess.run([SCRIPT, "--decrypt", "copy.tar.gz.enc"], cwd=tmp_path, capture_output=True, text=True, env=full)
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert (tmp_path / "copy.tar.gz").read_bytes() == b"payload"
+    missing = subprocess.run([SCRIPT, "--decrypt", "nope.enc"], cwd=tmp_path, capture_output=True, text=True, env=full)
+    assert missing.returncode != 0 and "No such file" in missing.stdout
