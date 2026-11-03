@@ -68,7 +68,8 @@
   var PANEL = /\bx is \d+\s+y is \d+|\bx = *\d+, y = *\d+|Sector Information/;
   var MOVESCREEN = /MOVESCREEN|HIT SPACE IF DONE/;
   var ANYKEY = /(?:hit|press) any (?:other )?key|hit return to|hit space|return to continue|press return|space to continue/i;
-  var YESNO = /\(y or n\)|\(y\/n\)|\[ny\]|\[yn\]|\[y\/n\]/i;
+  // the menu asks "[y/N]" in English and with the language's own key elsewhere ("[s/N]" es and pt-br, "[j/N]" de, "[t/N]" pl)
+  var YESNO = /\(y or n\)|\(y\/n\)|\[ny\]|\[yn\]|\[\p{L}\/\p{L}\]/iu;
   var YESNO_LINE = /^\s*(?:do you wish|are you sure|are your orders|disband your|pay him off|give them severance)/i;
   var NUMBER = /how (?:many|much)|[xy] loc|what (?:army|navy|item number|value)|to what (?:army|navy)|set what|which (?:army|navy)/i;
   var TEXTISH = /[:?]\s*[^\s:?]{0,30}$/;
