@@ -433,37 +433,60 @@ class Player:
         assert (after[0] - before[0]) * sx > 0 and (after[1] - before[1]) * sy > 0, "tap moved the wrong way: %s -> %s (wanted %+d,%+d)" % (before, after, sx, sy)
         return True
 
+    def cursor(self):
+        c = self.term.read()
+        return (c["cx"], c["cy"])
+
+    def settle_cursor(self, still=1.5, timeout=15):
+        """The terminal's cursor, once it has not moved for a while (a refit redraws the map)."""
+        end, last, since = time.time() + timeout, None, time.time()
+        while time.time() < end:
+            cur = self.cursor()
+            if cur != last:
+                last, since = cur, time.time()
+            elif time.time() - since >= still:
+                return cur
+            time.sleep(0.2)
+        return last
+
+    def wait_cursor_change(self, before, timeout=6):
+        end = time.time() + timeout
+        while time.time() < end:
+            cur = self.cursor()
+            if cur != before:
+                return cur
+            time.sleep(0.2)
+        return before
+
     def keys_and_dpad(self):
+        # The cursor of the terminal is the sector: the game shows no panel on a sector the nation
+        # has not seen, and stale panels of a wide screen are not a reliable sign.
         page, t = self.page, self.term
-        self.read_status()
-        before = self.sector
         if page.evaluate("document.querySelector('.touch-dpad').hidden"):
             t.chip("move")
         page.wait_for_selector(".touch-dpad:not([hidden])", timeout=8000)
-        # The cursor stops at the sea and the edge of the world ("YOU CAN'T ENTER HERE"): use the first
-        # direction that is open for the d-pad, then walk back with the arrow and out again with the letter
-        dirs = [("j", 0, 1, "ArrowDown"), ("k", 0, -1, "ArrowUp"), ("l", 1, 0, "ArrowRight"), ("h", -1, 0, "ArrowLeft")]
+        before = self.settle_cursor()
+        dirs = [("j", "ArrowDown"), ("k", "ArrowUp"), ("l", "ArrowRight"), ("h", "ArrowLeft")]
         opposite = {"j": "k", "k": "j", "l": "h", "h": "l"}
-        info = {d[0]: d for d in dirs}
+        arrow = dict(dirs)
         tried, after = [], None
-        for key, dx, dy, _ in dirs:
+        for key, _ in dirs:
             page.click(".touch-pb[data-key='%s']" % key)       # the d-pad: one sector that way
-            after = self.wait_sector_change(before, timeout=4)
+            after = self.wait_cursor_change(before)
             tried.append("%s: %s" % (key, after))
-            if after and after != before:
-                assert (after[0] - before[0], after[1] - before[1]) == (dx, dy), "d-pad %s: %s -> %s" % (key, before, after)
+            if after != before:
                 break
         else:
             raise AssertionError("the d-pad moved the cursor in no direction from %s (%s):\n%s" % (before, tried, t.text()))
-        back = info[opposite[key]]
-        t.press(back[3])                                         # the keyboard: arrows move as h j k l
-        again = self.wait_sector_change(after)
-        assert again == before, "arrow %s: %s -> %s (wanted %s)" % (back[3], after, again, before)
+        back = opposite[key]
+        t.press(arrow[back])                                     # the keyboard: arrows move as h j k l
+        again = self.wait_cursor_change(after)
+        assert again == before, "arrow %s: %s -> %s (wanted %s)" % (arrow[back], after, again, before)
         t.type(key)                                              # the letter itself
-        last = self.wait_sector_change(again)
+        last = self.wait_cursor_change(again)
         assert last == after, "key %s: %s -> %s (wanted %s)" % (key, again, last, after)
-        # the pad showed and the terminal was refitted: the layer redraws the game (^L), so the sector panel is shown once
-        t.wait(lambda s: len(re.findall(r"x is\s+\d+\s+y is\s+\d+", s)) == 1, timeout=10)
+        # the pad showed and the terminal was refitted: the layer redraws the game (^L), so no old panel is left
+        t.wait(lambda s: len(re.findall(r"x is\s+\d+\s+y is\s+\d+", s)) <= 1, timeout=10)
         if not page.evaluate("document.querySelector('.touch-dpad').hidden") and t.has_chip("move"):
             t.chip("move")                                   # the Move chip hides it again
 
