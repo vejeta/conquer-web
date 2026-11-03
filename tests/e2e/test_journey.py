@@ -497,6 +497,7 @@ class Player:
         t.wait_where("report", timeout=10)
         self.check(self.page.evaluate("document.getElementById('stone').classList.contains('parchment')"),
                    "%s: the report is not on parchment" % chip)
+        self.page.wait_for_selector("#touch-back", state="visible", timeout=8000)
         assert self.page.locator("#touch-back:visible").count() == 1, "no Back button on the %s report" % chip
         self.page.click("#touch-back")
         t.wait_where("map", timeout=15)
