@@ -56,8 +56,26 @@ conquer/gate/conquer-gate
 # The story's narration is rendered offline by the owner (see web/story/README.md)
 web/story/*/*.mp3
 !web/story/es/*.mp3
+!web/story/en/*.mp3
+!web/story/de/*.mp3
+!web/story/pl/*.mp3
+!web/story/pt-br/*.mp3
+!web/story/ru/*.mp3
+!web/story/zh/*.mp3
 web/story/*/*.ogg
 web/story/*/*.mp4
 web/story/*.mp4
 !web/story/conquer-story.es.mp4
 !web/story/conquer-story.es.vertical.mp4
+!web/story/conquer-story.en.mp4
+!web/story/conquer-story.en.vertical.mp4
+!web/story/conquer-story.de.mp4
+!web/story/conquer-story.de.vertical.mp4
+!web/story/conquer-story.pl.mp4
+!web/story/conquer-story.pl.vertical.mp4
+!web/story/conquer-story.pt-br.mp4
+!web/story/conquer-story.pt-br.vertical.mp4
+!web/story/conquer-story.ru.mp4
+!web/story/conquer-story.ru.vertical.mp4
+!web/story/conquer-story.zh.mp4
+!web/story/conquer-story.zh.vertical.mp4

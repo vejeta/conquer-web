@@ -17,8 +17,10 @@ from test_browser import browser, site  # noqa: F401  (the fixtures: the site an
 pytestmark = pytest.mark.browser
 
 
-def story(browser, site, lang="en", w=1280, h=800, query="", dur=",".join(["30"] * 8), **ctx):
+def story(browser, site, lang="en", w=1280, h=800, query="", dur=",".join(["30"] * 8), nonarr=False, **ctx):
     context = browser.new_context(viewport={"width": w, "height": h}, **ctx)
+    if nonarr:   # every language has narration files now: pretend there are none
+        context.route("**/story/*/*.mp3", lambda r: r.fulfill(status=404))
     page = context.new_page()
     errors = []
     page.on("console", lambda m: errors.append(m.text) if m.type == "error" and "404" not in m.text else None)
@@ -187,7 +189,7 @@ def test_a_stored_choice_is_respected(site, browser):
 
 
 def test_without_narration_the_text_times_the_panel(site, browser):
-    context, page, errors = story(browser, site, dur="")
+    context, page, errors = story(browser, site, dur="", nonarr=True)
     page.click("#begin")
     page.wait_for_function("() => conquerStory.state().n === 1 && conquerStory.state().D > 0", timeout=10000)
     texts = load(WEB / "i18n" / "en.json")["story"]
@@ -262,7 +264,7 @@ def test_the_story_video_button_on_the_last_scene(site, browser):
         page.wait_for_function("() => !document.getElementById('actions').hidden", timeout=15000)
         assert page.locator("#video").is_visible() == shown
         if shown:
-            assert page.get_attribute("#video", "href") == "story/conquer-story.es.mp4"
+            assert page.get_attribute("#video", "href") == "story/conquer-story.en.mp4"
             assert page.inner_text("#video") == "Watch the video"
         assert not errors
         context.close()
@@ -273,11 +275,11 @@ def test_the_index_opens_the_story_video(site, browser):
     page = context.new_page()
     page.goto(site + "index.html?lang=en")
     page.wait_for_selector("#trailer-link:not([hidden])")
-    assert "Spanish narration" in page.inner_text("#trailer-link")
+    assert "Spanish narration" not in page.inner_text("#trailer-link")   # English has its own video
     assert page.get_attribute("#trailer-video", "poster") == "story/poster.jpg"
     assert page.get_attribute("#trailer-video", "playsinline") is not None
     page.click("#trailer-link")
-    assert page.get_attribute("#trailer-video", "src") == "story/conquer-story.es.mp4"
+    assert page.get_attribute("#trailer-video", "src") == "story/conquer-story.en.mp4"
     context.close()
     phone = browser.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True)
     page = phone.new_page()
@@ -293,6 +295,24 @@ def test_the_index_opens_the_story_video(site, browser):
     page.wait_for_timeout(500)
     assert page.locator("#trailer-link").is_hidden()
     app.close()
+
+
+@pytest.mark.parametrize("lang", ["en", "de", "pl", "pt-br", "ru", "zh"])
+def test_every_language_has_its_story_video(site, browser, lang):
+    """The index and the last scene pick the page language's video; each file exists."""
+    for suffix in (".mp4", ".vertical.mp4"):
+        assert (WEB / f"story/conquer-story.{lang}{suffix}").is_file()
+    context = browser.new_context(viewport={"width": 1280, "height": 800})
+    page = context.new_page()
+    page.goto(site + f"index.html?lang={lang}")
+    page.wait_for_selector("#trailer-link:not([hidden])")
+    page.wait_for_function("() => document.getElementById('trailer-link').textContent.trim().length > 0")
+    assert page.get_attribute("#trailer-link", "data-lang") == lang
+    note = json.loads((WEB / "i18n" / f"{lang}.json").read_text(encoding="utf-8"))["index"]["trailer_spanish"]
+    assert note not in page.inner_text("#trailer-link")   # no "(Spanish narration)" note
+    page.click("#trailer-link")
+    assert page.get_attribute("#trailer-video", "src") == f"story/conquer-story.{lang}.mp4"
+    context.close()
 
 
 def test_redirect_carries_lang_and_origin(site, browser):
@@ -406,3 +426,27 @@ def test_watch_again_on_the_last_scene(site, browser):
     page.click("#replay")
     page.wait_for_function("() => conquerStory.state().n === 1")
     context.close()
+
+
+def _metas(page):
+    import re
+    html = (WEB / page).read_text(encoding="utf-8")
+    return {m.group(2): m.group(4) for m in re.finditer(
+        r'<meta\s+(property|name)="([^"]+)"\s+(content)="([^"]*)"', html)}
+
+
+@pytest.mark.parametrize("page", ["index.html", "story.html"])
+def test_link_preview_tags(page):
+    m = _metas(page)
+    assert m["og:title"] and m["og:description"]
+    assert m["og:image"].startswith("https://conquer.vejeta.com/")
+    assert m["twitter:card"] == "summary_large_image"
+    assert m["twitter:image"].startswith("https://")
+    assert (WEB / m["og:image"].split("conquer.vejeta.com/")[1]).is_file()
+
+
+def test_story_video_preview():
+    m = _metas("story.html")
+    assert m["og:type"] == "video.other"
+    assert m["og:video:type"] == "video/mp4"
+    assert (WEB / m["og:video"].split("conquer.vejeta.com/")[1]).is_file()
