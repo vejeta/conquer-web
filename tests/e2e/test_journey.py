@@ -454,7 +454,7 @@ class Player:
         while time.time() < end:
             cur = self.cursor()
             if cur != before:
-                return cur
+                return self.settle_cursor(still=0.8)     # the game draws the panel after the cursor
             time.sleep(0.2)
         return before
 
