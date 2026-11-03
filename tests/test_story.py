@@ -262,7 +262,7 @@ def test_the_story_video_button_on_the_last_scene(site, browser):
         page.wait_for_function("() => !document.getElementById('actions').hidden", timeout=15000)
         assert page.locator("#video").is_visible() == shown
         if shown:
-            assert page.get_attribute("#video", "href") == "story/conquer-story.es.mp4"
+            assert page.get_attribute("#video", "href") == "story/conquer-story.en.mp4"
             assert page.inner_text("#video") == "Watch the video"
         assert not errors
         context.close()
@@ -273,11 +273,11 @@ def test_the_index_opens_the_story_video(site, browser):
     page = context.new_page()
     page.goto(site + "index.html?lang=en")
     page.wait_for_selector("#trailer-link:not([hidden])")
-    assert "Spanish narration" in page.inner_text("#trailer-link")
+    assert "Spanish narration" not in page.inner_text("#trailer-link")   # English has its own video
     assert page.get_attribute("#trailer-video", "poster") == "story/poster.jpg"
     assert page.get_attribute("#trailer-video", "playsinline") is not None
     page.click("#trailer-link")
-    assert page.get_attribute("#trailer-video", "src") == "story/conquer-story.es.mp4"
+    assert page.get_attribute("#trailer-video", "src") == "story/conquer-story.en.mp4"
     context.close()
     phone = browser.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True)
     page = phone.new_page()
@@ -293,6 +293,24 @@ def test_the_index_opens_the_story_video(site, browser):
     page.wait_for_timeout(500)
     assert page.locator("#trailer-link").is_hidden()
     app.close()
+
+
+@pytest.mark.parametrize("lang", ["en", "de", "pl", "pt-br", "ru", "zh"])
+def test_every_language_has_its_story_video(site, browser, lang):
+    """The index and the last scene pick the page language's video; each file exists."""
+    for suffix in (".mp4", ".vertical.mp4"):
+        assert (WEB / f"story/conquer-story.{lang}{suffix}").is_file()
+    context = browser.new_context(viewport={"width": 1280, "height": 800})
+    page = context.new_page()
+    page.goto(site + f"index.html?lang={lang}")
+    page.wait_for_selector("#trailer-link:not([hidden])")
+    page.wait_for_function("() => document.getElementById('trailer-link').textContent.trim().length > 0")
+    assert page.get_attribute("#trailer-link", "data-lang") == lang
+    note = json.loads((WEB / "i18n" / f"{lang}.json").read_text(encoding="utf-8"))["index"]["trailer_spanish"]
+    assert note not in page.inner_text("#trailer-link")   # no "(Spanish narration)" note
+    page.click("#trailer-link")
+    assert page.get_attribute("#trailer-video", "src") == f"story/conquer-story.{lang}.mp4"
+    context.close()
 
 
 def test_redirect_carries_lang_and_origin(site, browser):

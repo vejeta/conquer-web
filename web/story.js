@@ -547,10 +547,14 @@
     go(1);
   }
 
-  // the video of the story: the vertical file for a phone held upright
+  // the video of the story in the page's language (tools/story/render.py), else Spanish;
+  // the vertical file for a phone held upright
+  var VIDEOS = ['en', 'es', 'de', 'pl', 'pt-br', 'ru', 'zh'];
   function videoFile() {
     var portrait = window.matchMedia && matchMedia('(orientation: portrait)').matches;
-    return 'story/conquer-story.es' + (portrait ? '.vertical' : '') + '.mp4';
+    var l = window.conquerLang && window.conquerLang();
+    if (VIDEOS.indexOf(l) < 0) l = 'es';   // no video in that language: the Spanish one
+    return 'story/conquer-story.' + l + (portrait ? '.vertical' : '') + '.mp4';
   }
 
   function init() {

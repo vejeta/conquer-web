@@ -285,9 +285,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
 <script src="site.js"></script>
 <script src="moves.js"></script>
 <script>
-  // The story video (tools/story/render.py): narrated in Spanish only for
-  // now, so other languages get the same video and a note saying so. Phones
-  // held upright get the vertical file.
+  // The story video (tools/story/render.py): one per language; a language
+  // without one gets the Spanish video and a note saying so. Phones held
+  // upright get the vertical file.
   (function () {
     // the story on demand: in the visitor's language, and it does not touch the once-only flag
     var slink = document.getElementById('story-link');
@@ -296,10 +296,12 @@ SPDX-License-Identifier: GPL-3.0-or-later
     document.addEventListener('conquer:lang', paintStory);
     var link = document.getElementById('trailer-link'), dialog = document.getElementById('trailer');
     var video = document.getElementById('trailer-video');
-    var base = 'story/conquer-story.es';
+    var VIDEOS = ['en', 'es', 'de', 'pl', 'pt-br', 'ru', 'zh'];
+    function vlang() { var l = conquerI18n.lang(); return VIDEOS.indexOf(l) < 0 ? 'es' : l; }
+    function base() { return 'story/conquer-story.' + vlang(); }
     function paint() {
       var lang = conquerI18n.lang();
-      link.innerHTML = conquerI18n.t('index.trailer') + (lang === 'es' ? '' : ' ' + conquerI18n.t('index.trailer_spanish'));
+      link.innerHTML = conquerI18n.t('index.trailer') + (vlang() === lang ? '' : ' ' + conquerI18n.t('index.trailer_spanish'));
       link.setAttribute('data-lang', lang);
     }
     conquerI18n.ready().then(function () {
@@ -309,9 +311,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
     document.addEventListener('conquer:lang', function () { if (!link.hidden) paint(); });
     link.addEventListener('click', function (e) {
       e.preventDefault();
-      if (!dialog.showModal) { location.href = base + '.mp4'; return; }
+      if (!dialog.showModal) { location.href = base() + '.mp4'; return; }
       var portrait = window.matchMedia && matchMedia('(orientation: portrait)').matches;
-      var file = base + (portrait ? '.vertical' : '') + '.mp4';
+      var file = base() + (portrait ? '.vertical' : '') + '.mp4';
       if (video.getAttribute('data-file') !== file) { video.src = file; video.setAttribute('data-file', file); }
       dialog.showModal();
       video.play().catch(function () {});
