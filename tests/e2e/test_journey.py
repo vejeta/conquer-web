@@ -387,8 +387,10 @@ class Player:
         self.turn = int(m.group(1)) if m else None
         m = re.search(r"treasury\.+(-?\d+)", text)
         self.treasury = int(m.group(1)) if m else None
-        m = re.search(r"x is\s+(\d+)\s+y is\s+(\d+)", text)
-        self.sector = (int(m.group(1)), int(m.group(2))) if m else None
+        # the last panel on the screen (a wide terminal resized under the game shows the old one too,
+        # until the layer's ^L redraw: keys_and_dpad checks that it comes)
+        ms = re.findall(r"x is\s+(\d+)\s+y is\s+(\d+)", text)
+        self.sector = (int(ms[-1][0]), int(ms[-1][1])) if ms else None
         return text
 
     def wait_sector_change(self, before, timeout=8):
@@ -460,6 +462,8 @@ class Player:
         t.type(key)                                              # the letter itself
         last = self.wait_sector_change(again)
         assert last == after, "key %s: %s -> %s (wanted %s)" % (key, again, last, after)
+        # the pad showed and the terminal was refitted: the layer redraws the game (^L), so the sector panel is shown once
+        t.wait(lambda s: len(re.findall(r"x is\s+\d+\s+y is\s+\d+", s)) == 1, timeout=10)
         if not page.evaluate("document.querySelector('.touch-dpad').hidden") and t.has_chip("move"):
             t.chip("move")                                   # the Move chip hides it again
 
