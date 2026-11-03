@@ -17,8 +17,10 @@ from test_browser import browser, site  # noqa: F401  (the fixtures: the site an
 pytestmark = pytest.mark.browser
 
 
-def story(browser, site, lang="en", w=1280, h=800, query="", dur=",".join(["30"] * 8), **ctx):
+def story(browser, site, lang="en", w=1280, h=800, query="", dur=",".join(["30"] * 8), nonarr=False, **ctx):
     context = browser.new_context(viewport={"width": w, "height": h}, **ctx)
+    if nonarr:   # every language has narration files now: pretend there are none
+        context.route("**/story/*/*.mp3", lambda r: r.fulfill(status=404))
     page = context.new_page()
     errors = []
     page.on("console", lambda m: errors.append(m.text) if m.type == "error" and "404" not in m.text else None)
@@ -187,7 +189,7 @@ def test_a_stored_choice_is_respected(site, browser):
 
 
 def test_without_narration_the_text_times_the_panel(site, browser):
-    context, page, errors = story(browser, site, dur="")
+    context, page, errors = story(browser, site, dur="", nonarr=True)
     page.click("#begin")
     page.wait_for_function("() => conquerStory.state().n === 1 && conquerStory.state().D > 0", timeout=10000)
     texts = load(WEB / "i18n" / "en.json")["story"]
