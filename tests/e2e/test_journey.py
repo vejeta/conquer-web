@@ -438,15 +438,28 @@ class Player:
         if page.evaluate("document.querySelector('.touch-dpad').hidden"):
             t.chip("move")
         page.wait_for_selector(".touch-dpad:not([hidden])", timeout=8000)
-        page.click(".touch-pb[data-key='j']")                # the d-pad: one sector south
-        after = self.wait_sector_change(before)
-        assert after and after != before and after[1] == before[1] + 1, "d-pad south: %s -> %s" % (before, after)
-        t.press("ArrowRight")                                # the keyboard: arrows move as h j k l
+        # The cursor stops at the sea and the edge of the world ("YOU CAN'T ENTER HERE"): use the first
+        # direction that is open for the d-pad, then walk back with the arrow and out again with the letter
+        dirs = [("j", 0, 1, "ArrowDown"), ("k", 0, -1, "ArrowUp"), ("l", 1, 0, "ArrowRight"), ("h", -1, 0, "ArrowLeft")]
+        opposite = {"j": "k", "k": "j", "l": "h", "h": "l"}
+        info = {d[0]: d for d in dirs}
+        tried, after = [], None
+        for key, dx, dy, _ in dirs:
+            page.click(".touch-pb[data-key='%s']" % key)       # the d-pad: one sector that way
+            after = self.wait_sector_change(before, timeout=4)
+            tried.append("%s: %s" % (key, after))
+            if after and after != before:
+                assert (after[0] - before[0], after[1] - before[1]) == (dx, dy), "d-pad %s: %s -> %s" % (key, before, after)
+                break
+        else:
+            raise AssertionError("the d-pad moved the cursor in no direction from %s (%s):\n%s" % (before, tried, t.text()))
+        back = info[opposite[key]]
+        t.press(back[3])                                         # the keyboard: arrows move as h j k l
         again = self.wait_sector_change(after)
-        assert again and again[0] == after[0] + 1, "arrow right: %s -> %s" % (after, again)
-        t.type("k")
+        assert again == before, "arrow %s: %s -> %s (wanted %s)" % (back[3], after, again, before)
+        t.type(key)                                              # the letter itself
         last = self.wait_sector_change(again)
-        assert last and last[1] == again[1] - 1, "key k: %s -> %s" % (again, last)
+        assert last == after, "key %s: %s -> %s (wanted %s)" % (key, again, last, after)
         if not page.evaluate("document.querySelector('.touch-dpad').hidden") and t.has_chip("move"):
             t.chip("move")                                   # the Move chip hides it again
 
@@ -498,6 +511,10 @@ class Player:
         except Exception:
             page.evaluate("document.getElementById('logout').click()")
         page.wait_for_url(re.compile(r"/login\.html\?loggedout=1"), timeout=20000)
+        # the logout empties the session and the cookie lives one more second (SessionMaxAge 1)
+        end = time.time() + 10
+        while time.time() < end and [c for c in self.ctx.cookies() if c["name"] == "conquer_session"]:
+            time.sleep(0.5)
         assert not [c for c in self.ctx.cookies() if c["name"] == "conquer_session"], "the session cookie is still there after signing out"
         r = self.ctx.request.get(Env.base + "/play/", max_redirects=0)
         assert r.status == 302, "/play/ after signing out answers %s" % r.status
