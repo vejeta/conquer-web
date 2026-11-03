@@ -1,0 +1,55 @@
+From 99faeeb164d87d34dcf6b5607d3352cdd8120525 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Juan=20Manuel=20M=C3=A9ndez=20Rey?= <vejeta@gmail.com>
+Date: Tue, 3 Nov 2026 23:22:22 +0000
+Subject: [PATCH] Give the seen-sectors flags a fixed size
+
+The flags were allocated for the terminal's size at the start of the game
+and indexed with the current one. A terminal that grows afterwards (a
+resized window, the web page's frame changing for a report) indexed past
+the allocation and the game ended back at the menu. A fixed 512x256 table
+with a fixed row stride covers any terminal and keeps the flags in place
+when it changes size.
+---
+ gpl-release/data.h    | 7 ++++++-
+ gpl-release/display.c | 7 +------
+ 2 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/gpl-release/data.h b/gpl-release/data.h
+index 2d43792..7ca0d4d 100644
+--- a/gpl-release/data.h
++++ b/gpl-release/data.h
+@@ -47,7 +47,12 @@
+ #define	SCREEN_X_SIZE	(( COLS - 21) / 2)	/* divide by two as only 1/2
+ 						                       sectors will be shown */
+ #define	SCREEN_Y_SIZE	( LINES - 5 )
+-#define	HAS_SEEN(x,y)	hasseen[(x)+((y)*((COLS-10)/2))]
++/* The seen-sectors flags have a fixed size: a terminal that grows after the
++ * game started (a window resized, a frame that changes) would otherwise
++ * index past what was allocated for the first size */
++#define	HASSEEN_COLS	512
++#define	HASSEEN_ROWS	256
++#define	HAS_SEEN(x,y)	hasseen[((x)%HASSEEN_COLS)+(((y)%HASSEEN_ROWS)*HASSEEN_COLS)]
+ #define	PASSLTH		7	/* the number of characters in the passwd*/
+ #define	NAMELTH		9	/* the number of characters in the name*/
+ #define	LEADERLTH	9	/* the number of characters in the leader*/
+diff --git a/gpl-release/display.c b/gpl-release/display.c
+index 1b9fcad..7e53a5a 100644
+--- a/gpl-release/display.c
++++ b/gpl-release/display.c
+@@ -52,12 +52,7 @@ static char *hasseen;
+ void
+ init_hasseen()
+ {
+-	hasseen = (char *)malloc(((COLS-10)/2) * (LINES-5));
+-#ifdef BSD
+-	bzero(hasseen,((COLS-10)/2) * (LINES-5));
+-#else
+-	memset( hasseen, 0, ((COLS-10)/2) * (LINES-5));
+-#endif
++	hasseen = (char *)calloc(HASSEEN_COLS * HASSEEN_ROWS, 1);
+ 	if (hasseen == (char *)NULL) {
+ 		errormsg("Cannot allocate memory.");
+ 		bye(FALSE);
+-- 
+2.43.0
+

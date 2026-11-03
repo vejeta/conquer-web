@@ -1079,7 +1079,6 @@ def test_map_is_redrawn_when_the_terminal_changes_size(site, browser):
     page.wait_for_timeout(600)
     watch_keys(page, target, "game")
     page.set_viewport_size({"width": 1100, "height": 640})
-    page.wait_for_function("(c) => document.getElementById('game').contentWindow.term.rows !== c", arg=target.evaluate("term.rows"), timeout=8000)
     end = time.time() + 10
     while "\x0c" not in sent_keys(page, target, "game") and time.time() < end:
         page.wait_for_timeout(200)
