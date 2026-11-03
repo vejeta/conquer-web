@@ -1041,6 +1041,28 @@ def test_nation_password_hint_shows_with_the_builders_status_line(site, browser)
     ctx.close()
 
 
+def test_nation_password_hint_does_not_resize_the_screen(site, browser):
+    """The hint used to take a row of its own, so the screen was refitted (a resize
+    for the game) while the player typed the password: the second entry then did
+    not match. It floats now: the screen keeps its size (found by the end-to-end
+    rehearsal)."""
+    for viewport in ("desktop", "phone"):
+        ctx, page, target = touch_page(site, browser, "game", viewport)
+        name = "< Building Country iberia >\n\nEnter a Name for your Country: "
+        show(page, target, name)
+        page.wait_for_function("() => document.getElementById('touch-fieldhint').hidden", timeout=5000)
+        page.wait_for_timeout(600)
+        measure = "() => { const r = document.querySelector('.stone').getBoundingClientRect(); return [Math.round(r.height), Math.round(r.width)]; }"
+        rows = lambda: target.evaluate("[term.cols, term.rows]")
+        before, size = page.evaluate(measure), rows()
+        show(page, target, "< Building Country iberia >\n\nEnter National Password: ")
+        page.wait_for_function("() => !document.getElementById('touch-fieldhint').hidden", timeout=5000)
+        page.wait_for_timeout(600)
+        assert page.evaluate(measure) == before, viewport
+        assert rows() == size, viewport
+        ctx.close()
+
+
 def test_audio_plays_after_a_click(site, browser):
     page, errors = audio_page(site, browser)
     assert page.evaluate("conquerAudio.enabled()") is False
