@@ -13,7 +13,7 @@ English.
 
 | Texts | Where |
 |-------|-------|
-| Home page, game page, try page, coach, hall of fame | `i18n/<language>.json`, one section per page (`index`, `game`, `try`, `coach`, `hall`) |
+| Home page, game page, try page, coach, hall of fame | `i18n/<language>.json`, one section per page (`index`, `game`, `try`, `coach`, `hall`; `touch` for the touch layer of the game screens, `web/touch.js`) |
 | First-turn tutorial and coach steps | `tools/tutorial/i18n/<language>.json`, built into `tutorial.<language>.html` and `tutorial/first-turn.<language>.json` |
 | Player's guide | a page per language: `guide.<language>.html` |
 | Terminal menu and join wizard | `conquer/i18n/<language>.sh` |

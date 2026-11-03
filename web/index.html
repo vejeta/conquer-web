@@ -20,270 +20,149 @@ SPDX-License-Identifier: GPL-3.0-or-later
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="The Conquer world map on an amber terminal, with a battle and the dispatch: sahara changes status with darboth to WAR">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Conquer 4.12: the 1987 multiplayer strategy game, live again">
+  <meta name="twitter:description" content="Rule a nation, raise armies, sign treaties and break them. Play in your browser, or try a practice world without an account.">
+  <meta name="twitter:image" content="https://conquer.vejeta.com/og-image.png">
   <link rel="preload" href="fonts/vt323-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="theme.css">
+  <script src="race.js"></script>
   <style>
-    :root {
-      --bg: #0d1117;
-      --panel: #161b22;
-      --border: #30363d;
-      --text: #e6edf3;
-      --muted: #8b949e;
-      --accent: #3fb950;
-      --accent-text: #0d1117;
-      --warn: #d29922;
-      /* Score chart series: validated categorical slots (dataviz palette) */
-      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
-      --grid: #30363d;
-    }
-    @media (prefers-color-scheme: light) {
-      :root {
-        --bg: #f6f8fa;
-        --panel: #ffffff;
-        --border: #d0d7de;
-        --text: #1f2328;
-        --muted: #57606a;
-        --accent: #1a7f37;
-        --accent-text: #ffffff;
-        --warn: #9a6700;
-        --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4;
-        --grid: #e3e6ea;
-      }
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    }
-    main { max-width: 820px; margin: 0 auto; padding: 32px 16px 48px; }
-    header { text-align: center; margin-bottom: 32px; }
-    h2 { font-size: 1.2rem; margin: 0 0 12px; }
-    section {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 20px 24px;
-      margin-bottom: 20px;
-    }
+    /* Layout only: colours and fonts come from theme.css */
+    main.home { max-width: 1120px; margin: 0 auto; padding: var(--s4) var(--s4) 64px; display: flex; flex-direction: column; gap: var(--s5); }
+    main.home > section { margin: 0; }
+    main.home h2 { margin-bottom: var(--s3); }
     ol, ul { padding-left: 1.3em; margin: 0; }
     li + li { margin-top: 6px; }
-    kbd {
-      font: 0.85em ui-monospace, "DejaVu Sans Mono", monospace;
-      border: 1px solid var(--border);
-      border-bottom-width: 2px;
-      border-radius: 4px;
-      padding: 1px 6px;
-      white-space: nowrap;
-    }
-    .moves-box { margin: 0 0 18px; }
-    .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 6px 24px; }
+    kbd { display: inline-block; min-width: 1.8em; text-align: center; padding: 0 .4em; background: var(--bg); border: 1px solid var(--line); border-bottom: 3px solid var(--stone); border-radius: 4px; white-space: nowrap; }
+    .moves-box { margin: 0 0 var(--s4); }
+    .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 6px var(--s5); }
     .keys div { display: flex; gap: 10px; align-items: baseline; }
-    .keys kbd { min-width: 2.2em; text-align: center; }
-    .note { border-left: 3px solid var(--warn); padding-left: 12px; color: var(--muted); }
-    #status-warning { color: var(--text); margin: 0 0 16px; }
-    #news details { border-top: 1px solid var(--border); padding: 8px 0; }
+    .keys kbd { min-width: 2.2em; }
+    .note { border-left: 4px solid var(--gold); padding-left: var(--s3); color: var(--ink-dim); }
+    #status-warning { color: var(--ink); margin: 0 0 var(--s4); }
+    #news details { border-top: 1px solid var(--hair); padding: var(--s2) 0; }
     #news details:first-child { border-top: 0; padding-top: 0; }
     #news summary { cursor: pointer; font-weight: 600; }
-    #news h3 { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 12px 0 4px; }
-    #news ul { margin: 0; }
+    #news h3 { font: 500 .8rem var(--font-text); color: var(--ink-dim); text-transform: uppercase; letter-spacing: .04em; margin: var(--s3) 0 4px; }
     #news li { overflow-wrap: anywhere; }
-    .chart { margin: 4px 0 18px; position: relative; }
-    .chart h3 { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 6px; font-weight: 500; }
+    .chart { margin: 4px 0 var(--s4); position: relative; }
+    .chart h3 { font: 500 .8rem var(--font-text); color: var(--ink-dim); text-transform: uppercase; letter-spacing: .04em; margin: 0 0 6px; }
     .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
-    .chart .axis { fill: var(--muted); font: 11px system-ui, sans-serif; font-variant-numeric: tabular-nums; }
-    .chart .gridline { stroke: var(--grid); stroke-width: 1; }
+    .chart .axis { fill: var(--ink-dim); font: 11px var(--font-text); font-variant-numeric: tabular-nums; }
+    .chart .gridline { stroke: var(--hair); stroke-width: 1; }
     .chart .line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-    .chart .end { font: 600 11px system-ui, sans-serif; fill: var(--text); }
-    .chart .cross { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
-    .legend-row { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.85rem; color: var(--muted); margin-top: 6px; }
+    .chart .end { font: 600 11px var(--font-text); fill: var(--ink); }
+    .chart .cross { stroke: var(--ink-dim); stroke-width: 1; stroke-dasharray: 3 3; }
+    .legend-row { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: .85rem; color: var(--ink-dim); margin-top: 6px; }
     .legend-row span::before { content: ""; display: inline-block; width: 10px; height: 3px; border-radius: 2px; background: var(--c); margin-right: 6px; vertical-align: middle; }
-    .tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 6px 9px; font-size: 0.8rem; box-shadow: 0 4px 14px rgba(0,0,0,.25); white-space: nowrap; }
+    .tip { position: absolute; pointer-events: none; background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 6px 9px; font-size: .8rem; box-shadow: 0 4px 14px color-mix(in srgb, var(--screen) 45%, transparent); white-space: nowrap; }
     .tip b { display: block; margin-bottom: 2px; }
     .tip i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 6px; font-style: normal; }
     .tip span { float: right; margin-left: 14px; font-variant-numeric: tabular-nums; }
-    .share { font-size: 0.8rem; font-weight: 400; margin-left: 8px; }
-    .countdown { color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
-    a { color: var(--accent); }
-    footer { text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: 32px; }
-    .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
-    .fact { border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
-    .fact .label { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
-    .fact .value { font-weight: 600; }
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
-    th { color: var(--muted); font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
-    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-    [hidden] { display: none !important; }
+    .share { font-size: .8rem; font-weight: 400; margin-left: 8px; }
+    .countdown { color: var(--phos-text); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--s3); margin-bottom: var(--s4); }
+    .fact { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--s2) var(--s3); }
+    .fact .label { color: var(--ink-dim); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; }
+    .fact .value { font: 1.35rem/1.3 var(--font-mono); color: var(--ink); }
     @media (max-width: 560px) { .optional { display: none; } }
-    /* The war terminal: an amber monitor of 1987, in both themes */
-    @font-face {
-      font-family: "VT323"; font-display: swap;
-      src: url(fonts/vt323-latin.woff2) format("woff2");
-      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-    }
-    @font-face {
-      font-family: "VT323"; font-display: swap;
-      src: url(fonts/vt323-latin-ext.woff2) format("woff2");
-      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-    }
-    @font-face {
-      font-family: "IM Fell English SC"; font-display: swap;
-      src: url(fonts/im-fell-english-sc-latin.woff2) format("woff2");
-      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122;
-    }
-    .hero {
-      --crt: #110b04; --crt-2: #1a1107; --amber: #ffb340; --amber-mid: #c7862b;
-      --amber-dim: #80581f; --amber-faint: #33230d; --war: #ff5540; --parchment: #f4e7c9;
-      --term: "VT323", ui-monospace, "DejaVu Sans Mono", monospace;
-      --display: "IM Fell English SC", "Iowan Old Style", Georgia, serif;
-      position: relative; overflow: hidden;
-      background: var(--crt); color: var(--amber);
-      border-bottom: 1px solid var(--amber-faint);
-      color-scheme: dark;
-    }
-    #map { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-    /* Scanlines, the curved glass, and a darker side for the text */
-    .hero::before, .hero::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
-    .hero::before { background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0 2px, rgba(0,0,0,.28) 2px 3px); z-index: 2; }
-    .hero::after {
-      background:
-        radial-gradient(ellipse at 72% 45%, rgba(0,0,0,0) 0 38%, rgba(0,0,0,.55) 80%),
-        linear-gradient(to right, rgba(17,11,4,.94) 0 30%, rgba(17,11,4,.55) 52%, rgba(17,11,4,0) 70%);
-      z-index: 1;
-    }
-    .hero-inner {
-      position: relative; z-index: 3;
-      max-width: 1120px; margin: 0 auto; padding: 24px 16px 32px;
-      display: grid; grid-template-columns: minmax(0, 470px) minmax(0, 1fr); gap: 24px;
-      min-height: 600px;
-    }
-    .topline { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
-    .topline select {
-      max-width: 60%; font: 18px/1 var(--term); color: var(--amber); background: var(--crt-2);
-      border: 1px solid var(--amber-dim); border-radius: 3px; padding: 3px 6px; cursor: pointer;
-    }
-    .pitch { display: flex; flex-direction: column; gap: 18px; align-self: center; }
-    .version { font: 20px/1 var(--term); color: var(--amber-mid); display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; }
-    .version b { color: var(--amber); font-weight: 400; }
-    .logo {
-      margin: 0; font: 400 clamp(3.2rem, 10vw, 5.6rem)/0.9 var(--display); color: var(--parchment);
-      letter-spacing: .04em; text-shadow: 0 0 18px rgba(255,179,64,.35), 0 0 2px rgba(255,179,64,.6);
-    }
-    .tagline { margin: 0; font: 400 1.25rem/1.4 var(--display); color: var(--amber); text-wrap: balance; max-width: 26em; }
-    /* Two buttons of equal width, each with its note below; long labels
-       (German, Russian...) wrap inside the button, and the buttons stack
-       when there is no room for both */
-    .trailer { padding: 0; border: 1px solid #30363d; border-radius: 10px; background: #000; width: min(960px, 94vw); }
-    .trailer::backdrop { background: rgba(0, 0, 0, .75); }
-    .trailer video { display: block; width: 100%; }
-    .trailer form { text-align: right; padding: 8px; background: #0d1117; }
-    .trailer button { font: 600 .95rem system-ui, sans-serif; color: #e6edf3; background: #30363d; border: 0; border-radius: 6px; padding: 6px 14px; cursor: pointer; }
-    .ctas {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
-      gap: 6px 16px;
-    }
+    /* The hero: mountains behind, the pitch on the left, the world news on a monitor */
+    .hero { padding: var(--s6) var(--s4) 110px; }
+    .hero-inner { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 470px) minmax(0, 1fr); gap: var(--s5); align-items: center; }
+    .pitch { display: flex; flex-direction: column; gap: var(--s4); }
+    .version { font: 1.3rem/1 var(--font-mono); color: var(--ink-dim); display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; }
+    .version b { color: var(--gold); font-weight: 400; }
+    .logo { margin: 0; font-size: clamp(3.2rem, 10vw, 5.6rem); line-height: .9; color: var(--phos-text); text-shadow: 0 0 18px var(--phos-glow); }
+    .tagline { margin: 0; font: 400 1.25rem/1.4 var(--font-title); text-wrap: balance; max-width: 26em; }
+    .ctas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 6px var(--s4); }
     .cta { display: grid; grid-row: span 2; grid-template-rows: subgrid; gap: 6px; align-content: start; }
-    .cta a {
-      display: flex; align-items: center; justify-content: center; min-height: 52px;
-      text-align: center; padding: 10px 16px; border-radius: 3px; overflow-wrap: anywhere;
-      font: 26px/1.05 var(--term); letter-spacing: .05em; text-decoration: none; text-wrap: balance;
-    }
-    .cta.primary a { background: var(--amber); color: var(--crt); box-shadow: 0 0 22px rgba(255,179,64,.35); }
-    .cta.secondary a { border: 1px solid var(--amber); color: var(--amber); background: rgba(17,11,4,.6); }
-    .cta a:hover, .cta a:focus-visible { filter: brightness(1.12); outline: 2px solid var(--parchment); outline-offset: 2px; }
-    .cta small { font-size: .82rem; color: var(--amber-mid); line-height: 1.35; margin-bottom: 8px; }
-    .join { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px dashed var(--amber-dim); background: rgba(17,11,4,.7); }
-    .join a {
-      align-self: flex-start; max-width: 100%; padding: 8px 16px; border-radius: 3px; overflow-wrap: anywhere;
-      border: 1px solid var(--amber); color: var(--amber); text-decoration: none;
-      font: 22px/1.1 var(--term); letter-spacing: .05em; text-wrap: balance;
-    }
-    .join a:hover, .join a:focus-visible { filter: brightness(1.12); outline: 2px solid var(--parchment); outline-offset: 2px; }
-    .join small { font-size: .85rem; color: var(--parchment); line-height: 1.4; }
-    .links { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .92rem; }
-    .hero a.text { color: var(--parchment); text-decoration-color: var(--amber-dim); text-underline-offset: 3px; }
-    .story { display: flex; gap: 10px; align-items: baseline; border-top: 1px solid var(--amber-faint); padding-top: 12px; font-size: .95rem; }
-    .story span { color: var(--amber); font: 20px/1 var(--term); }
-    .wire {
-      align-self: end; justify-self: end; width: min(100%, 470px);
-      background: rgba(17,11,4,.84); border: 1px solid var(--amber-dim);
-      box-shadow: 0 0 0 1px rgba(0,0,0,.6), 0 12px 40px rgba(0,0,0,.5);
-      font: 21px/1.2 var(--term);
-    }
-    .wire h2 {
-      display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 10px; margin: 0;
-      padding: 6px 12px; background: var(--amber); color: var(--crt); font: inherit; letter-spacing: .06em;
-    }
-    .wire ol { list-style: none; margin: 0; padding: 10px 12px 12px; min-height: 8.6em; display: flex; flex-direction: column; gap: 4px; }
-    .wire li { color: var(--amber); overflow-wrap: anywhere; }
-    .wire li.old { color: var(--amber-mid); }
-    .wire li.older { color: var(--amber-dim); }
-    .wire .hot { color: var(--war); text-shadow: 0 0 8px rgba(255,85,64,.55); }
-    .wire .caret { display: inline-block; width: .55em; height: .95em; background: var(--amber); vertical-align: -0.12em; margin-left: 2px; animation: blink 1s steps(1) infinite; }
-    .wire p { margin: 0; padding: 0 12px 8px; font-size: 17px; color: var(--amber-dim); }
+    .cta .key { min-height: 56px; text-align: center; font-size: 1.1rem; overflow-wrap: anywhere; text-wrap: balance; }
+    .cta small { font-size: .82rem; color: var(--ink-dim); line-height: 1.35; margin-bottom: var(--s2); }
+    .join { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+    .join .key { max-width: 100%; text-align: center; }
+    .join small { color: var(--ink-dim); font-size: .85rem; line-height: 1.4; }
+    .links { display: flex; flex-wrap: wrap; gap: 4px var(--s4); font-size: .92rem; }
+    .story { display: flex; gap: 10px; align-items: baseline; border-top: 1px solid var(--line); padding-top: var(--s3); font-size: .95rem; margin: 0; }
+    .story span { color: var(--phos-text); font: 1.3rem/1 var(--font-mono); }
+    .wire { width: min(100%, 470px); justify-self: end; padding: 0; }
+    .wire h2 { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 10px; margin: 0; padding: 6px var(--s3); background: var(--phos); color: var(--on-phos); font: 1.35rem/1.3 var(--font-mono); letter-spacing: .06em; }
+    .wire ol { list-style: none; margin: 0; padding: var(--s3); min-height: 8.6em; display: flex; flex-direction: column; gap: 4px; font: 1.3rem/1.2 var(--font-mono); }
+    .wire li { color: var(--phos); overflow-wrap: anywhere; margin: 0; }
+    .wire li.old { color: var(--phos-dim); }
+    .wire li.older { color: var(--ink-dim); }
+    .wire .hot { color: var(--bad); text-shadow: 0 0 8px var(--phos-glow); }
+    .wire .caret { display: inline-block; width: .55em; height: .95em; background: var(--phos); vertical-align: -0.12em; margin-left: 2px; animation: blink 1s steps(1) infinite; }
+    .wire p { margin: 0; padding: 0 var(--s3) var(--s2); font-size: .85rem; color: var(--ink-dim); }
     @keyframes blink { 50% { opacity: 0; } }
-    @media (prefers-reduced-motion: reduce) { .wire .caret { animation: none; } }
     @media (max-width: 820px) {
-      .hero-inner { grid-template-columns: minmax(0, 1fr); min-height: 0; padding-bottom: 20px; }
-      .hero::after { background: linear-gradient(to bottom, rgba(17,11,4,.92) 0 46%, rgba(17,11,4,.35) 70%, rgba(17,11,4,.7) 100%); }
-      .wire { justify-self: stretch; width: 100%; margin-top: 150px; }
+      .hero-inner { grid-template-columns: minmax(0, 1fr); }
+      .wire { justify-self: stretch; width: 100%; }
     }
+    .trailer { padding: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--screen); width: min(960px, 94vw); }
+    .trailer::backdrop { background: color-mix(in srgb, var(--screen) 75%, transparent); }
+    .trailer video { display: block; width: 100%; }
+    .trailer form { text-align: right; padding: var(--s2); background: var(--bg-2); }
     /* How to join: the administrator's address and the two passwords */
-    .contact { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 14px; padding: 10px 14px; border: 1px dashed var(--accent); border-radius: 8px; }
-    .contact code { font: 600 1em ui-monospace, "DejaVu Sans Mono", monospace; color: var(--accent); user-select: all; overflow-wrap: anywhere; }
-    .contact button { font: 600 .85rem system-ui, sans-serif; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
-    .contact button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    .creds { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 14px; }
-    .cred { border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+    .contact { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s3); margin-top: var(--s4); }
+    .contact code { font-size: 1.3em; color: var(--phos-text); user-select: all; overflow-wrap: anywhere; }
+    .creds { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--s3); margin-top: var(--s4); }
+    .cred { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--s3); }
     .cred strong { display: block; }
-    .cred span { color: var(--muted); font-size: .92rem; }
+    .cred span { color: var(--ink-dim); font-size: .92rem; }
   </style>
 </head>
 <body>
-<div class="hero" id="hero">
-  <canvas id="map" aria-hidden="true"></canvas>
+<header class="site-header mountains">
+  <a class="site-name" href="index.html">Conquer</a>
+  <span class="spacer"></span>
+  <nav class="nav" aria-label="Main">
+    <a class="key key-small" href="game.html" data-server-link="game.html"><span data-i18n="nav.play">Play</span></a>
+    <a class="key key-small" href="hall.html"><span data-i18n="nav.hall">Hall</span></a>
+    <a class="key key-small" href="signup.html" data-server-link="signup.html"><span data-i18n="nav.join">Join</span></a>
+  </nav>
+  <select class="select" id="lang" aria-label="Language" data-i18n-title="index.language"></select>
+</header>
+<main class="home">
+<section class="hero mountains" id="hero">
   <div class="hero-inner">
-    <nav class="topline"><select id="lang" aria-label="Language" data-i18n-title="index.language"></select></nav>
 
     <div class="pitch">
       <p class="version"><b>CONQUER 4.12</b><span>Usenet, 1987</span><span>GPL</span></p>
-      <h1 class="logo">Conquer</h1>
+      <h1 class="logo title">Conquer</h1>
       <p class="tagline" data-i18n="index.tagline">Rule a nation. Raise armies, sign treaties, break them. The 1987 multiplayer strategy game, live again in your browser.</p>
       <div class="ctas">
         <div class="cta primary">
-          <a href="game.html" data-server-link="game.html" data-i18n="index.play">Play now</a>
+          <a class="key key-primary" href="game.html" data-server-link="game.html" data-i18n="index.play">Play now</a>
           <small data-i18n="index.hint">Sign in with your website account</small>
         </div>
         <div class="cta secondary">
-          <a href="try/" data-i18n="index.try">Try it free</a>
+          <a class="key" href="try/" data-i18n="index.try">Try it free</a>
           <small data-i18n="index.try_hint">No account needed: a practice world in your browser</small>
         </div>
       </div>
-      <div class="join" id="join" hidden>
-        <a href="signup.html" data-server-link="signup.html" data-i18n="index.join_cta">I want to play: ask for your seat</a>
+      <div class="join notice gold-note" id="join" hidden>
+        <a class="key" href="signup.html" data-server-link="signup.html" data-i18n="index.join_cta">I want to play: ask for your seat</a>
         <small id="join-note"></small>
       </div>
       <div class="links">
-        <a class="text" href="#trailer" id="trailer-link" hidden data-i18n="index.trailer">&#9654; Watch the trailer (40 s)</a>
-        <a class="text" href="tutorial.html" data-i18n-page="tutorial" data-i18n="index.tutorial">New here? Play your first turn step by step</a>
-        <a class="text" href="guide.html" data-i18n-page="guide" data-i18n="index.guide">Player's guide</a>
-        <a class="text" href="hall.html" data-i18n="index.hall">Hall of fame</a>
+        <a href="#trailer" id="trailer-link" hidden>&#9654; Watch the trailer (40 s)</a>
+        <a href="story.html" id="story-link" data-i18n="index.story_link">&#9656; The story in 2 minutes</a>
+        <a href="tutorial.html" data-i18n-page="tutorial" data-i18n="index.tutorial">New here? Play your first turn step by step</a>
+        <a href="guide.html" data-i18n-page="guide" data-i18n="index.guide">Player's guide</a>
+        <a href="hall.html" data-i18n="index.hall">Hall of fame</a>
       </div>
-      <p class="story"><span aria-hidden="true">&gt;</span><a class="text" href="https://vejeta.com/reviving-classic-unix-games-a-20-year-journey-through-software-archaeology/" data-i18n="index.story">The story behind this revival</a></p>
+      <p class="story"><span aria-hidden="true">&gt;</span><a href="https://vejeta.com/reviving-classic-unix-games-a-20-year-journey-through-software-archaeology/" data-i18n="index.story">The story behind this revival</a></p>
     </div>
 
-    <section class="wire" aria-labelledby="wire-title">
+    <section class="wire terminal" aria-labelledby="wire-title">
       <h2><span id="wire-title" data-i18n="index.wire_title">WORLD NEWS</span><span id="wire-turn"></span></h2>
       <ol id="wire"></ol>
       <p id="wire-note" data-i18n="index.wire_example">Example dispatches: the real news of the game appear here once turns are played.</p>
     </section>
   </div>
-</div>
-<main>
+</section>
 
-  <section id="status" hidden>
+  <section class="panel" id="status" hidden>
     <h2 data-i18n="index.h_current">Current game</h2>
     <p class="note" id="status-warning" hidden></p>
     <div class="facts">
@@ -300,19 +179,19 @@ SPDX-License-Identifier: GPL-3.0-or-later
       <div class="legend-row" id="chart-legend"></div>
     </figure>
     <div class="table-wrap">
-      <table>
+      <table class="table">
         <thead><tr><th class="num">#</th><th data-i18n="index.th_nation">Nation</th><th data-i18n="index.th_race">Race</th><th class="optional" data-i18n="index.th_class">Class</th><th class="optional" data-i18n="index.th_alignment">Alignment</th><th class="num" data-i18n="index.th_score">Score</th></tr></thead>
         <tbody id="status-scores"></tbody>
       </table>
     </div>
   </section>
 
-  <section id="news" hidden>
+  <section class="panel" id="news" hidden>
     <h2 data-i18n="index.h_news">World news</h2>
     <div id="news-editions"></div>
   </section>
 
-  <section>
+  <section class="panel">
     <h2 data-i18n="index.h_what">What is Conquer?</h2>
     <p data-i18n="index.p_what">Conquer is a turn-based fantasy strategy game for many players, first released on Usenet
       in 1987 by Ed Barlow and Adam Bryant. This server runs version 4.12 of the original game, now free
@@ -322,7 +201,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
       how the game was found again, relicensed with its authors' permission and brought to the web.</p>
   </section>
 
-  <section id="how-to-join">
+  <section class="panel" id="how-to-join">
     <h2 data-i18n="index.h_join">How to join</h2>
     <p class="note" data-i18n="index.note_join">Joining takes three steps: ask for your seat, wait for the administrator to approve it, then found your nation inside the game.</p>
     <ol>
@@ -333,7 +212,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <div class="contact" id="contact" hidden>
       <span data-i18n="index.contact">Game administrator:</span>
       <code id="contact-address"></code>
-      <button type="button" id="contact-copy" data-i18n="index.copy">Copy address</button>
+      <button class="key key-small" type="button" id="contact-copy" data-i18n="index.copy">Copy address</button>
     </div>
     <div class="creds">
       <div class="cred"><strong data-i18n="index.cred_account_t">Your account for this website</strong><span data-i18n="index.cred_account">Opens the door of this site: your browser asks for it when you press Play. One per player; it is not your nation.</span></div>
@@ -341,7 +220,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     </div>
   </section>
 
-  <section>
+  <section class="panel">
     <h2 data-i18n="index.h_turns">How turns work</h2>
     <ul>
       <li data-i18n="index.turns1">Log in as often as you like to give orders: move armies, draft troops, build, trade, send messages.</li>
@@ -354,12 +233,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
     </ul>
   </section>
 
-  <section>
+  <section class="panel">
     <h2 data-i18n="index.h_before">Before you play</h2>
     <ul>
       <li data-i18n="index.before1">Conquer is controlled entirely with keys, so a computer keyboard is the most comfortable.
-        On phones and tablets an on-screen key bar provides <kbd>Esc</kbd>, <kbd>Enter</kbd>, movement
-        and other common keys; use the <strong>Keyboard</strong> button to type names and passwords.</li>
+        On phones and tablets a touch layer lets you tap the map to move, and offers command chips for the current screen and a d-pad; sound is optional, in the options. Use the <strong>Keyboard</strong> button to type names and passwords.</li>
       <li data-i18n="index.before2">The game needs a terminal of at least <strong>80&times;24</strong> characters. If the menu warns that
         the screen is too small, enlarge the window or zoom out with <kbd>Ctrl</kbd> + <kbd>-</kbd>.</li>
       <li data-i18n="index.before3">If the screen looks garbled, press <kbd>Ctrl</kbd> + <kbd>L</kbd> to redraw it.</li>
@@ -367,7 +245,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     </ul>
   </section>
 
-  <section>
+  <section class="panel">
     <h2 data-i18n="index.h_keys">Key reference</h2>
     <div class="moves-box" data-moves></div>
     <div class="keys">
@@ -391,51 +269,52 @@ SPDX-License-Identifier: GPL-3.0-or-later
     </div>
   </section>
 
-  <footer data-i18n="index.footer">
-    Conquer is free software (GPL-3.0-or-later).
-    Source: <a href="https://github.com/vejeta/conquer">game</a> &middot;
-    <a href="https://github.com/vejeta/conquer-web">web server</a>
-  </footer>
 </main>
+<footer class="site-footer mountains">
+  <p data-i18n="index.footer">Conquer is free software (GPL-3.0-or-later). Source: <a href="https://github.com/vejeta/conquer">game</a> &middot; <a href="https://github.com/vejeta/conquer-web">web server</a></p>
+  <div class="foot-links"><a href="design.html" data-i18n="nav.design">Design</a></div>
+</footer>
 <script src="server.js"></script>
 <dialog class="trailer" id="trailer" aria-label="Conquer">
-  <video id="trailer-video" controls playsinline preload="none"></video>
-  <form method="dialog"><button data-i18n="index.trailer_close">Close</button></form>
+  <video id="trailer-video" controls playsinline preload="none" poster="story/poster.jpg">
+    <source src="story/conquer-story.es.vertical.mp4" type="video/mp4" media="(orientation: portrait)">
+    <source src="story/conquer-story.es.mp4" type="video/mp4">
+  </video>
+  <form method="dialog"><button class="key" data-i18n="index.trailer_close">Close</button></form>
 </dialog>
 <script src="site.js"></script>
 <script src="moves.js"></script>
 <script>
-  // The trailer (tools/tutorial/video.py --video trailer) in the page's
-  // language, or in English; the link shows once one exists
+  // The story video (tools/story/render.py): one per language; a language
+  // without one gets the Spanish video and a note saying so. Phones held
+  // upright get the vertical file.
   (function () {
+    // the story on demand: in the visitor's language, and it does not touch the once-only flag
+    var slink = document.getElementById('story-link');
+    function paintStory() { slink.href = 'story.html?lang=' + conquerI18n.lang(); }
+    conquerI18n.ready().then(paintStory);
+    document.addEventListener('conquer:lang', paintStory);
     var link = document.getElementById('trailer-link'), dialog = document.getElementById('trailer');
-    var video = document.getElementById('trailer-video'), src = null;
-    function find(lang) {
-      var tries = lang === 'en' ? ['en'] : [lang, 'en'];
-      (function next() {
-        var l = tries.shift();
-        if (!l) { link.hidden = true; return; }
-        fetch('tutorial/trailer.' + l + '.mp4', { method: 'HEAD' }).then(function (r) {
-          if (!r.ok) return next();
-          src = l;
-          link.hidden = false;
-        }).catch(next);
-      })();
+    var video = document.getElementById('trailer-video');
+    var VIDEOS = ['en', 'es', 'de', 'pl', 'pt-br', 'ru', 'zh'];
+    function vlang() { var l = conquerI18n.lang(); return VIDEOS.indexOf(l) < 0 ? 'es' : l; }
+    function base() { return 'story/conquer-story.' + vlang(); }
+    function paint() {
+      var lang = conquerI18n.lang();
+      link.innerHTML = conquerI18n.t('index.trailer') + (vlang() === lang ? '' : ' ' + conquerI18n.t('index.trailer_spanish'));
+      link.setAttribute('data-lang', lang);
     }
-    conquerI18n.ready().then(function () { find(conquerI18n.lang()); });
-    document.addEventListener('conquer:lang', function (e) { find(e.detail); });
+    conquerI18n.ready().then(function () {
+      if (document.documentElement.classList.contains('in-app')) return;  // the app has no video files
+      link.hidden = false; paint();
+    });
+    document.addEventListener('conquer:lang', function () { if (!link.hidden) paint(); });
     link.addEventListener('click', function (e) {
       e.preventDefault();
-      if (!src || !dialog.showModal) return;
-      if (video.getAttribute('data-lang') !== src) {
-        video.textContent = '';
-        video.src = 'tutorial/trailer.' + src + '.mp4';
-        var track = document.createElement('track');
-        track.kind = 'captions'; track.srclang = src; track.label = src;
-        track.src = 'tutorial/trailer.' + src + '.vtt';
-        video.appendChild(track);
-        video.setAttribute('data-lang', src);
-      }
+      if (!dialog.showModal) { location.href = base() + '.mp4'; return; }
+      var portrait = window.matchMedia && matchMedia('(orientation: portrait)').matches;
+      var file = base() + (portrait ? '.vertical' : '') + '.mp4';
+      if (video.getAttribute('data-file') !== file) { video.src = file; video.setAttribute('data-file', file); }
       dialog.showModal();
       video.play().catch(function () {});
     });
@@ -614,7 +493,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
         d += (pen ? 'L' : 'M') + x(i).toFixed(1) + ',' + y(v).toFixed(1);
         pen = true;
       });
-      svg.appendChild(el('path', { d: d, 'class': 'line', stroke: 'var(--s' + (s + 1) + ')' }));
+      svg.appendChild(el('path', { d: d, 'class': 'line', stroke: 'var(--series-' + (s + 1) + ')' }));
       ends.push({ n: n, y: y(h.nations[n][last]) });
     });
     // Direct labels at the line ends, nudged apart so they never overlap
@@ -638,7 +517,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
       var head = document.createElement('b'); head.textContent = m('m_turn', { n: turns[i] }); tip.appendChild(head);
       names.forEach(function (n, s) {
         var row = document.createElement('div'), dot = document.createElement('i'), val = document.createElement('span');
-        dot.style.setProperty('--c', 'var(--s' + (s + 1) + ')');
+        dot.style.setProperty('--c', 'var(--series-' + (s + 1) + ')');
         row.appendChild(dot); row.appendChild(document.createTextNode(n));
         val.textContent = h.nations[n][i] == null ? '-' : h.nations[n][i];
         row.appendChild(val); tip.appendChild(row);
@@ -653,7 +532,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     legend.textContent = '';
     names.forEach(function (n, s) {
       var item = document.createElement('span');
-      item.style.setProperty('--c', 'var(--s' + (s + 1) + ')');
+      item.style.setProperty('--c', 'var(--series-' + (s + 1) + ')');
       item.textContent = n;
       legend.appendChild(item);
     });
@@ -679,8 +558,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
   ];
   var wire = conquerHero.teletype(document.getElementById('wire'));
   wire.set(EXAMPLES);
-  conquerHero.load().then(function (map) { conquerHero.start(document.getElementById('map'), map); })
-    .catch(function () { /* no map: the hero stays a plain terminal */ });
   var wireLive = false;
   function renderWire(d) {
     var ed = (d.news || [])[0];

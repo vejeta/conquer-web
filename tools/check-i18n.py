@@ -70,6 +70,23 @@ def web():
             used |= {(rel(path), ns + "." + k) for k in re.findall(r"\b(?:m|T)\('(\w+)'", s)}
     coach = open(os.path.join(ROOT, "web", "coach.js")).read()
     used |= {("web/coach.js", "coach." + k) for k in re.findall(r"\bT\('(\w+)'", coach)}
+    # The touch layer (web/touch.js): T('key'), the keys it builds from its
+    # tables (commands, chips, directions, where-am-I names) and the
+    # commands of the "More" sheet
+    touch = open(os.path.join(ROOT, "web", "touch.js")).read()
+    names = set(re.findall(r"\bT\('([\w.]+)'\)", touch))
+    names |= set(re.findall(r"'((?:b_|cmd_|where_|dir_|opt_)\w+)'", touch))
+    names |= {"cmd_" + m for m in re.findall(r"\['\w+', '[^']+', '(\w+)', (?:'.'|null)\]", touch)}
+    names |= {"where_" + m for m in re.findall(r"\['(\w+)', /", touch)}
+    names |= {"dir_" + m for m in "ykuhlbjn"}
+    names |= {"dpad_pick", "dpad_label", "where_report"}
+    all_keys = re.search(r"var ALL_KEYS = \[(.*?)\];", touch, re.S).group(1)
+    names |= {"keys." + ("qm" if k == "?" else k) for k in re.findall(r"'(.+?)'", all_keys)}
+    for sub in re.findall(r"\[\s*'(\w+)', '[^']*', '[^']*', '[^']*', '(\w+)'\]", touch):
+        names.add(sub[1])
+    for sub in re.findall(r"extra: \[(.*?)\]\s*\}", touch):
+        names |= set(re.findall(r"\['(\w+)'", sub))
+    used |= {("web/touch.js", "touch." + k) for k in names}
     for where, k in sorted(used):
         if k not in en:
             errors.append("%s: text %s is not in web/i18n/en.json" % (where, k))

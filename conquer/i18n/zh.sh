@@ -14,6 +14,9 @@ MSG[menu_needs_size]="Conquer 至少需要 %s 列 x %s 行。
 请把浏览器窗口调大，或缩小页面（Ctrl 加 -）。
 
 按任意键重新检测，或按 'c' 仍然继续。"
+MSG[menu_needs_size_app]="Conquer 至少需要 %s 列 x %s 行。
+请把手机横过来，或用双指捏合缩小。
+屏幕会自动重新检测。"
 MSG[menu_ready_count]="%s / %s 个国家"
 MSG[menu_all_ready]="  ${green}${bold}所有国家都已就绪：回合结算现在开始。${reset}
   几分钟后再回来，迎接新的回合。"

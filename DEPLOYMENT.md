@@ -181,16 +181,160 @@ Blocks that must exist in the HTTPS host (`update-vps.sh` checks the marked ones
 - `RequestHeader unset X-WEBAUTH-USER early`, so a client cannot forge who it is.
 - WebSocket rewrite and `ProxyPass /play/` to `127.0.0.1:7681`.
 - `ProxyPass /join/api/` to `127.0.0.1:7682/join/api/` (open, like the sign-up page). *checked*
-- `/admin/`: `RedirectMatch permanent ^/admin$ /admin/`, `AliasMatch "^/admin/$"` to `admin.html`, `ProxyPass /admin/api/` to `127.0.0.1:7682/admin/api/`, and a `<Location "/admin/">` with basic auth on `/etc/apache2/conquer-web.htpasswd` and `RequestHeader set X-WEBAUTH-USER`. *checked*
+- `/admin/`: `RedirectMatch permanent ^/admin$ /admin/`, `AliasMatch "^/admin/$"` to `admin.html`, `ProxyPass /admin/api/` to `127.0.0.1:7682/admin/api/`, and a `<Location "/admin/">` with form login (see [Login](#login)) on `/etc/apache2/conquer-web.htpasswd` and `RequestHeader set X-WEBAUTH-USER`. *checked*
 - `Cache-Control: no-cache` for `html|js|css|json` files. *checked*
 - `Content-Security-Policy` whose `script-src` has `'wasm-unsafe-eval'` (the practice game at `/try/` is WebAssembly). *checked*
 - `/status` with `Access-Control-Allow-Origin: *`.
-- `<Location "/play/">` with the same basic auth, **as the last `<Location>`** of the host: sections merge in order and a later one granting access would remove the password (CI checks this in the template).
+- `/login/do`, `/login/long`, `/logout` and the session settings: see [Login](#login). *checked*
+- `<Location "/play/">` with the same form login, **as the last `<Location>`** of the host: sections merge in order and a later one granting access would remove the password (CI checks this in the template).
 - `admin` must not appear in the `<LocationMatch ...phpmyadmin>` list that denies access.
 
 If you also use `certbot --apache` to edit hosts, it copies the host into a
 `-le-ssl.conf` file: make changes in every file that has the domain
 (`grep -rl DOMAIN /etc/apache2/sites-available`).
+
+## Login
+
+`/play/` and `/admin/` do not ask for the password with the browser's window
+any more: Apache (`mod_auth_form`) sends visitors without a session to the
+site's own page, `/login.html` (the Doors of Durin), which posts the form to
+`/login/do`. A session cookie (`conquer_session`) then rides every request,
+including the game's WebSocket, which is same-site. It reads the same
+accounts file as before and the gate is unchanged.
+
+One-time server setup (Apache modules and the passphrase that encrypts the
+cookie; `deploy-to-vps.sh` does it on a new server, `update-vps.sh` checks it
+and prints these commands when something is missing):
+
+```bash
+sudo a2enmod auth_form session session_cookie session_crypto request
+sudo sh -c 'openssl rand -base64 48 > /etc/apache2/conquer-web.session'
+sudo chmod 600 /etc/apache2/conquer-web.session
+```
+
+Then, in the HTTPS virtual host (`/etc/apache2/sites-available/DOMAIN.conf`,
+and in the `-le-ssl.conf` copy certbot made, if any), replace the old
+`<Location "/admin/">` and `<Location "/play/">` blocks (the Basic ones) with
+the following, with `/play/` still the **last** `<Location>` (the login
+blocks go before them).
+
+```apache
+    # Sign-in: a page of the site (/login.html) and a session cookie, instead of
+    # the browser's password window (mod_auth_form). Apache reads the same
+    # account file as before. The cookie holds the account and the password
+    # encrypted with the passphrase file (mod_session_crypto); it is
+    # httponly, secure and same-site, and is not passed on to the game.
+    # (These directives are not allowed outside a <Location>, so each one
+    # repeats the common lines.)
+    # The login form posts here (fields httpd_username, httpd_password,
+    # httpd_location); a wrong password goes back to the page with failed=1.
+    # /login/do gives a session cookie (gone when the browser closes);
+    # /login/long, chosen by "Remember me", lasts 30 days.
+    <Location "/login/do">
+        SetHandler form-login-handler
+        AuthType form
+        AuthName "Conquer"
+        AuthFormProvider file
+        AuthUserFile "/etc/apache2/conquer-web.htpasswd"
+        Session On
+        SessionCookieName conquer_session path=/;httponly;secure;samesite=lax
+        SessionCryptoPassphraseFile "/etc/apache2/conquer-web.session"
+        Require all granted
+        SessionMaxAge 0
+        AuthFormLoginRequiredLocation "/login.html?failed=1&%{QUERY_STRING}"
+        AuthFormLoginSuccessLocation "/play/"
+    </Location>
+    <Location "/login/long">
+        SetHandler form-login-handler
+        AuthType form
+        AuthName "Conquer"
+        AuthFormProvider file
+        AuthUserFile "/etc/apache2/conquer-web.htpasswd"
+        Session On
+        SessionCookieName conquer_session path=/;httponly;secure;samesite=lax
+        SessionCryptoPassphraseFile "/etc/apache2/conquer-web.session"
+        Require all granted
+        SessionMaxAge 2592000
+        AuthFormLoginRequiredLocation "/login.html?failed=1&%{QUERY_STRING}"
+        AuthFormLoginSuccessLocation "/play/"
+    </Location>
+    <Location "/logout">
+        SetHandler form-logout-handler
+        AuthType form
+        AuthName "Conquer"
+        AuthFormProvider file
+        AuthUserFile "/etc/apache2/conquer-web.htpasswd"
+        Session On
+        SessionCookieName conquer_session path=/;httponly;secure;samesite=lax
+        SessionCryptoPassphraseFile "/etc/apache2/conquer-web.session"
+        Require all granted
+        SessionMaxAge 1
+        AuthFormLogoutLocation "/login.html?loggedout=1"
+    </Location>
+
+    # Administrator page and its API: the same accounts as the game; the gate
+    # lets in only the ones marked "*" (manage-players.sh assign NAME --admin)
+    <Location "/admin/">
+        AuthType form
+        AuthName "Conquer"
+        AuthFormProvider file
+        AuthUserFile "/etc/apache2/conquer-web.htpasswd"
+        Session On
+        SessionCookieName conquer_session path=/;httponly;secure;samesite=lax
+        SessionCryptoPassphraseFile "/etc/apache2/conquer-web.session"
+        # No SessionMaxAge here: the lifetime is the one the login gave
+        # (/login/long: 30 days from the login, /login/do: the browser's
+        # session), and the cookie is not rewritten at every request
+        # The browser's cookie is not passed on to the game or the gate
+        SessionCookieRemove On
+        AuthFormLoginRequiredLocation "/login.html?next=%{escape:%{REQUEST_URI}}"
+        Require valid-user
+        RequestHeader set X-WEBAUTH-USER "%{REMOTE_USER}s"
+        # Keep search engines out of the administration
+        Header always set X-Robots-Tag "noindex, nofollow"
+    </Location>
+
+    # Player accounts: Apache authenticates every request to the terminal
+    # (manage-players.sh edits the file) and tells ttyd who signed in.
+    # KEEP THIS THE LAST <Location> OF THE VHOST: sections are merged in
+    # order, so a later <Location /> with "Require all granted" would
+    # silently remove the password from the game.
+    <Location "/play/">
+        AuthType form
+        AuthName "Conquer"
+        AuthFormProvider file
+        AuthUserFile "/etc/apache2/conquer-web.htpasswd"
+        Session On
+        SessionCookieName conquer_session path=/;httponly;secure;samesite=lax
+        SessionCryptoPassphraseFile "/etc/apache2/conquer-web.session"
+        # No SessionMaxAge here: the lifetime is the one the login gave
+        # (/login/long: 30 days from the login, /login/do: the browser's
+        # session), and the cookie is not rewritten at every request
+        # The browser's cookie is not passed on to the game or the gate
+        SessionCookieRemove On
+        AuthFormLoginRequiredLocation "/login.html?next=%{escape:%{REQUEST_URI}}"
+        Require valid-user
+        RequestHeader set X-WEBAUTH-USER "%{REMOTE_USER}s"
+        # Keep search engines out of the game terminal
+        Header always set X-Robots-Tag "noindex, nofollow"
+    </Location>
+```
+
+Then `sudo apache2ctl configtest && sudo systemctl reload apache2`. Check:
+`curl -sI https://DOMAIN/play/` answers `302` with `Location: /login.html?next=/play/`.
+
+- **Remember me**: the page posts to `/login/long` (session of 30 days,
+  `SessionMaxAge 2592000`, counted from the login) instead of `/login/do` (a
+  cookie that ends when the browser closes). `mod_auth_form` cannot vary the
+  lifetime per login, hence two endpoints.
+- **Sign out**: `/logout` (the link in the game's bar and the admin page).
+- Changing or deleting `/etc/apache2/conquer-web.session` signs everybody out.
+- A wrong password goes back to `/login.html?failed=1`; without JavaScript the
+  form still works (plain POST, always the session cookie, always to `/play/`).
+- `SessionCookieRemove On` keeps the cookie from the game and the gate.
+- Android: the app's Doors dialog still uses the old Basic prompt; it should
+  POST the same form (`httpd_username`, `httpd_password`, `httpd_location`) to
+  `/login/long`: the cookie then works for `/play/` and `game.html`.
 
 ## Email notifications
 
@@ -242,8 +386,11 @@ docker exec conquer-vps conquer-gate -test-mail you@example.com
 A player has two passwords: the **web account** (asked by the site, in
 `/etc/apache2/conquer-web.htpasswd`) and the **nation password** (asked by the
 game). Who plays which nation is in `data/lib/.players`; `sudo ./manage-players.sh list`
-shows each account with its nation, `*` for administrators, `?` waiting for
-approval, `+` approved but with no nation yet.
+shows each account with its nation (`*` administrators, `?` waiting for
+approval, `+` approved but with no nation yet, `-` no assignment) and the nations
+that have no account; `sudo ./manage-players.sh nations` lists every nation of the
+world with race, class and account, and `assign NAME NATION` checks the nation
+exists. The `/admin/` Players tab does the same with a select per account.
 
 **Requests.** A player presses **I want to play** (`/signup.html`) and gets an
 account that waits. You see the request at `/admin/` (accounts marked `*`
@@ -386,6 +533,10 @@ sudo ./set-nation-password.sh god --if-locked  # only if none is set yet
 Choose something hard to guess. The same script resets any nation's
 password without the old one.
 
+## Design system
+
+The web pages share `web/theme.css` (colours, fonts, components), `web/race.js` (the race's phosphor), `web/touch.css` and `web/touch.js` (the game screen). The files are static: `update-vps.sh` installs them with the rest of `web/`, including `web/fonts/`, `web/bg/` and `web/arch/` (the baked frames). To rebuild the images: `python3 tools/arch/bake.py` (frames) and `python3 tools/hero/build-bg.py` (map texture); to preview every component open `/design.html`. The tutorial pages are generated by `python3 tools/tutorial/build.py` from `tools/tutorial/tutorial.template.html`.
+
 ## Troubleshooting
 
 **The container does not start**: `docker logs conquer-vps`, then
@@ -409,8 +560,14 @@ if it says Apache refused, edit it by hand in every file that has the policy
 (`grep -r Content-Security-Policy /etc/apache2/`) and check with
 `curl -sI https://DOMAIN/try/ | grep -i content-security`.
 
-**`/admin/` answers 401**: Apache did not accept the account (wrong
-password, account removed). `sudo ./check-web-login.sh NAME` gives it a new
+**`/play/` or `/admin/` answer 500 and the error log says `AH01627`, or
+`decrypt session failed`**: the Login setup is incomplete (modules, passphrase
+file, or `Require all granted` missing in `/login/do`): see [Login](#login).
+**Everyone is sent to the sign-in page again and again**: the cookie is
+`secure`, so the site must be opened over https. **`/admin/` sends you to the
+sign-in page**: you have no session (or it ended). **`/admin/` shows
+"Sign in with an administrator account"**: Apache did not accept the account
+(wrong password, account removed) or it is not an administrator. `sudo ./check-web-login.sh NAME` gives it a new
 password and says which layer rejects the login. **It answers 403**: you
 are signed in but the account is not an administrator
 (`sudo ./manage-players.sh assign NAME --admin`), or the virtual host still

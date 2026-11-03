@@ -1,0 +1,156 @@
+<!doctype html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="login.page_title">Sign in</title>
+  <meta name="description" content="Sign in to Conquer with your account.">
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="/theme.css">
+  <script src="/race.js"></script>
+  <style>
+    /* Layout only: colours and fonts come from theme.css */
+    .gate-stage { min-height: 540px; }
+    .gate .login .remember { display: flex; flex-direction: row; align-items: center; gap: var(--s2); }
+    .gate .login .remember label { font-weight: 600; }
+    .gate .login .remember input { width: 1.2em; height: 1.2em; accent-color: var(--phos); }
+    .gate .login .help { margin: 0; }
+    .gate .login .key-primary { width: 100%; }
+    .gate .login .msg { margin: 0; }
+    .gate .login .ok { margin: 0; }
+    .below { text-align: center; margin: var(--s4) 0 0; }
+  </style>
+</head>
+<body>
+<header class="site-header mountains">
+  <a class="site-name" href="/index.html">Conquer</a>
+  <span class="spacer"></span>
+  <nav class="nav" aria-label="Main">
+    <a class="key key-small" href="/game.html"><span data-i18n="nav.play">Play</span></a>
+    <a class="key key-small" href="/hall.html"><span data-i18n="nav.hall">Hall</span></a>
+    <a class="key key-small" href="/signup.html"><span data-i18n="nav.join">Join</span></a>
+  </nav>
+  <select class="select" data-lang-menu aria-label="Language" data-i18n-title="index.language"></select>
+</header>
+<main class="page narrow">
+  <h1 id="form-title" data-i18n="login.title">The Doors of Durin</h1>
+  <p class="lede" data-i18n="login.lede">Speak, friend, and enter: sign in with the account you made on this site.</p>
+
+  <div class="gate" id="gate">
+    <div class="gate-stage" data-race="dwarf" role="group" aria-label="The closed doors of Durin, with the sign-in form in front" id="stage">
+      <div class="arch" style="z-index:6" aria-hidden="true"><i class="lintel"></i><i class="sill"></i><i class="col l"></i><i class="col r"></i><i class="cor tl"></i><i class="cor tr"></i><i class="cor bl b"></i><i class="cor br b"></i></div>
+      <div class="runes" id="gate-runes" aria-hidden="true">ᛈᛖᛞᛟ ᛗᛖᛚᛚᛟᚾ ᚨ ᛗᛁᚾᚾᛟ</div>
+      <div class="behind"><div class="gamescreen" style="width:100%"><div class="gs"><div class="stone"><span class="roll l"></span><span class="roll r"></span><span class="slit"></span><div class="terminal" aria-hidden="true"><pre class="scr">+--------------------------+
+|  CONQUER                 |
+|                          |
+|  ᛈᛖᛞᛟ ᛗᛖᛚᛚᛟᚾ ᚨ ᛗᛁᚾᚾᛟ      |
+|                          |
++--------------------------+</pre></div></div></div></div></div>
+      <div class="leaf l"></div><div class="leaf r"></div>
+      <!-- A plain form: it works without JavaScript. The script only picks
+           the cookie's lifetime (/login/long for "Remember me"), keeps the
+           page the visitor came for and plays the doors. -->
+      <form class="login form" id="form" method="post" action="/login/do" aria-labelledby="form-title">
+        <p class="msg error-text" id="failed" role="alert" hidden data-i18n="login.failed">The doors stay shut: wrong account or password.</p>
+        <p class="msg ok" id="info" role="status" hidden></p>
+        <div class="field">
+          <label for="account" data-i18n="login.l_account">Account</label>
+          <input class="input" id="account" name="httpd_username" autocomplete="username" autocapitalize="off" spellcheck="false" required maxlength="32">
+        </div>
+        <div class="field">
+          <label for="password" data-i18n="login.l_password">Password</label>
+          <input class="input" id="password" name="httpd_password" type="password" autocomplete="current-password" required maxlength="72">
+        </div>
+        <input type="hidden" name="httpd_location" id="location" value="/play/">
+        <div class="field">
+          <div class="remember">
+            <input type="checkbox" id="remember" name="remember" value="1">
+            <label for="remember" data-i18n="login.remember">Remember me</label>
+          </div>
+          <span class="help" data-i18n="login.h_remember">Stays signed in on this device for 30 days. Do not use it on a shared computer.</span>
+        </div>
+        <button class="key key-primary" id="go" type="submit"><span data-i18n="login.go">Speak friend and enter</span> <span class="hint">&#x23CE;</span></button>
+      </form>
+    </div>
+  </div>
+  <p class="below"><span data-i18n="login.no_account">No account yet?</span> <a href="/signup.html" data-i18n="login.ask_seat">Ask for your seat</a></p>
+</main>
+<script src="/server.js"></script>
+<script src="/site.js"></script>
+<script>
+  (function () {
+    'use strict';
+    var $ = function (id) { return document.getElementById(id); };
+    var gate = $('gate'), runes = $('gate-runes'), form = $('form');
+    var params = new URLSearchParams(location.search);
+
+    // Inside the game page's frame (the session ended while playing): the
+    // whole window comes here, and back to that page afterwards
+    if (window.top !== window.self) {
+      try { window.top.location.href = '/login.html?next=' + encodeURIComponent(window.top.location.pathname); } catch (e) {}
+    }
+
+    // Where to go afterwards: a path of this site, never another address
+    function local(p) { return typeof p === 'string' && /^\/(?![\/\\])/.test(p) && !/[\u0000-\u001f]/.test(p) ? p : ''; }
+    var next = local(params.get('next'));
+    if (next) $('location').value = next;
+
+    function say(id, text) { $('failed').hidden = id !== 'failed'; $('info').hidden = id !== 'info'; if (text) $('info').textContent = text; }
+    function t(key, fallback) { return (window.conquerI18n && conquerI18n.t('login.' + key)) || fallback; }
+
+    function label() {
+      var l = t('doors', ''); if (l) $('stage').setAttribute('aria-label', l);
+    }
+    if (window.conquerI18n) { conquerI18n.ready().then(label); document.addEventListener('conquer:lang', label); }
+
+    function flicker() {
+      gate.classList.remove('open');
+      runes.classList.remove('flicker', 'lit'); void runes.offsetWidth; runes.classList.add('flicker');
+      var stage = $('stage');
+      stage.classList.remove('shake'); void stage.offsetWidth; stage.classList.add('shake');
+    }
+    function failed() { say('failed'); flicker(); $('password').value = ''; $('password').focus(); }
+
+    // Redirected back by Apache after a wrong password (?failed=1), or after Sign out
+    if (params.get('failed')) { say('failed'); flicker(); }
+    else if (params.get('loggedout')) {
+      var show = function () { say('info', t('loggedout', 'You are signed out. The doors are closed again.')); };
+      show();
+      if (window.conquerI18n) { conquerI18n.ready().then(show); document.addEventListener('conquer:lang', show); }
+    }
+
+    function action() {
+      return (form.elements.remember.checked ? '/login/long' : '/login/do') + (next ? '?next=' + encodeURIComponent(next) : '');
+    }
+    form.addEventListener('change', function () { form.action = action(); });
+    form.action = action();
+
+    form.addEventListener('submit', function (ev) {
+      // Without fetch the plain form posts and Apache redirects
+      if (!window.fetch || !window.URLSearchParams) return;
+      ev.preventDefault();
+      form.action = action();
+      var body = new URLSearchParams();
+      ['httpd_username', 'httpd_password', 'httpd_location'].forEach(function (n) { body.set(n, form.elements[n].value); });
+      $('go').disabled = true;
+      fetch(form.action, { method: 'POST', body: body, credentials: 'same-origin', cache: 'no-store' }).then(function (r) {
+        $('go').disabled = false;
+        // Apache redirects a wrong password back to this page (failed=1)
+        if (/\/login\.html(\?|$)/.test(r.url) || r.status === 401 || r.status === 403) return failed();
+        if (r.status >= 500) throw new Error('server');
+        say(null);
+        gate.classList.add('open');
+        setTimeout(function () { location.href = $('location').value; }, window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 600);
+      }).catch(function () {
+        $('go').disabled = false;
+        say('info', t('neterror', 'The server did not answer. Check your connection and try again.'));
+      });
+    });
+  })();
+</script>
+</body>
+</html>

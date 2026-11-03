@@ -40,6 +40,12 @@
   "screen_label": "Game screen",
   "coach_link": "game.html?coach",
   "try_link": "try/",
-  "guide_link": "guide.html"
+  "guide_link": "guide.html",
+  "nav_play": "Play",
+  "nav_hall": "Hall",
+  "nav_join": "Join",
+  "nav_design": "Design",
+  "nav_main": "Main menu",
+  "foot": "Conquer is free software (GPL-3.0-or-later). Source: <a href=\"https://github.com/vejeta/conquer\">game</a> · <a href=\"https://github.com/vejeta/conquer-web\">web server</a>"
  }
 }

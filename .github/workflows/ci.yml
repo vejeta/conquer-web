@@ -87,18 +87,40 @@ jobs:
       - name: Web pages and authentication
         run: |
           code() { curl -sk -o /dev/null -w '%{http_code}' "$@"; }
+          # The site's own sign-in (mod_auth_form): the form posts to /login/do
+          # and the session cookie goes in a jar; prints "status redirect"
+          signin() { curl -sk -c "$1" -b "$1" -o /dev/null -w '%{http_code} %{redirect_url}' --data-urlencode "httpd_username=$2" --data-urlencode "httpd_password=$3" --data-urlencode httpd_location=/play/ "${4:-https://localhost/login/do}"; }
           test "$(code https://localhost/)" = 200
           test "$(code https://localhost/game.html)" = 200
-          test "$(code https://localhost/play/)" = 401
-          test "$(code -u "$TTYD_USERNAME:$TTYD_PASSWORD" https://localhost/play/)" = 200
-          test "$(code -u "$TTYD_USERNAME:wrong-password" https://localhost/play/)" = 401
-          # A client-supplied identity header must not get past Apache
-          test "$(code -H "X-WEBAUTH-USER: $TTYD_USERNAME" https://localhost/play/)" = 401
+          test "$(code https://localhost/login.html)" = 200
+          # Without a session Apache sends the visitor to the sign-in page
+          test "$(code https://localhost/play/)" = 302
+          test "$(curl -sk -o /dev/null -w '%{redirect_url}' https://localhost/play/)" = "https://localhost/login.html?next=/play/"
+          rm -f /tmp/jar-ci /tmp/jar-bad /tmp/jar-long
+          test "$(signin /tmp/jar-ci "$TTYD_USERNAME" "$TTYD_PASSWORD")" = "302 https://localhost/play/"
+          test "$(code -b /tmp/jar-ci https://localhost/play/)" = 200
+          # A wrong password goes back to the page, marked, and gives no session
+          signin /tmp/jar-bad "$TTYD_USERNAME" wrong-password | grep -q '^302 https://localhost/login.html?failed=1'
+          test "$(code -b /tmp/jar-bad https://localhost/play/)" = 302
+          # The cookie: httponly, secure, same-site, no expiry (a browser
+          # session) for the plain login and 30 days for "Remember me"
+          grep -q '^#HttpOnly_localhost.*TRUE.*0.conquer_session' /tmp/jar-ci
+          curl -sk -D- -o /dev/null --data-urlencode "httpd_username=$TTYD_USERNAME" --data-urlencode "httpd_password=$TTYD_PASSWORD" https://localhost/login/do | tr -d '\r' | grep -i '^set-cookie: conquer_session=' | grep -qi ';path=/;httponly;secure;samesite=lax$'
+          curl -sk -D- -o /dev/null --data-urlencode "httpd_username=$TTYD_USERNAME" --data-urlencode "httpd_password=$TTYD_PASSWORD" https://localhost/login/long | tr -d '\r' | grep -i '^set-cookie: conquer_session=' | grep -q 'Max-Age=2592000;'
+          test "$(signin /tmp/jar-long "$TTYD_USERNAME" "$TTYD_PASSWORD" https://localhost/login/long)" = "302 https://localhost/play/"
+          test "$(code -b /tmp/jar-long https://localhost/play/)" = 200
+          # A forged cookie, and a client-supplied identity header, do not get past Apache
+          test "$(code -H 'Cookie: conquer_session=forged' https://localhost/play/)" = 302
+          test "$(code -H "X-WEBAUTH-USER: $TTYD_USERNAME" https://localhost/play/)" = 302
+          test "$(code -b /tmp/jar-bad -H "X-WEBAUTH-USER: $TTYD_USERNAME" https://localhost/play/)" = 302
           # A WebSocket opened by another site (or by no browser page) is
-          # refused even with the right password: no cross-site hijacking
-          ws() { code -u "$TTYD_USERNAME:$TTYD_PASSWORD" -H 'Upgrade: websocket' -H 'Connection: Upgrade' "$@" https://localhost/play/ws; }
+          # refused even with a session: no cross-site hijacking
+          ws() { code -b /tmp/jar-ci -H 'Upgrade: websocket' -H 'Connection: Upgrade' "$@" https://localhost/play/ws; }
           test "$(ws -H 'Origin: https://evil.example')" = 403
           test "$(ws)" = 403
+          # Signing out ends the session
+          curl -sk -c /tmp/jar-long -b /tmp/jar-long -o /dev/null -w '%{http_code} %{redirect_url}\n' https://localhost/logout | grep -q '^30[27] https://localhost/login.html?loggedout=1'
+          test "$(code -b /tmp/jar-long https://localhost/play/)" = 302
           # ttyd itself refuses requests that did not come through the proxy
           test "$(docker exec conquer-local curl -s -o /dev/null -w '%{http_code}' http://localhost:7681/play/)" = 407
 
@@ -226,7 +248,8 @@ jobs:
           sudo grep -qx 'newbie:+' data/lib/.players
           ! sudo grep -q "$code" data/lib/.invites
           # The new account signs in, and the game has it found its nation
-          test "$(curl -sk -o /dev/null -w '%{http_code}' -u newbie:newbie-pass https://localhost/play/)" = 200
+          curl -sk -c /tmp/jar-newbie -o /dev/null --data-urlencode httpd_username=newbie --data-urlencode httpd_password=newbie-pass https://localhost/login/do
+          test "$(curl -sk -b /tmp/jar-newbie -o /dev/null -w '%{http_code}' https://localhost/play/)" = 200
           out=$(timeout 30 docker exec -u conquer -e TTYD_USER=newbie conquer-local bash -c "printf 'xx' | conquer-menu" || true)
           grep -q 'Found your nation' <<< "$out" || { echo "no nation builder for a new account: $out" >&2; exit 1; }
           sudo ./manage-players.sh remove newbie
@@ -235,7 +258,10 @@ jobs:
         run: |
           code() { curl -sk -o /dev/null -w '%{http_code}' "$@"; }
           ask() { curl -sk -H 'Content-Type: application/json' -d "$1" https://localhost/join/api/request; }
-          admin() { curl -sk -u "$TTYD_USERNAME:$TTYD_PASSWORD" -H 'Content-Type: application/json' "$@"; }
+          # Sessions of the site's sign-in: the administrator's and a plain player's
+          signin() { curl -sk -c "$1" -b "$1" -o /dev/null --data-urlencode "httpd_username=$2" --data-urlencode "httpd_password=$3" https://localhost/login/do; }
+          rm -f /tmp/jar-admin /tmp/jar-asker /tmp/jar-asker2
+          admin() { curl -sk -b /tmp/jar-admin -H 'Content-Type: application/json' "$@"; }
           test "$(curl -sk https://localhost/status/status.json | jq .requests_open)" = true
           test "$(curl -sk https://localhost/status/status.json | jq .last_join_turn)" = 5
           # A request without a code creates a pending account
@@ -250,13 +276,15 @@ jobs:
           sudo grep -qx 'asker:?' data/lib/.players
           sudo grep -qP '^asker\t[0-9]+\tasker@example.org\tHi from CI\tes$' data/lib/.requests
           # The administrator page and its API need an administrator
-          test "$(code https://localhost/admin/)" = 401
-          test "$(code -u "$TTYD_USERNAME:$TTYD_PASSWORD" https://localhost/admin/)" = 200
-          test "$(code https://localhost/admin/api/state)" = 401
-          test "$(code -u asker:asker-pass https://localhost/admin/api/state)" = 403
-          test "$(code -u asker:asker-pass -H 'Content-Type: application/json' -d '{"account":"asker"}' https://localhost/admin/api/approve)" = 403
+          signin /tmp/jar-admin "$TTYD_USERNAME" "$TTYD_PASSWORD"
+          signin /tmp/jar-asker asker asker-pass
+          test "$(code https://localhost/admin/)" = 302
+          test "$(code -b /tmp/jar-admin https://localhost/admin/)" = 200
+          test "$(code https://localhost/admin/api/state)" = 302
+          test "$(code -b /tmp/jar-asker https://localhost/admin/api/state)" = 403
+          test "$(code -b /tmp/jar-asker -H 'Content-Type: application/json' -d '{"account":"asker"}' https://localhost/admin/api/approve)" = 403
           # A header sent by the client does not make anyone an administrator
-          test "$(code -u asker:asker-pass -H "X-WEBAUTH-USER: $TTYD_USERNAME" https://localhost/admin/api/state)" = 403
+          test "$(code -b /tmp/jar-asker -H "X-WEBAUTH-USER: $TTYD_USERNAME" https://localhost/admin/api/state)" = 403
           sudo ./manage-players.sh assign "$TTYD_USERNAME" --admin
           admin https://localhost/admin/api/state | jq -e '.ok and .last_join_turn == 5 and (.requests | map(.account) | index("asker") != null)'
           admin https://localhost/admin/api/state | jq -e '.requests | map(select(.account == "asker"))[0].lang == "es"'
@@ -266,12 +294,29 @@ jobs:
           admin -d '{"account":"asker"}' https://localhost/admin/api/approve | jq -e '.error == "not_pending"'
           sudo grep -qx 'asker:+' data/lib/.players
           ! sudo grep -q '^asker' data/lib/.requests
+          # Assigning: the state lists the world's nations; a nation of the world
+          # (any case) is accepted, one that does not exist is refused
+          admin https://localhost/admin/api/state | jq -e '.nations | map(select(.name == "anorian" and .race != null)) | length == 1'
+          admin -d '{"account":"asker","nation":"nowhere"}' https://localhost/admin/api/assign | jq -e '.error == "no_nation"'
+          admin -d '{"account":"asker","nation":"ANORIAN"}' https://localhost/admin/api/assign | jq -e '.ok and .assigned == "anorian"'
+          sudo grep -qx 'asker:anorian' data/lib/.players
+          admin https://localhost/admin/api/state | jq -e '.players | map(select(.account == "asker" and .state == "nation" and .nation == "anorian")) | length == 1'
+          sudo ./manage-players.sh nations | grep -E '^anorian .*asker'
+          sudo ./manage-players.sh list | grep -q 'Nations without an account'
+          msg=$(sudo ./manage-players.sh assign asker nowhere 2>&1) && exit 1
+          grep -q "no nation 'nowhere'" <<< "$msg" && grep -q anorian <<< "$msg"
+          sudo ./manage-players.sh assign asker FUNG
+          sudo grep -qx 'asker:fung' data/lib/.players
+          admin -d '{"account":"asker"}' https://localhost/admin/api/assign | jq -e '.error == "bad_request"'
+          admin -d '{"account":"asker","found":true}' https://localhost/admin/api/assign | jq -e '.ok'
+          sudo grep -qx 'asker:+' data/lib/.players
           # Rejecting deletes the account
           ask '{"account":"asker2","password":"asker-pass"}' | jq -e '.status == "pending"'
           sudo grep -q '^asker2:' data/auth/htpasswd
           admin -d '{"account":"asker2"}' https://localhost/admin/api/reject | jq -e '.ok'
           ! sudo grep -q '^asker2' data/auth/htpasswd data/lib/.players data/lib/.requests
-          test "$(code -u asker2:asker-pass https://localhost/play/)" = 401
+          signin /tmp/jar-asker2 asker2 asker-pass
+          test "$(code -b /tmp/jar-asker2 https://localhost/play/)" = 302
           # Invite codes made from the page work for the sign-up tool
           invite=$(admin -d '{"count":1}' https://localhost/admin/api/invite | jq -er '.codes[0]')
           admin https://localhost/admin/api/state | jq -e --arg c "$invite" '.invites | index($c) != null'

@@ -23,9 +23,11 @@ sudo ./manage-players.sh invite 3           # three single-use invite codes
 sudo ./manage-players.sh invites            # codes not used yet
 
 # Accounts
-sudo ./manage-players.sh list               # accounts: ? waiting, + no nation yet, * admin
+sudo ./manage-players.sh list               # accounts, and nations without an account (marks: ? waiting, + no nation yet, * admin)
+sudo ./manage-players.sh nations            # nations of the world: race, class, account
 sudo ./manage-players.sh add NAME --nation NATION   # create or reset (--admin: any nation)
-sudo ./manage-players.sh assign NAME NATION         # (or --admin, or --found)
+sudo ./manage-players.sh assign NAME NATION         # a nation of the world, any case (or --admin, or --found)
+sudo ./manage-players.sh password NAME      # reset a password (same as add NAME)
 sudo ./manage-players.sh rename NAME NEWNAME
 sudo ./manage-players.sh remove NAME
 sudo ./check-web-login.sh NAME              # new password + tests the whole login
@@ -51,3 +53,7 @@ docker exec conquer-vps conquer-gate -test-mail you@example.com
 
 Settings (turn schedule, mail, `SIGNUP=off`...) are in `config/production.env`;
 every variable is described in DEPLOYMENT.md, "Configuration reference".
+
+## Design system
+
+Colours and fonts live only in `web/theme.css`; `web/design.html` shows every component. Rebuild images: `python3 tools/arch/bake.py` (game-screen frames), `python3 tools/hero/build-bg.py` (map texture); tutorial pages: `python3 tools/tutorial/build.py`.

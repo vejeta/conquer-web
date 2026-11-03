@@ -1,0 +1,185 @@
+/* SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+   SPDX-License-Identifier: GPL-3.0-or-later
+
+   The game screen's page layout and the touch layer (touch.js). Colours,
+   fonts and the look of keys, chips, the compass, the plaque and the panel
+   come from theme.css (load it first); this file only places things. */
+
+/* ---- the page: header, then the game screen and the coach ---- */
+body.game-page { display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
+.game-page .site-header { flex: none; position: relative; z-index: 20; transition: transform 240ms ease; }
+.game-page .site-header .key { min-height: 36px; }
+.game-main { flex: 1; min-height: 0; box-shadow: none; padding: var(--s2) var(--s3) calc(var(--s2) + env(safe-area-inset-bottom)); display: flex; }
+.stage { flex: 1; display: flex; gap: var(--s4); min-height: 0; min-width: 0; }
+.game-main .gamescreen { flex: 1; min-width: 0; min-height: 0; }
+.game-main .gs { height: 100%; grid-template-rows: auto minmax(0, 1fr); position: relative; align-content: stretch; }
+.game-main .gs > .touch-ui { display: contents; }
+.game-main .gs > .touch-ui[hidden] { display: none; }
+.game-main .gs .touch-where { order: 1; }
+.game-main .gs > .stone { order: 2; align-self: stretch; display: flex; min-height: 0; }
+.game-main .gs .touch-ledge { order: 3; }
+.game-main .gs > .compass { order: 4; }
+.game-main .stone .terminal { flex: 1; display: flex; min-height: 0; min-width: 0; }
+/* theme.css places the plaque, ledge and compass as children of .gs; here they sit in .touch-ui (display: contents) */
+@container gamescreen (min-width: 700px) {
+  .gs.has-compass > .touch-ui > .touch-where { grid-column: 1 / -1; }
+}
+@container gamescreen (min-width: 1100px) {
+  /* wide: the ledge is a column beside the stone, the compass under it (by the width of the screen's own box, so it never lags) */
+  .game-main .gs { grid-template-columns: minmax(0, 1fr) 232px; grid-template-rows: auto minmax(0, 1fr) auto; }
+  .gs > .touch-ui > .touch-where { grid-column: 1 / -1; justify-self: start; }
+  .game-main .gs > .stone { grid-column: 1; grid-row: 2 / span 2; }
+  .gs > .touch-ui > .touch-ledge { grid-column: 2; grid-row: 2; align-self: start; max-height: 100%; overflow-y: auto; }
+  .gs > .compass { grid-column: 2; grid-row: 3; justify-self: center; }
+  .touch-ledge .chips { flex-direction: column; overflow: visible; -webkit-mask-image: none; mask-image: none; padding: var(--s2) var(--s3); }
+  .touch-ledge .chips .key { width: 100%; justify-content: space-between; }
+}
+
+/* the aside of the coach is a panel; below the screen on small windows */
+.coach { width: 330px; flex: none; overflow-y: auto; font-size: .92rem; line-height: 1.5; }
+.coach[hidden] { display: none; }
+.coach .head { display: flex; justify-content: space-between; align-items: center; color: var(--ink-dim); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; }
+.coach .bar { height: 4px; background: var(--hair); border-radius: 2px; margin: var(--s2) 0 var(--s3); }
+.coach .bar span { display: block; height: 100%; background: var(--phos); border-radius: 2px; box-shadow: 0 0 6px var(--phos-glow); transition: width .3s; }
+.coach h2 { font-size: 1.15rem; margin: 0 0 var(--s2); }
+.coach p, .coach ul { margin: 0 0 var(--s3); }
+.coach ul { padding-left: 1.1em; }
+.coach pre { background: var(--bg); border: 1px solid var(--line); padding: var(--s1) var(--s3); border-radius: var(--radius); display: inline-block; }
+.coach kbd { padding: 0 .35em; border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 4px; }
+.coach .rule { border-left: 3px solid var(--gold); padding-left: var(--s3); color: var(--ink-dim); }
+.coach .press { display: flex; flex-wrap: wrap; gap: var(--s2); margin: var(--s3) 0; align-items: center; }
+.coach .press span { color: var(--ink-dim); font-size: .8rem; }
+.coach .press button { min-height: 36px; padding: 0 var(--s3); font: 600 .95rem var(--font-text); color: var(--phos-text); background: var(--bg); border: 1px solid var(--phos-dim); border-radius: var(--radius); cursor: pointer; }
+.coach .press .typed { font-style: italic; color: var(--ink-dim); }
+.coach .nav { display: flex; gap: var(--s2); }
+.coach .nav button, .coach .close { min-height: 36px; padding: 0 var(--s3); font: 600 .9rem var(--font-text); color: var(--ink); background: var(--bg-2); border: 1px solid var(--line); border-bottom-width: 3px; border-radius: var(--radius); cursor: pointer; }
+.coach .close { min-width: 36px; padding: 0; font-size: 1.2rem; }
+.coach .auto { color: var(--ink-dim); font-size: .8rem; margin: var(--s3) 0 0; }
+@media (max-width: 800px) {
+  .stage { flex-direction: column; gap: var(--s2); }
+  .coach { width: auto; max-height: 36vh; }
+  .nav-extra { display: none; }
+}
+/* /try/: the practice game's own bar */
+.try-note { color: var(--ink-dim); font-size: .85rem; }
+.try-note b { color: var(--ink); font-weight: 600; }
+@media (max-width: 900px) { .try-note { display: none; } }
+.moves-panel { position: fixed; inset: 0; z-index: 50; background: color-mix(in srgb, var(--screen) 60%, transparent); display: flex; align-items: center; justify-content: center; padding: var(--s3); }
+.moves-panel[hidden] { display: none; }
+.moves-panel .card { max-width: 760px; max-height: 100%; overflow: auto; background: var(--bg-2); }
+.moves-panel .ok { margin-top: var(--s4); }
+
+/* ---- the terminal's frame: the viewport clips, the stage zooms ---- */
+.touch-viewport { position: relative; flex: 1; min-width: 0; min-height: 0; overflow: hidden; }
+.touch-stage { position: absolute; left: 0; top: 0; width: 100%; height: 100%; transform-origin: 0 0; }
+.touch-stage.touch-anim { transition: transform 0.2s ease-out; }
+.touch-stage > iframe, .touch-stage > #terminal { width: 100%; height: 100%; border: 0; display: block; }
+#terminal { padding: 0; }
+
+/* the grid sits exactly over the text area (touch.js sets its box) */
+.touch-grid { position: absolute; z-index: 4; left: 0; top: 0; pointer-events: none; touch-action: none; -webkit-tap-highlight-color: transparent; }
+.touch-grid.capture { pointer-events: auto; }
+.touch-crt { position: absolute; inset: 0; pointer-events: none; display: none;
+  background: repeating-linear-gradient(to bottom, transparent 0, transparent 2px, color-mix(in srgb, var(--screen) 22%, transparent) 3px),
+              radial-gradient(ellipse at center, transparent 60%, color-mix(in srgb, var(--screen) 35%, transparent) 100%); }
+.touch-scan .touch-crt { display: block; }
+.stone.parchment .touch-crt { display: none; }
+
+/* ---- "turn your phone" ---- */
+.touch-hint { position: absolute; left: var(--s2); right: var(--s2); bottom: var(--s2); z-index: 6; justify-content: space-between; font-size: .9rem; line-height: 1.3; }
+.touch-hint[hidden] { display: none; }
+.touch-hint span { flex: 1; }
+.touch-hint .key { min-width: 36px; min-height: 36px; padding: 0; font-size: 1.2rem; }
+
+/* ---- the plaque row: where am I, back, options ---- */
+.touch-where { display: flex; align-items: center; gap: var(--s2); min-width: 0; flex-wrap: wrap; }
+.touch-crumb { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; max-width: 100%; }
+.touch-spacer { flex: 1; }
+.touch-back[hidden] { display: none; }
+.touch-back .ic { font-size: 1.3rem; line-height: 1; }
+.touch-gear { font-size: 1.15rem; padding: 0; }
+
+/* ---- the ledge: command chips ---- */
+.touch-ledge[hidden], .touch-chips[hidden] { display: none; }
+.touch-chips.keypad { flex-wrap: wrap; overflow: visible; justify-content: center; -webkit-mask-image: none; mask-image: none; }
+.touch-chips.keypad .touch-chip { flex: 0 0 calc((100% - 5 * var(--s2)) / 6); min-width: 0; justify-content: center; }
+.touch-chip .ic { font-size: 1.1rem; line-height: 1; min-width: 1em; text-align: center; }
+.touch-chip .lb { white-space: nowrap; }
+.touch-chip.main { border-color: var(--phos); }
+.touch-chip.warn .ic, .touch-chip.warn .lb { color: var(--bad); }
+.touch-chip.digit { padding: 0; font-family: var(--font-mono); }
+.touch-chip.digit .lb, .touch-chip.digit .ic { font: 1.7rem/1 var(--font-mono); }
+.touch-nohints .kh { display: none; }
+.touch-chip:active .kh { color: inherit; }
+
+/* ---- the compass ---- */
+.touch-dpad .touch-pb .ar { font: 1.7rem/.9 var(--font-mono); }
+.touch-pb { touch-action: none; }
+
+/* ---- options panel: a sheet over the corner ---- */
+.touch-panel { position: fixed; right: var(--s3); bottom: var(--s3); z-index: 30; width: min(340px, calc(100vw - 2 * var(--s3))); max-height: 80vh; overflow: auto; border-radius: var(--radius); }
+.touch-panel[hidden] { display: none; }
+.touch-panel h2 { margin: 0 0 var(--s2); font-size: 1.3rem; }
+.touch-panel .row { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); min-height: 40px; }
+.touch-panel label { flex: 1; }
+.touch-panel input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--phos); }
+.touch-panel input[type="range"] { width: 140px; accent-color: var(--phos); }
+.touch-panel select { min-height: 40px; }
+.touch-reset { width: 100%; margin-top: var(--s2); }
+
+/* ---- every command ---- */
+.touch-sheet { position: fixed; inset: 0; z-index: 40; background: color-mix(in srgb, var(--screen) 62%, transparent); display: flex; align-items: flex-end; justify-content: center; }
+.touch-sheet[hidden] { display: none; }
+.touch-sheet .card { position: relative; width: min(720px, 100%); max-height: 86vh; overflow: auto; padding: var(--s4) var(--s4) calc(var(--s4) + env(safe-area-inset-bottom));
+  background: var(--bg-2); color: var(--ink); border: var(--bezel) solid var(--line); border-bottom: 0; border-radius: var(--radius) var(--radius) 0 0; }
+.touch-sheet h2 { margin: 0 48px var(--s3) 2px; font-size: 1.4rem; }
+.touch-sheet .x { position: absolute; top: var(--s2); right: var(--s2); width: 44px; height: 44px; border: 0; border-radius: var(--radius); background: transparent; color: inherit; font-size: 1.6rem; cursor: pointer; }
+.touch-sheet .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--s2); }
+.touch-cmd { display: flex; align-items: center; gap: var(--s3); min-height: 44px; padding: var(--s1) var(--s3); border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); color: var(--ink);
+  font: .92rem/1.25 var(--font-text); text-align: left; cursor: pointer; touch-action: manipulation; }
+.touch-cmd kbd { flex: none; min-width: 28px; text-align: center; font-size: 1.25rem; line-height: 1; padding: 2px 4px 0; border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 4px; color: var(--phos-text); }
+.touch-cmd:hover { background: var(--hair); border-color: var(--phos-dim); }
+.touch-cmd:active { background: var(--phos); color: var(--on-phos); }
+.touch-cmd:active kbd { color: inherit; }
+
+/* ---- phones held sideways: the header folds away, the compass floats ---- */
+@media (orientation: landscape) and (max-height: 500px) {
+  .game-page .site-header { position: absolute; top: 0; left: 0; right: 0; transform: translateY(calc(-100% + 8px)); padding-block: var(--s1); }
+  .game-page .site-header.peek, .game-page .site-header:focus-within { transform: none; }
+  .game-main { padding: var(--s1) var(--s2); }
+  /* every row of the 80x24 screen must fit: the screen takes the whole height, thin frame, and
+     the plaque and the chips go to a rail beside it */
+  .game-main .gs { gap: var(--s1) var(--s2); grid-template-columns: minmax(0, 1fr) 136px; grid-template-rows: auto minmax(0, 1fr); }
+  .game-main .gs > .stone { grid-column: 1; grid-row: 1 / span 2; }
+  .game-main .gs > .touch-ui > .touch-where { grid-column: 2; grid-row: 1; justify-self: stretch; flex-wrap: wrap; gap: var(--s1); }
+  .game-main .gs > .touch-ui > .touch-ledge { grid-column: 2; grid-row: 2; align-self: stretch; min-height: 0; overflow-y: auto; }
+  .touch-ledge .chips { flex-direction: column; overflow: visible; -webkit-mask-image: none; mask-image: none; padding: var(--s1) var(--s2); }
+  .touch-ledge .chips .key { width: 100%; justify-content: space-between; }
+  .game-main .stone .terminal { padding: 2px; }
+  .game-main .stone.parchment { --fw: 6px; --recess: 2px; margin-inline: 0; }
+  .game-main .stone .roll { display: none !important; }
+  .touch-crumb { font-size: .8rem; }
+  .game-main .gs > .compass { position: absolute; right: 148px; bottom: 12px; --c: 44px; gap: 6px; padding: 10px; order: 5; }
+  .touch-panel { bottom: var(--s2); }
+  .touch-sheet { align-items: center; }
+  .touch-sheet .card { border-radius: var(--radius); border-bottom: var(--bezel) solid var(--line); max-height: 94vh; }
+  .coach { width: 230px; max-height: none; }
+  .stage { flex-direction: row; }
+}
+/* In the app, held sideways: the bar folds away and a tab brings it back */
+@media (orientation: landscape) and (max-height: 500px) {
+  .in-app .app-bar { position: absolute; top: 0; left: 0; right: 0; transform: translateY(-100%); transition: transform 200ms ease; }
+  .in-app .app-bar.peek { transform: none; }
+  .in-app .app-handle { display: block; position: fixed; top: 0; left: 50%; margin-left: -28px; width: 56px; height: 16px; padding: 0; z-index: 24;
+    border: 0; border-radius: 0 0 10px 10px; background: color-mix(in srgb, var(--bg-2) 85%, transparent); cursor: pointer; }
+  .in-app .app-handle::after { content: ""; display: block; width: 24px; height: 3px; margin: 6px auto 0; border-radius: 2px; background: var(--ink-dim); }
+  .in-app .app-bar.peek ~ .app-handle { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .touch-stage.touch-anim { transition: none; }
+  .game-page .site-header { transition: none; }
+}
+
+/* the length the game accepts for a nation password, above the chips */
+.touch-fieldhint { padding: var(--s1, 4px) var(--s3, 12px); font-size: .85rem; opacity: .85; text-align: center; }
+.touch-fieldhint[hidden] { display: none; }

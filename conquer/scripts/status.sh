@@ -12,6 +12,17 @@ if [ "$(id -u)" = 0 ] && id conquer >/dev/null 2>&1; then
 fi
 
 PREFIX="${CONQUER_PREFIX:-/opt/conquer}"
+
+# conquer-status --nations: the nations of the world, one per line as
+# name<TAB>race<TAB>class (from "conquer -s", the same source as status.json;
+# monster nations have no score and are not listed). Used by conquer-signup
+# and by manage-players.sh. Whether a nation is still active is not in that
+# output, so it is not listed.
+if [ "$1" = "--nations" ]; then
+    "$PREFIX/bin/conquer" -s 2>/dev/null | awk '
+        NF >= 6 && $1 ~ /^[0-9]+$/ && $6 ~ /^[0-9]+$/ { printf "%s\t%s\t%s\n", $2, $3, $4 }' | sort -f
+    exit "${PIPESTATUS[0]}"
+fi
 PUBLIC_DIR="${PUBLIC_DIR:-$PREFIX/public}"
 # After this turn a new nation starts late, with extra points from the game;
 # keep in step with LAST_JOIN_TURN in join.sh and the gate

@@ -101,10 +101,41 @@ def test_proxy_config_identity_and_origin(name):
     assert text.index("RewriteRule ^/play/ - [F,L]") < text.index("ws://")
     # Both the terminal and the administrator page check the account
     for location in ("/play/", "/admin/"):
-        block = re.search(r'<Location "%s">(.*?)</Location>' % location, text, re.S)
+        block = re.search(r'^\s*<Location "%s">(.*?)</Location>' % location, text, re.S | re.M)
         assert block, location
         assert "Require valid-user" in block.group(1)
         assert 'RequestHeader set X-WEBAUTH-USER "%{REMOTE_USER}s"' in block.group(1)
+
+
+@pytest.mark.parametrize("name", PROXY_CONFIGS)
+def test_sign_in_is_a_page_and_a_session_cookie(name):
+    """/play/ and /admin/ sign in through web/login.html: a form (mod_auth_form)
+    and a session cookie that is encrypted, httponly, secure and same-site."""
+    text = (ROOT / name).read_text()
+    assert "AuthType Basic" not in text
+    for location in ("/play/", "/admin/", "/login/do", "/login/long", "/logout"):
+        block = re.search(r'^\s*<Location "%s">(.*?)</Location>' % location, text, re.S | re.M)
+        assert block, location
+        body = block.group(1)
+        assert "Session On" in body, location
+        assert "SessionCookieName conquer_session path=/;httponly;secure;samesite=lax" in body, location
+        assert re.search(r'SessionCryptoPassphraseFile "[^"]+"', body), location
+    for location in ("/play/", "/admin/"):
+        body = re.search(r'^\s*<Location "%s">(.*?)</Location>' % location, text, re.S | re.M).group(1)
+        assert "AuthType form" in body and "AuthFormProvider file" in body
+        assert "AuthFormLoginRequiredLocation" in body and "/login.html" in body
+        assert "SessionCookieRemove On" in body     # the game never sees the cookie
+    assert "SetHandler form-login-handler" in text and "SetHandler form-logout-handler" in text
+    # Remember me: the same form, a cookie of 30 days
+    assert re.search(r'^\s*<Location "/login/long">.*?SessionMaxAge 2592000.*?</Location>', text, re.S | re.M)
+    assert re.search(r'^\s*<Location "/login/do">.*?SessionMaxAge 0.*?</Location>', text, re.S | re.M)
+
+
+def test_local_apache_has_the_sign_in_modules():
+    text = (ROOT / "apache" / "Dockerfile").read_text()
+    for module in ("auth_form", "session", "session_cookie", "session_crypto", "request"):
+        assert module in text
+    assert "session.key" in text
 
 
 def test_vps_config_headers():
