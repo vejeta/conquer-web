@@ -876,6 +876,7 @@ var ui = el('div', 'touch-ui');
     }
 
     // ---- geometry: the grid exactly over the terminal's text area
+    var sizeSeen = null, redrawTimer = null, REDRAW_MS = 400;
     function measure() {
       var t = tt();
       var s = t && t.element && t.element.querySelector ? t.element.querySelector('.xterm-screen') : null;
@@ -892,6 +893,14 @@ var ui = el('div', 'touch-ui');
       if (!w || !h) return;
       geom = { cw: w / t.cols, ch: h / t.rows, cols: t.cols, rows: t.rows };
       gx = x; gy = y;
+      // The game takes the new size of the terminal (ncurses) but redraws only what it draws next:
+      // on the map the sector panel would show twice, the old one left where it was. ^L redraws it all.
+      var size = t.cols + 'x' + t.rows;
+      if (sizeSeen && size !== sizeSeen) {
+        clearTimeout(redrawTimer);
+        redrawTimer = setTimeout(function () { if (!destroyed && state.where === 'map') send('\x0c'); }, REDRAW_MS);
+      }
+      sizeSeen = size;
       var st = grid.style;
       st.left = x + 'px'; st.top = y + 'px'; st.width = w + 'px'; st.height = h + 'px';
     }

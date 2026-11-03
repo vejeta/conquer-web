@@ -13,6 +13,7 @@ import http.server
 import json
 import os
 import re
+import time
 import threading
 
 import pytest
@@ -1066,6 +1067,31 @@ def test_nation_password_hint_does_not_resize_the_screen(site, browser):
         assert page.evaluate(measure) == before, viewport
         assert rows() == size, viewport
         ctx.close()
+
+
+def test_map_is_redrawn_when_the_terminal_changes_size(site, browser):
+    """The game takes the new size but redraws only what it draws next, so the
+    sector panel showed twice on a wide screen (the end-to-end rehearsal read
+    the old one): on the map the layer sends ^L after a resize, and only there."""
+    ctx, page, target = touch_page(site, browser, "game", "desktop")
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    page.wait_for_timeout(600)
+    watch_keys(page, target, "game")
+    page.set_viewport_size({"width": 1100, "height": 640})
+    page.wait_for_function("(c) => document.getElementById('game').contentWindow.term.rows !== c", arg=target.evaluate("term.rows"), timeout=8000)
+    end = time.time() + 10
+    while "\x0c" not in sent_keys(page, target, "game") and time.time() < end:
+        page.wait_for_timeout(200)
+    assert "\x0c" in sent_keys(page, target, "game")
+    # not at a prompt: a ^L there would be typed into the answer
+    show(page, target, "< Building Country iberia >\n\nEnter a Name for your Country: ")
+    page.wait_for_timeout(600)
+    watch_keys(page, target, "game")
+    page.set_viewport_size({"width": 1280, "height": 800})
+    page.wait_for_timeout(1500)
+    assert "\x0c" not in sent_keys(page, target, "game")
+    ctx.close()
 
 
 def test_audio_plays_after_a_click(site, browser):
