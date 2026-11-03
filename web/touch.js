@@ -876,7 +876,17 @@ var ui = el('div', 'touch-ui');
     }
 
     // ---- geometry: the grid exactly over the terminal's text area
-    var sizeSeen = null, redrawTimer = null, REDRAW_MS = 400;
+    var sizeSeen = null, redrawTimer = null, lastInput = 0, REDRAW_MS = 400, QUIET_MS = 1200;
+    // ^L is any key on a report ("hit any key") and a typed character in a prompt: it goes only
+    // when the screen is the map and nothing has been typed or tapped for a moment
+    function scheduleRedraw(tries) {
+      clearTimeout(redrawTimer);
+      redrawTimer = setTimeout(function () {
+        if (destroyed) return;
+        if (Date.now() - lastInput < QUIET_MS) { if (tries < 8) scheduleRedraw(tries + 1); return; }
+        if (state.where === 'map') { send('\x0c'); lastInput = 0; }
+      }, tries ? 500 : REDRAW_MS);
+    }
     function measure() {
       var t = tt();
       var s = t && t.element && t.element.querySelector ? t.element.querySelector('.xterm-screen') : null;
@@ -896,10 +906,11 @@ var ui = el('div', 'touch-ui');
       // The game takes the new size of the terminal (ncurses) but redraws only what it draws next:
       // on the map the sector panel would show twice, the old one left where it was. ^L redraws it all.
       var size = t.cols + 'x' + t.rows;
-      if (sizeSeen && size !== sizeSeen) {
-        clearTimeout(redrawTimer);
-        redrawTimer = setTimeout(function () { if (!destroyed && state.where === 'map') send('\x0c'); }, REDRAW_MS);
+      if (t.onData && !t._conquerInputSeen) {
+        t._conquerInputSeen = true;
+        t.onData(function () { lastInput = Date.now(); });
       }
+      if (sizeSeen && size !== sizeSeen) scheduleRedraw(0);
       sizeSeen = size;
       var st = grid.style;
       st.left = x + 'px'; st.top = y + 'px'; st.width = w + 'px'; st.height = h + 'px';

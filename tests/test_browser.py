@@ -1090,6 +1090,20 @@ def test_map_is_redrawn_when_the_terminal_changes_size(site, browser):
     page.set_viewport_size({"width": 1280, "height": 800})
     page.wait_for_timeout(1500)
     assert "\x0c" not in sent_keys(page, target, "game")
+    # on the map again, with the player busy: the ^L waits (on a report it would be "any key")
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    page.wait_for_timeout(600)
+    watch_keys(page, target, "game")
+    page.set_viewport_size({"width": 1100, "height": 640})
+    for _ in range(6):
+        target.evaluate("term.input('j', true)")
+        page.wait_for_timeout(250)
+        assert "\x0c" not in sent_keys(page, target, "game"), "the redraw came while keys were being sent"
+    end = time.time() + 10
+    while "\x0c" not in sent_keys(page, target, "game") and time.time() < end:
+        page.wait_for_timeout(200)
+    assert "\x0c" in sent_keys(page, target, "game")
     ctx.close()
 
 
