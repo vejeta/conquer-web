@@ -123,6 +123,9 @@ MSG[menu_done]="Meine Befehle für diesen Zug sind fertig"
 MSG[menu_practice]="Übungswelt (nur du, nichts zählt)"
 MSG[menu_log_out]="Abmelden"
 MSG[menu_goodbye]="Leb wohl, Feldherr."
+MSG[menu_idle]="Nach %s Minuten ohne Tastendruck geschlossen. Melde dich neu an, um weiterzuspielen."
+MSG[menu_already_open]="  ${yellow}Dieses Konto ist schon in einem anderen Fenster offen.${reset}
+  Nutze dieses, oder schließe es und öffne diese Seite neu."
 
 # Beitritts-Assistent (join.sh)
 MSG[join_questions]="Fragen: ${bold}%s${reset}"
@@ -165,6 +168,6 @@ MSG[join_finish]="  Drück eine Taste, um fortzufahren..."
 # Account waiting for approval ("?" in the assignments)
 MSG[menu_requested]="Platz angefragt, wartet auf Freigabe"
 MSG[menu_pending]="  ${yellow}Dein Platz ist noch nicht freigegeben.${reset}
-  Der Administrator gibt neue Spieler von Hand frei. Danach öffnet
-  Spielen hier den Nationen-Assistenten. Bis dahin kannst du die
-  Übungswelt (Option 7) ausprobieren und die ganze Hilfe lesen (Option 5)."
+  Der Administrator gibt neue Spieler von Hand frei. Danach meldest du
+  dich neu an und der Nationen-Assistent öffnet sich. Bis dahin bleibt das
+  Terminal geschlossen.."

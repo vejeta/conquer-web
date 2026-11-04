@@ -21,6 +21,11 @@ PRACTICE_PASSWORD=train1
 # Web account the player signed in with (set by ttyd from the proxy header)
 PLAYER="${TTYD_USER:-}"
 MIN_ROWS=24
+# Seconds without a key at the menu before the terminal is closed (it holds
+# one of the MAX_CLIENTS places); the running game is not timed
+IDLE_TIMEOUT="${MENU_IDLE_TIMEOUT:-900}"
+# One lock file per account: a second terminal of the same account is turned away
+LOCK_DIR="${CONQUER_RUN:-/run/conquer}"
 
 TURN_SCHEDULE=""
 TURN_SCHEDULE_LABEL=""
@@ -37,7 +42,7 @@ reset=$(tput sgr0 2>/dev/null)
 
 # Texts in the language of the game page (/play/?arg=es, ttyd --url-arg)
 # shellcheck source=i18n.sh
-. /usr/local/lib/conquer-i18n.sh
+. "${CONQUER_I18N_LIB:-/usr/local/lib/conquer-i18n.sh}"
 load_texts "${1:-}"
 LANG_ARG="${1:-}"
 # The game page of the Android app adds "app=1" (/play/?arg=es&arg=app=1):
@@ -84,7 +89,17 @@ run_game() {
 
 pause() {
     echo
-    read -r -s -n 1 -p "$(t menu_pause)"
+    # No key for a long time: carry on, the menu's own timer ends the session
+    read -r -s -n 1 -t "$IDLE_TIMEOUT" -p "$(t menu_pause)"
+    return 0
+}
+
+# The terminal has been left alone: free its place
+idle_exit() {
+    clear
+    echo
+    t menu_idle "$((IDLE_TIMEOUT / 60))"; echo
+    exit 0
 }
 
 # Conquer draws an 80x24 screen; curses misbehaves on anything smaller
@@ -341,7 +356,7 @@ practice_menu() {
         echo "  ${bold}3${reset}) $(t menu_practice_reset)"
         echo "  ${bold}q${reset}) $(t menu_back)"
         echo
-        read -r -s -n 1 -p "$(t menu_choose)" choice
+        read -r -s -n 1 -t "$IDLE_TIMEOUT" -p "$(t menu_choose)" choice || return
         case "$choice" in
             1)
                 check_terminal_size
@@ -433,6 +448,28 @@ play() {
     fi
 }
 
+# An account that is not approved yet gets no terminal at all: its seat is
+# only a name and a password, and the terminals (MAX_CLIENTS) are for players
+if [ "$(player_nation)" = "?" ]; then
+    clear
+    echo
+    t menu_pending; echo
+    exit 0
+fi
+
+# One terminal per account: the lock is held as long as this menu (and the
+# game it starts) lives. A second tab is told so and closes.
+if [ -n "$PLAYER" ] && [ -w "$LOCK_DIR" ]; then
+    lock_name="${PLAYER//[^A-Za-z0-9_.-]/_}"
+    exec 8> "$LOCK_DIR/session-$lock_name.lock"
+    if ! flock -n 8; then
+        clear
+        echo
+        t menu_already_open; echo
+        exit 0
+    fi
+fi
+
 # A new player goes straight to founding their nation
 [ "$(player_nation)" = "+" ] && found_nation
 
@@ -453,8 +490,11 @@ while true; do
     [ -d "$PRACTICE_TEMPLATE" ] && echo "  ${bold}7${reset}) $(t menu_practice)"
     echo "  ${bold}q${reset}) $(t menu_log_out)"
     echo
-    # The terminal is gone (the browser closed): nothing more to read
-    read -r -s -n 1 -p "$(t menu_choose)" choice || exit 0
+    # Closed browser: nothing more to read; no key for IDLE_TIMEOUT: free the place
+    read -r -s -n 1 -t "$IDLE_TIMEOUT" -p "$(t menu_choose)" choice
+    status=$?
+    [ $status -gt 128 ] && idle_exit
+    [ $status -ne 0 ] && exit 0
     case "$choice" in
         1|p|P) play ;;
         2) show_how_to_join ;;

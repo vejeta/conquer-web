@@ -122,6 +122,9 @@ MSG[menu_done]="He terminado mis órdenes de este turno"
 MSG[menu_practice]="Mundo de práctica (solo tú, nada cuenta)"
 MSG[menu_log_out]="Salir"
 MSG[menu_goodbye]="Hasta pronto, comandante."
+MSG[menu_idle]="Cerrada tras %s minutos sin pulsar una tecla. Vuelve a entrar para seguir."
+MSG[menu_already_open]="  ${yellow}Esta cuenta ya está abierta en otra ventana.${reset}
+  Usa esa, o ciérrala y abre esta página de nuevo."
 
 # Asistente de alta (join.sh)
 MSG[join_questions]="Dudas: ${bold}%s${reset}"
@@ -164,5 +167,5 @@ MSG[join_finish]="  Pulsa una tecla para continuar..."
 MSG[menu_requested]="plaza solicitada, pendiente de aprobación"
 MSG[menu_pending]="  ${yellow}Tu plaza está pendiente.${reset}
   El administrador aprueba a los jugadores nuevos a mano. Cuando lo haga,
-  Jugar abrirá aquí el creador de naciones. Mientras tanto puedes probar
-  el mundo de práctica (opción 7) y leer la ayuda completa (opción 5)."
+  vuelve a entrar y se abrirá el creador de naciones. Hasta entonces la
+  terminal permanece cerrada.."

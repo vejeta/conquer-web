@@ -131,8 +131,9 @@ the administrator password and the mail password.
 | Variable | Meaning |
 |----------|---------|
 | `TTYD_USERNAME`, `TTYD_PASSWORD` | The first administrator account; read once by `deploy-to-vps.sh` to create it. Change a password later with `manage-players.sh add NAME` |
-| `MAX_CLIENTS` | Players allowed in the terminal at once (ttyd `-m`) |
+| `MAX_CLIENTS` | Players allowed in the terminal at once (ttyd `-m`); 25 in the production template, one terminal per account |
 | `SESSION_TIMEOUT` | Seconds between ttyd's keep-alive pings (ttyd `-P`) |
+| `MENU_IDLE_TIMEOUT` | Seconds without a key at the menu before the terminal closes (default 900) |
 | `TTYD_FONT_SIZE` | Terminal font size in the browser |
 | `CONQUER_UID` | uid of the game user inside the container; set it to the owner of `data/` on the host (`id -u conquer`) so scripts can read `data/` |
 

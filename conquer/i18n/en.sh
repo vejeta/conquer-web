@@ -124,6 +124,9 @@ MSG[menu_done]="My orders for this turn are done"
 MSG[menu_practice]="Practice world (only you, nothing counts)"
 MSG[menu_log_out]="Log out"
 MSG[menu_goodbye]="Goodbye, commander."
+MSG[menu_idle]="Closed after %s minutes without a key. Sign in again to come back."
+MSG[menu_already_open]="  ${yellow}This account is already open in another window.${reset}
+  Use that one, or close it and open this page again."
 
 # Join wizard (join.sh)
 MSG[join_questions]="Questions: ${bold}%s${reset}"
@@ -164,6 +167,6 @@ MSG[join_finish]="  Press any key to continue..."
 # Account waiting for approval ("?" in the assignments)
 MSG[menu_requested]="seat requested, waiting for approval"
 MSG[menu_pending]="  ${yellow}Your seat is pending.${reset}
-  The administrator approves new players by hand. Once they do, Play
-  opens the nation builder here. Meanwhile you can try the practice
-  world (option 7) and read the full help (option 5)."
+  The administrator approves new players by hand. Once they do, you can
+  sign in again and the nation builder opens. The terminal stays closed
+  until then.."

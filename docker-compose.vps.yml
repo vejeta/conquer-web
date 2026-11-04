@@ -14,8 +14,9 @@ services:
         CONQUER_UID: ${CONQUER_UID:-1000}
     container_name: conquer-vps
     environment:
-      - MAX_CLIENTS=${MAX_CLIENTS:-5}
+      - MAX_CLIENTS=${MAX_CLIENTS:-25}
       - SESSION_TIMEOUT=${SESSION_TIMEOUT:-1800}
+      - MENU_IDLE_TIMEOUT=${MENU_IDLE_TIMEOUT:-900}
       - TTYD_FONT_SIZE=${TTYD_FONT_SIZE:-16}
       - TZ=${TZ:-UTC}
       - TURN_SCHEDULE=${TURN_SCHEDULE:-0 20 * * 0}

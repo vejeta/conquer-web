@@ -124,6 +124,9 @@ MSG[menu_done]="Minhas ordens deste turno estão prontas"
 MSG[menu_practice]="Mundo de treino (só você, nada conta)"
 MSG[menu_log_out]="Sair"
 MSG[menu_goodbye]="Até logo, comandante."
+MSG[menu_idle]="Fechado após %s minutos sem tecla. Entre de novo para voltar."
+MSG[menu_already_open]="  ${yellow}Esta conta já está aberta em outra janela.${reset}
+  Use aquela, ou feche-a e abra esta página de novo."
 
 # Assistente de cadastro (join.sh)
 MSG[join_questions]="Dúvidas: ${bold}%s${reset}"
@@ -166,5 +169,5 @@ MSG[join_finish]="  Pressione uma tecla para continuar..."
 MSG[menu_requested]="vaga solicitada, aguardando aprovação"
 MSG[menu_pending]="  ${yellow}Sua vaga está pendente.${reset}
   O administrador aprova os novos jogadores manualmente. Quando ele
-  aprovar, Jogar abrirá aqui o criador de nações. Enquanto isso, você
-  pode experimentar o mundo de treino (opção 7) e ler a ajuda completa (opção 5)."
+  aprovar, entre de novo e o criador de nações abrirá. Até lá o terminal
+  fica fechado.."

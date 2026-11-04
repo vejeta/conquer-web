@@ -26,7 +26,7 @@ include a real password or a player's data in a report.
 | The game user inside the container (`conquer`, uid 1000) | the world files, `lib/.players`, the account file, the mail settings in its environment: gate, ttyd, menu, game and cron all run as it | (trusted, and it is the boundary below) |
 | Administrators of the site (accounts marked `*` in `lib/.players`) | approving or rejecting seats, making invite codes, opening any nation at its password prompt | anything on the host |
 | Players (approved accounts) | their own nation, once they give its password; a practice world of their own | other nations, other accounts, the files, a shell |
-| Visitors (nobody, or a pending account) | asking for a seat; the public pages and status; the menu and a practice world | everything else |
+| Visitors (nobody, or a pending account) | asking for a seat; the public pages and status; no terminal (a pending account is turned away by the menu) | everything else |
 
 The main boundary is between a player and the game user. Players get a
 terminal menu, never a shell: if they could break out of it they would be the
@@ -157,9 +157,16 @@ becoming players without the administrator's approval.
   holds no capability (CI checks it).
 - `cap_drop: ALL` with only what the root part of the entrypoint needs,
   `no-new-privileges`, `pids_limit`, `mem_limit`, log rotation.
-- ttyd: at most `MAX_CLIENTS` terminals at once, pinned release with a checked
-  SHA-256. `SESSION_TIMEOUT` is ttyd's WebSocket ping interval, not an idle
-  timeout.
+- ttyd: at most `MAX_CLIENTS` terminals at once (25 in the production
+  template), pinned release with a checked SHA-256. `SESSION_TIMEOUT` is
+  ttyd's WebSocket ping interval, not an idle timeout.
+- The menu (`menu.sh`) limits what a terminal can hold: an account still
+  waiting for approval (`?` in `lib/.players`) gets a message and the
+  terminal closes at once, so waiting accounts cannot occupy the places; one
+  terminal per account (`flock` on `/run/conquer/session-ACCOUNT.lock`: a
+  second tab is told the account is open elsewhere and closes); a menu with
+  no key for 15 minutes (`MENU_IDLE_TIMEOUT`, seconds) closes itself. The game
+  itself, once started, is not timed.
 - The gate is a static Go binary built in a separate stage; the image has no
   compiler.
 - Backups made before each turn are mode 600 in a 700 directory (they hold the
@@ -212,17 +219,19 @@ approval flows. A step fails if the password shows up in a container log.
   That is Apache only, on the local Docker network or on the VPS loopback. Other
   local users of the VPS, or another container on the same Docker network, could
   send `X-WEBAUTH-USER` themselves.
-- **No idle timeout for terminals.** An open session keeps its slot until the
-  browser closes it; `SESSION_TIMEOUT` is only a ping interval.
+- **No idle timeout inside the game.** The menu closes after 15 minutes
+  without a key, but a game that was started keeps its place until the browser
+  closes it; `SESSION_TIMEOUT` is only a ping interval.
 - **No shared-secret header between Apache and the gate/ttyd.** The network
   position above is the only check on `X-WEBAUTH-USER`.
 - **The container's root filesystem is writable** (it is not `read_only`),
   though the game user can write only to its own directories.
 - **The lock files live in `/run/conquer`,** a directory the game user owns, so
   a process of that user can hold the join and account locks.
-- **Waiting accounts can open a terminal.** A visitor's account exists (waiting,
-  `?`) as soon as the request is made, so the menu and the practice world are
-  open to it. Each uses one of the `MAX_CLIENTS` slots while connected.
+- **Waiting accounts still sign in to Apache.** A visitor's account exists
+  (`?`) as soon as the request is made and passes the Apache login; the menu
+  turns it away, but each connection takes a `MAX_CLIENTS` place for a moment.
+  Approved players can still hold `MAX_CLIENTS` places with one account each.
 - **Accounts can be guessed from the sign-up page** ("name taken"), as on any
   site that lets you choose a name.
 - **Passwords in the game.** Conquer keeps at most 7 characters of a nation's

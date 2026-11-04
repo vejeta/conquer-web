@@ -13,6 +13,7 @@ services:
     environment:
       - MAX_CLIENTS=${MAX_CLIENTS:-10}
       - SESSION_TIMEOUT=${SESSION_TIMEOUT:-3600}
+      - MENU_IDLE_TIMEOUT=${MENU_IDLE_TIMEOUT:-900}
       - TTYD_FONT_SIZE=${TTYD_FONT_SIZE:-16}
       - TZ=${TZ:-UTC}
       - TURN_SCHEDULE=${TURN_SCHEDULE:-0 20 * * 0}

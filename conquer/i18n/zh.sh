@@ -118,6 +118,9 @@ MSG[menu_done]="本回合的指令已完成"
 MSG[menu_practice]="练习世界（仅你一人，不计成绩）"
 MSG[menu_log_out]="退出登录"
 MSG[menu_goodbye]="再见，指挥官。"
+MSG[menu_idle]="已因 %s 分钟无按键而关闭。请重新登录以返回。"
+MSG[menu_already_open]="  ${yellow}此账号已在另一个窗口中打开。${reset}
+  请使用那个窗口，或关闭它后重新打开本页。"
 
 # 加入向导 (join.sh)
 MSG[join_questions]="有疑问请联系：${bold}%s${reset}"
@@ -158,5 +161,5 @@ MSG[join_finish]="  按任意键继续..."
 # Account waiting for approval ("?" in the assignments)
 MSG[menu_requested]="已申请席位，等待批准"
 MSG[menu_pending]="  ${yellow}你的席位正在等待批准。${reset}
-  管理员会手动批准新玩家。批准后，“进入游戏”会在这里打开建国向导。
-  在此期间，你可以试玩练习世界（选项 7），并阅读完整帮助（选项 5）。"
+  管理员会手动批准新玩家。批准后请重新登录，建国向导会随即打开。
+  在此之前终端保持关闭。。"

@@ -201,8 +201,8 @@ setup_vps_production() {
     fi
 
     # Get max clients
-    read -p "Maximum concurrent users for production [5]: " PROD_MAX_CLIENTS
-    PROD_MAX_CLIENTS=${PROD_MAX_CLIENTS:-5}
+    read -p "Maximum concurrent users for production [25]: " PROD_MAX_CLIENTS
+    PROD_MAX_CLIENTS=${PROD_MAX_CLIENTS:-25}
 
     # Get session timeout
     read -p "Session timeout in seconds [1800]: " PROD_TIMEOUT
