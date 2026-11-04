@@ -496,7 +496,9 @@ main { background: var(--bg); box-shadow: 0 0 36px 28px var(--bg); }
   clip-path: polygon(0.00% 3.0px,2.27% 2.0px,4.55% 1.5px,6.82% 0.0px,9.09% 1.0px,11.36% 1.0px,13.64% 3.0px,15.91% 0.0px,18.18% 4.0px,20.45% 0.0px,22.73% 1.0px,25.00% 1.5px,27.27% 1.5px,29.55% 1.0px,31.82% 4.0px,34.09% 1.0px,36.36% 1.5px,38.64% 0.0px,40.91% 1.0px,43.18% 4.0px,45.45% 0.0px,47.73% 1.5px,50.00% 0.0px,52.27% 4.0px,54.55% 0.0px,56.82% 2.0px,59.09% 5.0px,61.36% 1.5px,63.64% 2.0px,65.91% 1.0px,68.18% 5.0px,70.45% 2.0px,72.73% 1.0px,75.00% 4.0px,77.27% 3.0px,79.55% 1.0px,81.82% 1.0px,84.09% 0.0px,86.36% 4.0px,88.64% 6.0px,90.91% 1.5px,93.18% 3.0px,95.45% 6.0px,97.73% 6.0px,100.00% 3.0px,100.00% calc(100% - 5.0px),97.73% calc(100% - 4.0px),95.45% calc(100% - 0.0px),93.18% calc(100% - 6.0px),90.91% calc(100% - 1.0px),88.64% calc(100% - 2.0px),86.36% calc(100% - 3.0px),84.09% calc(100% - 6.0px),81.82% calc(100% - 0.0px),79.55% calc(100% - 3.0px),77.27% calc(100% - 1.5px),75.00% calc(100% - 5.0px),72.73% calc(100% - 6.0px),70.45% calc(100% - 5.0px),68.18% calc(100% - 0.0px),65.91% calc(100% - 1.0px),63.64% calc(100% - 6.0px),61.36% calc(100% - 5.0px),59.09% calc(100% - 1.0px),56.82% calc(100% - 1.0px),54.55% calc(100% - 6.0px),52.27% calc(100% - 6.0px),50.00% calc(100% - 3.0px),47.73% calc(100% - 3.0px),45.45% calc(100% - 3.0px),43.18% calc(100% - 1.0px),40.91% calc(100% - 0.0px),38.64% calc(100% - 1.5px),36.36% calc(100% - 6.0px),34.09% calc(100% - 2.0px),31.82% calc(100% - 3.0px),29.55% calc(100% - 2.0px),27.27% calc(100% - 1.5px),25.00% calc(100% - 1.0px),22.73% calc(100% - 1.0px),20.45% calc(100% - 5.0px),18.18% calc(100% - 6.0px),15.91% calc(100% - 3.0px),13.64% calc(100% - 6.0px),11.36% calc(100% - 5.0px),9.09% calc(100% - 1.0px),6.82% calc(100% - 4.0px),4.55% calc(100% - 2.0px),2.27% calc(100% - 4.0px),0.00% calc(100% - 5.0px));
   transition: opacity 240ms ease;
 }
-.stone.parchment { --fw: 14px; --recess: 6px; --ov: 0px; padding: calc(var(--fw) + var(--recess)); filter: drop-shadow(0 8px 12px rgba(0, 0, 0, .5)); }
+/* The paper keeps the stone's padding and margin: a different frame would change the terminal's
+   size, and the game reads a resize as the "any key" a report waits for (the report closed at once). */
+.stone.parchment { filter: drop-shadow(0 8px 12px rgba(0, 0, 0, .5)); }
 .stone.parchment .arch { opacity: 0; visibility: hidden; }
 .stone.parchment::before { opacity: 0; }
 .stone.parchment::after { opacity: 1; }
@@ -508,7 +510,6 @@ main { background: var(--bg); box-shadow: 0 0 36px 28px var(--bg); }
 .stone.parchment .terminal::before { opacity: 0; }
 .stone.parchment .terminal .cursor { color: var(--paper); }
 @container gamescreen (min-width: 700px) {
-  .stone.parchment { margin-inline: 30px; }
   .stone .roll {
     display: block; position: absolute; z-index: 4; top: -8px; bottom: -8px; width: 34px; border-radius: 17px / 9px;
     opacity: 0; pointer-events: none; transition: opacity 240ms ease;
@@ -522,7 +523,7 @@ main { background: var(--bg); box-shadow: 0 0 36px 28px var(--bg); }
     box-shadow: 0 0 0 1px rgba(40, 25, 5, .6);
   }
   .stone .roll::before { top: -7px; } .stone .roll::after { bottom: -7px; }
-  .stone .roll.l { left: -30px; } .stone .roll.r { right: -30px; }
+  .stone .roll.l { left: -6px; } .stone .roll.r { right: -6px; }
   .stone.parchment .roll { opacity: 1; }
 }
 

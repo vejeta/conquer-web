@@ -1069,6 +1069,30 @@ def test_nation_password_hint_does_not_resize_the_screen(site, browser):
         ctx.close()
 
 
+@pytest.mark.parametrize("viewport", ["desktop", "phone"])
+def test_parchment_keeps_the_terminal_size(site, browser, viewport):
+    """The parchment had a thinner frame than the stone, so the terminal grew on a
+    report (185x45 to 188x53 on a desktop): the game reads a resize as the "any
+    key" a report waits for, and the report closed as soon as it opened (found by
+    the end-to-end rehearsal). Map and report keep one size."""
+    ctx, page, target = touch_page(site, browser, "game", viewport)
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    page.wait_for_timeout(600)
+    size = lambda: target.evaluate("[term.cols, term.rows]")
+    before = size()
+    show(page, target, FIRST_TURN["budget"])
+    wait_where(page, "report")
+    page.wait_for_function("() => document.getElementById('stone').classList.contains('parchment')")
+    page.wait_for_timeout(600)
+    assert size() == before
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    page.wait_for_function("() => !document.getElementById('stone').classList.contains('parchment')")
+    page.wait_for_timeout(600)
+    assert size() == before
+    ctx.close()
+
+
 def test_map_is_redrawn_when_the_terminal_changes_size(site, browser):
     """The game takes the new size but redraws only what it draws next, so the
     sector panel showed twice on a wide screen (the end-to-end rehearsal read
