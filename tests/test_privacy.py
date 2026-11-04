@@ -13,7 +13,7 @@ import pytest
 
 from conftest import WEB
 
-PLACEHOLDERS_FILLED = False
+PLACEHOLDERS_FILLED = True
 PLACEHOLDERS = ["CONTACT_EMAIL", "POSTAL_ADDRESS", "HOSTING_PROVIDER", "HOSTING_COUNTRY", "MAIL_PROVIDER"]
 PAGES = {"en": WEB / "privacy.html", "es": WEB / "privacy.es.html"}
 

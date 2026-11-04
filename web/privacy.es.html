@@ -3,12 +3,9 @@
 SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
 SPDX-License-Identifier: GPL-3.0-or-later
 
-BORRADOR. Esto no es asesoramiento jurídico. Este texto en español es el
-jurídicamente relevante. Antes del lanzamiento el titular debe sustituir cada
-marcador escrito entre llaves dobles (correo de contacto, dirección postal,
-proveedor de alojamiento y su país, proveedor de correo) en LAS DOS páginas,
-y hacer revisar el texto. tests/test_privacy.py cuenta los marcadores para que
-no se olvide ninguno.
+No es asesoramiento jurídico. Este texto en español es el jurídicamente
+relevante. Mantén las dos páginas iguales; tests/test_privacy.py comprueba
+que no queda ningún marcador entre llaves dobles.
 -->
 <html lang="es">
 <head>
@@ -90,8 +87,7 @@ no se olvide ninguno.
     <h2>1. Responsable</h2>
     <p>El responsable del tratamiento es Juan Manuel Méndez Rey, persona física en España.</p>
     <ul>
-      <li>Correo para cualquier asunto sobre tus datos: {{CONTACT_EMAIL}}</li>
-      <li>Dirección postal: {{POSTAL_ADDRESS}}</li>
+      <li>Correo para cualquier asunto sobre tus datos: <a href="mailto:conquer@vejeta.com">conquer@vejeta.com</a></li>
     </ul>
   </section>
 
@@ -133,8 +129,8 @@ no se olvide ninguno.
   <section id="recipients">
     <h2>5. Quién recibe los datos</h2>
     <ul>
-      <li>Proveedor de alojamiento (servidores): {{HOSTING_PROVIDER}}. Actúa por cuenta nuestra.</li>
-      <li>Proveedor de correo (avisos de solicitudes nuevas y de aprobaciones): {{MAIL_PROVIDER}}. Actúa por cuenta nuestra.</li>
+      <li>Proveedor de alojamiento (servidores): OVH (OVHcloud), en Francia. Actúa por cuenta nuestra.</li>
+      <li>Proveedor de correo (avisos de solicitudes nuevas y de aprobaciones): PiensaSolutions, en España. Actúa por cuenta nuestra.</li>
       <li>Copias de seguridad: copias cifradas en almacenamiento propio del titular, en España.</li>
     </ul>
     <p>Sin publicidad, sin analítica, sin rastreadores, sin venta de datos, sin elaboración de perfiles. Solo cedemos datos a las autoridades cuando la ley lo exige.</p>
@@ -147,7 +143,7 @@ no se olvide ninguno.
 
   <section id="transfers">
     <h2>7. Transferencias internacionales</h2>
-    <p>Los servidores están en {{HOSTING_COUNTRY}}. Si algún proveedor está fuera del Espacio Económico Europeo, la transferencia se ampara en las garantías del capítulo V del RGPD, como las cláusulas contractuales tipo. Las copias de seguridad permanecen en España.</p>
+    <p>Ninguna. Los servidores están en Francia; el proveedor de correo y las copias de seguridad, en España: todo dentro de la Unión Europea.</p>
   </section>
 
   <section id="retention">
@@ -206,7 +202,7 @@ no se olvide ninguno.
     <h2>Aviso legal</h2>
     <p>Información conforme al artículo 10 de la Ley 34/2002 (LSSI-CE).</p>
     <ul>
-      <li>Titular del sitio: Juan Manuel Méndez Rey. Contacto y dirección postal: véase el apartado 1.</li>
+      <li>Titular del sitio: Juan Manuel Méndez Rey. Contacto: véase el apartado 1.</li>
       <li>Conquer es un sitio de afición sin ánimo de lucro. No tiene publicidad y no vende nada.</li>
       <li>Si se ofrecen donaciones, son voluntarias, no dan ninguna contraprestación y las gestiona una plataforma de terceros. Esa plataforma es responsable independiente de tus datos de pago, con su propia política de privacidad. Nosotros no recibimos los datos de tu tarjeta.</li>
       <li>El juego y este sitio son software libre (GPL-3.0-or-later). Código: <a href="https://github.com/vejeta/conquer">juego</a> &middot; <a href="https://github.com/vejeta/conquer-web">servidor web</a>.</li>

@@ -3,11 +3,9 @@
 SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
 SPDX-License-Identifier: GPL-3.0-or-later
 
-DRAFT. This is not legal advice. The Spanish text (privacy.es.html) is the
-legally relevant one. Before launch the owner must replace every placeholder
-written in double curly braces (contact email, postal address, hosting
-provider and its country, mail provider) in BOTH pages, and have the text
-checked. tests/test_privacy.py counts the placeholders so none is forgotten.
+Not legal advice. The Spanish text (privacy.es.html) is the legally
+relevant one. Keep both pages in step; tests/test_privacy.py checks that
+no placeholder in double curly braces is left.
 -->
 <html lang="en">
 <head>
@@ -89,8 +87,7 @@ checked. tests/test_privacy.py counts the placeholders so none is forgotten.
     <h2>1. Who is responsible</h2>
     <p>The controller is Juan Manuel Méndez Rey, a private individual in Spain.</p>
     <ul>
-      <li>Email for anything about your data: {{CONTACT_EMAIL}}</li>
-      <li>Postal address: {{POSTAL_ADDRESS}}</li>
+      <li>Email for anything about your data: <a href="mailto:conquer@vejeta.com">conquer@vejeta.com</a></li>
     </ul>
   </section>
 
@@ -132,8 +129,8 @@ checked. tests/test_privacy.py counts the placeholders so none is forgotten.
   <section id="recipients">
     <h2>5. Who receives data</h2>
     <ul>
-      <li>Hosting provider (servers): {{HOSTING_PROVIDER}}. It acts on our behalf.</li>
-      <li>Mail provider (notices of new requests and approvals): {{MAIL_PROVIDER}}. It acts on our behalf.</li>
+      <li>Hosting provider (servers): OVH (OVHcloud), in France. It acts on our behalf.</li>
+      <li>Mail provider (notices of new requests and approvals): PiensaSolutions, in Spain. It acts on our behalf.</li>
       <li>Backups: encrypted copies on the owner's own storage in Spain.</li>
     </ul>
     <p>No ads, no analytics, no trackers, no sale of data, no profiling. We give data to authorities only when the law requires it.</p>
@@ -146,7 +143,7 @@ checked. tests/test_privacy.py counts the placeholders so none is forgotten.
 
   <section id="transfers">
     <h2>7. International transfers</h2>
-    <p>The servers are in {{HOSTING_COUNTRY}}. If a provider is outside the European Economic Area, the transfer is covered by the safeguards of Chapter V of the GDPR, such as standard contractual clauses. Backups stay in Spain.</p>
+    <p>None. The servers are in France, the mail provider and the backups in Spain: all inside the European Union.</p>
   </section>
 
   <section id="retention">
@@ -205,7 +202,7 @@ checked. tests/test_privacy.py counts the placeholders so none is forgotten.
     <h2>Legal notice (Aviso legal)</h2>
     <p>Information under article 10 of the Spanish Law 34/2002 (LSSI-CE).</p>
     <ul>
-      <li>Owner of the site: Juan Manuel Méndez Rey. Contact and postal address: see section 1.</li>
+      <li>Owner of the site: Juan Manuel Méndez Rey. Contact: see section 1.</li>
       <li>Conquer is a non-commercial hobby site. It has no ads and sells nothing.</li>
       <li>If donations are offered, they are voluntary, give no reward, and are handled by a third-party platform. That platform is a separate controller of your payment data, under its own privacy policy. We do not receive your card details.</li>
       <li>The game and this site are free software (GPL-3.0-or-later). Source: <a href="https://github.com/vejeta/conquer">game</a> &middot; <a href="https://github.com/vejeta/conquer-web">web server</a>.</li>
