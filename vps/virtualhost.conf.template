@@ -134,6 +134,13 @@
     # Logging
     ErrorLog ${APACHE_LOG_DIR}/conquer_ssl_error.log
     CustomLog ${APACHE_LOG_DIR}/conquer_ssl_access.log combined
+    # Failed sign-ins, for fail2ban (vps/fail2ban/): mod_auth_form answers a
+    # wrong password with a redirect to /login.html?failed=1 and writes
+    # nothing to the error log, so the access log line with the Location
+    # header is the only trace. Only the sign-in posts are written here.
+    LogFormat "%h %l - %t \"%r\" %>s \"%{Location}o\"" conquer_login
+    SetEnvIf Request_URI "^/login/(do|long)$" conquer_login_post
+    CustomLog ${APACHE_LOG_DIR}/conquer_login.log conquer_login env=conquer_login_post
 
     # Log format for monitoring
     LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" combined
@@ -211,6 +218,15 @@
         RequestHeader set X-WEBAUTH-USER "%{REMOTE_USER}s"
         # Keep search engines out of the administration
         Header always set X-Robots-Tag "noindex, nofollow"
+    </Location>
+
+    # Request bodies: the sign-up and administrator APIs take small JSON
+    # (the gate allows 8 KB and 1 KB); Apache refuses more before it proxies
+    <Location "/join/api/">
+        LimitRequestBody 65536
+    </Location>
+    <Location "/admin/api/">
+        LimitRequestBody 65536
     </Location>
 
     # Player accounts: Apache authenticates every request to the terminal

@@ -172,6 +172,66 @@ elif [ -f "$vhost" ] && ! grep -q "$SESSION_KEY" "$vhost"; then
 else
     echo "✅ Sign-in page configured (form login, passphrase in $SESSION_KEY)"
 fi
+# Abuse limits in the virtual host (vps/virtualhost.conf.template): the log of
+# failed sign-ins that fail2ban reads, and a 64 KB limit on the request bodies
+# of the sign-up and administrator APIs. Added to this site's files when they
+# are missing, keeping the old files if Apache does not accept the change.
+login_block=$(mktemp)
+body_block=$(mktemp)
+cat > "$login_block" << 'EOF'
+    # Failed sign-ins, for fail2ban (vps/fail2ban/): mod_auth_form answers a
+    # wrong password with a redirect to /login.html?failed=1
+    LogFormat "%h %l - %t \"%r\" %>s \"%{Location}o\"" conquer_login
+    SetEnvIf Request_URI "^/login/(do|long)$" conquer_login_post
+    CustomLog ${APACHE_LOG_DIR}/conquer_login.log conquer_login env=conquer_login_post
+EOF
+cat > "$body_block" << 'EOF'
+    # Request bodies of the sign-up and administrator APIs
+    <Location "/join/api/">
+        LimitRequestBody 65536
+    </Location>
+    <Location "/admin/api/">
+        LimitRequestBody 65536
+    </Location>
+
+EOF
+abuse_files=$(grep -rlF "conquer_ssl_access.log" /etc/apache2/sites-available 2>/dev/null | xargs -r grep -lF "$DOMAIN" || true)
+abuse_changed=""
+for f in $abuse_files; do
+    cp "$f" "$f.before-abuse"
+    if ! grep -q 'conquer_login' "$f"; then
+        awk -v blk="$login_block" '{ print } /CustomLog .*conquer_ssl_access\.log/ { while ((getline line < blk) > 0) print line; close(blk) }' "$f" > "$f.new" && cat "$f.new" > "$f"
+        abuse_changed=1
+    fi
+    if ! grep -q 'LimitRequestBody 65536' "$f"; then
+        if grep -q '<Location "/play/">' "$f"; then
+            awk -v blk="$body_block" '/<Location "\/play\/">/ && !done { while ((getline line < blk) > 0) print line; close(blk); done = 1 } { print }' "$f" > "$f.new" && cat "$f.new" > "$f"
+            abuse_changed=1
+        else
+            echo "⚠️  $f has no <Location \"/play/\"> block: add the LimitRequestBody 65536 blocks of vps/virtualhost.conf.template by hand"
+        fi
+    fi
+    rm -f "$f.new"
+done
+rm -f "$login_block" "$body_block"
+if [ -n "$abuse_changed" ]; then
+    if apache2ctl configtest > /dev/null 2>&1; then
+        systemctl reload apache2
+        for f in $abuse_files; do rm -f "$f.before-abuse"; done
+        echo "✅ Apache now logs failed sign-ins (conquer_login.log) and limits API request bodies to 64 KB"
+    else
+        for f in $abuse_files; do mv "$f.before-abuse" "$f"; done
+        echo "⚠️  Could not add the sign-in log and body limit (Apache refused the change): see vps/virtualhost.conf.template"
+    fi
+else
+    for f in $abuse_files; do rm -f "$f.before-abuse"; done
+    if [ -n "$abuse_files" ]; then echo "✅ Sign-in log and API body limits already in the virtual host"; fi
+fi
+if [ -z "$abuse_files" ]; then
+    echo "⚠️  No virtual host of $DOMAIN logs to conquer_ssl_access.log: copy the conquer_login lines and the LimitRequestBody blocks from vps/virtualhost.conf.template"
+fi
+# fail2ban with the jail for wrong passwords (ADMIN_IP in config/production.env is never banned)
+if ./setup-fail2ban.sh; then :; else echo "⚠️  fail2ban was not set up: sudo ./setup-fail2ban.sh"; fi
 sleep 3
 if docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
     if docker exec "$CONTAINER" cat /proc/1/cmdline | tr '\0' ' ' | grep -q -- '-H X-WEBAUTH-USER' \

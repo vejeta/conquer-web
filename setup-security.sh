@@ -49,16 +49,6 @@ bantime = 3600
 findtime = 600
 action = iptables-multiport[name=apache-auth-conquer, port="http,https", protocol=tcp]
 
-[apache-dos-conquer]
-enabled = true
-port = http,https
-filter = apache-dos-conquer
-logpath = /var/log/apache2/conquer_*_access.log
-maxretry = 200
-bantime = 1800
-findtime = 300
-action = iptables-multiport[name=apache-dos-conquer, port="http,https", protocol=tcp]
-
 [ttyd-auth]
 enabled = true
 port = http,https
@@ -86,17 +76,9 @@ failregex = ^.* \[client <HOST>:\d+\] client sent HTTP code 401.*
 ignoreregex =
 EOF
 
-# Create custom DoS filter for Apache access logs
-echo "🎯 Creating custom DoS protection filter..."
-cat > /etc/fail2ban/filter.d/apache-dos-conquer.conf << 'EOF'
-# fail2ban filter for DoS attacks via Apache access logs
-# Detects excessive requests from single IP
-
-[Definition]
-failregex = ^<HOST> -.*"(GET|POST).*" (200|206|301|302) .*$
-
-ignoreregex =
-EOF
+# (An earlier version also installed an apache-dos-conquer jail that counted
+# every page and asset request. It banned real players behind a shared
+# address, so it is gone: setup-fail2ban.sh removes it from servers that have it.)
 
 # Enable and start fail2ban
 echo "🚀 Starting fail2ban service..."
@@ -235,7 +217,6 @@ echo "   See SECURITY.md for detailed configuration and maintenance guide"
 echo ""
 echo "🔒 Your Conquer Web installation now has enhanced protection against:"
 echo "   - Brute force authentication attacks"
-echo "   - DoS and DDoS attempts"
 echo "   - Common web application attacks"
 echo "   - Automated scanning and bot activity"
 echo ""

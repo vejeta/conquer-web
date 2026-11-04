@@ -111,6 +111,11 @@ jobs:
           # A wrong password goes back to the page, marked, and gives no session
           signin /tmp/jar-bad "$TTYD_USERNAME" wrong-password | grep -q '^302 https://localhost/login.html?failed=1'
           test "$(code -b /tmp/jar-bad https://localhost/play/)" = 302
+          # Apache writes the failed sign-in to its own log, where fail2ban's
+          # filter (vps/fail2ban/) finds it, and the good ones do not match
+          docker exec apache-local cat /usr/local/apache2/logs/login.log > /tmp/login.log
+          python3 -m pip install --quiet pytest
+          CONQUER_LOGIN_LOG=/tmp/login.log python3 -m pytest tests/test_fail2ban.py -k running_apache
           # The cookie: httponly, secure, same-site, no expiry (a browser
           # session) for the plain login and 30 days for "Remember me"
           grep -q '^#HttpOnly_localhost.*TRUE.*0.conquer_session' /tmp/jar-ci

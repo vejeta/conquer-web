@@ -67,8 +67,20 @@ becoming players without the administrator's approval.
 - Cross-site WebSocket hijacking: a browser sends a player's saved password
   with a WebSocket that any web page opens. Apache refuses a WebSocket to
   `/play/` whose `Origin` is not this site (403, before any proxying).
-- Requests: 1 MB body limit, 60 s timeout, sensitive file names and
+- Requests: 1 MB body limit in general and 64 KB (`LimitRequestBody 65536`)
+  for `/join/api/` and `/admin/api/`, 60 s timeout, sensitive file names and
   `.git`/`.env` denied, noisy bots blocked.
+- Failed sign-ins: `mod_auth_form` answers a wrong password with a redirect to
+  `/login.html?failed=1` and no error-log line that the stock filters know, so
+  the virtual host writes every post to `/login/do` and `/login/long` to
+  `conquer_login.log` with the `Location` header (`LogFormat conquer_login`;
+  the account name is not logged). fail2ban's `conquer-login` jail
+  (`vps/fail2ban/`, installed by `setup-fail2ban.sh`) bans an address for 1
+  hour after 8 of them in 10 minutes; `127.0.0.1/8` and `ADMIN_IP` (in
+  `config/production.env`) are never banned. The filter is tested against
+  sample lines and against the log of a running Apache in CI. The jail that
+  banned on every request (`apache-dos-conquer`) is removed: it counted every page and
+  asset and banned players behind a shared address.
 - The pages put server text in the DOM with `textContent` (account names,
   emails and messages on the administrator page, nation names and news on the
   landing page); the news pages escape HTML.
@@ -184,8 +196,9 @@ becoming players without the administrator's approval.
   user owns refuse symbolic links in the world directory.
 - `update-vps.sh` runs git as the owner of the checkout, and its backups are in
   a 700 directory under `/root`; `offsite-backup.sh` encrypts what it sends.
-- `check-security.sh`, `setup-security-basic.sh` and `setup-security.sh` install
-  and report fail2ban.
+- `deploy-to-vps.sh` and `update-vps.sh` run `setup-fail2ban.sh` (the sign-in
+  jail above; safe to repeat). `check-security.sh`, `setup-security-basic.sh`
+  and `setup-security.sh` install and report more fail2ban jails.
 
 ### Data published on purpose
 
@@ -212,7 +225,8 @@ approval flows. A step fails if the password shows up in a container log.
   no second factor and no lockout inside the application; a logout link
   can be followed from another site (samesite=lax allows top-level GET) and
   only signs the visitor out.
-  Brute force is limited only by fail2ban if you install it (below). Use long
+  Brute force is limited by the fail2ban sign-in jail (8 misses in 10 minutes,
+  1 hour ban, per address: a botnet with many addresses is not stopped). Use long
   passwords; the sign-up page asks for 8 or more, bcrypt uses the first 72 bytes.
 - **Everything in the container is one user.** The gate, ttyd, the menu, the game,
   cron and the mail password (`SMTP_PASSWORD` is in the container environment)
@@ -260,12 +274,15 @@ approval flows. A step fails if the password shows up in a container log.
 - Keep the game user's uid equal to the owner of `data/` so backup scripts need
   no root, and keep `data/` and `/etc/apache2/conquer-web.htpasswd` unreadable
   to other users (`chmod 700 data`).
-- Install fail2ban: `sudo ./setup-security-basic.sh` (standard Apache filters:
-  failed logins, bad bots) or `sudo ./setup-security.sh`, then
-  `./check-security.sh` to see the bans. The authentication jail should watch
-  `conquer_*_error.log` for `AH01617`/`AH01618` and ban after about five misses.
-  Do not ban on every `200` or `206` of the access log: the tutorial videos are
-  served in ranges.
+- fail2ban for the sign-in form is installed by `deploy-to-vps.sh` and
+  `update-vps.sh` (`sudo ./setup-fail2ban.sh`; set `ADMIN_IP` in
+  `config/production.env` so that you are never banned). See the bans with
+  `sudo fail2ban-client status conquer-login` and lift one with
+  `sudo fail2ban-client set conquer-login unbanip ADDRESS`. More jails:
+  `sudo ./setup-security-basic.sh` (standard Apache filters: failed logins, bad
+  bots) or `sudo ./setup-security.sh`, then `./check-security.sh`. Do not ban
+  on every `200` or `206` of the access log: the tutorial videos are served in
+  ranges and many players share an address.
 - Set `SMTP_STARTTLS` on (the default), and give the mail account only the right
   to send.
 - Put a limit on connections per account or per address in front of `/play/` if
