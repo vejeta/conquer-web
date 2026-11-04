@@ -201,6 +201,18 @@ SPDX-License-Identifier: GPL-3.0-or-later
       how the game was found again, relicensed with its authors' permission and brought to the web.</p>
   </section>
 
+  <section class="panel" id="android" data-apk-wrap hidden>
+    <h2 data-i18n="index.h_android">Android app</h2>
+    <p data-i18n="index.android_p">Conquer for Android is free and is the same game as this website. Install the APK directly, no store needed. It needs Android 10 or newer.</p>
+    <div class="apk-actions">
+      <a class="key key-primary" data-apk href="#" rel="noopener" data-i18n="index.android_apk">Download the APK</a>
+      <a class="key" data-apk-release href="#" rel="noopener" data-i18n="index.android_release">Version, notes and checksum</a>
+      <a class="apk-sha" data-apk-sha href="#" rel="noopener" data-i18n="index.android_sha">SHA-256 file</a>
+    </div>
+    <p class="note" data-i18n="index.android_note">Your phone will ask to allow installing apps from your browser. The app does not update itself: download it again for a new version. Check the SHA-256 against the release page if you want to be sure.</p>
+    <p class="note" data-i18n="index.android_privacy">What the app stores and asks for: <a href="privacy.html#app" data-i18n-page="privacy" data-i18n-hash="#app">Privacy</a></p>
+  </section>
+
   <section class="panel" id="how-to-join">
     <h2 data-i18n="index.h_join">How to join</h2>
     <p class="note" data-i18n="index.note_join">Joining takes three steps: ask for your seat, wait for the administrator to approve it, then found your nation inside the game.</p>
@@ -273,7 +285,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 <footer class="site-footer mountains">
   <p data-i18n="index.footer">Conquer is free software (GPL-3.0-or-later). Source: <a href="https://github.com/vejeta/conquer">game</a> &middot; <a href="https://github.com/vejeta/conquer-web">web server</a></p>
   <p class="support" data-donate-wrap hidden><span data-i18n="index.donate_text">The game is free and has no ads. If you like it, you can help pay for the servers:</span> <a data-donate href="#" target="_blank" rel="noopener" data-i18n="nav.donate">Support the servers</a></p>
-  <div class="foot-links"><a href="design.html" data-i18n="nav.design">Design</a> <a href="privacy.html" data-i18n-page="privacy" data-i18n="nav.privacy">Privacy</a> <a data-donate hidden href="#" target="_blank" rel="noopener" data-i18n="nav.donate">Support the servers</a></div>
+  <div class="foot-links"><a href="design.html" data-i18n="nav.design">Design</a> <a href="privacy.html" data-i18n-page="privacy" data-i18n="nav.privacy">Privacy</a> <a data-apk-release hidden href="#" rel="noopener" data-i18n="nav.android">Android app</a> <a data-donate hidden href="#" target="_blank" rel="noopener" data-i18n="nav.donate">Support the servers</a></div>
 </footer>
 <script src="server.js"></script>
 <dialog class="trailer" id="trailer" aria-label="Conquer">

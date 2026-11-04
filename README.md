@@ -86,6 +86,22 @@ Running a public server (Debian VPS with Apache and Docker):
 - **[SECURITY.md](SECURITY.md)** covers hardening (fail2ban, rate limits,
   headers).
 
+## Android app
+
+The Android app is free and is the same game as the website. Install the APK
+directly; it needs Android 10 or newer:
+
+- [Download the APK](https://github.com/vejeta/conquer-web/releases/latest/download/conquer.apk)
+- [SHA-256 file](https://github.com/vejeta/conquer-web/releases/latest/download/conquer.apk.sha256)
+- [Version, notes and checksum](https://github.com/vejeta/conquer-web/releases/latest)
+
+Your phone will ask to allow installing apps from your browser. The app does
+not update itself: download it again for a new version, and check the SHA-256
+against the release page if you want to be sure. The home page has the same
+links in an "Android app" section (hidden inside the app); the addresses live
+in one place, `APK_RELEASE_URL` in `web/site.js`. What the app stores is in
+the [privacy page](https://conquer.vejeta.com/privacy.html#app).
+
 ## Donations
 
 Conquer is a hobby project and the game is free, with no ads. If you want to

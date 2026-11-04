@@ -1733,3 +1733,83 @@ def test_the_donation_url_lives_in_one_place():
             holders.append(path.name)
     assert holders == ["site.js"]
     assert "%s'" % DONATE in (WEB / "site.js").read_text(encoding="utf-8")
+
+
+# ---------------------------------------------------------------------------
+# Android app: the APK is a GitHub release asset; the addresses live in site.js
+# only, the page contacts nobody until the visitor clicks, and the section is
+# hidden inside the app
+
+APK_RELEASE = "https://github.com/vejeta/conquer-web/releases/latest"
+APK = APK_RELEASE + "/download/conquer.apk"
+APK_SHA = APK_RELEASE + "/download/conquer.apk.sha256"
+
+
+def test_the_android_section_links_to_the_release(site, browser):
+    page = browser.new_page()
+    outside, downloads = [], []
+    page.on("request", lambda r: outside.append(r.url) if not r.url.startswith(site) and not r.url.startswith("data:") else None)
+    page.on("download", lambda d: downloads.append(d))
+    page.goto(site + "index.html?lang=en")
+    sec = page.locator("#android")
+    sec.wait_for(state="visible")
+    assert sec.locator("h2").inner_text().lower() == "android app"
+    assert "Android 10 or newer" in sec.inner_text() and "SHA-256" in sec.inner_text()
+    assert sec.locator("a[data-apk]").get_attribute("href") == APK
+    assert sec.locator("a[data-apk]").inner_text() == "Download the APK"
+    assert sec.locator("a[data-apk-release]").get_attribute("href") == APK_RELEASE
+    assert sec.locator("a[data-apk-sha]").get_attribute("href") == APK_SHA
+    assert sec.locator("a[data-i18n-page=privacy]").get_attribute("href") == "privacy.html#app"
+    assert page.locator("footer a[data-apk-release]").get_attribute("href") == APK_RELEASE
+    assert page.locator("#android iframe, #android script, #android img").count() == 0
+    page.wait_for_timeout(300)
+    assert not any("github.com" in u and "vejeta/conquer-web/releases" in u for u in outside), outside
+    assert not downloads
+    page.close()
+
+
+@pytest.mark.parametrize("lang,title", [("es", "App para Android"), ("de", "Android-App"), ("pt-br", "App para Android"),
+                                         ("pl", "Aplikacja na Androida"), ("ru", "Приложение для Android"), ("zh", "Android 应用")])
+def test_the_android_section_is_localized(site, browser, lang, title):
+    page = browser.new_page()
+    page.goto(site + "index.html?lang=" + lang)
+    page.wait_for_function("t => document.querySelector('#android h2').textContent === t", arg=title)
+    href = page.locator("#android a[data-i18n-page=privacy]").get_attribute("href")
+    assert href.endswith("#app") and href.startswith("privacy")
+    page.close()
+
+
+def test_the_android_section_fits_a_phone(site, browser):
+    ctx = browser.new_context(viewport={"width": 390, "height": 844})
+    page = ctx.new_page()
+    page.goto(site + "index.html?lang=ru")
+    page.locator("#android").wait_for(state="visible")
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+    ctx.close()
+
+
+@pytest.mark.parametrize("how", ["query", "ua", "bridge"])
+def test_the_android_section_is_hidden_in_the_app(site, browser, how):
+    ctx = browser.new_context(viewport={"width": 390, "height": 844},
+                              user_agent="Mozilla/5.0 (Linux; Android 14) Cefrium/1.0" if how == "ua" else None)
+    if how == "bridge":
+        ctx.add_init_script("window.cefriumQuery = function () {};")
+    page = ctx.new_page()
+    page.goto(site + "index.html" + ("?app=1&lang=en" if how == "query" else "?lang=en"))
+    page.wait_for_timeout(400)
+    assert page.evaluate("document.documentElement.classList.contains('in-app')")
+    assert page.locator("#android:visible, a[data-apk]:visible, a[data-apk-release]:visible, a[data-apk-sha]:visible").count() == 0
+    assert page.evaluate("document.querySelector('#android').hidden")
+    ctx.close()
+
+
+def test_the_apk_urls_live_in_one_place():
+    """Only site.js holds the addresses; pages carry data-apk* and get them from there."""
+    holders = []
+    for path in list(WEB.glob("*.html")) + list(WEB.glob("*.js")) + list((WEB / "i18n").glob("*.json")):
+        if "vejeta/conquer-web/releases" in path.read_text(encoding="utf-8"):
+            holders.append(path.name)
+    assert holders == ["site.js"]
+    js = (WEB / "site.js").read_text(encoding="utf-8")
+    assert "var APK_RELEASE_URL = '%s';" % APK_RELEASE in js
+    assert "APK_RELEASE_URL + '/download/conquer.apk'" in js and "APK_RELEASE_URL + '/download/conquer.apk.sha256'" in js

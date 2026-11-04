@@ -26,6 +26,13 @@
   "th_score": "Punkte",
   "h_news": "Weltgeschehen",
   "h_what": "Was ist Conquer?",
+  "h_android": "Android-App",
+  "android_p": "Conquer für Android ist kostenlos und dasselbe Spiel wie diese Website. Installiere die APK direkt, ohne Store. Es braucht Android 10 oder neuer.",
+  "android_apk": "APK herunterladen",
+  "android_release": "Version, Hinweise und Prüfsumme",
+  "android_sha": "SHA-256-Datei",
+  "android_note": "Dein Telefon fragt, ob Apps aus deinem Browser installiert werden dürfen. Die App aktualisiert sich nicht selbst: Lade sie für eine neue Version erneut herunter. Vergleiche die SHA-256-Prüfsumme mit der Seite der Version, wenn du sicher sein willst.",
+  "android_privacy": "Was die App speichert und anfragt: <a href=\"privacy.html#app\" data-i18n-page=\"privacy\" data-i18n-hash=\"#app\">Datenschutz</a>",
   "p_what": "Conquer ist ein rundenbasiertes Fantasy-Strategiespiel für viele Spieler, 1987 von Ed Barlow und Adam Bryant erstmals im Usenet veröffentlicht. Dieser Server betreibt Version 4.12 des Originalspiels, heute freie Software unter der GPL. Jeder Spieler regiert eine Nation: Städte bauen, Armeen aufstellen, Magie wirken, mit anderen Herrschern handeln und verhandeln und sich in einer gemeinsamen Welt ausbreiten.",
   "h_join": "So machst du mit",
   "note_join": "Der Einstieg hat drei Schritte: Platz anfragen, auf die Freigabe durch den Spielleiter warten, dann im Spiel deine Nation gründen.",
@@ -460,6 +467,7 @@
   "main": "Hauptmenü",
   "logout": "Abmelden",
   "account": "Konto",
+  "android": "Android-App",
   "donate": "Die Server unterstützen"
  },
  "race": {

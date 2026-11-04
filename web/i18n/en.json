@@ -26,6 +26,13 @@
   "th_score": "Score",
   "h_news": "World news",
   "h_what": "What is Conquer?",
+  "h_android": "Android app",
+  "android_p": "Conquer for Android is free and is the same game as this website. Install the APK directly, no store needed. It needs Android 10 or newer.",
+  "android_apk": "Download the APK",
+  "android_release": "Version, notes and checksum",
+  "android_sha": "SHA-256 file",
+  "android_note": "Your phone will ask to allow installing apps from your browser. The app does not update itself: download it again for a new version. Check the SHA-256 against the release page if you want to be sure.",
+  "android_privacy": "What the app stores and asks for: <a href=\"privacy.html#app\" data-i18n-page=\"privacy\" data-i18n-hash=\"#app\">Privacy</a>",
   "p_what": "Conquer is a turn-based fantasy strategy game for many players, first released on Usenet in 1987 by Ed Barlow and Adam Bryant. This server runs version 4.12 of the original game, now free software under the GPL. Each player rules a nation: build cities, raise armies, cast magic, trade and negotiate with other rulers, and expand across a shared world.",
   "h_join": "How to join",
   "note_join": "Joining takes three steps: ask for your seat, wait for the administrator to approve it, then found your nation inside the game.",
@@ -460,6 +467,7 @@
   "main": "Main menu",
   "logout": "Sign out",
   "account": "Account",
+  "android": "Android app",
   "donate": "Support the servers"
  },
  "race": {
