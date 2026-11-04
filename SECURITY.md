@@ -121,7 +121,11 @@ becoming players without the administrator's approval.
   header can be injected (addresses and text cannot carry a line break), the
   body is plain text. SMTP uses STARTTLS or implicit TLS with certificate
   verification unless `SMTP_STARTTLS=off`. The webhook gets only the account
-  name and the admin URL.
+  name and the admin URL. New requests are announced in digests: the first
+  one right away, the ones that follow within 10 minutes in one message
+  ("N new requests", the first 25 accounts with their address and none of the
+  free-text messages), so a flood of requests is at most one mail and one
+  webhook message every 10 minutes.
 
 ### Scripts and the terminal menu (`conquer/scripts`)
 

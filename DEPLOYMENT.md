@@ -162,7 +162,7 @@ the administrator password and the mail password.
 | `SMTP_USER`, `SMTP_PASSWORD` | Mail account (empty for no login) |
 | `SMTP_FROM` | Sender address of the mails |
 | `SMTP_STARTTLS` | `on` or `off` |
-| `SIGNUP_WEBHOOK_URL` | Webhook announcing each new request (default `TURN_WEBHOOK_URL`) |
+| `SIGNUP_WEBHOOK_URL` | Webhook announcing new requests, at most one message per 10 minutes (default `TURN_WEBHOOK_URL`) |
 | `SITE_URL` | Address of the site in mails (default `https://DOMAIN`) |
 
 ## Apache virtual host
@@ -340,7 +340,8 @@ Then `sudo apache2ctl configtest && sudo systemctl reload apache2`. Check:
 ## Email notifications
 
 Players ask for a seat and you approve at `/admin/`. The game can mail you
-each new request and mail the player when approved. It works without mail
+new requests (the first at once, then at most one digest mail every 10
+minutes, "N new requests") and mail the player when approved. It works without mail
 (requests wait in `/admin/`); a webhook (`SIGNUP_WEBHOOK_URL`) can announce
 requests in Slack, Mattermost or Discord instead.
 

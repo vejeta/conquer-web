@@ -9,6 +9,8 @@ import "strings"
 // language and key. Placeholders are {name}s, filled in by mailText:
 //
 //	account  the account name
+//	count    how many requests a digest holds
+//	list     the accounts of a digest, one per line
 //	details  the "Email:" and "Message:" lines of a request (may be empty)
 //	url      the administrator page
 //	site     the game's website
@@ -25,6 +27,9 @@ var mailTexts = map[string]map[string]string{
 		"line_email":          "Email: {email}\n",
 		"line_message":        "Message: {message}\n",
 		"webhook_request":     "Conquer: {account} asks for a seat. Approve it at {url}",
+		"subject_digest":      "Conquer: {count} new requests for a seat",
+		"body_digest":         "{count} accounts ask for a seat in Conquer:\n\n{list}\nApprove or reject them here: {url}\n",
+		"webhook_digest":      "Conquer: {count} new requests for a seat. Approve them at {url}",
 		"subject_approved":    "Conquer: your seat is approved",
 		"site_fallback":       "the game's website",
 		"body_approved_early": "Hello {account},\n\nYour seat in Conquer is approved.\n\nPress Play at {site} with your account and password, and found your nation.\n\nSee you in the game.\n",
@@ -36,6 +41,9 @@ var mailTexts = map[string]map[string]string{
 		"line_email":          "Correo: {email}\n",
 		"line_message":        "Mensaje: {message}\n",
 		"webhook_request":     "Conquer: {account} pide una plaza. Apruébala en {url}",
+		"subject_digest":      "Conquer: {count} solicitudes nuevas de plaza",
+		"body_digest":         "{count} cuentas piden una plaza en Conquer:\n\n{list}\nApruébalas o recházalas aquí: {url}\n",
+		"webhook_digest":      "Conquer: {count} solicitudes nuevas de plaza. Apruébalas en {url}",
 		"subject_approved":    "Conquer: tu plaza está aprobada",
 		"site_fallback":       "la web del juego",
 		"body_approved_early": "Hola {account}:\n\nTu plaza en Conquer está aprobada.\n\nPulsa Jugar en {site} con tu cuenta y tu contraseña, y funda tu nación.\n\nNos vemos en la partida.\n",
@@ -47,6 +55,9 @@ var mailTexts = map[string]map[string]string{
 		"line_email":          "E-Mail: {email}\n",
 		"line_message":        "Nachricht: {message}\n",
 		"webhook_request":     "Conquer: {account} fragt nach einem Platz. Freigeben unter {url}",
+		"subject_digest":      "Conquer: {count} neue Anfragen nach einem Platz",
+		"body_digest":         "{count} Konten fragen nach einem Platz in Conquer:\n\n{list}\nHier freigeben oder ablehnen: {url}\n",
+		"webhook_digest":      "Conquer: {count} neue Anfragen nach einem Platz. Freigeben unter {url}",
 		"subject_approved":    "Conquer: dein Platz ist freigegeben",
 		"site_fallback":       "die Website des Spiels",
 		"body_approved_early": "Hallo {account},\n\ndein Platz in Conquer ist freigegeben.\n\nDrück auf {site} mit deinem Konto und deinem Passwort auf Spielen und gründe deine Nation.\n\nBis gleich im Spiel.\n",
@@ -58,6 +69,9 @@ var mailTexts = map[string]map[string]string{
 		"line_email":          "E-mail: {email}\n",
 		"line_message":        "Wiadomość: {message}\n",
 		"webhook_request":     "Conquer: {account} prosi o miejsce. Zatwierdź na {url}",
+		"subject_digest":      "Conquer: {count} nowych próśb o miejsce",
+		"body_digest":         "{count} kont prosi o miejsce w Conquer:\n\n{list}\nZatwierdź lub odrzuć tutaj: {url}\n",
+		"webhook_digest":      "Conquer: {count} nowych próśb o miejsce. Zatwierdź na {url}",
 		"subject_approved":    "Conquer: twoje miejsce jest zatwierdzone",
 		"site_fallback":       "strona gry",
 		"body_approved_early": "Cześć {account},\n\ntwoje miejsce w Conquer jest zatwierdzone.\n\nKliknij Graj na {site}, zaloguj się swoim kontem i hasłem, i załóż swój naród.\n\nDo zobaczenia w grze.\n",
@@ -69,6 +83,9 @@ var mailTexts = map[string]map[string]string{
 		"line_email":          "E-mail: {email}\n",
 		"line_message":        "Mensagem: {message}\n",
 		"webhook_request":     "Conquer: {account} pede uma vaga. Aprove em {url}",
+		"subject_digest":      "Conquer: {count} novos pedidos de vaga",
+		"body_digest":         "{count} contas pedem uma vaga no Conquer:\n\n{list}\nAprove ou recuse aqui: {url}\n",
+		"webhook_digest":      "Conquer: {count} novos pedidos de vaga. Aprove em {url}",
 		"subject_approved":    "Conquer: a sua vaga foi aprovada",
 		"site_fallback":       "o site do jogo",
 		"body_approved_early": "Olá {account},\n\nA sua vaga no Conquer foi aprovada.\n\nClique em Jogar em {site} com a sua conta e a sua senha, e funde a sua nação.\n\nAté já no jogo.\n",
@@ -80,6 +97,9 @@ var mailTexts = map[string]map[string]string{
 		"line_email":          "Почта: {email}\n",
 		"line_message":        "Сообщение: {message}\n",
 		"webhook_request":     "Conquer: {account} просит место. Одобрить: {url}",
+		"subject_digest":      "Conquer: новых заявок на место: {count}",
+		"body_digest":         "Заявок на место в Conquer: {count}\n\n{list}\nОдобрить или отклонить можно здесь: {url}\n",
+		"webhook_digest":      "Conquer: новых заявок на место: {count}. Одобрить: {url}",
 		"subject_approved":    "Conquer: ваше место одобрено",
 		"site_fallback":       "сайт игры",
 		"body_approved_early": "Здравствуйте, {account}!\n\nВаше место в Conquer одобрено.\n\nНажмите «Играть» на {site}, войдите со своей учётной записью и паролем и основайте свой народ.\n\nДо встречи в игре.\n",
@@ -91,6 +111,9 @@ var mailTexts = map[string]map[string]string{
 		"line_email":          "邮箱：{email}\n",
 		"line_message":        "留言：{message}\n",
 		"webhook_request":     "Conquer：{account} 申请席位。请在 {url} 批准",
+		"subject_digest":      "Conquer：{count} 个新的席位申请",
+		"body_digest":         "有 {count} 个账号申请 Conquer 中的席位：\n\n{list}\n请在这里批准或拒绝：{url}\n",
+		"webhook_digest":      "Conquer：{count} 个新的席位申请。请在 {url} 批准",
 		"subject_approved":    "Conquer：你的席位已获批",
 		"site_fallback":       "游戏网站",
 		"body_approved_early": "你好 {account}，\n\n你在 Conquer 中的席位已获批。\n\n请在 {site} 点击“开始游戏”，用你的账号和密码登录，然后建立你的国家。\n\n游戏里见。\n",
