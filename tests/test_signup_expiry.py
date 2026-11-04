@@ -121,3 +121,15 @@ def test_scrub_without_requests_is_quiet(world):
     assert world.signup("scrub", password="").stdout.strip() == "0"
     (world.lib / ".requests").write_text("")
     assert world.signup("scrub", password="").stdout.strip() == "0"
+
+
+def test_manage_players_lists_old_and_new_requests(world, tmp_path):
+    (world.lib / ".requests").write_text("old\t100\told@example.org\thi\tes\nnew\t200\tde\n")
+    env = dict(os.environ, HTPASSWD_FILE=str(world.htpasswd), PLAYERS_FILE=str(world.lib / ".players"),
+               REQUESTS_FILE=str(world.lib / ".requests"), INVITES_FILE=str(world.lib / ".invites"))
+    out = subprocess.run(["bash", str(ROOT / "manage-players.sh"), "requests"], env=env, capture_output=True, text=True, timeout=30)
+    assert out.returncode == 0, out.stderr
+    rows = [l.split() for l in out.stdout.splitlines()]
+    assert rows[0] == ["ACCOUNT", "WAITING", "LANG"]
+    assert [r[0] for r in rows[1:]] == ["old", "new"] and [r[-1] for r in rows[1:]] == ["es", "de"]
+    assert "example.org" not in out.stdout

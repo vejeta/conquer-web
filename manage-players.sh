@@ -402,7 +402,7 @@ cmd_requests() {
         return
     fi
     awk -F'\t' -v now="$(date +%s)" '
-        BEGIN { printf "%-32s %-10s %-6s %s\n", "ACCOUNT", "WAITING", "LANG" }
+        BEGIN { printf "%-32s %-10s %s\n", "ACCOUNT", "WAITING", "LANG" }
         {
             age = now - $2
             if (age >= 86400) w = int(age / 86400) " d"
