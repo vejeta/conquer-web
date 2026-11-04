@@ -56,7 +56,14 @@ LOCALES = {"es": "es-ES", "en": "en-US", "de": "de-DE"}
 APPROVED_WORD = {"es": "aprobada", "en": "approved", "de": "freigegeben"}
 DEVICES = {"pixel7": "Pixel 7", "iphone13": "iPhone 13"}
 # Console messages that are not the page's fault
-BENIGN = ("favicon",)
+# ttyd 1.7.7 (and its main branch) may close the socket with 1006, a code that must never be
+# sent, when the menu ends: it reads the exit code before it is known (-1, so "not 0") when the
+# pty's end comes before the process's. The menu exits 0; the player sees nothing.
+TTYD_1006 = "Received a broken close frame containing a reserved status code"
+
+
+def benign(text):
+    return "favicon" in text or ("/play/ws?arg=" in text and TTYD_1006 in text)
 
 BUILDER_CHIP = {"y": "byes", "n": "bno", " ": "bbuy", "\r": "benter", "\x1b": "besc", "j": "bdown", "k": "bup"}
 
@@ -140,7 +147,7 @@ class Player:
         return args
 
     def watch(self, page):
-        page.on("console", lambda m: self.console.append(m.text) if m.type == "error" and not any(b in m.text for b in BENIGN) else None)
+        page.on("console", lambda m: self.console.append(m.text) if m.type == "error" and not benign(m.text) else None)
         page.on("pageerror", lambda e: self.console.append("pageerror: %s" % e))
         page.on("response", lambda r: self.bad.append("%s %s" % (r.status, r.url)) if r.status >= 400 and "favicon" not in r.url else None)
 
