@@ -109,3 +109,16 @@ def test_a_change_apache_refuses_is_undone(tmp_path):
     run, conf = patch(tmp_path, MID_VHOST, configtest_ok=False)
     assert conf.read_text() == MID_VHOST
     assert "Apache refused" in run.stdout
+
+
+def test_restarts_itself_after_a_pull_that_changed_it():
+    """bash keeps running the copy it opened: after git pull changed the script,
+    the steps after the pull must come from the new version, with the same
+    arguments, and the backup is not made twice."""
+    pull = SCRIPT.index("g pull --ff-only")
+    restart = SCRIPT.index('CONQUER_UPDATE_RESTARTED=1 exec "$SCRIPT_DIR/update-vps.sh" "${ARGS[@]}"')
+    assert pull < restart < SCRIPT.index("# 3. The game container")
+    assert 'g diff --quiet "$before" "$after" -- update-vps.sh' in SCRIPT
+    assert SCRIPT.index('ARGS=("$@")') < SCRIPT.index("while [ $# -gt 0 ]")
+    backup = SCRIPT.index("# 1. A copy of what must never be lost")
+    assert SCRIPT.index('if [ -z "${CONQUER_UPDATE_RESTARTED:-}" ]; then', backup) < SCRIPT.index("BACKUP=")

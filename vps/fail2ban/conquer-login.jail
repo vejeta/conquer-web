@@ -9,6 +9,9 @@
 enabled  = true
 port     = http,https
 filter   = conquer-login
+# Debian's defaults-debian.conf sets backend = systemd for every jail, which
+# reads the journal and ignores logpath: these jails read Apache's file
+backend  = auto
 logpath  = /var/log/apache2/conquer_login.log
 maxretry = 8
 findtime = 10m

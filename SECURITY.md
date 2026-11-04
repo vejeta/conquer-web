@@ -77,7 +77,8 @@ becoming players without the administrator's approval.
   the account name is not logged). fail2ban's `conquer-login` jail
   (`vps/fail2ban/`, installed by `setup-fail2ban.sh`) bans an address for 1
   hour after 8 of them in 10 minutes; `127.0.0.1/8` and `ADMIN_IP` (in
-  `config/production.env`) are never banned. The filter is tested against
+  `config/production.env`, empty by default; set it only for a fixed address)
+  are never banned. The filter is tested against
   sample lines and against the log of a running Apache in CI. The jail that
   banned on every request (`apache-dos-conquer`) is removed: it counted every page and
   asset and banned players behind a shared address.
@@ -308,8 +309,9 @@ approval flows. A step fails if the password shows up in a container log.
   no root, and keep `data/` and `/etc/apache2/conquer-web.htpasswd` unreadable
   to other users (`chmod 700 data`).
 - fail2ban for the sign-in form is installed by `deploy-to-vps.sh` and
-  `update-vps.sh` (`sudo ./setup-fail2ban.sh`; set `ADMIN_IP` in
-  `config/production.env` so that you are never banned). See the bans with
+  `update-vps.sh` (`sudo ./setup-fail2ban.sh`; `ADMIN_IP` in
+  `config/production.env` exempts an address, only worth it if yours is
+  fixed: a ban blocks the web, not SSH, for 1 hour). See the bans with
   `sudo fail2ban-client status conquer-login` and lift one with
   `sudo fail2ban-client set conquer-login unbanip ADDRESS`. More jails:
   `sudo ./setup-security-basic.sh` (standard Apache filters: failed logins, bad
