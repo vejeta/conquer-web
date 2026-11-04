@@ -172,6 +172,12 @@ setup_fail2ban() {
     "$PROJECT_DIR/setup-fail2ban.sh"
 }
 
+# The site's Apache logs (conquer_*.log) are kept 7 days
+setup_logrotate() {
+    echo "🗂️ Keeping the Apache logs of the site for 7 days..."
+    "$PROJECT_DIR/setup-logrotate.sh"
+}
+
 # Setup Apache virtual host
 setup_virtual_host() {
     echo "🌐 Setting up Apache virtual host for $DOMAIN_NAME..."
@@ -469,6 +475,7 @@ main() {
     setup_ssl
     setup_virtual_host
     setup_fail2ban
+    setup_logrotate
     build_container
     setup_systemd_service
     start_services

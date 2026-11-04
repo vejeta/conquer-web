@@ -296,6 +296,8 @@ if [ -z "$abuse_files" ]; then
 fi
 # fail2ban with the jail for wrong passwords (ADMIN_IP in config/production.env is never banned)
 if ./setup-fail2ban.sh; then :; else echo "⚠️  fail2ban was not set up: sudo ./setup-fail2ban.sh"; fi
+# The site's Apache logs are kept 7 days (/etc/logrotate.d/conquer-web)
+if ./setup-logrotate.sh; then :; else echo "⚠️  Log rotation was not set up: sudo ./setup-logrotate.sh"; fi
 sleep 3
 if docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
     if docker exec "$CONTAINER" cat /proc/1/cmdline | tr '\0' ' ' | grep -q -- '-H X-WEBAUTH-USER' \

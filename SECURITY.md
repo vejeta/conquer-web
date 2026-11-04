@@ -220,6 +220,10 @@ becoming players without the administrator's approval.
   user owns refuse symbolic links in the world directory.
 - `update-vps.sh` runs git as the owner of the checkout, and its backups are in
   a 700 directory under `/root`; `offsite-backup.sh` encrypts what it sends.
+- Logs with client addresses: the site's Apache logs (`conquer_*.log`) are kept
+  7 days by `/etc/logrotate.d/conquer-web` (`setup-logrotate.sh`, run by
+  `deploy-to-vps.sh` and `update-vps.sh`); fail2ban bans last 1 hour; the
+  container log is rotated by Docker.
 - `deploy-to-vps.sh` and `update-vps.sh` run `setup-fail2ban.sh` (the sign-in
   jail above; safe to repeat). `check-security.sh`, `setup-security-basic.sh`
   and `setup-security.sh` install and report more fail2ban jails.

@@ -109,7 +109,16 @@ It never changes web passwords, nation passwords or the world. In order:
    /account/api/` and its `<Location>` with the form login) and the
    `LimitRequestBody 65536` blocks of `/join/api/`, `/admin/api/` and
    `/account/api/`; then runs `setup-fail2ban.sh` ([fail2ban](#fail2ban)).
-7. Checks that the running container is the current version, warns if the
+7. Runs `setup-logrotate.sh`: `/etc/logrotate.d/conquer-web` keeps the site's
+   Apache logs (`/var/log/apache2/conquer_*.log`: access, error, sign-in and
+   recovery logs, which hold client addresses) 7 days, rotated daily and
+   compressed, Apache reloaded as Debian's own rule does. Debian's
+   `/etc/logrotate.d/apache2` is changed to leave those files out (logrotate
+   refuses two rules for one file; it still rotates every other Apache log
+   for 14 days). Docker's log rotation of the game container is unchanged.
+   Check with `sudo logrotate -d /etc/logrotate.conf 2>&1 | grep -i duplicate`
+   (no output) and `ls /var/log/apache2/conquer_*`.
+8. Checks that the running container is the current version, warns if the
    god password is not set, and that `https://DOMAIN/` answers 200.
 
 **After the abuse-limits update** (sign-up limits, menu limits, fail2ban),
