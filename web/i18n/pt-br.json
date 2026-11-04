@@ -92,7 +92,8 @@
   "trailer_close": "Fechar",
   "m_daily": "todos os dias às {time}, no seu horário",
   "m_weekly": "toda {day} às {time}, no seu horário",
-  "story_link": "&#9656; A história em 2 minutos"
+  "story_link": "&#9656; A história em 2 minutos",
+  "donate_text": "O jogo é gratuito e não tem anúncios. Se você gostar, pode ajudar a pagar os servidores:"
  },
  "game": {
   "keyboard_title": "Mostrar o teclado do dispositivo",
@@ -457,7 +458,8 @@
   "privacy": "Privacidade",
   "main": "Menu principal",
   "logout": "Sair",
-  "account": "Conta"
+  "account": "Conta",
+  "donate": "Apoie os servidores"
  },
  "race": {
   "human": "Humano",

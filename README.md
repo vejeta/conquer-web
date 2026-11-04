@@ -81,6 +81,17 @@ Running a public server (Debian VPS with Apache and Docker):
 - **[SECURITY.md](SECURITY.md)** covers hardening (fail2ban, rate limits,
   headers).
 
+## Donations
+
+Conquer is a hobby project and the game is free, with no ads. If you want to
+help pay for the servers you can give through Liberapay:
+[liberapay.com/Conquer](https://liberapay.com/Conquer/donate). The site shows
+a small "Support the servers" link in the footers of the home page and the
+Hall (never inside the Android app). The address lives in one place,
+`DONATE_URL` in `web/site.js`; to change it edit that line (and this section).
+Donations are voluntary and give nothing in return; Liberapay is a separate
+controller for its own data and we receive no payment data.
+
 ## Design system
 
 Every page takes its colours, fonts and spacing from one stylesheet, `web/theme.css`: green phosphor over the mountains, with a phosphor per race (`data-race` on `<html>`: human, elf, dwarf, orc, chosen in the game's options or read from the nation's own screen by `web/race.js`) and parchment (`data-theme="parchment"`) for the long reading pages. `web/design.html` is the living style guide (linked from every footer as "Design"): open it to see every component. The game screen's frames are raster artefacts baked by `python3 tools/arch/bake.py` from the shapes in `tools/arch/src`; the map texture at the page edges comes from `python3 tools/hero/build-bg.py`. Pages add layout only, never colours: a browser test fails on any colour literal in a page.

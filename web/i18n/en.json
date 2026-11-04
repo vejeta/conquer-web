@@ -92,7 +92,8 @@
   "trailer_close": "Close",
   "m_daily": "every day at {time}, your time",
   "m_weekly": "every {day} at {time}, your time",
-  "story_link": "&#9656; The story in 2 minutes"
+  "story_link": "&#9656; The story in 2 minutes",
+  "donate_text": "The game is free and has no ads. If you like it, you can help pay for the servers:"
  },
  "game": {
   "keyboard_title": "Show the device keyboard",
@@ -457,7 +458,8 @@
   "privacy": "Privacy",
   "main": "Main menu",
   "logout": "Sign out",
-  "account": "Account"
+  "account": "Account",
+  "donate": "Support the servers"
  },
  "race": {
   "human": "Human",

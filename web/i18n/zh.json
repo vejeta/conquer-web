@@ -92,7 +92,8 @@
   "trailer_close": "关闭",
   "m_daily": "每天 {time}（你的当地时间）",
   "m_weekly": "每{day} {time}（你的当地时间）",
-  "story_link": "&#9656; 两分钟看完这个故事"
+  "story_link": "&#9656; 两分钟看完这个故事",
+  "donate_text": "游戏免费，没有广告。如果你喜欢它，欢迎帮忙支付服务器费用："
  },
  "game": {
   "keyboard_title": "显示设备键盘",
@@ -457,7 +458,8 @@
   "privacy": "隐私",
   "main": "主菜单",
   "logout": "退出登录",
-  "account": "账号"
+  "account": "账号",
+  "donate": "支持服务器"
  },
  "race": {
   "human": "人类",

@@ -27,6 +27,35 @@ Read this first when picking the project up in a new session.
   Music: `tools/sound/build.py` renders `web/sound/` from the FluidR3
   SoundFont (not in the repo).
 
+## Privacy changes of November 2026 (branch `claude/cool-feynman-97nv7c`)
+
+The site keeps no personal data beyond what is technically needed.
+
+- **No player email, no free text.** The sign-up form, the gate, the admin
+  page and the mails no longer have them; `.requests` holds account, time and
+  language; the gate runs `conquer-signup scrub` at start to strip what older
+  requests held. The only mail left is the notice to the administrator.
+- **Account pages.** `web/account.html` (change password, new recovery code),
+  `web/recover.html` (forgot password with the recovery code), `web/recovery.js`
+  (the modal that shows a code once). Gate side: `conquer/gate/account.go`;
+  files: `conquer/scripts/signup.sh` commands `passwd`, `recovery-init`,
+  `recovery-renew`, `reset`, hashes in `lib/.recovery` (mode 600). Apache:
+  `<Location "/account/api/">` (same sign-in as `/play/`, sets
+  `X-WEBAUTH-USER`); `update-vps.sh` adds it to existing virtual hosts.
+  Limits: 5 wrong passwords/codes an hour per address and per account; fail2ban
+  jail `conquer-recover` reads `conquer_recover.log`. Admin reset by hand:
+  `sudo ./manage-players.sh password NAME`.
+- **Logs 7 days:** `setup-logrotate.sh` (run by `update-vps.sh` and
+  `deploy-to-vps.sh`) installs `/etc/logrotate.d/conquer-web`.
+- **Privacy notice** rewritten short (`web/privacy.es.html` is the binding one;
+  keep both in step, `tests/test_privacy.py`).
+- **Donations.** The Liberapay address (https://liberapay.com/Conquer/donate)
+  is `DONATE_URL` in `web/site.js`: change it there only (and in the README
+  "Donations" section). Elements with `data-donate` get it; they are hidden in
+  app mode (`html.in-app`, see `site.js`), because Google Play does not allow
+  donation links in the app.
+- What to run on the VPS after merging: see DEPLOYMENT.md "Update".
+
 ## Open items
 
 - Device tests of the app: story on first launch, Back arrow, settings,

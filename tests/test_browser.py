@@ -1583,3 +1583,65 @@ def test_account_pages_load_nothing_from_other_sites(site, browser, name):
     page.wait_for_timeout(500)
     assert outside == []
     page.close()
+
+
+# ---------------------------------------------------------------------------
+# Donations: one link (site.js), in the footers of the home page and the Hall,
+# never inside the Android app
+
+DONATE = "https://liberapay.com/Conquer/donate"
+
+
+@pytest.mark.parametrize("name,where", [("index.html", "footer"), ("hall.html", "footer")])
+def test_the_donation_link_shows_on_the_web(site, browser, name, where):
+    page = browser.new_page()
+    outside = []
+    page.on("request", lambda r: outside.append(r.url) if not r.url.startswith(site) and not r.url.startswith("data:") else None)
+    page.goto(site + name + "?lang=en")
+    link = page.locator("footer a[data-donate]").last
+    link.wait_for(state="visible")
+    assert link.get_attribute("href") == DONATE
+    assert link.get_attribute("target") == "_blank" and "noopener" in link.get_attribute("rel")
+    assert link.inner_text() == "Support the servers"
+    assert page.locator("a[data-donate] img, a[data-donate] svg, iframe[src*=liberapay], script[src*=liberapay]").count() == 0
+    page.wait_for_timeout(300)
+    assert not any("liberapay" in u for u in outside), outside
+    page.close()
+
+
+def test_the_donation_link_is_localized_and_the_home_page_has_a_sentence(site, browser):
+    page = browser.new_page()
+    page.goto(site + "index.html?lang=es")
+    page.wait_for_function("() => [...document.querySelectorAll('a[data-donate]')].every(a => a.textContent === 'Apoya los servidores')")
+    wrap = page.locator("[data-donate-wrap]")
+    assert wrap.is_visible() and "gratuito" in wrap.inner_text() and wrap.locator("a").get_attribute("href") == DONATE
+    page.close()
+
+
+@pytest.mark.parametrize("name", ["index.html", "hall.html"])
+@pytest.mark.parametrize("how", ["query", "ua", "bridge"])
+def test_the_donation_link_is_hidden_in_the_app(site, browser, name, how):
+    ctx = browser.new_context(viewport={"width": 390, "height": 844},
+                              user_agent="Mozilla/5.0 (Linux; Android 14) Cefrium/1.0" if how == "ua" else None)
+    if how == "bridge":
+        ctx.add_init_script("window.cefriumQuery = function () {};")
+    page = ctx.new_page()
+    page.goto(site + name + ("?app=1&lang=en" if how == "query" else "?lang=en"))
+    page.wait_for_timeout(400)
+    assert page.evaluate("document.documentElement.classList.contains('in-app')")
+    assert page.locator("a[data-donate]:visible, [data-donate-wrap]:visible").count() == 0
+    # Not even in the page's text, and the app remembers it while navigating
+    assert page.evaluate("[...document.querySelectorAll('a[data-donate]')].every(a => a.hidden)")
+    page.goto(site + "hall.html?lang=en")
+    assert page.locator("a[data-donate]:visible").count() == 0
+    ctx.close()
+
+
+def test_the_donation_url_lives_in_one_place():
+    """Only site.js holds the address; pages carry data-donate and get it from there."""
+    holders = []
+    for path in list(WEB.glob("*.html")) + list(WEB.glob("*.js")) + list((WEB / "i18n").glob("*.json")):
+        if "liberapay.com" in path.read_text(encoding="utf-8"):
+            holders.append(path.name)
+    assert holders == ["site.js"]
+    assert "%s'" % DONATE in (WEB / "site.js").read_text(encoding="utf-8")

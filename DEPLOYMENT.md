@@ -121,6 +121,24 @@ It never changes web passwords, nation passwords or the world. In order:
 8. Checks that the running container is the current version, warns if the
    god password is not set, and that `https://DOMAIN/` answers 200.
 
+**After the "no email" update** (account pages, recovery codes, 7-day logs),
+run on the VPS:
+
+```bash
+cd /home/conquer/conquer-web
+sudo ./update-vps.sh --rebuild   # new game image (the gate strips old emails and
+                                 # messages from pending requests when it starts),
+                                 # virtual host (account API, recover log), fail2ban jail
+                                 # conquer-recover, /etc/logrotate.d/conquer-web
+sudo fail2ban-client status conquer-recover
+sudo logrotate -d /etc/logrotate.conf 2>&1 | grep -i duplicate   # no output
+docker logs conquer-vps 2>&1 | grep scrub                        # what the gate removed
+```
+
+Each approved player gets a recovery code the first time they open the game
+page. Old backups may still hold emails until they are rotated out. Set the
+Liberapay link, if it changes, in `web/site.js` (`DONATE_URL`).
+
 **After the abuse-limits update** (sign-up limits, menu limits, fail2ban),
 run on the VPS, in this order:
 

@@ -92,7 +92,8 @@
   "trailer_close": "Schließen",
   "m_daily": "täglich um {time}, in deiner Ortszeit",
   "m_weekly": "jeden {day} um {time}, in deiner Ortszeit",
-  "story_link": "&#9656; Die Geschichte in 2 Minuten"
+  "story_link": "&#9656; Die Geschichte in 2 Minuten",
+  "donate_text": "Das Spiel ist kostenlos und hat keine Werbung. Wenn es dir gefällt, kannst du helfen, die Server zu bezahlen:"
  },
  "game": {
   "keyboard_title": "Bildschirmtastatur des Geräts einblenden",
@@ -457,7 +458,8 @@
   "privacy": "Datenschutz",
   "main": "Hauptmenü",
   "logout": "Abmelden",
-  "account": "Konto"
+  "account": "Konto",
+  "donate": "Die Server unterstützen"
  },
  "race": {
   "human": "Mensch",

@@ -92,7 +92,8 @@
   "trailer_close": "Zamknij",
   "m_daily": "codziennie o {time}, według twojego czasu",
   "m_weekly": "w każdy {day} o {time}, według twojego czasu",
-  "story_link": "&#9656; Historia w 2 minuty"
+  "story_link": "&#9656; Historia w 2 minuty",
+  "donate_text": "Gra jest darmowa i bez reklam. Jeśli ci się podoba, możesz pomóc opłacić serwery:"
  },
  "game": {
   "keyboard_title": "Pokaż klawiaturę urządzenia",
@@ -457,7 +458,8 @@
   "privacy": "Prywatność",
   "main": "Menu główne",
   "logout": "Wyloguj",
-  "account": "Konto"
+  "account": "Konto",
+  "donate": "Wesprzyj serwery"
  },
  "race": {
   "human": "Człowiek",
