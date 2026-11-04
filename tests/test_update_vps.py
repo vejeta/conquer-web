@@ -122,3 +122,18 @@ def test_restarts_itself_after_a_pull_that_changed_it():
     assert SCRIPT.index('ARGS=("$@")') < SCRIPT.index("while [ $# -gt 0 ]")
     backup = SCRIPT.index("# 1. A copy of what must never be lost")
     assert SCRIPT.index('if [ -z "${CONQUER_UPDATE_RESTARTED:-}" ]; then', backup) < SCRIPT.index("BACKUP=")
+
+
+def test_copies_in_subdirectories_are_left_alone(tmp_path):
+    """Only sites-available/*.conf can be enabled: a copy kept in old/ is not
+    patched and gives no warning."""
+    old_dir = tmp_path / "sites-available" / "old"
+    old_dir.mkdir(parents=True)
+    copy = old_dir / "example.test.conf"
+    copy.write_text(OLD_VHOST.replace('<Location "/play/">', '<Location "/elsewhere/">'))
+    before = copy.read_text()
+    run, conf = patch(tmp_path, OLD_VHOST)
+    assert run.returncode == 0, run.stderr + run.stdout
+    assert copy.read_text() == before
+    assert "old/" not in run.stdout and "by hand" not in run.stdout
+    assert "ProxyPass /account/api/" in conf.read_text()

@@ -118,7 +118,9 @@ fi
 # Apache does not accept the change
 old_csp="script-src 'self' 'unsafe-inline';"
 # (only this site's files: other sites on the server are left alone)
-csp_files=$(grep -rlF "$old_csp" /etc/apache2/sites-available 2>/dev/null | xargs -r grep -lF "$DOMAIN" || true)
+# Only the files Apache can enable (sites-available/*.conf), not copies kept in
+# subdirectories such as old/
+csp_files=$(grep -lF "$old_csp" /etc/apache2/sites-available/*.conf 2>/dev/null | xargs -r grep -lF "$DOMAIN" || true)
 if [ -n "$csp_files" ]; then
     for f in $csp_files; do
         cp "$f" "$f.before-wasm"
@@ -224,7 +226,7 @@ cat > "$body_block" << 'EOF'
     </Location>
 
 EOF
-abuse_files=$(grep -rlF "conquer_ssl_access.log" /etc/apache2/sites-available 2>/dev/null | xargs -r grep -lF "$DOMAIN" || true)
+abuse_files=$(grep -lF "conquer_ssl_access.log" /etc/apache2/sites-available/*.conf 2>/dev/null | xargs -r grep -lF "$DOMAIN" || true)
 abuse_changed=""
 for f in $abuse_files; do
     cp "$f" "$f.before-abuse"
