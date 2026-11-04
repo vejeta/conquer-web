@@ -102,6 +102,11 @@ if [ -z "$SKIP_SERVICE" ]; then
     if [ -n "$CHANGED" ] || ! systemctl is-active --quiet fail2ban; then
         systemctl restart fail2ban
     fi
+    # fail2ban takes a few seconds to load its jails after a restart
+    for _ in $(seq 1 15); do
+        fail2ban-client status conquer-login > /dev/null 2>&1 && break
+        sleep 1
+    done
     # The jails need the logs of the virtual host
     if fail2ban-client status conquer-login > /dev/null 2>&1; then
         echo "✅ fail2ban: jail conquer-login active (8 failed sign-ins in 10 minutes: 1 hour ban; never banned: $IGNORE_IPS)"

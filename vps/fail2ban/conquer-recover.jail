@@ -10,6 +10,9 @@
 enabled  = true
 port     = http,https
 filter   = conquer-recover
+# Debian's defaults-debian.conf sets backend = systemd for every jail, which
+# reads the journal and ignores logpath: these jails read Apache's file
+backend  = auto
 logpath  = /var/log/apache2/conquer_recover.log
 maxretry = 5
 findtime = 1h

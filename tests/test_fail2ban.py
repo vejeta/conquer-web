@@ -106,6 +106,8 @@ def test_jail_numbers():
     assert j["filter"] == "conquer-login"
     assert j["maxretry"] == "8" and j["findtime"] == "10m" and j["bantime"] == "1h"
     assert j["logpath"] == "/var/log/apache2/conquer_login.log"
+    # Debian makes systemd the default backend, which would ignore logpath
+    assert j["backend"] == "auto"
 
 
 def recover_line(ip="203.0.113.9", request="POST /join/api/recover HTTP/1.1", status=403, location="-"):
@@ -173,6 +175,8 @@ def test_recover_jail_numbers():
     # The gate's own limit is the same: 5 wrong tries an hour
     assert j["maxretry"] == "5" and j["findtime"] == "1h" and j["bantime"] == "1h"
     assert j["logpath"] == "/var/log/apache2/conquer_recover.log"
+    # Debian makes systemd the default backend, which would ignore logpath
+    assert j["backend"] == "auto"
 
 
 @pytest.mark.parametrize("conf", ["vps/virtualhost.conf.template", "apache/local.conf", "update-vps.sh"])
