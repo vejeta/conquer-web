@@ -553,6 +553,11 @@ class Player:
         t.chip("quit")
         t.wait(r"\[[a-z]/N\]", timeout=30)                    # "Are your orders done? [y/N]" in the page's language
         text = t.text()
+        # the chips are drawn a moment after the prompt is on the screen
+        try:
+            self.page.wait_for_selector('[data-chip="yes"]', state="visible", timeout=5000)
+        except Exception:
+            pass
         # a touch player must be able to answer: the Yes chip, in every language
         self.check(t.where() == "prompt_yn" and t.has_chip("yes"), "no Yes/No chips at the orders question in %s: where=%s\n%s" % (self.lang, t.where(), text))
         if t.has_chip("yes"):
