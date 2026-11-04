@@ -12,7 +12,9 @@
 #   sudo ./setup-fail2ban.sh
 #   sudo ADMIN_IP=203.0.113.7 ./setup-fail2ban.sh    # an address that is never banned
 #
-# ADMIN_IP can also be set in config/production.env. 127.0.0.1/8 is never banned.
+# ADMIN_IP can also be set in config/production.env; leave it empty unless the
+# address is fixed (a dynamic one later belongs to someone else). A ban blocks
+# the web only, not SSH. 127.0.0.1/8 is never banned.
 # It also removes the apache-dos-conquer jail that older versions of
 # setup-security.sh installed: it counted every page and asset, and banned
 # real players behind a shared address.

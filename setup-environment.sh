@@ -233,7 +233,7 @@ TTYD_USERNAME=$PROD_USER
 TTYD_PASSWORD=$PROD_PASS
 MAX_CLIENTS=$PROD_MAX_CLIENTS
 SESSION_TIMEOUT=$PROD_TIMEOUT
-# An address that fail2ban never bans (yours); empty for none
+# An address that fail2ban never bans; leave empty unless your address is fixed
 ADMIN_IP=
 
 # Shown to players in the menu under "How to join"

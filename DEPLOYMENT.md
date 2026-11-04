@@ -145,7 +145,7 @@ run on the VPS, in this order:
 ```bash
 cd /home/conquer/conquer-web
 sudo nano config/production.env      # MAX_CLIENTS=25 (a file made before keeps 5);
-                                     # ADMIN_IP=your address (never banned by fail2ban)
+                                     # ADMIN_IP stays empty unless your address is fixed
 sudo ./update-vps.sh --rebuild       # new game image (gate, menu), virtual host lines,
                                      # fail2ban jail; restarts the service
 sudo fail2ban-client status conquer-login   # the jail is listed
@@ -261,10 +261,18 @@ minutes ban the address for 1 hour; and `conquer-recover`, 5 wrong recovery
 codes or wrong current passwords (HTTP 403 from the gate at `/join/api/recover`
 and `/account/api/password|recovery`) in 1 hour ban it for 1 hour. They read
 `/var/log/apache2/conquer_login.log` and `conquer_recover.log`, which the
-virtual host fills (see [Apache virtual host](#apache-virtual-host)). Set
-`ADMIN_IP=203.0.113.7` (an address or network) in `config/production.env` and
-run the script again so that your own address is never banned; `127.0.0.1/8`
-never is. Running it again changes nothing when the files are right, and it
+virtual host fills (see [Apache virtual host](#apache-virtual-host)).
+`127.0.0.1/8` is never banned.
+
+`ADMIN_IP` in `config/production.env` adds an address or network that is never
+banned (`ADMIN_IP=203.0.113.7`, then run the script again). **Leave it empty if
+your address changes** (home connections, mobile data, travelling): an old
+dynamic address goes to someone else, who could then guess passwords without
+ever being banned. Without it, the worst case is a 1-hour ban of the web after
+8 wrong passwords in 10 minutes. SSH is not affected, so you can always log in
+to the VPS and lift it (see below), or switch networks (mobile data) or wait.
+
+Running it again changes nothing when the files are right, and it
 removes the `apache-dos-conquer` jail that older `setup-security.sh` runs
 installed.
 
