@@ -189,7 +189,7 @@ jobs:
           docker exec apache-local cat /usr/local/apache2/logs/recover.log > /tmp/recover.log
           test "$(grep -c '" 403 ' /tmp/recover.log)" -ge 4
           python3 -m pip install --quiet pytest
-          CONQUER_RECOVER_LOG=/tmp/recover.log python3 -m pytest tests/test_fail2ban.py -k recover_log_of_a_running_apache
+          CONQUER_RECOVER_LOG=/tmp/recover.log python3 -m pytest tests/test_fail2ban.py -k recover_filter_on_the_log_of_a_running_apache
 
       - name: No credentials in the container logs
         run: |
