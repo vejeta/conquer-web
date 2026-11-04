@@ -111,7 +111,9 @@ def test_what_the_notice_must_say(lang):
         assert must in html, must
     assert "7 days" in html if lang == "en" else "7 días" in html
     assert "30 copies" in html if lang == "en" else "30 copias" in html
-    assert "under 14" in html if lang == "en" else "menores de 14" in html
+    # Children may play with a parent's or guardian's permission
+    assert ("under 14 may play with the permission of a parent or guardian" in html if lang == "en"
+            else "menores de 14 años pueden jugar con permiso de su padre, madre o tutor" in html)
     # No postal address
     assert "postal address" not in html.lower() and "dirección postal" not in html.lower()
     body = re.search(r'<div class="reading".*?</main>', html, re.S).group(0)
