@@ -191,6 +191,7 @@
   "l_code": "Kod zaproszenia",
   "h_code": "Kod zaproszenia pozwala pominąć czekanie: zostajesz zatwierdzony od razu. Działa raz.",
   "submit": "Poproś o miejsce",
+  "privacy_note": "Co przechowujemy i jak długo:",
   "pending_title": "Twoje miejsce czeka na zatwierdzenie",
   "pending_text": "Administrator zatwierdza miejsca ręcznie. Po zatwierdzeniu możesz założyć naród w dowolnej turze; późny naród startuje z dodatkowymi punktami.",
   "pending_mail": "Gdy zostaniesz zatwierdzony, dostaniesz e-mail na adres {email}.",
@@ -458,6 +459,7 @@
   "hall": "Hala sław",
   "join": "Dołącz",
   "design": "Wygląd",
+  "privacy": "Prywatność",
   "main": "Menu główne",
   "logout": "Wyloguj"
  },

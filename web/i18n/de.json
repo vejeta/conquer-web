@@ -191,6 +191,7 @@
   "l_code": "Einladungscode",
   "h_code": "Ein Einladungscode erspart das Warten: Du wirst sofort freigegeben. Er gilt nur einmal.",
   "submit": "Platz anfragen",
+  "privacy_note": "Was wir speichern und wie lange:",
   "pending_title": "Dein Platz ist angefragt",
   "pending_text": "Der Spielleiter gibt Plätze von Hand frei. Danach kannst du deine Nation in jedem Zug gründen; eine späte Nation startet mit Extrapunkten.",
   "pending_mail": "Du bekommst eine E-Mail an {email}, sobald du freigegeben bist.",
@@ -458,6 +459,7 @@
   "hall": "Ruhmeshalle",
   "join": "Beitreten",
   "design": "Design",
+  "privacy": "Datenschutz",
   "main": "Hauptmenü",
   "logout": "Abmelden"
  },
