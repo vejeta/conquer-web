@@ -104,9 +104,11 @@ It never changes web passwords, nation passwords or the world. In order:
    only reported: copy them from the template yourself.
 6. Adds to this site's virtual host files, when they lack them (with
    `apache2ctl configtest` and a rollback if Apache refuses): the
-   `conquer_login.log` log of sign-in posts and the `LimitRequestBody 65536`
-   blocks of `/join/api/` and `/admin/api/`; then runs `setup-fail2ban.sh`
-   ([fail2ban](#fail2ban)).
+   `conquer_login.log` log of sign-in posts, the `conquer_recover.log` log of
+   wrong recovery codes and passwords, the account API (`ProxyPass
+   /account/api/` and its `<Location>` with the form login) and the
+   `LimitRequestBody 65536` blocks of `/join/api/`, `/admin/api/` and
+   `/account/api/`; then runs `setup-fail2ban.sh` ([fail2ban](#fail2ban)).
 7. Checks that the running container is the current version, warns if the
    god password is not set, and that `https://DOMAIN/` answers 200.
 
@@ -213,7 +215,8 @@ Blocks that must exist in the HTTPS host (`update-vps.sh` checks the marked ones
 - `Cache-Control: no-cache` for `html|js|css|json` files. *checked*
 - `Content-Security-Policy` whose `script-src` has `'wasm-unsafe-eval'` (the practice game at `/try/` is WebAssembly). *checked*
 - `/status` with `Access-Control-Allow-Origin: *`.
-- The `conquer_login` `LogFormat`, `SetEnvIf` and `CustomLog ... conquer_login.log` lines after the access log, and `<Location "/join/api/">` and `<Location "/admin/api/">` with `LimitRequestBody 65536` before `<Location "/play/">`. *added by `update-vps.sh`*
+- The `conquer_login` `LogFormat`, `SetEnvIf` and `CustomLog ... conquer_login.log` lines after the access log, the same for `conquer_recover.log` (posts to `/join/api/recover` and `/account/api/password|recovery`), and `<Location "/join/api/">`, `<Location "/admin/api/">` and `<Location "/account/api/">` with `LimitRequestBody 65536` before `<Location "/play/">`. *added by `update-vps.sh`*
+- `ProxyPass /account/api/` to `127.0.0.1:7682/account/api/` and a `<Location "/account/api/">` with the form login and `RequestHeader set X-WEBAUTH-USER`: the account API for signed-in players (change password, recovery code). *added by `update-vps.sh`*
 - `/login/do`, `/login/long`, `/logout` and the session settings: see [Login](#login). *checked*
 - `<Location "/play/">` with the same form login, **as the last `<Location>`** of the host: sections merge in order and a later one granting access would remove the password (CI checks this in the template).
 - `admin` must not appear in the `<LocationMatch ...phpmyadmin>` list that denies access.
@@ -225,9 +228,12 @@ If you also use `certbot --apache` to edit hosts, it copies the host into a
 ## fail2ban
 
 `deploy-to-vps.sh` and `update-vps.sh` run `sudo ./setup-fail2ban.sh`, which
-installs fail2ban if needed and the jail `conquer-login` (filter and jail in
-`vps/fail2ban/`): 8 wrong passwords at the sign-in form in 10 minutes ban the
-address for 1 hour. It reads `/var/log/apache2/conquer_login.log`, which the
+installs fail2ban if needed and two jails (filters and jails in
+`vps/fail2ban/`): `conquer-login`, 8 wrong passwords at the sign-in form in 10
+minutes ban the address for 1 hour; and `conquer-recover`, 5 wrong recovery
+codes or wrong current passwords (HTTP 403 from the gate at `/join/api/recover`
+and `/account/api/password|recovery`) in 1 hour ban it for 1 hour. They read
+`/var/log/apache2/conquer_login.log` and `conquer_recover.log`, which the
 virtual host fills (see [Apache virtual host](#apache-virtual-host)). Set
 `ADMIN_IP=203.0.113.7` (an address or network) in `config/production.env` and
 run the script again so that your own address is never banned; `127.0.0.1/8`
@@ -237,6 +243,7 @@ installed.
 
 ```bash
 sudo fail2ban-client status conquer-login                  # who is banned
+sudo fail2ban-client status conquer-recover                # the same for wrong recovery codes
 sudo fail2ban-client set conquer-login unbanip ADDRESS     # lift a ban
 sudo fail2ban-regex /var/log/apache2/conquer_login.log conquer-login   # does the filter see the failures?
 ```
@@ -467,6 +474,24 @@ nation with the game's builder, at any turn (after turn 5 the builder is
 `conqrun -A`, which needs no super user password because you approved the
 account, and the game gives a late nation extra points). `SIGNUP=off` closes
 requests.
+
+**Passwords and recovery codes.** The site keeps no email address, so a
+player who forgets the password needs the **recovery code**. The first time an
+approved player opens the game page (or `/admin/`, `/account.html`) the gate
+makes a code (`XXXX-XXXX-XXXX`) and the page shows it once; only its bcrypt
+hash is kept, in `data/lib/.recovery` (mode 600, one `account:hash` line per
+player, in the world backup). Players change the password and make a new code
+on `/account.html` (both need the current password) and use
+`/recover.html` ("Forgot your password?" on the sign-in page) with the code to
+set a new password and get a new code. The gate allows 5 wrong tries an hour
+per address and per account (a stranger can therefore block someone's recovery
+for an hour, not open it), and fail2ban bans an address after 5 in an hour.
+A player who lost both password and code writes to the contact address of the
+privacy notice; accounts cannot be restored without the code and the player
+can join again next season. **You can still reset by hand**, at your
+discretion: `sudo ./manage-players.sh password NAME` sets a new password (the
+player then makes a new code on the account page; the old hash stays until
+then). `remove` and `rename` keep `.recovery` in step.
 
 **Invite codes** approve at once: `sudo ./manage-players.sh invite [COUNT]`
 (or at `/admin/`), `invites` lists the unused ones. Send the code, or the link

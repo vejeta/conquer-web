@@ -3,7 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 # Installs fail2ban with a jail for wrong passwords on the site's sign-in form
-# (vps/fail2ban/): 8 failures in 10 minutes ban an address for 1 hour.
+# (vps/fail2ban/): 8 failures in 10 minutes ban an address for 1 hour, and a
+# jail for wrong recovery codes and wrong current passwords at the account
+# pages: 5 failures in 1 hour ban an address for 1 hour.
 # Run by deploy-to-vps.sh and update-vps.sh; safe to run again (it changes
 # nothing, and does not restart fail2ban, when the files are already right).
 #
@@ -60,18 +62,22 @@ install_file() {
     fi
 }
 
-install_file "$SCRIPT_DIR/vps/fail2ban/conquer-login.conf" "$F2B_DIR/filter.d/conquer-login.conf"
 jail=$(mktemp)
 trap 'rm -f "$jail"' EXIT
-sed "s|IGNORE_IPS|$IGNORE_IPS|" "$SCRIPT_DIR/vps/fail2ban/conquer-login.jail" > "$jail"
-install_file "$jail" "$F2B_DIR/jail.d/conquer-login.local"
+for name in conquer-login conquer-recover; do
+    install_file "$SCRIPT_DIR/vps/fail2ban/$name.conf" "$F2B_DIR/filter.d/$name.conf"
+    sed "s|IGNORE_IPS|$IGNORE_IPS|" "$SCRIPT_DIR/vps/fail2ban/$name.jail" > "$jail"
+    install_file "$jail" "$F2B_DIR/jail.d/$name.local"
+done
 
 # fail2ban refuses a jail whose log does not exist yet; Apache makes it at
-# its first sign-in, so make it empty, as Apache would
-if [ -d "$LOG_DIR" ] && [ ! -e "$LOG_DIR/conquer_login.log" ]; then
-    install -m 640 /dev/null "$LOG_DIR/conquer_login.log"
-    chgrp adm "$LOG_DIR/conquer_login.log" 2> /dev/null || true
-fi
+# its first sign-in (or recovery attempt), so make it empty, as Apache would
+for log in conquer_login.log conquer_recover.log; do
+    if [ -d "$LOG_DIR" ] && [ ! -e "$LOG_DIR/$log" ]; then
+        install -m 640 /dev/null "$LOG_DIR/$log"
+        chgrp adm "$LOG_DIR/$log" 2> /dev/null || true
+    fi
+done
 
 # The old request-counting jail of setup-security.sh
 if [ -f "$F2B_DIR/filter.d/apache-dos-conquer.conf" ]; then
@@ -94,11 +100,16 @@ if [ -z "$SKIP_SERVICE" ]; then
     if [ -n "$CHANGED" ] || ! systemctl is-active --quiet fail2ban; then
         systemctl restart fail2ban
     fi
-    # The jail needs the sign-in log of the virtual host
+    # The jails need the logs of the virtual host
     if fail2ban-client status conquer-login > /dev/null 2>&1; then
         echo "✅ fail2ban: jail conquer-login active (8 failed sign-ins in 10 minutes: 1 hour ban; never banned: $IGNORE_IPS)"
     else
         echo "⚠️  fail2ban runs but the jail conquer-login does not: sudo fail2ban-client status; sudo tail /var/log/fail2ban.log"
+    fi
+    if fail2ban-client status conquer-recover > /dev/null 2>&1; then
+        echo "✅ fail2ban: jail conquer-recover active (5 wrong recovery codes or passwords in 1 hour: 1 hour ban)"
+    else
+        echo "⚠️  fail2ban runs but the jail conquer-recover does not: sudo fail2ban-client status; sudo tail /var/log/fail2ban.log"
     fi
 else
     echo "✅ fail2ban files ready in $F2B_DIR${CHANGED:+ (changed)}"

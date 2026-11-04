@@ -119,6 +119,30 @@ becoming players without the administrator's approval.
   signing key is kept in `lib/.gate-secret` (mode 600). Settings:
   `SIGNUP_DAILY_LIMIT` (3), `SIGNUP_MIN_FILL` in seconds (3; 0 turns the token
   check off), `SIGNUP_EXPIRE_DAYS` (30).
+- Player endpoints (`account.go`): `POST /account/api/init`, `/password`,
+  `/recovery` take the account from `X-WEBAUTH-USER`, which Apache sets from
+  the session after `RequestHeader unset X-WEBAUTH-USER early` drops what a
+  client sent (the gate is reachable only by Apache, as for the administrator
+  API); without it they answer 401 and the sign-in page redirect protects them.
+  They are POST only, refuse another site's `Origin`, and are limited to 120
+  calls per 10 minutes per address.
+- Recovery codes: 12 characters from a 32-letter alphabet (60 bits) from
+  `crypto/rand`, shown once, stored only as bcrypt (cost 10) in `lib/.recovery`
+  (mode 600, written to a temporary file and renamed, under the account lock;
+  `conquer-signup recovery-init|recovery-renew|reset`). `POST /join/api/recover`
+  (open) verifies the code, sets the new password and answers with a new code;
+  the used code is void. Passwords change the same way (`conquer-signup passwd`
+  checks the current one with `htpasswd -v`, the secrets travel on standard
+  input, never in a command line or a log). The account file is rewritten in
+  place under the lock (it is a mounted single file): Apache could read it
+  half written in that instant, as for every account change.
+- Limits on guessing: 5 wrong current passwords an hour and 5 wrong recovery
+  codes an hour, each per address **and** per account, then 429 until the hour
+  passes; the wrong ones answer 403 and are logged (`conquer_recover.log`) for
+  the fail2ban jail `conquer-recover` (5 in an hour, 1 hour ban). An unknown
+  account, a wrong code and a malformed code give the same answer and take the
+  same time. A change of password ends the session (the cookie holds the old
+  password), and the page signs the player out.
 - Requests nobody decides are removed after 30 days, with their account in the
   account file and `.players` (`conquer-signup expire`, run by the gate two
   minutes after it starts and then every 24 hours; logged as `expire: ...`).
@@ -228,6 +252,10 @@ approval flows. A step fails if the password shows up in a container log.
   Brute force is limited by the fail2ban sign-in jail (8 misses in 10 minutes,
   1 hour ban, per address: a botnet with many addresses is not stopped). Use long
   passwords; the sign-up page asks for 8 or more, bcrypt uses the first 72 bytes.
+- **Recovery without email.** The recovery code is a bearer secret: whoever has
+  it can take the account, and a player who loses it and the password loses the
+  account (the owner can reset by hand). A stranger can use up the 5 hourly
+  tries of an account to block its recovery for an hour.
 - **Everything in the container is one user.** The gate, ttyd, the menu, the game,
   cron and the mail password (`SMTP_PASSWORD` is in the container environment)
   share uid 1000. A way out of the menu would give the world, the account file

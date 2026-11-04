@@ -44,6 +44,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <a class="key key-small" href="/game.html" data-server-link="game.html"><span data-i18n="nav.play">Play</span></a>
     <a class="key key-small" href="/hall.html"><span data-i18n="nav.hall">Hall</span></a>
     <a class="key key-small" href="/signup.html" data-server-link="signup.html"><span data-i18n="nav.join">Join</span></a>
+    <a class="key key-small" id="account-link" href="/account.html"><span data-i18n="nav.account">Account</span></a>
     <a class="key key-small" id="logout" href="/logout"><span data-i18n="nav.logout">Sign out</span></a>
   </nav>
   <select class="select" data-lang-menu aria-label="Language" data-i18n-title="index.language"></select>
@@ -95,6 +96,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 </footer>
 <script src="/server.js"></script>
 <script src="/site.js"></script>
+<script src="/recovery.js"></script>
 <script>
   (function () {
     function m(key, params) { return conquerI18n.t('admin.' + key, params); }
@@ -329,6 +331,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
     });
 
     load();
+    // An administrator is a player too: the first visit shows the recovery code
+    if (window.conquerRecovery) conquerRecovery.init();
   })();
 </script>
 </body>

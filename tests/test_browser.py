@@ -48,6 +48,20 @@ class Site(http.server.SimpleHTTPRequestHandler):
             return str(ROOT / "tests" / "fake" / "play.html")
         return super().translate_path(path)
 
+    def do_POST(self):
+        """The gate's account state, for pages that ask it when they open: a
+        signed-in player that already has a recovery code (no modal)"""
+        if self.path.split("?")[0] == "/account/api/init":
+            self.rfile.read(int(self.headers.get("Content-Length") or 0))
+            body = b'{"ok": true, "account": "player", "has_recovery": true}'
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        else:
+            self.send_error(404)
+
     def log_message(self, *args):
         pass
 
@@ -1353,3 +1367,219 @@ def test_game_screen_reads_the_race_and_turns_to_parchment(site, browser, where)
     wait_where(page, "builder")
     page.wait_for_function("() => document.documentElement.getAttribute('data-race') === 'dwarf'")
     ctx.close()
+
+
+# ---------------------------------------------------------------------------
+# Account pages: the recovery code, change password, forgot password
+# (web/recovery.js, account.html, recover.html; the gate is stood in for)
+
+CODE = "K7QM-3XPA-9RTD"
+JSON_HEADERS = {"content-type": "application/json"}
+
+
+def account_api(page, init=None, password=None, recovery=None, recover=None, seen=None):
+    """Routes for the account endpoints. Each argument is the (status, body) of
+    the answer, or a list of them (one per call); init defaults to "no code"."""
+    answers = {"init": init or (200, {"ok": True, "account": "ana", "has_recovery": True}),
+               "password": password, "recovery": recovery, "recover": recover}
+    counters = {}
+
+    def handler(name):
+        def run(route):
+            req = route.request
+            if seen is not None:
+                seen.append((name, json.loads(req.post_data or "{}")))
+            ans = answers[name]
+            if isinstance(ans, list):
+                i = counters.get(name, 0)
+                counters[name] = i + 1
+                ans = ans[min(i, len(ans) - 1)]
+            status, body = ans or (404, {"ok": False})
+            route.fulfill(status=status, headers=JSON_HEADERS, body=json.dumps(body))
+        return run
+    page.route("**/account/api/init", handler("init"))
+    page.route("**/account/api/password", handler("password"))
+    page.route("**/account/api/recovery", handler("recovery"))
+    page.route("**/join/api/recover", handler("recover"))
+    page.route("**/logout", lambda r: r.fulfill(status=200, body="bye"))
+
+
+FIRST_VISIT = (200, {"ok": True, "account": "ana", "has_recovery": True, "recovery_code": CODE})
+
+
+@pytest.mark.parametrize("lang,title", [("en", "Save your recovery code"), ("es", "Guarda tu código de recuperación")])
+def test_the_recovery_code_is_shown_once_in_a_modal(site, browser, lang, title):
+    ctx = browser.new_context(accept_downloads=True)
+    ctx.grant_permissions(["clipboard-read", "clipboard-write"], origin=site.rstrip("/"))
+    page = ctx.new_page()
+    account_api(page, init=[FIRST_VISIT, (200, {"ok": True, "account": "ana", "has_recovery": True})])
+    page.goto(site + "game.html?lang=" + lang)
+    page.wait_for_selector("#recovery-modal[open]")
+    assert page.inner_text("#recovery-code") == CODE
+    assert title in page.inner_text("#recovery-modal h2")
+    text = page.inner_text("#recovery-modal")
+    assert "conquer@vejeta.com" in text
+    if lang == "en":
+        assert "Save this recovery code: it is the only way to get your account back if you forget the password" in text
+        assert [b.inner_text() for b in page.locator("#recovery-modal button").all()] == ["Copy", "Download .txt", "I have saved it"]
+    # Copy
+    page.click("#rc-copy")
+    page.wait_for_function("() => document.getElementById('rc-copy').textContent !== ''")
+    assert page.evaluate("navigator.clipboard.readText()") == CODE
+    # Download .txt
+    with page.expect_download() as dl:
+        page.click("#rc-download")
+    assert dl.value.suggested_filename == "conquer-recovery-code.txt"
+    body = open(dl.value.path(), encoding="utf-8").read()
+    assert CODE in body and "ana" in body
+    # Escape does not close it: the code is shown once
+    page.keyboard.press("Escape")
+    assert page.locator("#recovery-modal[open]").count() == 1
+    page.click("#rc-saved")
+    assert page.locator("#recovery-modal").count() == 0
+    # The next visit: the gate says the account has a code and sends none
+    page.reload()
+    page.wait_for_timeout(600)
+    assert page.locator("#recovery-modal").count() == 0
+    ctx.close()
+
+
+def test_no_modal_when_signed_out_or_without_a_gate(site, browser):
+    page = browser.new_page()
+    account_api(page, init=(401, {"ok": False, "error": "unauthenticated"}))
+    page.goto(site + "game.html?lang=en")
+    page.wait_for_timeout(600)
+    assert page.locator("#recovery-modal").count() == 0
+    # No gate at all (a copy of the pages elsewhere, or the stand-in server): nothing shows, nothing breaks
+    other = browser.new_page()
+    errors = []
+    other.on("pageerror", lambda e: errors.append(str(e)))
+    other.goto(site + "game.html?lang=en")
+    other.wait_for_timeout(600)
+    assert other.locator("#recovery-modal").count() == 0 and errors == []
+    page.close()
+    other.close()
+
+
+def test_account_links_in_the_headers(site, browser):
+    page = browser.new_page()
+    account_api(page)
+    for name in ("game.html", "admin.html"):
+        page.goto(site + name + "?lang=en")
+        link = page.locator("#account-link")
+        assert link.count() == 1 and link.get_attribute("href").endswith("account.html"), name
+        assert page.locator("#logout").count() == 1
+        # The link sits next to Sign out
+        order = page.evaluate("() => [...document.querySelectorAll('#account-link, #logout')].map(e => e.id)")
+        assert order == ["account-link", "logout"], name
+    page.close()
+
+
+def test_account_page_changes_the_password(site, browser):
+    seen = []
+    page = browser.new_page()
+    account_api(page, password=[(403, {"ok": False, "error": "bad_current"}), (200, {"ok": True})], seen=seen)
+    page.goto(site + "account.html?lang=en")
+    page.wait_for_function("() => document.getElementById('who').textContent.includes('ana')")
+    # Checked before asking
+    page.fill("#current", "old password")
+    page.fill("#new1", "short")
+    page.fill("#new2", "short")
+    page.click("#password-submit")
+    assert "at least 8 characters" in page.inner_text("#password-error").lower()
+    page.fill("#new1", "brand new password")
+    page.fill("#new2", "something else")
+    page.click("#password-submit")
+    assert "do not match" in page.inner_text("#password-error")
+    assert [s for s in seen if s[0] == "password"] == []
+    # The server says the current password is wrong
+    page.fill("#new2", "brand new password")
+    page.click("#password-submit")
+    page.wait_for_function("() => document.getElementById('password-error').textContent.includes('current password is not right')")
+    # Right: signed out, to the sign-in page with the notice
+    page.fill("#current", "right password")
+    page.click("#password-submit")
+    page.wait_for_url(re.compile(r"/login\.html\?changed=1"))
+    page.wait_for_function("() => !document.getElementById('info').hidden")
+    assert "Password changed. Sign in again with the new password." in page.inner_text("#info")
+    posts = [s[1] for s in seen if s[0] == "password"]
+    assert posts == [{"current": "old password", "new": "brand new password"},
+                     {"current": "right password", "new": "brand new password"}]
+    page.close()
+
+
+def test_account_page_without_a_session_goes_to_the_sign_in(site, browser):
+    page = browser.new_page()
+    account_api(page, init=(401, {"ok": False}))
+    page.goto(site + "account.html?lang=en")
+    page.wait_for_url(re.compile(r"/login\.html\?next=%2Faccount\.html"))
+    page.close()
+
+
+def test_account_page_makes_a_new_recovery_code(site, browser):
+    seen = []
+    page = browser.new_page()
+    account_api(page, recovery=[(403, {"ok": False, "error": "bad_current"}), (200, {"ok": True, "recovery_code": "ABCD-EFGH-JKMN"})], seen=seen)
+    page.goto(site + "account.html?lang=en")
+    page.wait_for_function("() => document.getElementById('who').textContent.includes('ana')")
+    page.fill("#rc-current", "wrong")
+    page.click("#recovery-submit")
+    page.wait_for_function("() => document.getElementById('recovery-error').textContent.includes('current password is not right')")
+    assert page.locator("#recovery-modal").count() == 0
+    page.fill("#rc-current", "right password")
+    page.click("#recovery-submit")
+    page.wait_for_selector("#recovery-modal[open]")
+    assert page.inner_text("#recovery-code") == "ABCD-EFGH-JKMN"
+    assert page.input_value("#rc-current") == ""
+    assert [s[1] for s in seen if s[0] == "recovery"] == [{"current": "wrong"}, {"current": "right password"}]
+    page.close()
+
+
+def test_recover_page(site, browser):
+    seen = []
+    page = browser.new_page()
+    account_api(page, recover=[(403, {"ok": False, "error": "bad_recovery"}), (200, {"ok": True, "recovery_code": "ABCD-EFGH-JKMN"})], seen=seen)
+    page.goto(site + "recover.html?lang=en")
+    page.fill("#account", "ana")
+    page.fill("#code", "k7qm 3xpa 9rtd")
+    page.fill("#password", "brand new password")
+    page.fill("#password2", "different one")
+    page.click("#submit")
+    assert "do not match" in page.inner_text("#error")
+    page.fill("#password2", "brand new password")
+    page.click("#submit")
+    page.wait_for_function("() => document.getElementById('error').textContent.includes('recovery code is not right')")
+    assert page.evaluate("document.getElementById('done').hidden")
+    page.click("#submit")
+    # The new code, once; "I have saved it" leads to the sign-in page
+    page.wait_for_selector("#recovery-modal[open]")
+    assert page.inner_text("#recovery-code") == "ABCD-EFGH-JKMN"
+    assert not page.evaluate("document.getElementById('done').hidden")
+    assert page.input_value("#code") == "" and page.input_value("#password") == ""
+    page.click("#rc-saved")
+    page.wait_for_url(re.compile(r"/login\.html\?changed=1"))
+    posts = [s[1] for s in seen if s[0] == "recover"]
+    assert posts[-1] == {"account": "ana", "code": "k7qm 3xpa 9rtd", "password": "brand new password"}
+    page.close()
+
+
+def test_login_page_links_to_the_recovery_and_says_the_password_changed(site, browser):
+    page = browser.new_page()
+    page.goto(site + "login.html?lang=es")
+    page.wait_for_function("() => document.getElementById('forgot').textContent.includes('Olvidaste')")
+    assert page.get_attribute("#forgot", "href") == "/recover.html"
+    page.goto(site + "login.html?lang=es&changed=1")
+    page.wait_for_function("() => !document.getElementById('info').hidden && document.getElementById('info').textContent.includes('Contraseña cambiada')")
+    page.close()
+
+
+@pytest.mark.parametrize("name", ["account.html", "recover.html"])
+def test_account_pages_load_nothing_from_other_sites(site, browser, name):
+    page = browser.new_page()
+    account_api(page)
+    outside = []
+    page.on("request", lambda r: outside.append(r.url) if not r.url.startswith(site) and not r.url.startswith("data:") and not r.url.startswith("blob:") else None)
+    page.goto(site + name + "?lang=de")
+    page.wait_for_timeout(500)
+    assert outside == []
+    page.close()

@@ -172,12 +172,16 @@ elif [ -f "$vhost" ] && ! grep -q "$SESSION_KEY" "$vhost"; then
 else
     echo "✅ Sign-in page configured (form login, passphrase in $SESSION_KEY)"
 fi
-# Abuse limits in the virtual host (vps/virtualhost.conf.template): the log of
-# failed sign-ins that fail2ban reads, and a 64 KB limit on the request bodies
-# of the sign-up and administrator APIs. Added to this site's files when they
-# are missing, keeping the old files if Apache does not accept the change.
+# Abuse limits in the virtual host (vps/virtualhost.conf.template): the logs of
+# failed sign-ins and of wrong recovery codes that fail2ban reads, a 64 KB limit
+# on the request bodies of the sign-up, account and administrator APIs, and the
+# account API (change password, recovery code). Added to this site's files when
+# they are missing, keeping the old files if Apache does not accept the change.
 login_block=$(mktemp)
+recover_block=$(mktemp)
+account_block=$(mktemp)
 body_block=$(mktemp)
+account_body=$(mktemp)
 cat > "$login_block" << 'EOF'
     # Failed sign-ins, for fail2ban (vps/fail2ban/): mod_auth_form answers a
     # wrong password with a redirect to /login.html?failed=1
@@ -185,12 +189,28 @@ cat > "$login_block" << 'EOF'
     SetEnvIf Request_URI "^/login/(do|long)$" conquer_login_post
     CustomLog ${APACHE_LOG_DIR}/conquer_login.log conquer_login env=conquer_login_post
 EOF
+cat > "$recover_block" << 'EOF'
+    # Wrong current passwords and wrong recovery codes (the gate answers 403),
+    # for fail2ban (vps/fail2ban/conquer-recover.conf)
+    SetEnvIf Request_URI "^/(join/api/recover|account/api/(password|recovery))$" conquer_recover_post
+    CustomLog ${APACHE_LOG_DIR}/conquer_recover.log conquer_login env=conquer_recover_post
+EOF
+cat "$recover_block" >> "$login_block"
+cat > "$account_body" << 'EOF'
+    <Location "/account/api/">
+        LimitRequestBody 65536
+    </Location>
+
+EOF
 cat > "$body_block" << 'EOF'
-    # Request bodies of the sign-up and administrator APIs
+    # Request bodies of the sign-up, account and administrator APIs
     <Location "/join/api/">
         LimitRequestBody 65536
     </Location>
     <Location "/admin/api/">
+        LimitRequestBody 65536
+    </Location>
+    <Location "/account/api/">
         LimitRequestBody 65536
     </Location>
 
@@ -203,6 +223,44 @@ for f in $abuse_files; do
         awk -v blk="$login_block" '{ print } /CustomLog .*conquer_ssl_access\.log/ { while ((getline line < blk) > 0) print line; close(blk) }' "$f" > "$f.new" && cat "$f.new" > "$f"
         abuse_changed=1
     fi
+    if grep -q 'conquer_login' "$f" && ! grep -q 'conquer_recover' "$f"; then
+        # Added next to the sign-in log (older virtual hosts have that one only)
+        awk -v blk="$recover_block" '{ print } /CustomLog .*conquer_login\.log/ { while ((getline line < blk) > 0) print line; close(blk) }' "$f" > "$f.new" && cat "$f.new" > "$f"
+        abuse_changed=1
+    fi
+    if ! grep -q '/account/api/' "$f"; then
+        if grep -q '<Location "/play/">' "$f"; then
+            # The account API: the file names of the account file and of the
+            # session passphrase are the ones this site's /play/ block uses
+            users=$(grep -m1 'AuthUserFile' "$f" | sed 's/^[[:space:]]*//')
+            passphrase=$(grep -m1 'SessionCryptoPassphraseFile' "$f" | sed 's/^[[:space:]]*//')
+            {
+                echo '    # Player account API (change password, recovery code): the signed-in player only;'
+                echo '    # the gate takes the account from X-WEBAUTH-USER'
+                echo '    ProxyPass /account/api/ http://127.0.0.1:7682/account/api/'
+                echo '    ProxyPassReverse /account/api/ http://127.0.0.1:7682/account/api/'
+                echo '    <Location "/account/api/">'
+                echo '        AuthType form'
+                echo '        AuthName "Conquer"'
+                echo '        AuthFormProvider file'
+                echo "        $users"
+                echo '        Session On'
+                echo '        SessionCookieName conquer_session path=/;httponly;secure;samesite=lax'
+                echo "        $passphrase"
+                echo '        SessionCookieRemove On'
+                echo '        AuthFormLoginRequiredLocation "/login.html?next=/account.html"'
+                echo '        Require valid-user'
+                echo '        RequestHeader set X-WEBAUTH-USER "%{REMOTE_USER}s"'
+                echo '        Header always set X-Robots-Tag "noindex, nofollow"'
+                echo '    </Location>'
+                echo
+            } > "$account_block"
+            awk -v blk="$account_block" '/<Location "\/play\/">/ && !done { while ((getline line < blk) > 0) print line; close(blk); done = 1 } { print }' "$f" > "$f.new" && cat "$f.new" > "$f"
+            abuse_changed=1
+        else
+            echo "⚠️  $f has no <Location \"/play/\"> block: add the /account/api/ blocks of vps/virtualhost.conf.template by hand"
+        fi
+    fi
     if ! grep -q 'LimitRequestBody 65536' "$f"; then
         if grep -q '<Location "/play/">' "$f"; then
             awk -v blk="$body_block" '/<Location "\/play\/">/ && !done { while ((getline line < blk) > 0) print line; close(blk); done = 1 } { print }' "$f" > "$f.new" && cat "$f.new" > "$f"
@@ -211,9 +269,15 @@ for f in $abuse_files; do
             echo "⚠️  $f has no <Location \"/play/\"> block: add the LimitRequestBody 65536 blocks of vps/virtualhost.conf.template by hand"
         fi
     fi
+    # The limit of the account API, when the file had the other two already
+    if ! awk '/<Location "\/account\/api\/">/ { in_loc = 1 } in_loc && /LimitRequestBody 65536/ { found = 1 } /<\/Location>/ { in_loc = 0 } END { exit !found }' "$f" \
+        && grep -q '<Location "/play/">' "$f"; then
+        awk -v blk="$account_body" '/<Location "\/play\/">/ && !done { while ((getline line < blk) > 0) print line; close(blk); done = 1 } { print }' "$f" > "$f.new" && cat "$f.new" > "$f"
+        abuse_changed=1
+    fi
     rm -f "$f.new"
 done
-rm -f "$login_block" "$body_block"
+rm -f "$login_block" "$recover_block" "$account_block" "$body_block" "$account_body"
 if [ -n "$abuse_changed" ]; then
     if apache2ctl configtest > /dev/null 2>&1; then
         systemctl reload apache2

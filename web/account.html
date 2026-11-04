@@ -1,0 +1,187 @@
+<!doctype html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="account.page_title">Your account</title>
+  <meta name="description" content="Change your password or make a new recovery code for Conquer.">
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="/theme.css">
+  <script src="/race.js"></script>
+  <style>
+    /* Layout only: colours and fonts come from theme.css */
+    .panel + .panel { margin-top: var(--s4); }
+    .panel h2 { margin: 0 0 var(--s3); }
+    .panel > p { margin: 0 0 var(--s3); }
+    .ok { color: var(--ok); font-weight: 600; margin: 0; }
+    .back { margin: var(--s4) 0 0; }
+    .visually-hidden { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+  </style>
+</head>
+<body>
+<header class="site-header mountains">
+  <a class="site-name" href="/index.html">Conquer</a>
+  <span class="spacer"></span>
+  <nav class="nav" aria-label="Main">
+    <a class="key key-small" href="/game.html" data-server-link="game.html"><span data-i18n="nav.play">Play</span></a>
+    <a class="key key-small" href="/hall.html"><span data-i18n="nav.hall">Hall</span></a>
+    <a class="key key-small" id="logout" href="/logout"><span data-i18n="nav.logout">Sign out</span></a>
+  </nav>
+  <select class="select" data-lang-menu aria-label="Language" data-i18n-title="index.language"></select>
+</header>
+<main class="page narrow">
+  <h1 data-i18n="account.title">Your account</h1>
+  <p class="lede" data-i18n="account.lede">Change your password, or make a new recovery code.</p>
+  <p class="help" id="who" hidden></p>
+  <p class="error-text" id="error" role="alert" hidden></p>
+
+  <section class="panel" id="password-panel">
+    <h2 data-i18n="account.h_password">Change your password</h2>
+    <form class="form" id="password-form" novalidate>
+      <input class="visually-hidden" id="username" name="username" autocomplete="username" tabindex="-1" readonly aria-hidden="true">
+      <div class="field">
+        <label for="current" data-i18n="account.l_current">Current password</label>
+        <input class="input" id="current" name="current" type="password" autocomplete="current-password" required maxlength="72">
+      </div>
+      <div class="field">
+        <label for="new1" data-i18n="account.l_new">New password</label>
+        <input class="input" id="new1" name="new1" type="password" autocomplete="new-password" required minlength="8" maxlength="72">
+        <span class="help" data-i18n="account.h_new">At least 8 characters, 72 at most.</span>
+      </div>
+      <div class="field">
+        <label for="new2" data-i18n="account.l_new2">Repeat the new password</label>
+        <input class="input" id="new2" name="new2" type="password" autocomplete="new-password" required minlength="8" maxlength="72">
+      </div>
+      <p class="error-text" id="password-error" role="alert" hidden></p>
+      <button class="key key-primary" type="submit" id="password-submit" data-i18n="account.change">Change password</button>
+      <p class="help" data-i18n="account.change_note">After the change you are signed out: sign in again with the new password.</p>
+    </form>
+  </section>
+
+  <section class="panel" id="recovery-panel">
+    <h2 data-i18n="account.h_recovery">Recovery code</h2>
+    <p data-i18n="account.recovery_text">The recovery code is the only way to get your account back if you forget your password. Making a new one cancels the old one: save the new one.</p>
+    <form class="form" id="recovery-form" novalidate>
+      <div class="field">
+        <label for="rc-current" data-i18n="account.l_current">Current password</label>
+        <input class="input" id="rc-current" name="rc-current" type="password" autocomplete="current-password" required maxlength="72">
+        <span class="help" data-i18n="account.recovery_need">Making a code needs your current password.</span>
+      </div>
+      <p class="error-text" id="recovery-error" role="alert" hidden></p>
+      <button class="key" type="submit" id="recovery-submit" data-i18n="account.recovery_make">Make a new recovery code</button>
+    </form>
+    <p class="help" style="margin-top: var(--s4)" data-i18n="account.lost">If you lose both your password and your recovery code, write to conquer@vejeta.com: accounts cannot be restored without the code. You can join again next season.</p>
+  </section>
+
+  <p class="back"><a class="key" href="/game.html" id="back" data-server-link="game.html" data-i18n="account.back">Back to the game</a></p>
+</main>
+<footer class="site-footer mountains">
+  <p data-i18n="index.footer">Conquer is free software (GPL-3.0-or-later). Source: <a href="https://github.com/vejeta/conquer">game</a> &middot; <a href="https://github.com/vejeta/conquer-web">web server</a></p>
+  <div class="foot-links"><a href="/design.html" data-i18n="nav.design">Design</a> <a href="/privacy.html" data-i18n-page="privacy" data-i18n="nav.privacy">Privacy</a></div>
+</footer>
+
+<script src="/server.js"></script>
+<script src="/site.js"></script>
+<script src="/recovery.js"></script>
+<script>
+  (function () {
+    'use strict';
+    function m(key, params) { return conquerI18n.t('account.' + key, params); }
+    var $ = function (id) { return document.getElementById(id); };
+    conquerI18n.ready();
+
+    // The account service lives on the game server
+    if (window.conquerRemote) {
+      location.replace(conquerServerUrl('account.html'));
+      return;
+    }
+
+    var account = '';
+    var shown = {};      // the error each message area shows, to say it again in another language
+    function say(area, key) {
+      shown[area] = key;
+      var box = $(area);
+      var name = 'e_' + key, fallback = 'e_server';
+      box.textContent = key ? (m(name) || m(fallback)) : '';
+      box.hidden = !key;
+    }
+    function who() {
+      if (!account) return;
+      $('who').textContent = m('signed_as', { account: account });
+      $('who').hidden = false;
+    }
+    document.addEventListener('conquer:lang', function () {
+      Object.keys(shown).forEach(function (area) { if (shown[area]) say(area, shown[area]); });
+      who();
+    });
+
+    function toLogin() { location.href = '/login.html?next=' + encodeURIComponent('/account.html'); }
+
+    // POST JSON to the gate; the answer's error is a text key. Apache sends
+    // the sign-in page instead of the answer when the session is gone.
+    function post(path, body) {
+      return fetch(path, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+        credentials: 'same-origin', cache: 'no-store'
+      }).then(function (r) {
+        if (r.redirected && /\/login\.html/.test(r.url) || r.status === 401) return { ok: false, error: 'unauthenticated' };
+        return r.json().catch(function () { return { ok: false, error: 'server' }; });
+      });
+    }
+
+    // The account's name; the first visit of a new account shows its code
+    conquerRecovery.init().then(function (res) {
+      if (res && res.signedOut) return toLogin();
+      if (res && res.account) {
+        account = res.account;
+        $('username').value = account;
+        conquerI18n.ready().then(who);
+      }
+    });
+
+    $('password-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      say('password-error', null);
+      var cur = $('current').value, a = $('new1').value, b = $('new2').value;
+      if (!cur) return say('password-error', 'bad_current'), $('current').focus();
+      if (a.length < 8) return say('password-error', 'short_password'), $('new1').focus();
+      if (a !== b) return say('password-error', 'mismatch'), $('new2').focus();
+      $('password-submit').disabled = true;
+      post('/account/api/password', { current: cur, 'new': a }).then(function (res) {
+        $('password-submit').disabled = false;
+        if (!res.ok) {
+          if (res.error === 'unauthenticated') return toLogin();
+          return say('password-error', res.error || 'server');
+        }
+        // The session cookie holds the old password: it no longer works.
+        // End it (the logout also clears the cookie) and go to the sign-in page.
+        var lang = conquerI18n.lang();
+        var go = function () { location.href = '/login.html?changed=1' + (lang !== 'en' ? '&lang=' + lang : ''); };
+        fetch('/logout', { credentials: 'same-origin', redirect: 'manual', cache: 'no-store' }).then(go, go);
+      }).catch(function () { $('password-submit').disabled = false; say('password-error', 'network'); });
+    });
+
+    $('recovery-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      say('recovery-error', null);
+      var cur = $('rc-current').value;
+      if (!cur) return say('recovery-error', 'bad_current'), $('rc-current').focus();
+      $('recovery-submit').disabled = true;
+      post('/account/api/recovery', { current: cur }).then(function (res) {
+        $('recovery-submit').disabled = false;
+        if (!res.ok) {
+          if (res.error === 'unauthenticated') return toLogin();
+          return say('recovery-error', res.error || 'server');
+        }
+        $('rc-current').value = '';
+        conquerRecovery.show(account, res.recovery_code);
+      }).catch(function () { $('recovery-submit').disabled = false; say('recovery-error', 'network'); });
+    });
+  })();
+</script>
+</body>
+</html>

@@ -38,6 +38,10 @@
 # Assignments are kept with the world, in data/lib/.players (PLAYERS_FILE).
 # Requests wait in data/lib/.requests (REQUESTS_FILE); the website's /admin/
 # page does the same as requests, approve and reject.
+# The hash of each player's recovery code is in data/lib/.recovery
+# (RECOVERY_FILE; remove and rename keep it in step). A player who lost both
+# the password and the code can only be helped by hand: "password NAME" sets
+# a new password, and the player makes a new code on the account page.
 
 set -e
 
@@ -56,6 +60,9 @@ fi
 PLAYERS_FILE="${PLAYERS_FILE:-$SCRIPT_DIR/data/lib/.players}"
 INVITES_FILE="${INVITES_FILE:-$SCRIPT_DIR/data/lib/.invites}"
 REQUESTS_FILE="${REQUESTS_FILE:-$SCRIPT_DIR/data/lib/.requests}"
+# Hashes of the players' recovery codes (the site keeps no email: the code is
+# how a player who forgot the password gets the account back)
+RECOVERY_FILE="${RECOVERY_FILE:-$SCRIPT_DIR/data/lib/.recovery}"
 TAB=$'\t'
 
 usage() {
@@ -280,6 +287,7 @@ cmd_remove() {
     remove_line "$HTPASSWD_FILE" "$1"
     remove_line "$PLAYERS_FILE" "$1"
     remove_line "$REQUESTS_FILE" "$1" "$TAB"
+    remove_line "$RECOVERY_FILE" "$1"
     echo "✅ Account '$1' removed"
 }
 
@@ -294,8 +302,8 @@ cmd_rename() {
     valid_name "$old" && valid_name "$new" || { echo "❌ Invalid name: use letters, digits, . _ - (max 32)"; exit 1; }
     has_account "$old" || { echo "❌ No account named '$old'"; exit 1; }
     ! has_account "$new" || { echo "❌ There is already an account named '$new'"; exit 1; }
-    refuse_link "$HTPASSWD_FILE" "$PLAYERS_FILE" "$REQUESTS_FILE"
-    for f in "$HTPASSWD_FILE" "$PLAYERS_FILE"; do
+    refuse_link "$HTPASSWD_FILE" "$PLAYERS_FILE" "$REQUESTS_FILE" "$RECOVERY_FILE"
+    for f in "$HTPASSWD_FILE" "$PLAYERS_FILE" "$RECOVERY_FILE"; do
         [ -f "$f" ] || continue
         tmp=$(mktemp "$f.XXXXXX")
         awk -F: -v old="$old" -v new="$new" 'BEGIN { OFS = ":" } $1 == old { $1 = new } { print }' "$f" > "$tmp"
@@ -421,6 +429,7 @@ cmd_reject() {
     remove_line "$HTPASSWD_FILE" "$1"
     remove_line "$PLAYERS_FILE" "$1"
     remove_line "$REQUESTS_FILE" "$1" "$TAB"
+    remove_line "$RECOVERY_FILE" "$1"
     echo "✅ Request of '$1' rejected: the account is deleted"
 }
 

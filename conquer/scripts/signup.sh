@@ -18,10 +18,23 @@
 #        conquer-signup invites COUNT                       (prints new codes)
 #        conquer-signup expire  DAYS                        (removes requests older than DAYS days
 #                                                            with their accounts; prints the names)
+#        conquer-signup passwd ACCOUNT                      (stdin: current password, new password;
+#                                                            exit 2 when the current one is wrong)
+#        conquer-signup recovery-init ACCOUNT               (stdin: a recovery code; stores its hash when the
+#                                                            account has none; exit 2 it has one, 3 waiting)
+#        conquer-signup recovery-renew ACCOUNT              (stdin: current password, new recovery code)
+#        conquer-signup reset ACCOUNT                       (stdin: recovery code, new password, new recovery
+#                                                            code; exit 2 when the code is wrong)
 #        conquer-signup scrub                               (removes the email and message that older
 #                                                            versions kept in lib/.requests; prints how
 #                                                            many requests it changed)
 #        conquer-signup CODE ACCOUNT                        (same as invite)
+#
+# Recovery codes: only the bcrypt hash of each is kept, in lib/.recovery
+# (htpasswd format, mode 600, written to a temporary file and moved into
+# place). The site keeps no email address: the code is how a player who
+# forgot the password gets the account back. An administrator can still set
+# a password by hand: ./manage-players.sh password NAME.
 #
 # Exit status: 0 done, 2 unknown or used code (invite) or account not
 # pending (approve, reject) or unknown account (assign), 3 account name
@@ -36,6 +49,9 @@ WORLD_DIR="$PREFIX/lib"
 INVITES_FILE="$WORLD_DIR/.invites"
 PLAYERS_FILE="$WORLD_DIR/.players"
 REQUESTS_FILE="$WORLD_DIR/.requests"
+# Hashes of the players' recovery codes ("account:bcrypt"), next to the other
+# files of the world: the account file's directory is not kept by Docker
+RECOVERY_FILE="$WORLD_DIR/.recovery"
 HTPASSWD_FILE="${HTPASSWD_FILE:-$PREFIX/auth/htpasswd}"
 LOCK_FILE="${CONQUER_RUN:-/run/conquer}/join.lock.accounts"
 # Requests waiting for the administrator: past this the page says sign-up is
@@ -57,6 +73,48 @@ has_key() {
     awk -F: -v user="$2" '$1 == user { found = 1 } END { exit !found }' "$1" 2>/dev/null
 }
 
+# An htpasswd (bcrypt, cost 10) line for account $2 and secret $1
+hash_line() {
+    printf '%s\n' "$1" | htpasswd -niB -C 10 "$2" | sed '/^$/d'
+}
+
+# Does the secret on standard input match the hash of account $2 in file $1?
+verify_secret() {
+    htpasswd -v -i "$1" "$2" > /dev/null 2>&1
+}
+
+# Put line $3 in place of the line of account $2 in file $1 (added when
+# there is none), in place so a bind-mounted file keeps working. The caller
+# holds the lock.
+set_line() {
+    local rest
+    if has_key "$1" "$2"; then
+        rest=$(NEW="$3" awk -F: -v key="$2" '$1 == key { print ENVIRON["NEW"]; next } { print }' "$1") || return 1
+    else
+        rest=$(cat "$1" 2> /dev/null; printf '%s\n' "$3") || return 1
+        rest=$(printf '%s\n' "$rest" | sed '/^$/d')
+    fi
+    printf '%s\n' "$rest" > "$1"
+}
+
+# The same for the recovery file, which is not mounted from elsewhere: the
+# new content goes to a temporary file (mode 600) that replaces the old one
+set_recovery() {
+    local tmp
+    tmp=$(mktemp "$RECOVERY_FILE.XXXXXX") || return 1
+    if has_key "$RECOVERY_FILE" "$1"; then
+        NEW="$2" awk -F: -v key="$1" '$1 == key { print ENVIRON["NEW"]; next } { print }' "$RECOVERY_FILE" > "$tmp" || { rm -f "$tmp"; return 1; }
+    else
+        { cat "$RECOVERY_FILE" 2> /dev/null; printf '%s\n' "$2"; } | sed '/^$/d' > "$tmp" || { rm -f "$tmp"; return 1; }
+    fi
+    chmod 600 "$tmp" && mv -f "$tmp" "$RECOVERY_FILE" || { rm -f "$tmp"; return 1; }
+}
+
+# A recovery code: XXXX-XXXX-XXXX from the alphabet the gate uses
+valid_recovery() {
+    [[ "$1" =~ ^[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$ ]]
+}
+
 # Read and check the password on standard input
 read_password() {
     IFS= read -r password || exit 1
@@ -76,6 +134,9 @@ valid_account() {
 create_account() {
     local line
     has_key "$HTPASSWD_FILE" "$1" && exit 3
+    # A recovery code left by an account of the same name that was removed
+    # (by hand, in an older version) must not open this one
+    drop_line "$RECOVERY_FILE" "$1"
     touch "$PLAYERS_FILE" 2>/dev/null
     has_key "$PLAYERS_FILE" "$1" && exit 3
     [ -w "$PLAYERS_FILE" ] || exit 1
@@ -166,6 +227,7 @@ reject)
         is_pending "$account" || exit 2
         drop_line "$HTPASSWD_FILE" "$account" || exit 1
         drop_line "$PLAYERS_FILE" "$account" || exit 1
+        drop_line "$RECOVERY_FILE" "$account"
         drop_line "$REQUESTS_FILE" "$account" "$TAB"
     ) 9> "$LOCK_FILE"
     ;;
@@ -212,11 +274,81 @@ expire)
             if is_pending "$name"; then
                 drop_line "$HTPASSWD_FILE" "$name" || exit 1
                 drop_line "$PLAYERS_FILE" "$name" || exit 1
+                drop_line "$RECOVERY_FILE" "$name"
                 echo "$name"
             fi
             # Also a request line whose account is no longer waiting
             drop_line "$REQUESTS_FILE" "$name" "$TAB"
         done
+    ) 9> "$LOCK_FILE"
+    ;;
+passwd)
+    # Change the password of a signed-in account: needs the current one
+    account="$2"
+    valid_account "$account" || exit 3
+    IFS= read -r current || exit 1
+    read_password
+    [ -w "$HTPASSWD_FILE" ] || exit 5
+    (
+        flock 9 || exit 1
+        has_key "$HTPASSWD_FILE" "$account" || exit 3
+        printf '%s\n' "$current" | verify_secret "$HTPASSWD_FILE" "$account" || exit 2
+        line=$(hash_line "$password" "$account") && [ -n "$line" ] || exit 1
+        set_line "$HTPASSWD_FILE" "$account" "$line" || exit 1
+    ) 9> "$LOCK_FILE"
+    ;;
+recovery-init)
+    # The first recovery code of an approved account
+    account="$2"
+    valid_account "$account" || exit 3
+    IFS= read -r code || exit 1
+    valid_recovery "$code" || exit 1
+    (
+        flock 9 || exit 1
+        has_key "$HTPASSWD_FILE" "$account" || exit 3
+        is_pending "$account" && exit 3
+        has_key "$RECOVERY_FILE" "$account" && exit 2
+        line=$(hash_line "$code" "$account") && [ -n "$line" ] || exit 1
+        set_recovery "$account" "$line" || exit 1
+    ) 9> "$LOCK_FILE"
+    ;;
+recovery-renew)
+    # A new recovery code (the old one stops working): needs the password
+    account="$2"
+    valid_account "$account" || exit 3
+    IFS= read -r current || exit 1
+    IFS= read -r code || exit 1
+    valid_recovery "$code" || exit 1
+    (
+        flock 9 || exit 1
+        has_key "$HTPASSWD_FILE" "$account" || exit 3
+        printf '%s\n' "$current" | verify_secret "$HTPASSWD_FILE" "$account" || exit 2
+        line=$(hash_line "$code" "$account") && [ -n "$line" ] || exit 1
+        set_recovery "$account" "$line" || exit 1
+    ) 9> "$LOCK_FILE"
+    ;;
+reset)
+    # A new password with the recovery code, and a new code for the next time
+    account="$2"
+    valid_account "$account" || exit 2
+    IFS= read -r code || exit 1
+    read_password
+    IFS= read -r newcode || exit 1
+    valid_recovery "$code" || exit 2
+    valid_recovery "$newcode" || exit 1
+    [ -w "$HTPASSWD_FILE" ] || exit 5
+    (
+        flock 9 || exit 1
+        if ! has_key "$HTPASSWD_FILE" "$account" || ! has_key "$RECOVERY_FILE" "$account"; then
+            # Spend the same time as for a wrong code: no hint whether the account exists
+            hash_line "$code" "$account" > /dev/null
+            exit 2
+        fi
+        printf '%s\n' "$code" | verify_secret "$RECOVERY_FILE" "$account" || exit 2
+        pwline=$(hash_line "$password" "$account") && [ -n "$pwline" ] || exit 1
+        codeline=$(hash_line "$newcode" "$account") && [ -n "$codeline" ] || exit 1
+        set_line "$HTPASSWD_FILE" "$account" "$pwline" || exit 1
+        set_recovery "$account" "$codeline" || exit 1
     ) 9> "$LOCK_FILE"
     ;;
 scrub)

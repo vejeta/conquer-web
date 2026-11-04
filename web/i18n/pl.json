@@ -235,7 +235,9 @@
   "opening": "Wrota się otwierają...",
   "neterror": "Serwer nie odpowiada. Sprawdź połączenie i spróbuj ponownie.",
   "no_account": "Nie masz jeszcze konta?",
-  "ask_seat": "Poproś o miejsce"
+  "ask_seat": "Poproś o miejsce",
+  "forgot": "Nie pamiętasz hasła?",
+  "changed": "Hasło zmienione. Zaloguj się ponownie nowym hasłem."
  },
  "admin": {
   "page_title": "Administracja",
@@ -454,7 +456,8 @@
   "design": "Wygląd",
   "privacy": "Prywatność",
   "main": "Menu główne",
-  "logout": "Wyloguj"
+  "logout": "Wyloguj",
+  "account": "Konto"
  },
  "race": {
   "human": "Człowiek",
@@ -509,5 +512,56 @@
   "p7": "Teraz twoja kolej. Wybierz lud, nadaj imię swojemu państwu i obejmij kawałek świata. Inni już tu są: sojusznicy, których jeszcze nie znasz, i wrogowie, którzy już cię zauważyli.",
   "p8": "Jedna tura na dobę. Całe życie panowania. Conquer.",
   "b_people": "Lud:"
+ },
+ "account": {
+  "page_title": "Twoje konto",
+  "title": "Twoje konto",
+  "lede": "Zmień hasło albo utwórz nowy kod odzyskiwania.",
+  "signed_as": "Zalogowano jako {account}.",
+  "h_password": "Zmiana hasła",
+  "l_current": "Obecne hasło",
+  "l_new": "Nowe hasło",
+  "l_new2": "Powtórz nowe hasło",
+  "h_new": "Co najmniej 8 znaków, najwyżej 72.",
+  "change": "Zmień hasło",
+  "change_note": "Po zmianie zostaniesz wylogowany: zaloguj się ponownie nowym hasłem.",
+  "h_recovery": "Kod odzyskiwania",
+  "recovery_text": "Kod odzyskiwania to jedyny sposób, by odzyskać konto po zapomnieniu hasła. Nowy kod unieważnia stary: zapisz nowy.",
+  "recovery_make": "Utwórz nowy kod odzyskiwania",
+  "recovery_need": "Do utworzenia kodu potrzebne jest obecne hasło.",
+  "back": "Wróć do gry",
+  "lost": "Jeśli stracisz i hasło, i kod odzyskiwania, napisz na conquer@vejeta.com: bez kodu konta nie da się przywrócić. W następnym sezonie możesz dołączyć ponownie.",
+  "e_bad_current": "Obecne hasło jest nieprawidłowe.",
+  "e_mismatch": "Oba nowe hasła nie są takie same.",
+  "e_short_password": "Hasło musi mieć co najmniej 8 znaków.",
+  "e_bad_password": "Tego hasła nie można użyć: najwyżej 72 bajty, w jednej linii.",
+  "e_rate_limited": "Zbyt wiele prób. Poczekaj godzinę i spróbuj ponownie.",
+  "e_unauthenticated": "Twoja sesja wygasła. Zaloguj się ponownie.",
+  "e_server": "Coś poszło nie tak na serwerze. Spróbuj ponownie.",
+  "e_network": "Serwer nie odpowiada. Sprawdź połączenie i spróbuj ponownie.",
+  "rc_title": "Zapisz swój kod odzyskiwania",
+  "rc_text": "Zapisz ten kod odzyskiwania: to jedyny sposób, by odzyskać konto po zapomnieniu hasła. Pokazujemy go tylko raz.",
+  "rc_copy": "Kopiuj",
+  "rc_copied": "Skopiowano",
+  "rc_download": "Pobierz .txt",
+  "rc_saved": "Zapisałem kod",
+  "rc_file": "Kod odzyskiwania Conquer\nKonto: {account}\nKod: {code}\n\nTrzymaj go w tajemnicy. To jedyny sposób, by odzyskać konto po zapomnieniu hasła.\n"
+ },
+ "recover": {
+  "page_title": "Nie pamiętasz hasła?",
+  "title": "Nie pamiętasz hasła?",
+  "lede": "Podaj nazwę konta, zapisany kod odzyskiwania i nowe hasło.",
+  "l_account": "Nazwa konta",
+  "l_code": "Kod odzyskiwania",
+  "h_code": "Dwanaście liter i cyfr, na przykład K7QM-3XPA-9RTD.",
+  "l_password": "Nowe hasło",
+  "l_password2": "Powtórz nowe hasło",
+  "submit": "Ustaw nowe hasło",
+  "e_bad_recovery": "Nazwa konta lub kod odzyskiwania jest nieprawidłowy.",
+  "e_bad_account": "Używaj tylko liter, cyfr, kropek, myślników i podkreślników (do 32).",
+  "done_title": "Hasło zmienione",
+  "done_text": "Hasło zostało zmienione. Użyty kod odzyskiwania już nie działa: zapisz nowy. Potem zaloguj się nowym hasłem.",
+  "done_signin": "Zaloguj się",
+  "back": "Wróć do logowania"
  }
 }

@@ -16,20 +16,22 @@ from conftest import ROOT
 
 FILTER = ROOT / "vps" / "fail2ban" / "conquer-login.conf"
 JAIL = ROOT / "vps" / "fail2ban" / "conquer-login.jail"
+RECOVER_FILTER = ROOT / "vps" / "fail2ban" / "conquer-recover.conf"
+RECOVER_JAIL = ROOT / "vps" / "fail2ban" / "conquer-recover.jail"
 SETUP = ROOT / "setup-fail2ban.sh"
 IP = r"(?P<host>\d{1,3}(?:\.\d{1,3}){3}|[0-9a-fA-F:]+)"
 
 
-def failregex():
+def failregex(path=FILTER):
     cfg = configparser.ConfigParser(interpolation=None, strict=False)
-    cfg.read(FILTER, encoding="utf-8")
+    cfg.read(path, encoding="utf-8")
     lines = [l.strip() for l in cfg["Definition"]["failregex"].splitlines() if l.strip()]
     return [re.compile(l.replace("<HOST>", IP)) for l in lines]
 
 
-def hit(line):
+def hit(line, path=FILTER):
     """The address fail2ban would count, or None."""
-    for rx in failregex():
+    for rx in failregex(path):
         m = rx.search(line)
         if m:
             return m.group("host")
@@ -106,6 +108,95 @@ def test_jail_numbers():
     assert j["logpath"] == "/var/log/apache2/conquer_login.log"
 
 
+def recover_line(ip="203.0.113.9", request="POST /join/api/recover HTTP/1.1", status=403, location="-"):
+    return '%s - - [04/Nov/2026:10:00:00 +0000] "%s" %s "%s"' % (ip, request, status, location)
+
+
+RECOVER_GOOD = [
+    # What the gate answers to a wrong recovery code or a wrong current password: 403
+    recover_line(),
+    recover_line(request="POST /account/api/password HTTP/1.1"),
+    recover_line(request="POST /account/api/recovery HTTP/1.1"),
+    recover_line(ip="2001:db8::7"),
+]
+RECOVER_BAD = [
+    # A good answer, too many tries (already limited), a redirect to the sign-in page
+    recover_line(status=200),
+    recover_line(status=429),
+    recover_line(status=302, location="/login.html?next=/account.html"),
+    recover_line(status=400),
+    # Other endpoints, other methods
+    recover_line(request="GET /join/api/recover HTTP/1.1"),
+    recover_line(request="POST /account/api/init HTTP/1.1"),
+    recover_line(request="POST /join/api/request HTTP/1.1"),
+    recover_line(request="POST /login/do HTTP/1.1"),
+    recover_line(request="POST /account/api/password/extra HTTP/1.1"),
+    # Text smuggled into the request cannot name another address
+    recover_line(request="POST /join/api/recover?ip=198.51.100.1 HTTP/1.1"),
+    "",
+    "garbage",
+]
+
+
+@pytest.mark.parametrize("line", RECOVER_GOOD)
+def test_recover_filter_matches_a_wrong_code_or_password(line):
+    assert hit(line, RECOVER_FILTER) == line.split(" ")[0]
+
+
+@pytest.mark.parametrize("line", RECOVER_BAD)
+def test_recover_filter_ignores_everything_else(line):
+    assert hit(line, RECOVER_FILTER) is None
+
+
+def test_the_two_filters_do_not_overlap():
+    for line in GOOD:
+        assert hit(line, RECOVER_FILTER) is None
+    for line in RECOVER_GOOD:
+        assert hit(line) is None
+
+
+def test_recover_filter_agrees_with_fail2ban_when_it_is_installed(tmp_path):
+    tool = shutil.which("fail2ban-regex")
+    if not tool:
+        pytest.skip("fail2ban-regex is not installed")
+    log = tmp_path / "sample.log"
+    log.write_text("\n".join(RECOVER_GOOD[:3] + RECOVER_BAD[:8]) + "\n")
+    out = subprocess.run([tool, str(log), str(RECOVER_FILTER)], capture_output=True, text=True, timeout=60).stdout
+    assert re.search(r"Failregex: 3 total", out), out
+
+
+def test_recover_jail_numbers():
+    cfg = configparser.ConfigParser(interpolation=None)
+    cfg.read(RECOVER_JAIL, encoding="utf-8")
+    j = cfg["conquer-recover"]
+    assert j["filter"] == "conquer-recover"
+    # The gate's own limit is the same: 5 wrong tries an hour
+    assert j["maxretry"] == "5" and j["findtime"] == "1h" and j["bantime"] == "1h"
+    assert j["logpath"] == "/var/log/apache2/conquer_recover.log"
+
+
+@pytest.mark.parametrize("conf", ["vps/virtualhost.conf.template", "apache/local.conf", "update-vps.sh"])
+def test_apache_logs_wrong_recovery_attempts(conf):
+    text = (ROOT / conf).read_text()
+    assert 'SetEnvIf Request_URI "^/(join/api/recover|account/api/(password|recovery))$" conquer_recover_post' in text
+    assert re.search(r"CustomLog \S*conquer_recover\.log conquer_login env=conquer_recover_post|CustomLog \S*/recover\.log conquer_login env=conquer_recover_post", text)
+
+
+@pytest.mark.parametrize("conf", ["vps/virtualhost.conf.template", "apache/local.conf"])
+def test_account_api_is_behind_the_players_sign_in(conf):
+    text = (ROOT / conf).read_text()
+    block = re.search(r'<Location "/account/api/">\s*AuthType form.*?</Location>', text, re.S).group(0)
+    assert "Require valid-user" in block
+    assert 'RequestHeader set X-WEBAUTH-USER "%{REMOTE_USER}s"' in block
+    assert re.search(r"ProxyPass /account/api/ http://\S+:7682/account/api/", text)
+    # A client cannot forge the account: the header is dropped for every request first
+    assert "RequestHeader unset X-WEBAUTH-USER early" in text
+    # ... and the join API for the recovery code is reachable without a session
+    assert "/join/api/" in text
+    # The game's own Location stays the last one (CI checks it too)
+    assert text.rindex('<Location "/play/">') > text.rindex('<Location "/account/api/">')
+
+
 def run_setup(tmp_path, **env):
     full = dict(os.environ, F2B_DIR=str(tmp_path / "f2b"), LOG_DIR=str(tmp_path / "log"),
                 SKIP_APT="1", SKIP_SERVICE="1")
@@ -124,6 +215,11 @@ def test_setup_installs_the_jail_and_is_idempotent(tmp_path):
     text = (f2b / "jail.d" / "conquer-login.local").read_text()
     assert "ignoreip = 127.0.0.1/8 ::1\n" in text and "IGNORE_IPS" not in text
     assert (tmp_path / "log" / "conquer_login.log").exists()
+    # The jail of wrong recovery codes and wrong current passwords
+    assert (f2b / "filter.d" / "conquer-recover.conf").read_text() == RECOVER_FILTER.read_text()
+    text = (f2b / "jail.d" / "conquer-recover.local").read_text()
+    assert "ignoreip = 127.0.0.1/8 ::1\n" in text and "IGNORE_IPS" not in text and "maxretry = 5" in text
+    assert (tmp_path / "log" / "conquer_recover.log").exists()
     stamp = [(p, p.stat().st_mtime_ns) for p in f2b.rglob("*") if p.is_file()]
     second = run_setup(tmp_path)
     assert second.returncode == 0 and "(changed)" not in second.stdout
@@ -134,6 +230,7 @@ def test_admin_ip_is_never_banned(tmp_path):
     assert run_setup(tmp_path, ADMIN_IP="203.0.113.7").returncode == 0
     text = (tmp_path / "f2b" / "jail.d" / "conquer-login.local").read_text()
     assert "ignoreip = 127.0.0.1/8 ::1 203.0.113.7\n" in text
+    assert "ignoreip = 127.0.0.1/8 ::1 203.0.113.7\n" in (tmp_path / "f2b" / "jail.d" / "conquer-recover.local").read_text()
     # Changing it rewrites the jail
     assert run_setup(tmp_path, ADMIN_IP="198.51.100.0/24").returncode == 0
     assert "198.51.100.0/24" in (tmp_path / "f2b" / "jail.d" / "conquer-login.local").read_text()
@@ -190,7 +287,7 @@ def test_apache_logs_failed_sign_ins(conf):
 @pytest.mark.parametrize("conf", ["vps/virtualhost.conf.template", "apache/local.conf", "update-vps.sh"])
 def test_api_bodies_are_limited_to_64k(conf):
     text = (ROOT / conf).read_text()
-    for api in ("/join/api/", "/admin/api/"):
+    for api in ("/join/api/", "/admin/api/", "/account/api/"):
         assert re.search(r'<Location "%s">\s*LimitRequestBody 65536\s*</Location>' % re.escape(api), text), (conf, api)
 
 
@@ -206,3 +303,17 @@ def test_filter_on_the_log_of_a_running_apache():
     assert failed and ok, lines
     assert all(hit(l) for l in failed), failed
     assert not any(hit(l) for l in ok), ok
+
+
+def test_recover_filter_on_the_log_of_a_running_apache():
+    """CI makes wrong and right recovery attempts against the local stack and
+    hands the log over in CONQUER_RECOVER_LOG: the 403 ones count, the others do not."""
+    path = os.environ.get("CONQUER_RECOVER_LOG")
+    if not path:
+        pytest.skip("CONQUER_RECOVER_LOG is not set")
+    lines = [l for l in open(path, encoding="utf-8").read().splitlines() if l.strip()]
+    wrong = [l for l in lines if '" 403 ' in l]
+    other = [l for l in lines if '" 403 ' not in l]
+    assert wrong and other, lines
+    assert all(hit(l, RECOVER_FILTER) for l in wrong), wrong
+    assert not any(hit(l, RECOVER_FILTER) for l in other), other

@@ -31,6 +31,18 @@
 //	POST /admin/api/reject  {"account"}
 //	POST /admin/api/invite  {"count"}
 //	POST /admin/api/assign  {"account", "nation" | "found" | "admin"}
+//
+// Player endpoints (the same sign-in as /play/; Apache sets X-WEBAUTH-USER,
+// see account.go):
+//
+//	POST /account/api/init      -> {"ok":true,"account":...,"has_recovery":true,"recovery_code"?:...}
+//	                               (makes the recovery code on the first call: shown once)
+//	POST /account/api/password  {"current","new"}
+//	POST /account/api/recovery  {"current"} -> {"ok":true,"recovery_code":...} (a new code)
+//
+// and, open like the sign-up page, for a player who forgot the password:
+//
+//	POST /join/api/recover {"account","code","password"} -> {"ok":true,"recovery_code":...}
 package main
 
 import (
@@ -145,6 +157,12 @@ type gate struct {
 	tokens   *formTokens
 	admin    *limiter // administrator actions
 	notify   *notifier
+
+	// Accounts (account.go): wrong current passwords and wrong recovery
+	// codes are counted per address and per account, and every call per address
+	pwFail  *limiter
+	recFail *limiter
+	acct    *limiter
 }
 
 // clientIP: the address Apache (the only client that can reach this
@@ -228,7 +246,7 @@ func helperStatus(err error, extra map[int]string) (reason string, status int, o
 	switch reason {
 	case "account_taken", "not_pending", "no_account":
 		status = http.StatusConflict
-	case "closed":
+	case "closed", "bad_current", "bad_recovery":
 		status = http.StatusForbidden
 	}
 	return reason, status, true
@@ -702,6 +720,9 @@ func main() {
 		daily:    newLimiter(envInt("SIGNUP_DAILY_LIMIT", defaultDailyPerIP), 24*time.Hour),
 		admin:    newLimiter(120, 10*time.Minute),
 		notify:   loadNotifier(),
+		pwFail:   newLimiter(accountFailures, time.Hour),
+		recFail:  newLimiter(accountFailures, time.Hour),
+		acct:     newLimiter(120, 10*time.Minute),
 	}
 	g.tokens = newFormTokens(loadSecret(g.lib+"/"+secretFileName),
 		time.Duration(envInt("SIGNUP_MIN_FILL", int(defaultMinFill/time.Second)))*time.Second)
@@ -720,6 +741,9 @@ func main() {
 			g.failures.cleanup()
 			g.daily.cleanup()
 			g.admin.cleanup()
+			g.pwFail.cleanup()
+			g.recFail.cleanup()
+			g.acct.cleanup()
 		}
 	}()
 
@@ -735,6 +759,10 @@ func main() {
 	mux.HandleFunc("/admin/api/reject", g.accountAction("reject"))
 	mux.HandleFunc("/admin/api/invite", g.adminInvite)
 	mux.HandleFunc("/admin/api/assign", g.adminAssign)
+	mux.HandleFunc("/account/api/init", g.accountInit)
+	mux.HandleFunc("/account/api/password", g.accountPassword)
+	mux.HandleFunc("/account/api/recovery", g.accountRecovery)
+	mux.HandleFunc("/join/api/recover", g.recover)
 	srv := &http.Server{
 		Addr:              *listen,
 		Handler:           mux,

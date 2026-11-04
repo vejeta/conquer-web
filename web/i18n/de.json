@@ -235,7 +235,9 @@
   "opening": "Die Tore öffnen sich...",
   "neterror": "Der Server antwortet nicht. Prüfe deine Verbindung und versuche es erneut.",
   "no_account": "Noch kein Konto?",
-  "ask_seat": "Frage einen Platz an"
+  "ask_seat": "Frage einen Platz an",
+  "forgot": "Passwort vergessen?",
+  "changed": "Passwort geändert. Melde dich mit dem neuen Passwort wieder an."
  },
  "admin": {
   "page_title": "Verwaltung",
@@ -454,7 +456,8 @@
   "design": "Design",
   "privacy": "Datenschutz",
   "main": "Hauptmenü",
-  "logout": "Abmelden"
+  "logout": "Abmelden",
+  "account": "Konto"
  },
  "race": {
   "human": "Mensch",
@@ -509,5 +512,56 @@
   "p7": "Jetzt bist du an der Reihe. Wähle ein Volk, gib deiner Nation einen Namen und nimm dir einen Winkel der Welt. Die anderen sind schon hier: Verbündete, die du noch nicht kennst, und Feinde, die dich schon gesehen haben.",
   "p8": "Ein Zug am Tag. Ein ganzes Herrscherleben. Conquer.",
   "b_people": "Volk:"
+ },
+ "account": {
+  "page_title": "Dein Konto",
+  "title": "Dein Konto",
+  "lede": "Ändere dein Passwort oder erzeuge einen neuen Wiederherstellungscode.",
+  "signed_as": "Angemeldet als {account}.",
+  "h_password": "Passwort ändern",
+  "l_current": "Aktuelles Passwort",
+  "l_new": "Neues Passwort",
+  "l_new2": "Neues Passwort wiederholen",
+  "h_new": "Mindestens 8 Zeichen, höchstens 72.",
+  "change": "Passwort ändern",
+  "change_note": "Nach der Änderung wirst du abgemeldet: Melde dich mit dem neuen Passwort wieder an.",
+  "h_recovery": "Wiederherstellungscode",
+  "recovery_text": "Der Wiederherstellungscode ist der einzige Weg, dein Konto zurückzubekommen, wenn du das Passwort vergisst. Ein neuer Code macht den alten ungültig: Speichere den neuen.",
+  "recovery_make": "Neuen Wiederherstellungscode erzeugen",
+  "recovery_need": "Für einen neuen Code brauchst du dein aktuelles Passwort.",
+  "back": "Zurück zum Spiel",
+  "lost": "Wenn du Passwort und Wiederherstellungscode verlierst, schreib an conquer@vejeta.com: Konten lassen sich ohne den Code nicht wiederherstellen. In der nächsten Saison kannst du wieder mitspielen.",
+  "e_bad_current": "Das aktuelle Passwort stimmt nicht.",
+  "e_mismatch": "Die beiden neuen Passwörter stimmen nicht überein.",
+  "e_short_password": "Nimm mindestens 8 Zeichen für das Passwort.",
+  "e_bad_password": "Dieses Passwort geht nicht: höchstens 72 Bytes, in einer Zeile.",
+  "e_rate_limited": "Zu viele Versuche. Warte eine Stunde und versuch es dann wieder.",
+  "e_unauthenticated": "Deine Sitzung ist beendet. Melde dich neu an.",
+  "e_server": "Auf dem Server ist etwas schiefgegangen. Versuch es noch einmal.",
+  "e_network": "Der Server antwortet nicht. Prüf deine Verbindung und versuch es noch einmal.",
+  "rc_title": "Speichere deinen Wiederherstellungscode",
+  "rc_text": "Speichere diesen Wiederherstellungscode: Er ist der einzige Weg, dein Konto zurückzubekommen, wenn du das Passwort vergisst. Er wird nur einmal angezeigt.",
+  "rc_copy": "Kopieren",
+  "rc_copied": "Kopiert",
+  "rc_download": "Als .txt herunterladen",
+  "rc_saved": "Ich habe ihn gespeichert",
+  "rc_file": "Conquer-Wiederherstellungscode\nKonto: {account}\nCode: {code}\n\nBehalte ihn für dich. Er ist der einzige Weg, dein Konto zurückzubekommen, wenn du das Passwort vergisst.\n"
+ },
+ "recover": {
+  "page_title": "Passwort vergessen?",
+  "title": "Passwort vergessen?",
+  "lede": "Gib deinen Kontonamen, den gespeicherten Wiederherstellungscode und ein neues Passwort ein.",
+  "l_account": "Kontoname",
+  "l_code": "Wiederherstellungscode",
+  "h_code": "Zwölf Buchstaben und Ziffern, etwa K7QM-3XPA-9RTD.",
+  "l_password": "Neues Passwort",
+  "l_password2": "Neues Passwort wiederholen",
+  "submit": "Neues Passwort setzen",
+  "e_bad_recovery": "Kontoname oder Wiederherstellungscode stimmen nicht.",
+  "e_bad_account": "Nur Buchstaben, Ziffern, Punkte, Bindestriche und Unterstriche (bis zu 32).",
+  "done_title": "Passwort geändert",
+  "done_text": "Dein Passwort ist geändert. Der benutzte Wiederherstellungscode gilt nicht mehr: Speichere den neuen. Danach meldest du dich mit dem neuen Passwort an.",
+  "done_signin": "Anmelden",
+  "back": "Zurück zur Anmeldung"
  }
 }

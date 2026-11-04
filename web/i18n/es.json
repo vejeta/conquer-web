@@ -235,7 +235,9 @@
   "opening": "Las puertas se abren...",
   "neterror": "El servidor no responde. Comprueba tu conexión e inténtalo de nuevo.",
   "no_account": "¿Aún no tienes cuenta?",
-  "ask_seat": "Pide tu plaza"
+  "ask_seat": "Pide tu plaza",
+  "forgot": "¿Olvidaste la contraseña?",
+  "changed": "Contraseña cambiada. Entra de nuevo con la contraseña nueva."
  },
  "admin": {
   "page_title": "Administración",
@@ -454,7 +456,8 @@
   "design": "Diseño",
   "privacy": "Privacidad",
   "main": "Menú principal",
-  "logout": "Salir"
+  "logout": "Salir",
+  "account": "Cuenta"
  },
  "race": {
   "human": "Humano",
@@ -509,5 +512,56 @@
   "p7": "Ahora te toca a ti. Elige un pueblo, da nombre a tu nación y toma un rincón del mundo. Los demás ya están aquí: aliados que aún no conoces, y enemigos que ya te han visto.",
   "p8": "Un turno al día. Toda una vida de reinado. Conquer.",
   "b_people": "Pueblo:"
+ },
+ "account": {
+  "page_title": "Tu cuenta",
+  "title": "Tu cuenta",
+  "lede": "Cambia tu contraseña o crea un código de recuperación nuevo.",
+  "signed_as": "Has entrado como {account}.",
+  "h_password": "Cambiar la contraseña",
+  "l_current": "Contraseña actual",
+  "l_new": "Contraseña nueva",
+  "l_new2": "Repite la contraseña nueva",
+  "h_new": "Al menos 8 caracteres, 72 como máximo.",
+  "change": "Cambiar la contraseña",
+  "change_note": "Tras el cambio se cierra tu sesión: entra de nuevo con la contraseña nueva.",
+  "h_recovery": "Código de recuperación",
+  "recovery_text": "El código de recuperación es la única forma de recuperar tu cuenta si olvidas la contraseña. Al crear uno nuevo, el anterior deja de valer: guarda el nuevo.",
+  "recovery_make": "Crear un código de recuperación nuevo",
+  "recovery_need": "Para crear un código hace falta tu contraseña actual.",
+  "back": "Volver al juego",
+  "lost": "Si pierdes la contraseña y el código de recuperación, escribe a conquer@vejeta.com: las cuentas no se pueden restaurar sin el código. Puedes volver a apuntarte la próxima temporada.",
+  "e_bad_current": "La contraseña actual no es correcta.",
+  "e_mismatch": "Las dos contraseñas nuevas no coinciden.",
+  "e_short_password": "Usa al menos 8 caracteres para la contraseña.",
+  "e_bad_password": "Esa contraseña no se puede usar: máximo 72 bytes, en una sola línea.",
+  "e_rate_limited": "Demasiados intentos. Espera una hora e inténtalo de nuevo.",
+  "e_unauthenticated": "Tu sesión ha terminado. Entra de nuevo.",
+  "e_server": "Algo falló en el servidor. Inténtalo de nuevo.",
+  "e_network": "El servidor no responde. Revisa tu conexión e inténtalo de nuevo.",
+  "rc_title": "Guarda tu código de recuperación",
+  "rc_text": "Guarda este código de recuperación: es la única forma de recuperar tu cuenta si olvidas la contraseña. Solo se muestra una vez.",
+  "rc_copy": "Copiar",
+  "rc_copied": "Copiado",
+  "rc_download": "Descargar .txt",
+  "rc_saved": "Ya lo he guardado",
+  "rc_file": "Código de recuperación de Conquer\nCuenta: {account}\nCódigo: {code}\n\nGuárdalo en privado. Es la única forma de recuperar tu cuenta si olvidas la contraseña.\n"
+ },
+ "recover": {
+  "page_title": "¿Olvidaste la contraseña?",
+  "title": "¿Olvidaste la contraseña?",
+  "lede": "Escribe el nombre de tu cuenta, el código de recuperación que guardaste y una contraseña nueva.",
+  "l_account": "Nombre de la cuenta",
+  "l_code": "Código de recuperación",
+  "h_code": "Doce letras y cifras, como K7QM-3XPA-9RTD.",
+  "l_password": "Contraseña nueva",
+  "l_password2": "Repite la contraseña nueva",
+  "submit": "Guardar la contraseña nueva",
+  "e_bad_recovery": "El nombre de la cuenta o el código de recuperación no es correcto.",
+  "e_bad_account": "Usa solo letras, cifras, puntos, guiones y guiones bajos (hasta 32).",
+  "done_title": "Contraseña cambiada",
+  "done_text": "Tu contraseña está cambiada. El código de recuperación que usaste ya no vale: guarda el nuevo. Después entra con tu contraseña nueva.",
+  "done_signin": "Entrar",
+  "back": "Volver a entrar"
  }
 }

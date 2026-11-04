@@ -36,6 +36,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
       <button class="key key-small" id="keyboard" type="button" title="Show the device keyboard" data-i18n-title="game.keyboard_title" data-i18n="game.keyboard">Keyboard</button>
       <button class="key key-small" id="toggle" type="button" aria-controls="touch-ui" aria-expanded="true" data-i18n="game.toggle">Keys</button>
       <a class="key key-small nav-extra" href="hall.html" data-i18n="nav.hall">Hall</a>
+      <a class="key key-small nav-extra" id="account-link" href="account.html" data-i18n="nav.account">Account</a>
       <a class="key key-small" id="logout" href="/logout" data-i18n="nav.logout">Sign out</a>
     </nav>
     <select class="select nav-extra" data-lang-menu aria-label="Language" data-i18n-title="index.language"></select>
@@ -78,6 +79,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 <script src="audio.js"></script>
 <script src="touch.js"></script>
 <script src="appbar.js"></script>
+<script src="recovery.js"></script>
 <script>
   (function () {
     var frame = document.getElementById('game');
@@ -88,6 +90,10 @@ SPDX-License-Identifier: GPL-3.0-or-later
     // In the app a second argument, app=1, makes the menu speak to phones
     // (it does not tell them to press Ctrl and -)
     frame.src = '/play/?arg=' + conquerLang() + (window.conquerApp && conquerApp.is ? '&arg=' + encodeURIComponent('app=1') : '');
+
+    // The first visit of an approved account: the gate makes its recovery
+    // code and the page shows it once (recovery.js)
+    if (window.conquerRecovery) conquerRecovery.init();
 
     // ttyd exposes the xterm.js instance as window.term in the same-origin frame
     function term() {

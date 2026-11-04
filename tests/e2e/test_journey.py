@@ -20,6 +20,13 @@ context, with phone and desktop profiles and es/en/de pages:
   f. late join after turn 5 (the builder's -A) for one more player
   g. logout; the session cookie is gone
 
+The account pages are part of the journey: the first visit of an approved
+player shows the recovery code once (only its hash is kept); on the second
+day one third of the players change the password on account.html (the old
+session stops working), one third get the account back with the recovery
+code on recover.html (and the used code is void), and one third make a new
+recovery code on account.html.
+
 Every step asserts. On failure a trace, a video and a screenshot are kept under
 test-results/e2e/."""
 import os
@@ -32,6 +39,7 @@ import traceback
 from urllib.parse import urlparse
 
 import pytest
+import requests
 
 playwright_api = pytest.importorskip("playwright.sync_api")
 pytest.importorskip("requests")
@@ -99,6 +107,7 @@ class Player:
         self.console, self.bad = [], []
         self.saw_late = False
         self.treasury = None
+        self.recovery = None
         self.turn = None
         self.sector = None
         self.page = self.term = self.ctx = None
@@ -202,8 +211,34 @@ class Player:
         cookies = [c for c in self.ctx.cookies() if c["name"] == "conquer_session"]
         assert cookies, "no session cookie after the login"
         assert cookies[0]["httpOnly"] and cookies[0]["secure"], cookies[0]
+        self.recovery_modal(expect=first)
         self.term = Term(page)
         self.term.attach()
+
+    CODE_RE = re.compile(r"[A-HJ-NP-Z2-9]{4}(?:-[A-HJ-NP-Z2-9]{4}){2}")
+
+    def recovery_modal(self, expect):
+        """The first visit shows the recovery code once; later visits show none."""
+        page = self.page
+        if not expect:
+            page.wait_for_timeout(1500)       # the page asks the gate when it opens
+            assert page.locator("#recovery-modal").count() == 0, "the recovery code was shown again"
+            return
+        page.wait_for_selector("#recovery-modal[open]", timeout=30000)
+        code = page.inner_text("#recovery-code").strip()
+        assert self.CODE_RE.fullmatch(code), "recovery code %r" % code
+        assert page.locator("#rc-copy").count() == 1 and page.locator("#rc-saved").count() == 1
+        if self.spec["profile"] == "desktop":
+            assert page.locator("#rc-download").count() == 1
+        # The server keeps only the bcrypt hash, in a file of mode 600
+        stored = dexec("cat", "/opt/conquer/lib/.recovery")
+        assert re.search(r"^%s:\$2[aby]\$" % re.escape(self.account), stored, re.M), "no recovery hash for %s" % self.account
+        assert code not in stored and code.replace("-", "") not in stored, "the recovery code is stored in clear"
+        assert dexec("stat", "-c", "%a", "/opt/conquer/lib/.recovery").strip() == "600"
+        page.click("#rc-copy")
+        page.click("#rc-saved")
+        page.wait_for_selector("#recovery-modal", state="detached", timeout=10000)
+        self.recovery = code
 
     def sound_check(self):
         page = self.page
@@ -629,7 +664,93 @@ class Player:
         self.finish_checks()
 
     def sign_in_again(self):
+        self.account_day()
         self.sign_in(first=False)
+
+    # the account pages ------------------------------------------------------
+    def new_password(self):
+        return secrets.token_hex(6) + "-new"
+
+    def login_form(self, next_path):
+        """The Doors form, with the page to open afterwards."""
+        page = self.page
+        page.goto("%s/login.html?lang=%s&next=%s" % (Env.base, self.lang, next_path))
+        page.wait_for_selector("#account")
+        page.fill("#account", self.account)
+        page.fill("#password", self.password)
+        page.click("#go")
+        page.wait_for_url(lambda url: urlparse(url).path.endswith(next_path), timeout=30000)
+
+    def account_page(self):
+        self.login_form("/account.html")
+        self.page.wait_for_function("() => document.getElementById('who').textContent.includes(%r)" % self.account, timeout=30000)
+        assert self.page.locator("#recovery-modal").count() == 0, "a recovery code was made twice"
+
+    def code_is_dead(self, code):
+        """A recovery code that was used or replaced opens nothing (the gate allows
+        five wrong tries an hour per address: only two players check it)."""
+        r = self.ctx.request.post(Env.base + "/join/api/recover", data={"account": self.account, "code": code,
+                                                                        "password": self.new_password()})
+        assert r.status == 403 and r.json().get("error") == "bad_recovery", "the old recovery code still works: %s %s" % (r.status, r.text()[:200])
+
+    def account_day(self):
+        [self.forgot_password, self.change_password, self.new_recovery_code][self.idx % 3]()
+
+    def change_password(self):
+        page = self.page
+        self.account_page()
+        before = [c for c in self.ctx.cookies() if c["name"] == "conquer_session"][0]["value"]
+        stale = lambda: requests.get(Env.base + "/play/", cookies={"conquer_session": before}, allow_redirects=False, verify=False, timeout=30).status_code
+        assert stale() == 200, "the session did not work before the change"
+        new = self.new_password()
+        page.fill("#current", self.password)
+        page.fill("#new1", new)
+        page.fill("#new2", new)
+        page.click("#password-submit")
+        page.wait_for_url(re.compile(r"/login\.html\?changed=1"), timeout=30000)
+        page.wait_for_selector("#info:not([hidden])", timeout=10000)
+        assert i18n_text(self.lang, "changed") in page.inner_text("#info")
+        # The old session (it holds the old password) and the old password are dead
+        assert stale() == 302, "the old session still works after the password change"
+        old = requests.post(Env.base + "/login/do", data={"httpd_username": self.account, "httpd_password": self.password, "httpd_location": "/play/"},
+                            allow_redirects=False, verify=False, timeout=30)
+        assert old.status_code == 302 and "failed=1" in old.headers.get("location", ""), "the old password still signs in"
+        self.password = new
+
+    def forgot_password(self):
+        page = self.page
+        page.goto("%s/login.html?lang=%s" % (Env.base, self.lang))
+        page.click("#forgot")
+        page.wait_for_url(re.compile(r"/recover\.html"), timeout=15000)
+        new, used = self.new_password(), self.recovery
+        page.fill("#account", self.account)
+        page.fill("#code", used.lower().replace("-", " "))       # typed in lower case, with spaces
+        page.fill("#password", new)
+        page.fill("#password2", new)
+        page.click("#submit")
+        page.wait_for_selector("#recovery-modal[open]", timeout=30000)
+        fresh = page.inner_text("#recovery-code").strip()
+        assert self.CODE_RE.fullmatch(fresh) and fresh != used, "the new recovery code %r (used %r)" % (fresh, used)
+        stored = dexec("cat", "/opt/conquer/lib/.recovery")
+        assert fresh not in stored and used not in stored
+        page.click("#rc-saved")
+        page.wait_for_url(re.compile(r"/login\.html\?changed=1"), timeout=15000)
+        if self.idx == 0:
+            self.code_is_dead(used)
+        self.recovery, self.password = fresh, new
+
+    def new_recovery_code(self):
+        page = self.page
+        self.account_page()
+        page.fill("#rc-current", self.password)
+        page.click("#recovery-submit")
+        page.wait_for_selector("#recovery-modal[open]", timeout=30000)
+        fresh = page.inner_text("#recovery-code").strip()
+        assert self.CODE_RE.fullmatch(fresh) and fresh != self.recovery, "the new recovery code %r (old %r)" % (fresh, self.recovery)
+        page.click("#rc-saved")
+        if self.idx == 2:
+            self.code_is_dead(self.recovery)
+        self.recovery = fresh
 
     def read_news(self, old_turn):
         t = self.term

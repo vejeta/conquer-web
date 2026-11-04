@@ -1,0 +1,17 @@
+# SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Jail for wrong recovery codes and wrong current passwords (written to
+# /etc/fail2ban/jail.d/conquer-recover.local by setup-fail2ban.sh; IGNORE_IPS
+# is replaced there): 5 failures in 1 hour ban the address for 1 hour. The
+# gate itself stops at 5 an hour per address and per account.
+
+[conquer-recover]
+enabled  = true
+port     = http,https
+filter   = conquer-recover
+logpath  = /var/log/apache2/conquer_recover.log
+maxretry = 5
+findtime = 1h
+bantime  = 1h
+ignoreip = IGNORE_IPS

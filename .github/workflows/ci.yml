@@ -21,6 +21,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Tools the tests run (htpasswd for the account scripts)
+        run: sudo apt-get install -y --no-install-recommends apache2-utils
+
       - name: ShellCheck
         run: shellcheck -S warning -x -P conquer/scripts ./*.sh conquer/scripts/*.sh conquer/i18n/*.sh
 
@@ -137,6 +140,56 @@ jobs:
           test "$(code -b /tmp/jar-long https://localhost/play/)" = 302
           # ttyd itself refuses requests that did not come through the proxy
           test "$(docker exec conquer-local curl -s -o /dev/null -w '%{http_code}' http://localhost:7681/play/)" = 407
+
+      - name: Account pages (password change, recovery code)
+        run: |
+          code() { curl -sk -o /dev/null -w '%{http_code}' "$@"; }
+          J='Content-Type: application/json'
+          signin() { curl -sk -c "$1" -b "$1" -o /dev/null --data-urlencode "httpd_username=$2" --data-urlencode "httpd_password=$3" https://localhost/login/do; }
+          api() { jar=$1; path=$2; shift 2; curl -sk -b "$jar" -H "$J" -d "$1" "https://localhost$path"; }
+          rm -f /tmp/jar-acc /tmp/jar-acc2
+          signin /tmp/jar-acc "$TTYD_USERNAME" "$TTYD_PASSWORD"
+          # Without a session Apache sends the visitor to the sign-in page, and a
+          # header sent by the client names nobody
+          test "$(code -X POST -H "$J" -d '{}' https://localhost/account/api/init)" = 302
+          test "$(code -X POST -H "$J" -H "X-WEBAUTH-USER: $TTYD_USERNAME" -d '{}' https://localhost/account/api/init)" = 302
+          # The first call makes the recovery code and shows it; the next ones do not
+          first=$(api /tmp/jar-acc /account/api/init '{}')
+          jq -e '.ok and .has_recovery and (.recovery_code | test("^[A-HJ-NP-Z2-9]{4}(-[A-HJ-NP-Z2-9]{4}){2}$"))' <<< "$first"
+          code1=$(jq -r .recovery_code <<< "$first")
+          api /tmp/jar-acc /account/api/init '{}' | jq -e '.ok and .has_recovery and (has("recovery_code") | not)'
+          # Only the bcrypt hash is kept, in a file only the game user reads
+          test "$(sudo stat -c %a data/lib/.recovery)" = 600
+          sudo grep -qE "^$TTYD_USERNAME:\$2[aby]\$" data/lib/.recovery
+          ! sudo grep -q "$code1" data/lib/.recovery
+          # Change the password: a wrong current one is refused (403), the right one works
+          test "$(code -b /tmp/jar-acc -H "$J" -d "{\"current\":\"nope-nope\",\"new\":\"changed-pass-1\"}" https://localhost/account/api/password)" = 403
+          api /tmp/jar-acc /account/api/password "{\"current\":\"$TTYD_PASSWORD\",\"new\":\"changed-pass-1\"}" | jq -e '.ok'
+          # The old session holds the old password: it no longer works
+          test "$(code -b /tmp/jar-acc https://localhost/play/)" = 302
+          signin /tmp/jar-acc2 "$TTYD_USERNAME" "$TTYD_PASSWORD"
+          test "$(code -b /tmp/jar-acc2 https://localhost/play/)" = 302
+          signin /tmp/jar-acc2 "$TTYD_USERNAME" changed-pass-1
+          test "$(code -b /tmp/jar-acc2 https://localhost/play/)" = 200
+          # A new code needs the password and voids the old one
+          test "$(code -b /tmp/jar-acc2 -H "$J" -d '{"current":"nope-nope"}' https://localhost/account/api/recovery)" = 403
+          code2=$(api /tmp/jar-acc2 /account/api/recovery '{"current":"changed-pass-1"}' | jq -er .recovery_code)
+          test "$code2" != "$code1"
+          # Forgot the password: the code (any case, with spaces) sets a new one, and answers with a new code
+          test "$(code -H "$J" -d "{\"account\":\"$TTYD_USERNAME\",\"code\":\"$code1\",\"password\":\"recovered-pass-2\"}" https://localhost/join/api/recover)" = 403
+          lower=$(tr 'A-Z-' 'a-z ' <<< "$code2")
+          code3=$(curl -sk -H "$J" -d "{\"account\":\"$TTYD_USERNAME\",\"code\":\"$lower\",\"password\":\"recovered-pass-2\"}" https://localhost/join/api/recover | jq -er .recovery_code)
+          test "$code3" != "$code2"
+          test "$(code -H "$J" -d "{\"account\":\"$TTYD_USERNAME\",\"code\":\"$code2\",\"password\":\"x-another-pass\"}" https://localhost/join/api/recover)" = 403
+          signin /tmp/jar-acc "$TTYD_USERNAME" recovered-pass-2
+          test "$(code -b /tmp/jar-acc https://localhost/play/)" = 200
+          # Put the original password back for the steps that follow
+          api /tmp/jar-acc /account/api/password "{\"current\":\"recovered-pass-2\",\"new\":\"$TTYD_PASSWORD\"}" | jq -e '.ok'
+          # The wrong tries are in the log fail2ban reads (and only those)
+          docker exec apache-local cat /usr/local/apache2/logs/recover.log > /tmp/recover.log
+          test "$(grep -c '" 403 ' /tmp/recover.log)" -ge 4
+          python3 -m pip install --quiet pytest
+          CONQUER_RECOVER_LOG=/tmp/recover.log python3 -m pytest tests/test_fail2ban.py -k recover_log_of_a_running_apache
 
       - name: No credentials in the container logs
         run: |

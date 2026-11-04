@@ -235,7 +235,9 @@
   "opening": "大门正在开启……",
   "neterror": "服务器没有响应。请检查网络后重试。",
   "no_account": "还没有账号？",
-  "ask_seat": "申请席位"
+  "ask_seat": "申请席位",
+  "forgot": "忘记密码了？",
+  "changed": "密码已修改。请用新密码重新登录。"
  },
  "admin": {
   "page_title": "管理",
@@ -454,7 +456,8 @@
   "design": "设计",
   "privacy": "隐私",
   "main": "主菜单",
-  "logout": "退出登录"
+  "logout": "退出登录",
+  "account": "账号"
  },
  "race": {
   "human": "人类",
@@ -509,5 +512,56 @@
   "p7": "现在轮到你了。选择一个种族，为你的国家命名，占据世界的一角。其他人已经在这里：你还不认识的盟友，和已经注意到你的敌人。",
   "p8": "每天一回合。一生的统治。Conquer。",
   "b_people": "种族："
+ },
+ "account": {
+  "page_title": "你的账号",
+  "title": "你的账号",
+  "lede": "修改密码，或生成新的恢复码。",
+  "signed_as": "当前登录账号：{account}。",
+  "h_password": "修改密码",
+  "l_current": "当前密码",
+  "l_new": "新密码",
+  "l_new2": "再次输入新密码",
+  "h_new": "至少 8 个字符，最多 72 个。",
+  "change": "修改密码",
+  "change_note": "修改后你会被登出：请用新密码重新登录。",
+  "h_recovery": "恢复码",
+  "recovery_text": "如果你忘记密码，恢复码是找回账号的唯一办法。生成新的恢复码会使旧的失效：请保存新的。",
+  "recovery_make": "生成新的恢复码",
+  "recovery_need": "生成恢复码需要输入当前密码。",
+  "back": "返回游戏",
+  "lost": "如果你同时丢失了密码和恢复码，请写信到 conquer@vejeta.com：没有恢复码，账号无法恢复。下个赛季你可以重新加入。",
+  "e_bad_current": "当前密码不正确。",
+  "e_mismatch": "两次输入的新密码不一致。",
+  "e_short_password": "密码至少需要 8 个字符。",
+  "e_bad_password": "无法使用该密码：最多 72 字节，且必须在同一行。",
+  "e_rate_limited": "尝试次数过多。请等待一小时后再试。",
+  "e_unauthenticated": "你的会话已结束。请重新登录。",
+  "e_server": "服务器出错了。请再试一次。",
+  "e_network": "服务器没有响应。请检查网络后重试。",
+  "rc_title": "请保存你的恢复码",
+  "rc_text": "请保存这个恢复码：如果你忘记密码，它是找回账号的唯一办法。它只显示这一次。",
+  "rc_copy": "复制",
+  "rc_copied": "已复制",
+  "rc_download": "下载 .txt",
+  "rc_saved": "我已保存",
+  "rc_file": "Conquer 恢复码\n账号：{account}\n恢复码：{code}\n\n请妥善保密。如果你忘记密码，它是找回账号的唯一办法。\n"
+ },
+ "recover": {
+  "page_title": "忘记密码了？",
+  "title": "忘记密码了？",
+  "lede": "请输入账号名、你保存的恢复码和新密码。",
+  "l_account": "账号名",
+  "l_code": "恢复码",
+  "h_code": "十二个字母和数字，例如 K7QM-3XPA-9RTD。",
+  "l_password": "新密码",
+  "l_password2": "再次输入新密码",
+  "submit": "设置新密码",
+  "e_bad_recovery": "账号名或恢复码不正确。",
+  "e_bad_account": "只能使用字母、数字、点、短横线和下划线（最多 32 个）。",
+  "done_title": "密码已修改",
+  "done_text": "密码已修改。你用过的恢复码已失效：请保存新的恢复码，然后用新密码登录。",
+  "done_signin": "登录",
+  "back": "返回登录"
  }
 }
