@@ -82,6 +82,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
         </div>
       </details>
       <p class="error-text" id="error" role="alert" hidden></p>
+      <!-- Not for people: a script that fills every field is dropped by the server -->
+      <div aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden">
+        <label for="website">Leave this empty</label>
+        <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+      </div>
       <button class="key key-primary" type="submit" id="submit" data-i18n="join.submit">Ask for my seat</button>
     </form>
   </section>
@@ -152,6 +157,12 @@ SPDX-License-Identifier: GPL-3.0-or-later
       password: document.getElementById('password'), password2: document.getElementById('password2'),
       email: document.getElementById('email'), message: document.getElementById('message')
     };
+    // The server timestamps the form when it opens (a robot that submits at
+    // once is dropped); the token goes back in a header with the request
+    var formToken = '';
+    fetch('join/api/token').then(function (r) { return r.json(); }).then(function (res) {
+      if (res && res.token) formToken = res.token;
+    }).catch(function () {});
     // Invite link: signup.html?code=K7QM-3XPA
     var given = new URLSearchParams(location.search).get('code');
     if (given) {
@@ -230,9 +241,14 @@ SPDX-License-Identifier: GPL-3.0-or-later
       if (message) body.message = message;
       if (code) body.code = code;
       body.lang = conquerI18n.lang();
+      // The hidden field: empty for people
+      var trap = document.getElementById('website').value;
+      if (trap) body.website = trap;
+      var headers = { 'Content-Type': 'application/json' };
+      if (formToken) headers['X-Form-Token'] = formToken;
       fetch('join/api/request', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: headers,
         body: JSON.stringify(body)
       }).then(function (r) {
         return r.json().catch(function () { return { error: 'server' }; });
@@ -241,7 +257,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
         if (!res.ok) {
           var focus = { bad_code: fields.code, account_taken: fields.account,
                         bad_account: fields.account, short_password: fields.password,
-                        bad_password: fields.password, bad_email: fields.email }[res.error];
+                        bad_password: fields.password, bad_email: fields.email,
+                        email_pending: fields.email }[res.error];
           if (focus === fields.code) document.getElementById('invite').open = true;
           return show(res.error || 'server', focus);
         }

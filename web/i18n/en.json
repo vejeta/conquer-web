@@ -214,6 +214,8 @@
   "e_mismatch": "The two passwords do not match.",
   "e_closed": "Sign-up is closed on this server right now.",
   "e_rate_limited": "Too many attempts. Wait a while and try again.",
+  "e_daily_limit": "Too many seats were requested from your network today. Try again tomorrow, or write to the administrator.",
+  "e_email_pending": "That email address already has a request waiting. Wait for the answer, or use another address.",
   "e_server": "Something went wrong on the server. Try again, or write to the administrator.",
   "e_network": "The server did not answer. Check your connection and try again.",
   "step1_t": "Your account for this website",

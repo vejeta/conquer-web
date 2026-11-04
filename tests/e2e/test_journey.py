@@ -161,6 +161,9 @@ class Player:
         if self.email:
             page.fill("#email", self.email)
         page.fill("#message", "rehearsal %s" % self.name())
+        # The gate drops a form sent less than 3 s after it opened (a robot);
+        # a person takes longer to type a name and a password twice
+        page.wait_for_timeout(3300)
         page.click("#submit")
         page.wait_for_selector("#done-pending:not([hidden])", timeout=30000)
         marks = dexec("cat", "/opt/conquer/lib/.players")

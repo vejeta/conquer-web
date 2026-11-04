@@ -66,6 +66,11 @@ jobs:
       TTYD_PASSWORD: ci-password
       TURN_SCHEDULE: "off"
       TURN_SCHEDULE_LABEL: "Weekly, Sundays at 20:00 UTC"
+      # The steps below sign up with curl, which has no form to wait for
+      # and sits at one address: the gate's browser checks are off here
+      # (its unit tests and the honeypot step cover them)
+      SIGNUP_MIN_FILL: "0"
+      SIGNUP_DAILY_LIMIT: "50"
     steps:
       - uses: actions/checkout@v5
 
@@ -271,6 +276,11 @@ jobs:
           # A request without a code creates a pending account
           ask '{"account":"asker","password":"asker-pass","email":"asker@example.org","message":"Hi from CI","lang":"es"}' | jq -e '.ok and .status == "pending"'
           ask '{"account":"asker","password":"asker-pass"}' | jq -e '.error == "account_taken"'
+          # One pending request per e-mail address; the hidden "website" field
+          # is answered like a request but creates nothing
+          ask '{"account":"asker9","password":"asker-pass","email":"ASKER@example.org"}' | jq -e '.error == "email_pending"'
+          ask '{"account":"trapped","password":"asker-pass","website":"http://spam.example"}' | jq -e '.ok and .status == "pending"'
+          ! sudo grep -q '^trapped' data/lib/.players data/auth/htpasswd
           ask '{"account":"nomail","password":"asker-pass","email":"not an address"}' | jq -e '.ok == false'
           # Names read as an option or as a directory are refused
           for bad in .. . -v .hidden; do

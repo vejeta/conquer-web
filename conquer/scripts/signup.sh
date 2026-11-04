@@ -15,6 +15,8 @@
 #        conquer-signup reject  ACCOUNT
 #        conquer-signup assign  ACCOUNT NATION|+|*          (NATION must exist in the world)
 #        conquer-signup invites COUNT                       (prints new codes)
+#        conquer-signup expire  DAYS                        (removes requests older than DAYS days
+#                                                            with their accounts; prints the names)
 #        conquer-signup CODE ACCOUNT                        (same as invite)
 #
 # Exit status: 0 done, 2 unknown or used code (invite) or account not
@@ -198,6 +200,28 @@ assign)
         fi
         drop_line "$REQUESTS_FILE" "$account" "$TAB"
         echo "$target"
+    ) 9> "$LOCK_FILE"
+    ;;
+expire)
+    days="$2"
+    [[ "$days" =~ ^[0-9]+$ ]] && [ "$days" -ge 1 ] || exit 1
+    [ -s "$REQUESTS_FILE" ] || exit 0
+    [ -w "$HTPASSWD_FILE" ] || exit 5
+    (
+        flock 9 || exit 1
+        cutoff=$(( $(date +%s) - days * 86400 ))
+        mapfile -t requests < "$REQUESTS_FILE"
+        for line in "${requests[@]}"; do
+            IFS=$'\t' read -r name since _ <<< "$line"
+            [[ "$since" =~ ^[0-9]+$ ]] && [ "$since" -lt "$cutoff" ] && valid_account "$name" || continue
+            if is_pending "$name"; then
+                drop_line "$HTPASSWD_FILE" "$name" || exit 1
+                drop_line "$PLAYERS_FILE" "$name" || exit 1
+                echo "$name"
+            fi
+            # Also a request line whose account is no longer waiting
+            drop_line "$REQUESTS_FILE" "$name" "$TAB"
+        done
     ) 9> "$LOCK_FILE"
     ;;
 invites)

@@ -214,6 +214,8 @@
   "e_mismatch": "Hasła się różnią.",
   "e_closed": "Zapisy na tym serwerze są teraz zamknięte.",
   "e_rate_limited": "Zbyt wiele prób. Odczekaj chwilę i spróbuj ponownie.",
+  "e_daily_limit": "Z twojej sieci poproszono dziś o zbyt wiele miejsc. Spróbuj jutro albo napisz do administratora.",
+  "e_email_pending": "Dla tego adresu e-mail czeka już prośba. Poczekaj na odpowiedź albo podaj inny adres.",
   "e_server": "Coś poszło nie tak na serwerze. Spróbuj ponownie albo napisz do administratora.",
   "e_network": "Serwer nie odpowiada. Sprawdź połączenie i spróbuj ponownie.",
   "step1_t": "Twoje konto na tej stronie",

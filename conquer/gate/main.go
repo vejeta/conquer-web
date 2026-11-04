@@ -20,6 +20,7 @@
 //	                       -> {"ok":true,"account":...,"status":"pending"|"approved"}
 //	                          or {"ok":false,"error":...}
 //	POST /join/api/signup  the same (old links)
+//	GET  /join/api/token   -> {"ok":true,"token":...}, sent back by the form in X-Form-Token
 //	GET  /join/api/health  -> "ok"
 //
 // Administrator endpoints (Apache signs the user in and sets
@@ -140,7 +141,10 @@ type gate struct {
 	conquer  string   // the game binary, to read the turn
 	requests *limiter // any sign-up request
 	failures *limiter // wrong invite codes: guessing is slow
-	admin    *limiter // administrator actions
+	daily    *limiter // requests that made a pending account: few per address and day
+	tokens   *formTokens
+	reqMu    sync.Mutex // one request at a time between the e-mail check and the account
+	admin    *limiter   // administrator actions
 	notify   *notifier
 }
 
@@ -332,17 +336,29 @@ func (g *gate) signup(w http.ResponseWriter, r *http.Request) {
 		Email    string `json:"email"`
 		Message  string `json:"message"`
 		Lang     string `json:"lang"`
+		Website  string `json:"website"` // the honeypot: people never see it
 	}
 	r.Body = http.MaxBytesReader(w, r.Body, 8192)
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		fail(w, http.StatusBadRequest, "bad_request")
 		return
 	}
+	account := strings.TrimSpace(in.Account)
+	// A script is told its request was taken, and nothing is created
+	if strings.TrimSpace(in.Website) != "" {
+		log.Printf("signup dropped: honeypot filled account=%q ip=%s", shortText(account, 40), ip)
+		reply(w, http.StatusOK, map[string]any{"ok": true, "account": account, "status": "pending"})
+		return
+	}
+	if ok, why := g.tokens.check(r.Header.Get(tokenHeader), ip); !ok {
+		log.Printf("signup dropped: %s account=%q ip=%s", why, shortText(account, 40), ip)
+		reply(w, http.StatusOK, map[string]any{"ok": true, "account": account, "status": "pending"})
+		return
+	}
 	code := ""
 	if strings.TrimSpace(in.Code) != "" {
 		code = normalizeCode(in.Code)
 	}
-	account := strings.TrimSpace(in.Account)
 	email := strings.TrimSpace(in.Email)
 	message := shortText(in.Message, 500)
 	lang := validLang(in.Lang)
@@ -373,6 +389,21 @@ func (g *gate) signup(w http.ResponseWriter, r *http.Request) {
 	if code != "" {
 		args = []string{"invite", code, account}
 		status = "approved"
+	} else {
+		// Pending accounts per address and day, and one request per
+		// address of e-mail: the queue cannot be filled by one visitor
+		if g.daily.full(ip) {
+			log.Printf("signup refused: daily limit ip=%s", ip)
+			fail(w, http.StatusTooManyRequests, "daily_limit")
+			return
+		}
+		g.reqMu.Lock()
+		defer g.reqMu.Unlock()
+		if g.emailPending(email) {
+			log.Printf("signup refused: e-mail already waiting account=%s ip=%s", account, ip)
+			fail(w, http.StatusConflict, "email_pending")
+			return
+		}
 	}
 	out, err := g.runHelper(ctx, in.Password+"\n", args...)
 	if err != nil {
@@ -390,6 +421,7 @@ func (g *gate) signup(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("signup: account %s created (%s) ip=%s", account, status, ip)
 	if status == "pending" {
+		g.daily.allow(ip) // counted only now that the account exists
 		g.notify.newRequest(account, email, message)
 	}
 	reply(w, http.StatusOK, map[string]any{"ok": true, "account": account, "status": status})
@@ -697,13 +729,20 @@ func main() {
 		conquer:  *conquer,
 		requests: newLimiter(20, 10*time.Minute),
 		failures: newLimiter(5, time.Hour),
+		daily:    newLimiter(envInt("SIGNUP_DAILY_LIMIT", defaultDailyPerIP), 24*time.Hour),
 		admin:    newLimiter(120, 10*time.Minute),
 		notify:   loadNotifier(),
+	}
+	g.tokens = newFormTokens(loadSecret(g.lib+"/"+secretFileName),
+		time.Duration(envInt("SIGNUP_MIN_FILL", int(defaultMinFill/time.Second)))*time.Second)
+	if days := envInt("SIGNUP_EXPIRE_DAYS", defaultExpireDays); days > 0 {
+		go g.expireLoop(days, expireFirstRunAfter, expireInterval)
 	}
 	go func() {
 		for range time.Tick(10 * time.Minute) {
 			g.requests.cleanup()
 			g.failures.cleanup()
+			g.daily.cleanup()
 			g.admin.cleanup()
 		}
 	}()
@@ -711,6 +750,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/join/api/request", g.signup)
 	mux.HandleFunc("/join/api/signup", g.signup)
+	mux.HandleFunc("/join/api/token", g.token)
 	mux.HandleFunc("/join/api/health", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("ok\n"))
 	})

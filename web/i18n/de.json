@@ -214,6 +214,8 @@
   "e_mismatch": "Die beiden Passwörter stimmen nicht überein.",
   "e_closed": "Auf diesem Server ist die Anmeldung gerade geschlossen.",
   "e_rate_limited": "Zu viele Versuche. Warte eine Weile und versuch es erneut.",
+  "e_daily_limit": "Aus deinem Netz wurden heute zu viele Plätze angefragt. Versuch es morgen wieder oder schreib dem Spielleiter.",
+  "e_email_pending": "Für diese E-Mail-Adresse wartet schon eine Anfrage. Warte auf die Antwort oder nimm eine andere Adresse.",
   "e_server": "Auf dem Server ist etwas schiefgegangen. Versuch es erneut oder schreib dem Spielleiter.",
   "e_network": "Der Server antwortet nicht. Prüf deine Verbindung und versuch es erneut.",
   "step1_t": "Dein Konto für diese Website",

@@ -94,6 +94,23 @@ becoming players without the administrator's approval.
   codes per hour, 120 administrator actions per 10 minutes. At most 200
   requests wait for approval at once, after which the page says sign-up is
   closed.
+- Against a script filling that queue (`abuse.go`): a second limiter lets one
+  address make **3 pending accounts per 24 hours** (counted only when the
+  account was created, so typos do not use it up; invite codes are not
+  requests); a hidden `website` field that people never fill (a request that
+  fills it is dropped); a minimum fill time (the form fetches
+  `GET /join/api/token`, a timestamp signed with HMAC-SHA-256 together with the
+  client address, and sends it back in `X-Form-Token`; a request that is
+  missing the token, forged, from another address, older than 48 hours or
+  younger than 3 seconds is dropped); and one waiting request per email
+  address (case ignored). A dropped request gets the normal "pending" answer so
+  a script cannot tell, and the gate logs it (`signup dropped: ...`). The
+  signing key is kept in `lib/.gate-secret` (mode 600). Settings:
+  `SIGNUP_DAILY_LIMIT` (3), `SIGNUP_MIN_FILL` in seconds (3; 0 turns the token
+  check off), `SIGNUP_EXPIRE_DAYS` (30).
+- Requests nobody decides are removed after 30 days, with their account in the
+  account file and `.players` (`conquer-signup expire`, run by the gate two
+  minutes after it starts and then every 24 hours; logged as `expire: ...`).
 - POSTs are refused when the browser's `Origin` is another site.
 - Invite codes: 8 characters from a 32-letter alphabet read from
   `/dev/urandom` (40 bits), stored in `lib/.invites`, used once (removed under

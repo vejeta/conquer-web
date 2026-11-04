@@ -40,5 +40,8 @@ services:
       - SMTP_FROM=conquer@e2e.test
       - SITE_URL=https://localhost
       - SIGNUP=on
+      # All the players come from one address: the daily limit per address
+      # must not stop them (the form's minimum fill time stays on)
+      - SIGNUP_DAILY_LIMIT=1000
     depends_on:
       - mailpit

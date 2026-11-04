@@ -214,6 +214,8 @@
   "e_mismatch": "Las dos contraseñas no coinciden.",
   "e_closed": "Las altas están cerradas en este servidor ahora mismo.",
   "e_rate_limited": "Demasiados intentos. Espera un rato y vuelve a probar.",
+  "e_daily_limit": "Hoy se han pedido demasiadas plazas desde tu red. Vuelve a probar mañana o escribe al administrador.",
+  "e_email_pending": "Ese correo ya tiene una solicitud pendiente. Espera la respuesta o usa otro correo.",
   "e_server": "Algo ha fallado en el servidor. Vuelve a probar o escribe al administrador.",
   "e_network": "El servidor no responde. Comprueba tu conexión y vuelve a probar.",
   "step1_t": "Tu cuenta de este sitio web",

@@ -38,6 +38,12 @@ services:
       - SMTP_FROM=${SMTP_FROM:-}
       - SMTP_STARTTLS=${SMTP_STARTTLS:-on}
       - SIGNUP_WEBHOOK_URL=${SIGNUP_WEBHOOK_URL:-}
+      # Abuse limits of the sign-up page; empty keeps the gate's defaults
+      # (3 pending requests per address and day, 3 seconds to fill the
+      # form, requests expire after 30 days)
+      - SIGNUP_DAILY_LIMIT=${SIGNUP_DAILY_LIMIT:-}
+      - SIGNUP_MIN_FILL=${SIGNUP_MIN_FILL:-}
+      - SIGNUP_EXPIRE_DAYS=${SIGNUP_EXPIRE_DAYS:-}
     volumes:
       # Live world data: persists across rebuilds, seeded on first start
       - ./data/lib:/opt/conquer/lib

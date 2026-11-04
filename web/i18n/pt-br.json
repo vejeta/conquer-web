@@ -214,6 +214,8 @@
   "e_mismatch": "As duas senhas não coincidem.",
   "e_closed": "As inscrições estão fechadas neste servidor agora.",
   "e_rate_limited": "Tentativas demais. Espere um pouco e tente de novo.",
+  "e_daily_limit": "Vagas demais foram pedidas da sua rede hoje. Tente de novo amanhã ou escreva ao administrador.",
+  "e_email_pending": "Esse e-mail já tem um pedido pendente. Espere a resposta ou use outro e-mail.",
   "e_server": "Algo deu errado no servidor. Tente de novo ou escreva para o administrador.",
   "e_network": "O servidor não respondeu. Verifique a sua conexão e tente de novo.",
   "step1_t": "A sua conta deste site",
