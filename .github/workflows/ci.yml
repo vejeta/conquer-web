@@ -160,7 +160,7 @@ jobs:
           api /tmp/jar-acc /account/api/init '{}' | jq -e '.ok and .has_recovery and (has("recovery_code") | not)'
           # Only the bcrypt hash is kept, in a file only the game user reads
           test "$(sudo stat -c %a data/lib/.recovery)" = 600
-          sudo grep -qE "^$TTYD_USERNAME:\$2[aby]\$" data/lib/.recovery
+          sudo grep -qE "^$TTYD_USERNAME:"'\$2[aby]\$' data/lib/.recovery
           ! sudo grep -q "$code1" data/lib/.recovery
           # Change the password: a wrong current one is refused (403), the right one works
           test "$(code -b /tmp/jar-acc -H "$J" -d "{\"current\":\"nope-nope\",\"new\":\"changed-pass-1\"}" https://localhost/account/api/password)" = 403
