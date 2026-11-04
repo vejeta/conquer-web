@@ -40,6 +40,12 @@ tests/e2e/down.sh --wipe-data
 the administrator's password (from `.run.env`) the tests skip, so a plain
 `pytest` never needs the stack.
 
+The stack relaxes only what six players from one address would trip:
+`SIGNUP_DAILY_LIMIT=1000` and `NOTIFY_DIGEST_SECONDS=0` in
+`docker-compose.e2e.yml`. The sign-up form's minimum fill time (3 s) and the
+honeypot stay on: the journey waits 3.3 s with the form filled before it
+presses the button, as a person would.
+
 ## What the journey checks
 
 Each player runs in its own thread and browser context, with a mix of Pixel 7,
