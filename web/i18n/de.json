@@ -256,6 +256,8 @@
   "approve": "Freigeben",
   "reject": "Ablehnen",
   "confirm_reject": "{account} ablehnen? Das Website-Konto wird gelöscht.",
+  "confirm_approve": "{account} freigeben? Die Freigabe-Mail geht an {email}.",
+  "confirm_approve_noemail": "{account} freigeben? Es wurde keine E-Mail-Adresse angegeben, also erfährt es niemand.",
   "no_requests": "Keine offenen Anfragen.",
   "no_email": "keine E-Mail",
   "no_message": "keine Nachricht",

@@ -400,8 +400,11 @@ def test_admin_page(site, browser):
     page.wait_for_function("() => document.querySelectorAll('#invites li').length === 3")
     assert ("invite", {"count": 3}) in posts
     page.click("#tab-requests")
+    asked = []
+    page.on("dialog", lambda d: (asked.append(d.message), d.accept()))
     page.locator("#requests li").nth(0).locator("button.approve").click()
     page.wait_for_function("() => document.querySelectorAll('#requests li').length === 1")
+    assert len(asked) == 1 and "ana@example.org" in asked[0]
     assert ("approve", {"account": "ana"}) in posts
     assert "approved" in page.inner_text("#info")
     body = page.inner_text("body")
@@ -467,6 +470,36 @@ def test_admin_reject_asks_first(site, browser):
     page.locator("#requests li").nth(0).locator("button.reject").click()
     page.wait_for_function("() => document.getElementById('info').textContent.includes('rechazado')")
     assert [json.loads(p) for p in posts] == [{"account": "ana"}]
+    page.close()
+
+
+def test_admin_approve_shows_the_email_and_asks_first(site, browser):
+    posts = []
+    page = browser.new_page()
+
+    def api(route):
+        if route.request.method == "POST":
+            posts.append(route.request.post_data)
+            return route.fulfill(content_type="application/json", body='{"ok": true}')
+        route.fulfill(content_type="application/json", body=json.dumps(ADMIN_STATE))
+    page.route("**/admin/api/**", api)
+    page.goto(site + "admin.html?lang=es")
+    page.wait_for_selector("#app:not([hidden])")
+    # The address is on the card next to the buttons
+    assert "ana@example.org" in page.locator("#requests li").nth(0).inner_text()
+    asked = []
+    answers = iter([False, True, True])
+    page.on("dialog", lambda d: (asked.append(d.message), d.accept() if next(answers) else d.dismiss()))
+    page.locator("#requests li").nth(0).locator("button.approve").click()
+    page.wait_for_timeout(300)
+    assert posts == [], "approving needs a yes"
+    page.locator("#requests li").nth(0).locator("button.approve").click()
+    page.wait_for_function("() => document.getElementById('info').textContent.includes('aprobado')")
+    assert [json.loads(p) for p in posts] == [{"account": "ana"}]
+    # A request without an address says that nobody will be told
+    page.locator("#requests li").nth(1).locator("button.approve").click()
+    page.wait_for_function("() => document.getElementById('info').textContent.includes('bob')")
+    assert "ana@example.org" in asked[0] and "bob" in asked[2] and "ana@example.org" not in asked[2]
     page.close()
 
 

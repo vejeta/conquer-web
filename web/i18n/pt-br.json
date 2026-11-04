@@ -256,6 +256,8 @@
   "approve": "Aprovar",
   "reject": "Recusar",
   "confirm_reject": "Recusar {account}? A conta dele no site será apagada.",
+  "confirm_approve": "Aprovar {account}? O e-mail de aprovação vai para {email}.",
+  "confirm_approve_noemail": "Aprovar {account}? Nenhum e-mail foi informado, então ninguém será avisado.",
   "no_requests": "Nenhum pedido pendente.",
   "no_email": "sem e-mail",
   "no_message": "sem mensagem",

@@ -256,6 +256,8 @@
   "approve": "Approve",
   "reject": "Reject",
   "confirm_reject": "Reject {account}? Their website account will be deleted.",
+  "confirm_approve": "Approve {account}? The approval mail goes to {email}.",
+  "confirm_approve_noemail": "Approve {account}? No email address was given, so nobody is told.",
   "no_requests": "No requests waiting.",
   "no_email": "no email",
   "no_message": "no message",

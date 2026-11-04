@@ -194,7 +194,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
         li.appendChild(r.email ? el('span', 'meta', r.email) : el('span', 'meta none', m('no_email')));
         li.appendChild(r.message ? el('p', 'text', r.message) : el('p', 'text none', m('no_message')));
         var actions = el('div', 'actions');
-        actions.appendChild(button(m('approve'), 'approve key key-primary', function (b) { approve(r.account, b); }));
+        actions.appendChild(button(m('approve'), 'approve key key-primary', function (b) { approve(r.account, r.email, b); }));
         actions.appendChild(button(m('reject'), 'danger reject key', function (b) { reject(r.account, b); }));
         li.appendChild(actions);
         list.appendChild(li);
@@ -275,7 +275,10 @@ SPDX-License-Identifier: GPL-3.0-or-later
       }).catch(function () { b.disabled = false; fail('network'); });
     }
 
-    function approve(account, b) {
+    // The email shows next to the button; the answer of the approval goes to it,
+    // so the administrator confirms the address (a stranger's, if a robot typed it)
+    function approve(account, email, b) {
+      if (!window.confirm(email ? m('confirm_approve', { account: account, email: email }) : m('confirm_approve_noemail', { account: account }))) return;
       b.disabled = true;
       call('/admin/api/approve', { account: account }).then(function (res) {
         b.disabled = false;

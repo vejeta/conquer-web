@@ -256,6 +256,8 @@
   "approve": "Zatwierdź",
   "reject": "Odrzuć",
   "confirm_reject": "Odrzucić {account}? Jego konto na stronie zostanie usunięte.",
+  "confirm_approve": "Zatwierdzić {account}? List o zatwierdzeniu trafi na {email}.",
+  "confirm_approve_noemail": "Zatwierdzić {account}? Nie podano adresu e-mail, więc nikt nie zostanie powiadomiony.",
   "no_requests": "Brak oczekujących próśb.",
   "no_email": "brak e-maila",
   "no_message": "brak wiadomości",

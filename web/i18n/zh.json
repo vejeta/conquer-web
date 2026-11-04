@@ -256,6 +256,8 @@
   "approve": "批准",
   "reject": "拒绝",
   "confirm_reject": "拒绝 {account}？其网站账号将被删除。",
+  "confirm_approve": "批准 {account}？批准邮件将发送到 {email}。",
+  "confirm_approve_noemail": "批准 {account}？未提供邮箱，因此不会通知任何人。",
   "no_requests": "没有待处理的申请。",
   "no_email": "无邮箱",
   "no_message": "无留言",

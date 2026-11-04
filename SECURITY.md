@@ -133,7 +133,11 @@ becoming players without the administrator's approval.
   header can be injected (addresses and text cannot carry a line break), the
   body is plain text. SMTP uses STARTTLS or implicit TLS with certificate
   verification unless `SMTP_STARTTLS=off`. The webhook gets only the account
-  name and the admin URL. New requests are announced in digests: the first
+  name and the admin URL. The approval mail goes to the address the visitor
+  typed, so the administrator page shows it on each request and asks for
+  confirmation ("The approval mail goes to ...", or that nobody will be told)
+  before Approve is sent; reject a request whose address looks like a stranger's.
+  New requests are announced in digests: the first
   one right away, the ones that follow within 10 minutes in one message
   ("N new requests", the first 25 accounts with their address and none of the
   free-text messages), so a flood of requests is at most one mail and one
