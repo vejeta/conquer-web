@@ -63,16 +63,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
         <label for="password2" data-i18n="join.l_password2">Repeat the password</label>
         <input class="input" id="password2" name="password2" type="password" autocomplete="new-password" required minlength="8" maxlength="72">
       </div>
-      <div class="field">
-        <label for="email" data-i18n="join.l_email">Email (optional)</label>
-        <input class="input" id="email" name="email" type="email" autocomplete="email" spellcheck="false" maxlength="120">
-        <span class="help" data-i18n="join.h_email">To tell you when you are approved. Only the administrator sees it.</span>
-      </div>
-      <div class="field">
-        <label for="message" data-i18n="join.l_message">Message for the administrator (optional)</label>
-        <textarea class="input" id="message" name="message" maxlength="500" rows="3"></textarea>
-        <span class="help" data-i18n="join.h_message">Who you are, how you found Conquer... (up to 500 characters)</span>
-      </div>
       <details class="invite" id="invite">
         <summary data-i18n="join.code_summary">Have an invite code?</summary>
         <div class="field">
@@ -105,7 +95,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
   <section class="panel done" id="done-pending" hidden aria-live="polite">
     <h2 data-i18n="join.pending_title">Your seat is pending</h2>
-    <p><span data-i18n="join.pending_text">The administrator approves seats by hand. Once you are approved you can found your nation at any turn; a late nation starts with extra points.</span> <span id="pending-mail"></span></p>
+    <p><span data-i18n="join.pending_text">The administrator approves seats by hand. Once you are approved you can found your nation at any turn; a late nation starts with extra points.</span> <span data-i18n="join.pending_check">We keep no email address, so nobody can tell you when you are approved: come back later and press Play to see how your request stands.</span></p>
     <p data-i18n="join.pending_play">Your website account works already: Play shows the practice world and the state of your seat.</p>
     <p><strong data-i18n="join.pending_meanwhile">Meanwhile:</strong></p>
     <ul class="meanwhile">
@@ -155,8 +145,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     var submit = document.getElementById('submit');
     var fields = {
       code: document.getElementById('code'), account: document.getElementById('account'),
-      password: document.getElementById('password'), password2: document.getElementById('password2'),
-      email: document.getElementById('email'), message: document.getElementById('message')
+      password: document.getElementById('password'), password2: document.getElementById('password2')
     };
     // The server timestamps the form when it opens (a robot that submits at
     // once is dropped); the token goes back in a header with the request
@@ -185,19 +174,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
         a.href = 'game.html' + (lang !== 'en' ? '?lang=' + lang : '');
       });
     }
-    // What the reply said, to show it again in another language
-    var result = null;
-    function pendingMail() {
-      if (!result) return;
-      document.getElementById('pending-mail').textContent =
-        result.email ? m('pending_mail', { email: result.email }) : m('pending_nomail');
-    }
     // Another language: its texts come from the catalog; the error shown
     // and the Play links follow it
     document.addEventListener('conquer:lang', function () {
       error.hidden = true;
       playLinks();
-      pendingMail();
     });
     playLinks();
 
@@ -230,16 +211,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       error.hidden = true;
-      var account = fields.account.value.trim(), email = fields.email.value.trim();
-      var code = fields.code.value.trim(), message = fields.message.value.trim();
+      var account = fields.account.value.trim();
+      var code = fields.code.value.trim();
       if (!/^[A-Za-z0-9_.-]{1,32}$/.test(account)) return show('bad_account', fields.account);
       if (fields.password.value.length < 8) return show('short_password', fields.password);
       if (fields.password.value !== fields.password2.value) return show('mismatch', fields.password2);
-      if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return show('bad_email', fields.email);
       submit.disabled = true;
       var body = { account: account, password: fields.password.value };
-      if (email) body.email = email;
-      if (message) body.message = message;
       if (code) body.code = code;
       body.lang = conquerI18n.lang();
       // The hidden field: empty for people
@@ -258,12 +236,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
         if (!res.ok) {
           var focus = { bad_code: fields.code, account_taken: fields.account,
                         bad_account: fields.account, short_password: fields.password,
-                        bad_password: fields.password, bad_email: fields.email,
-                        email_pending: fields.email }[res.error];
+                        bad_password: fields.password }[res.error];
           if (focus === fields.code) document.getElementById('invite').open = true;
           return show(res.error || 'server', focus);
         }
-        result = { account: res.account || account, email: email };
+        var made = res.account || account;
         playLinks();
         // Done: the next steps replace the form, at the top
         document.getElementById('keys').hidden = true;
@@ -271,10 +248,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
         document.getElementById('form-panel').hidden = true;
         var next;
         if (res.status === 'approved') {
-          document.getElementById('done-account').textContent = result.account;
+          document.getElementById('done-account').textContent = made;
           next = document.getElementById('done');
         } else {
-          pendingMail();
           next = document.getElementById('done-pending');
         }
         next.hidden = false;

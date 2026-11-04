@@ -82,7 +82,7 @@ becoming players without the administrator's approval.
   banned on every request (`apache-dos-conquer`) is removed: it counted every page and
   asset and banned players behind a shared address.
 - The pages put server text in the DOM with `textContent` (account names,
-  emails and messages on the administrator page, nation names and news on the
+  account names on the administrator page, nation names and news on the
   landing page); the news pages escape HTML.
 
 ### Sign-up service (`conquer/gate`, Go, standard library only)
@@ -98,9 +98,9 @@ becoming players without the administrator's approval.
   accounts marked `?` (waiting).
 - Passwords: 8 to 72 bytes on one line, passed to `htpasswd -niB -C 10` on
   standard input (never in a command line or a log), stored as bcrypt.
-- Sizes: request body 8 KB, message 500 characters on one line, email 120
-  characters with no whitespace, quotes, commas, angle brackets; language from a
-  fixed list.
+- Sizes: request body 8 KB; language from a fixed list. No email address or
+  free text of the player is asked for, stored, logged or mailed: a request that
+  still carries those fields (an old page) has them ignored.
 - Rate limits per client address (the one Apache adds last to
   `X-Forwarded-For`): 20 requests per 10 minutes, 5 wrong or malformed invite
   codes per hour, 120 administrator actions per 10 minutes. At most 200
@@ -114,8 +114,7 @@ becoming players without the administrator's approval.
   `GET /join/api/token`, a timestamp signed with HMAC-SHA-256 together with the
   client address, and sends it back in `X-Form-Token`; a request that is
   missing the token, forged, from another address, older than 48 hours or
-  younger than 3 seconds is dropped); and one waiting request per email
-  address (case ignored). A dropped request gets the normal "pending" answer so
+  younger than 3 seconds is dropped). A dropped request gets the normal "pending" answer so
   a script cannot tell, and the gate logs it (`signup dropped: ...`). The
   signing key is kept in `lib/.gate-secret` (mode 600). Settings:
   `SIGNUP_DAILY_LIMIT` (3), `SIGNUP_MIN_FILL` in seconds (3; 0 turns the token
@@ -128,20 +127,17 @@ becoming players without the administrator's approval.
   `/dev/urandom` (40 bits), stored in `lib/.invites`, used once (removed under
   the lock together with the account creation), guessable only at five tries an
   hour per address.
-- Mail (`notify.go`): the recipient is the administrator's configured address,
-  or the visitor's address after approval; subject is one encoded line, no
-  header can be injected (addresses and text cannot carry a line break), the
-  body is plain text. SMTP uses STARTTLS or implicit TLS with certificate
-  verification unless `SMTP_STARTTLS=off`. The webhook gets only the account
-  name and the admin URL. The approval mail goes to the address the visitor
-  typed, so the administrator page shows it on each request and asks for
-  confirmation ("The approval mail goes to ...", or that nobody will be told)
-  before Approve is sent; reject a request whose address looks like a stranger's.
-  New requests are announced in digests: the first
-  one right away, the ones that follow within 10 minutes in one message
-  ("N new requests", the first 25 accounts with their address and none of the
-  free-text messages), so a flood of requests is at most one mail and one
-  webhook message every 10 minutes.
+- Mail (`notify.go`): the only recipient is the administrator's configured
+  address; players are never mailed. Subject is one encoded line, no header can
+  be injected, the body is plain text. SMTP uses STARTTLS or implicit TLS with
+  certificate verification unless `SMTP_STARTTLS=off`. The webhook gets only the
+  account name and the admin URL. The administrator page asks "Approve
+  ACCOUNT?" before Approve is sent. New requests are announced in digests: the
+  first one right away, the ones that follow within 10 minutes in one message
+  ("N new requests", the first 25 account names), so a flood of requests is at
+  most one mail and one webhook message every 10 minutes.
+- Old data: earlier versions kept an email and a message per pending request in
+  `lib/.requests`; the gate removes them at start (`conquer-signup scrub`).
 
 ### Scripts and the terminal menu (`conquer/scripts`)
 
@@ -190,7 +186,7 @@ becoming players without the administrator's approval.
 - The gate is a static Go binary built in a separate stage; the image has no
   compiler.
 - Backups made before each turn are mode 600 in a 700 directory (they hold the
-  nations' password hashes, emails and unused invite codes).
+  nations' password hashes and unused invite codes).
 
 ### Host
 
@@ -208,8 +204,8 @@ becoming players without the administrator's approval.
 
 `status/status.json`, `history.json` and the news pages hold the turn, the
 schedule, nation names, race, class, alignment, scores, and the news with the
-captured-sector list left out. They never hold account names, emails, requests
-or the invite codes. `ADMIN_CONTACT`, if you set it, is public.
+captured-sector list left out. They never hold account names, requests or the
+invite codes. `ADMIN_CONTACT`, if you set it, is public.
 
 ### CI
 
@@ -264,9 +260,10 @@ approval flows. A step fails if the password shows up in a container log.
   god and every sample nation locked (`conqpasswd -l`), so no password opens
   them; CI checks this. The one exception is `trainee` in the practice world,
   which is public on purpose (`train1`).
-- **Personal data.** Emails and messages are kept in `lib/.requests` until the
-  request is decided, and in backups. The gate logs the account name and the
-  client address of sign-ups and refusals.
+- **Personal data.** No email address and no free text of players is kept.
+  `lib/.requests` holds the account name, the time and the language of waiting
+  requests. The gate logs the account name and the client address of sign-ups
+  and refusals (the container log is rotated by Docker).
 - **Git history.** The first commits held a self-signed certificate key for
   `conquer.local` and, in the first world files, a god password hash. Neither is
   in use; do not reuse that password anywhere.

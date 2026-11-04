@@ -140,19 +140,19 @@ func (g *gate) token(w http.ResponseWriter, r *http.Request) {
 	reply(w, http.StatusOK, map[string]any{"ok": true, "token": g.tokens.issue(clientIP(r))})
 }
 
-// emailPending says whether a request that waits for approval already has
-// this address (case does not matter)
-func (g *gate) emailPending(email string) bool {
-	email = strings.ToLower(strings.TrimSpace(email))
-	if email == "" {
-		return false
+// scrub removes the email address and the message that older versions
+// kept with each pending request (conquer-signup scrub); it returns how
+// many requests it changed
+func (g *gate) scrub(ctx context.Context) (int, error) {
+	ctx, cancel := context.WithTimeout(ctx, pendingHelperTimeout)
+	defer cancel()
+	out, err := g.runHelper(ctx, "", "scrub")
+	if err != nil {
+		return 0, fmt.Errorf("%v: %s", err, out)
 	}
-	for _, req := range g.pending() {
-		if strings.ToLower(req.Email) == email {
-			return true
-		}
-	}
-	return false
+	lines := strings.Split(out, "\n")
+	n, _ := strconv.Atoi(strings.TrimSpace(lines[len(lines)-1]))
+	return n, nil
 }
 
 // expire removes the requests nobody decided in days days, with their

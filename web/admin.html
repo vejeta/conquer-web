@@ -22,8 +22,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
     .list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s3); grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
     .card strong { font: 1.5rem/1.1 var(--font-mono); color: var(--phos-text); overflow-wrap: anywhere; }
     .card header { display: flex; flex-wrap: wrap; gap: 4px var(--s3); align-items: baseline; }
-    .card .text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
-    .card .none { color: var(--ink-dim); font-style: italic; }
     .card.invite-row { flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; }
     .card .code { font: 1.6rem/1 var(--font-mono); letter-spacing: .1em; color: var(--gold); overflow-wrap: anywhere; }
     .tab[aria-selected="true"] { color: var(--phos-text); border-color: var(--phos); border-bottom-color: var(--phos-dim); background: var(--phos-glow); }
@@ -191,10 +189,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
         head.appendChild(el('strong', '', r.account));
         head.appendChild(el('span', 'meta', ago(r.since)));
         li.appendChild(head);
-        li.appendChild(r.email ? el('span', 'meta', r.email) : el('span', 'meta none', m('no_email')));
-        li.appendChild(r.message ? el('p', 'text', r.message) : el('p', 'text none', m('no_message')));
         var actions = el('div', 'actions');
-        actions.appendChild(button(m('approve'), 'approve key key-primary', function (b) { approve(r.account, r.email, b); }));
+        actions.appendChild(button(m('approve'), 'approve key key-primary', function (b) { approve(r.account, b); }));
         actions.appendChild(button(m('reject'), 'danger reject key', function (b) { reject(r.account, b); }));
         li.appendChild(actions);
         list.appendChild(li);
@@ -275,15 +271,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
       }).catch(function () { b.disabled = false; fail('network'); });
     }
 
-    // The email shows next to the button; the answer of the approval goes to it,
-    // so the administrator confirms the address (a stranger's, if a robot typed it)
-    function approve(account, email, b) {
-      if (!window.confirm(email ? m('confirm_approve', { account: account, email: email }) : m('confirm_approve_noemail', { account: account }))) return;
+    function approve(account, b) {
+      if (!window.confirm(m('confirm_approve', { account: account }))) return;
       b.disabled = true;
       call('/admin/api/approve', { account: account }).then(function (res) {
         b.disabled = false;
         if (!res.ok) return fail(res.error || 'server');
-        say(info, m(res.emailed ? 'approved_emailed' : 'approved_ok', { account: account }));
+        say(info, m('approved_ok', { account: account }));
         return load();
       }).catch(function () { b.disabled = false; fail('network'); });
     }

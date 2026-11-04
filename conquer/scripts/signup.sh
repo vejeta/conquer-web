@@ -7,9 +7,10 @@
 # lib/.players: "account:?" while the administrator has not approved it,
 # "account:+" once it may found a nation (the first time the player plays,
 # the menu opens the nation builder). Pending requests are also listed in
-# lib/.requests (account, time, email, message, language; tab separated).
+# lib/.requests (account, time, language; tab separated). No email address
+# or free text is asked for or kept: "scrub" removes what older versions stored.
 #
-# usage: conquer-signup request ACCOUNT [EMAIL] [MESSAGE] [LANG]   (password on stdin)
+# usage: conquer-signup request ACCOUNT [LANG]              (password on stdin)
 #        conquer-signup invite  CODE ACCOUNT                (password on stdin)
 #        conquer-signup approve ACCOUNT
 #        conquer-signup reject  ACCOUNT
@@ -17,6 +18,9 @@
 #        conquer-signup invites COUNT                       (prints new codes)
 #        conquer-signup expire  DAYS                        (removes requests older than DAYS days
 #                                                            with their accounts; prints the names)
+#        conquer-signup scrub                               (removes the email and message that older
+#                                                            versions kept in lib/.requests; prints how
+#                                                            many requests it changed)
 #        conquer-signup CODE ACCOUNT                        (same as invite)
 #
 # Exit status: 0 done, 2 unknown or used code (invite) or account not
@@ -51,13 +55,6 @@ drop_line() {
 # Is $2 the first field of file $1?
 has_key() {
     awk -F: -v user="$2" '$1 == user { found = 1 } END { exit !found }' "$1" 2>/dev/null
-}
-
-# Text on one line, at most $2 characters
-oneline() {
-    local s
-    s=$(printf '%s' "$1" | tr '\t\r\n' '   ')
-    printf '%s' "${s:0:$2}"
 }
 
 # Read and check the password on standard input
@@ -118,10 +115,8 @@ case "$cmd" in
 request)
     account="$2"
     valid_account "$account" || exit 3
-    email=$(oneline "$3" 120)
-    message=$(oneline "$4" 500)
-    case "$5" in
-        en|es|de|pl|pt-br|ru|zh) lang="$5" ;;
+    case "$3" in
+        en|es|de|pl|pt-br|ru|zh) lang="$3" ;;
         *) lang=en ;;
     esac
     read_password
@@ -132,7 +127,7 @@ request)
         create_account "$account" '?'
         touch "$REQUESTS_FILE" 2>/dev/null
         chmod 640 "$REQUESTS_FILE" 2>/dev/null
-        printf '%s\t%s\t%s\t%s\t%s\n' "$account" "$(date +%s)" "$email" "$message" "$lang" >> "$REQUESTS_FILE" || {
+        printf '%s\t%s\t%s\n' "$account" "$(date +%s)" "$lang" >> "$REQUESTS_FILE" || {
             drop_line "$PLAYERS_FILE" "$account"
             drop_line "$HTPASSWD_FILE" "$account"
             exit 1
@@ -222,6 +217,23 @@ expire)
             # Also a request line whose account is no longer waiting
             drop_line "$REQUESTS_FILE" "$name" "$TAB"
         done
+    ) 9> "$LOCK_FILE"
+    ;;
+scrub)
+    # Requests of older versions held an email and a message (5 columns:
+    # account, time, email, message, language): keep account, time, language
+    [ -s "$REQUESTS_FILE" ] || { echo 0; exit 0; }
+    (
+        flock 9 || exit 1
+        changed=$(awk -F'\t' '!(NF == 3) { n++ } END { print n + 0 }' "$REQUESTS_FILE")
+        if [ "$changed" -gt 0 ]; then
+            rest=$(awk -F'\t' 'BEGIN { OFS = "\t" }
+                NF >= 5 { print $1, $2, $5; next }
+                NF == 3 { print; next }
+                { print $1, $2, "en" }' "$REQUESTS_FILE") || exit 1
+            if [ -n "$rest" ]; then printf '%s\n' "$rest" > "$REQUESTS_FILE"; else : > "$REQUESTS_FILE"; fi
+        fi
+        echo "$changed"
     ) 9> "$LOCK_FILE"
     ;;
 invites)

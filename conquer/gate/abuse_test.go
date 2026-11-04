@@ -6,6 +6,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -16,8 +17,9 @@ import (
 )
 
 // fakeHelper writes a stand-in for conquer-signup: "request" appends the
-// account and e-mail to lib/.requests, "invite" succeeds, "expire" prints
-// what the test put in lib/expired. Every call is logged to lib/calls.
+// account and language to lib/.requests, "invite" succeeds, "expire" prints
+// what the test put in lib/expired, "scrub" prints lib/scrubbed. Every call
+// is logged to lib/calls.
 func fakeHelper(t *testing.T, lib string) string {
 	t.Helper()
 	path := filepath.Join(t.TempDir(), "conquer-signup")
@@ -28,6 +30,7 @@ cat > /dev/null
 case "$1" in
 request) printf '%s\t1\t%s\n' "$2" "$3" >> "$LIB/.requests" ;;
 expire) cat "$LIB/expired" 2>/dev/null ;;
+scrub) cat "$LIB/scrubbed" 2>/dev/null || echo 0 ;;
 esac
 exit 0
 `
@@ -91,14 +94,14 @@ func oldToken(g *gate, ip string) string {
 	return g.tokens.issue(ip)
 }
 
-func asking(account, email string) map[string]any {
-	return map[string]any{"account": account, "password": "long enough", "email": email}
+func asking(account string) map[string]any {
+	return map[string]any{"account": account, "password": "long enough"}
 }
 
 func TestTokenTooFastIsDroppedSilently(t *testing.T) {
 	g, lib := testGate(t)
 	fresh := g.tokens.issue("203.0.113.1")
-	res := post(g, "203.0.113.1", fresh, asking("fast", ""))
+	res := post(g, "203.0.113.1", fresh, asking("fast"))
 	if !res.OK || res.Status != "pending" {
 		t.Fatalf("a dropped request must look accepted: %+v", res)
 	}
@@ -109,7 +112,7 @@ func TestTokenTooFastIsDroppedSilently(t *testing.T) {
 		t.Error("a dropped request does not use up the daily limit")
 	}
 	// Slow enough: created
-	res = post(g, "203.0.113.1", oldToken(g, "203.0.113.1"), asking("slow", ""))
+	res = post(g, "203.0.113.1", oldToken(g, "203.0.113.1"), asking("slow"))
 	if !res.OK || len(calls(lib)) != 1 {
 		t.Fatalf("a form filled in a minute is accepted: %+v %v", res, calls(lib))
 	}
@@ -138,7 +141,7 @@ func TestTokenMissingForgedForeignOrOld(t *testing.T) {
 		"bad stamp": "x." + g.tokens.mac("x", ip),
 	}
 	for name, token := range cases {
-		res := post(g, ip, token, asking("bot"+strings.ReplaceAll(name, " ", ""), ""))
+		res := post(g, ip, token, asking("bot"+strings.ReplaceAll(name, " ", "")))
 		if !res.OK {
 			t.Errorf("%s: a dropped request must look accepted: %+v", name, res)
 		}
@@ -146,7 +149,7 @@ func TestTokenMissingForgedForeignOrOld(t *testing.T) {
 	if len(calls(lib)) != 0 {
 		t.Errorf("no token that fails the check may create an account: %v", calls(lib))
 	}
-	if res := post(g, ip, good, asking("human", "")); !res.OK || len(calls(lib)) != 1 {
+	if res := post(g, ip, good, asking("human")); !res.OK || len(calls(lib)) != 1 {
 		t.Errorf("the good token works: %+v", res)
 	}
 }
@@ -154,7 +157,7 @@ func TestTokenMissingForgedForeignOrOld(t *testing.T) {
 func TestTokenCheckOffWhenMinFillIsZero(t *testing.T) {
 	g, lib := testGate(t)
 	g.tokens.minFill = 0
-	if res := post(g, "203.0.113.3", "", asking("api", "")); !res.OK || len(calls(lib)) != 1 {
+	if res := post(g, "203.0.113.3", "", asking("api")); !res.OK || len(calls(lib)) != 1 {
 		t.Fatalf("with the check off no token is needed: %+v", res)
 	}
 }
@@ -162,7 +165,7 @@ func TestTokenCheckOffWhenMinFillIsZero(t *testing.T) {
 func TestHoneypot(t *testing.T) {
 	g, lib := testGate(t)
 	ip := "203.0.113.4"
-	body := asking("spam", "spam@example.org")
+	body := asking("spam")
 	body["website"] = "http://spam.example"
 	res := post(g, ip, oldToken(g, ip), body)
 	if !res.OK || res.Status != "pending" {
@@ -190,11 +193,11 @@ func TestDailyLimitCountsOnlySuccesses(t *testing.T) {
 		t.Fatal("refused requests must not use up the daily limit")
 	}
 	for i, name := range []string{"a1", "a2", "a3"} {
-		if res := post(g, ip, oldToken(g, ip), asking(name, "")); !res.OK {
+		if res := post(g, ip, oldToken(g, ip), asking(name)); !res.OK {
 			t.Fatalf("request %d: %+v", i, res)
 		}
 	}
-	res := post(g, ip, oldToken(g, ip), asking("a4", ""))
+	res := post(g, ip, oldToken(g, ip), asking("a4"))
 	if res.Code != http.StatusTooManyRequests || res.Error != "daily_limit" {
 		t.Fatalf("the fourth request of the day is limited: %+v", res)
 	}
@@ -202,7 +205,7 @@ func TestDailyLimitCountsOnlySuccesses(t *testing.T) {
 		t.Errorf("%d accounts were created, want 3", n)
 	}
 	// Another address has its own count
-	if res := post(g, "203.0.113.6", oldToken(g, "203.0.113.6"), asking("b1", "")); !res.OK {
+	if res := post(g, "203.0.113.6", oldToken(g, "203.0.113.6"), asking("b1")); !res.OK {
 		t.Errorf("another address is not limited: %+v", res)
 	}
 }
@@ -211,9 +214,9 @@ func TestDailyLimitDoesNotStopInviteCodes(t *testing.T) {
 	g, lib := testGate(t)
 	ip := "203.0.113.7"
 	for _, name := range []string{"a1", "a2", "a3"} {
-		post(g, ip, oldToken(g, ip), asking(name, ""))
+		post(g, ip, oldToken(g, ip), asking(name))
 	}
-	body := asking("invited", "")
+	body := asking("invited")
 	body["code"] = "K7QM-3XPA"
 	if res := post(g, ip, oldToken(g, ip), body); !res.OK || res.Status != "approved" {
 		t.Fatalf("an invite code is not a request: %+v", res)
@@ -223,33 +226,68 @@ func TestDailyLimitDoesNotStopInviteCodes(t *testing.T) {
 	}
 }
 
-func TestDuplicateEmailAmongPending(t *testing.T) {
+// The sign-up form no longer asks for an email address or a message; one
+// that an old page or a script sends is not stored, passed on or logged
+func TestEmailAndMessageAreNeverKept(t *testing.T) {
 	g, lib := testGate(t)
-	if res := post(g, "203.0.113.8", oldToken(g, "203.0.113.8"), asking("first", "Ana@Example.org")); !res.OK {
+	var logs strings.Builder
+	log.SetOutput(&logs)
+	defer log.SetOutput(os.Stderr)
+	body := asking("first")
+	body["email"] = "ana@example.org"
+	body["message"] = "call me on 555-0100"
+	body["lang"] = "es"
+	if res := post(g, "203.0.113.8", oldToken(g, "203.0.113.8"), body); !res.OK {
 		t.Fatalf("first: %+v", res)
 	}
-	res := post(g, "203.0.113.9", oldToken(g, "203.0.113.9"), asking("second", "ana@example.ORG"))
-	if res.Code != http.StatusConflict || res.Error != "email_pending" {
-		t.Fatalf("the same address (any case) is refused: %+v", res)
+	got := calls(lib)
+	if len(got) != 1 || got[0] != "request first es" {
+		t.Errorf("the helper gets the account and the language only: %v", got)
 	}
-	if n := len(calls(lib)); n != 1 {
-		t.Errorf("%d accounts were created, want 1", n)
+	if raw, _ := os.ReadFile(filepath.Join(lib, ".requests")); strings.Contains(string(raw), "ana@") || strings.Contains(string(raw), "555") {
+		t.Errorf("the request file holds personal data: %q", raw)
 	}
-	// A refusal does not use up the daily limit; no email never collides
-	if g.daily.full("203.0.113.9") {
-		t.Error("a refused request must not count")
+	if strings.Contains(logs.String(), "ana@") || strings.Contains(logs.String(), "555") {
+		t.Errorf("the log holds personal data: %q", logs.String())
 	}
-	for _, name := range []string{"n1", "n2"} {
-		if res := post(g, "203.0.113.10", oldToken(g, "203.0.113.10"), asking(name, "")); !res.OK {
-			t.Errorf("requests without e-mail never collide: %+v", res)
-		}
+	// The same address does not collide any more: there is none
+	body = asking("second")
+	body["email"] = "ANA@example.org"
+	if res := post(g, "203.0.113.9", oldToken(g, "203.0.113.9"), body); !res.OK {
+		t.Errorf("a second request is not refused for an email: %+v", res)
 	}
-	// Once decided (the line leaves .requests) the address can ask again
-	if err := os.WriteFile(filepath.Join(lib, ".requests"), nil, 0o600); err != nil {
+}
+
+func TestPendingReadsOldAndNewRequestLines(t *testing.T) {
+	g, lib := testGate(t)
+	lines := "old\t10\told@example.org\thello\tes\n" + "new\t20\tde\n" + "bare\t30\n"
+	if err := os.WriteFile(filepath.Join(lib, ".requests"), []byte(lines), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if res := post(g, "203.0.113.11", oldToken(g, "203.0.113.11"), asking("third", "ana@example.org")); !res.OK {
-		t.Errorf("the address is free again: %+v", res)
+	var got []string
+	for _, r := range g.pending() {
+		raw, _ := json.Marshal(r)
+		if strings.Contains(string(raw), "example.org") || strings.Contains(string(raw), "hello") {
+			t.Errorf("a pending request shows personal data: %s", raw)
+		}
+		got = append(got, r.Account+":"+r.Lang)
+	}
+	if strings.Join(got, ",") != "old:es,new:de,bare:en" {
+		t.Errorf("pending = %v", got)
+	}
+}
+
+func TestScrubAsksTheHelperAndReportsTheCount(t *testing.T) {
+	g, lib := testGate(t)
+	if err := os.WriteFile(filepath.Join(lib, "scrubbed"), []byte("3\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	n, err := g.scrub(context.Background())
+	if err != nil || n != 3 {
+		t.Fatalf("scrub = %d, %v", n, err)
+	}
+	if got := calls(lib); len(got) != 1 || got[0] != "scrub" {
+		t.Errorf("the helper was called as %v", got)
 	}
 }
 

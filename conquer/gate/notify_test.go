@@ -56,11 +56,11 @@ func waitFor(t *testing.T, what string, cond func() bool) {
 
 func TestFirstRequestIsAnnouncedAtOnce(t *testing.T) {
 	n, mails, hooks := digestNotifier(time.Hour)
-	n.newRequest("ana", "ana@example.org", "hello there")
+	n.newRequest("ana")
 	waitFor(t, "first mail", func() bool { return count(n, mails) == 1 })
 	m := (*mails)[0]
 	if m.to != "admin@example.org" || !strings.Contains(m.subject, "ana") ||
-		!strings.Contains(m.body, "ana@example.org") || !strings.Contains(m.body, "hello there") {
+		!strings.Contains(m.body, "ana asks for a seat") || !strings.Contains(m.body, "https://game.example/admin/") {
 		t.Errorf("a single request keeps the usual mail: %+v", m)
 	}
 	if len(*hooks) != 1 || !strings.Contains((*hooks)[0], "ana") {
@@ -70,10 +70,10 @@ func TestFirstRequestIsAnnouncedAtOnce(t *testing.T) {
 
 func TestRequestsInsideTheIntervalAreOneDigest(t *testing.T) {
 	n, mails, hooks := digestNotifier(300 * time.Millisecond)
-	n.newRequest("first", "", "")
+	n.newRequest("first")
 	waitFor(t, "first mail", func() bool { return count(n, mails) == 1 })
 	for i := 0; i < 40; i++ {
-		n.newRequest(fmt.Sprintf("bot%d", i), fmt.Sprintf("bot%d@example.org", i), "buy things <script>")
+		n.newRequest(fmt.Sprintf("bot%d", i))
 	}
 	time.Sleep(100 * time.Millisecond)
 	if got := count(n, mails); got != 1 {
@@ -85,12 +85,12 @@ func TestRequestsInsideTheIntervalAreOneDigest(t *testing.T) {
 		t.Fatalf("40 requests made %d mails in total, want 2", got)
 	}
 	d := (*mails)[1]
-	if !strings.Contains(d.subject, "40") || !strings.Contains(d.body, "bot0 <bot0@example.org>") ||
+	if !strings.Contains(d.subject, "40") || !strings.Contains(d.body, "  - bot0\n") ||
 		!strings.Contains(d.body, "+15") || !strings.Contains(d.body, "https://game.example/admin/") {
 		t.Errorf("digest: %+v", d)
 	}
-	if strings.Contains(d.body, "buy things") || strings.Contains(d.body, "bot30") {
-		t.Errorf("the digest holds no user text and is cut at %d names: %s", digestListMax, d.body)
+	if strings.Contains(d.body, "@") || strings.Contains(d.body, "bot30") {
+		t.Errorf("the digest holds no address and is cut at %d names: %s", digestListMax, d.body)
 	}
 	if len(*hooks) != 2 || !strings.Contains((*hooks)[1], "40") {
 		t.Errorf("webhook: %v", *hooks)
@@ -101,7 +101,7 @@ func TestDigestKeepsAtMostOneMailPerInterval(t *testing.T) {
 	n, mails, _ := digestNotifier(150 * time.Millisecond)
 	start := time.Now()
 	for time.Since(start) < 700*time.Millisecond {
-		n.newRequest("x", "", "")
+		n.newRequest("x")
 		time.Sleep(10 * time.Millisecond)
 	}
 	waitFor(t, "last digest", func() bool { n.digestMu.Lock(); defer n.digestMu.Unlock(); return len(n.queue) == 0 })
@@ -118,8 +118,8 @@ func TestDigestIsInTheAdministratorsLanguage(t *testing.T) {
 	n.digestMu.Lock()
 	n.lastDigest = time.Now() // as if a mail had just gone out
 	n.digestMu.Unlock()
-	n.newRequest("a", "", "")
-	n.newRequest("b", "", "")
+	n.newRequest("a")
+	n.newRequest("b")
 	n.flushDigest()
 	if len(*mails) != 1 || !strings.Contains((*mails)[0].subject, "solicitudes nuevas") {
 		t.Errorf("%+v", *mails)
@@ -128,7 +128,7 @@ func TestDigestIsInTheAdministratorsLanguage(t *testing.T) {
 
 func TestNothingToAnnounceWithoutSettings(t *testing.T) {
 	n := &notifier{digestEvery: time.Minute}
-	n.newRequest("a", "", "")
+	n.newRequest("a")
 	if n.timer != nil || len(n.queue) != 0 {
 		t.Error("with no mail address and no webhook nothing is queued")
 	}

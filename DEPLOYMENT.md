@@ -388,13 +388,24 @@ Then `sudo apache2ctl configtest && sudo systemctl reload apache2`. Check:
 
 Players ask for a seat and you approve at `/admin/`. The game can mail you
 new requests (the first at once, then at most one digest mail every 10
-minutes, "N new requests") and mail the player when approved. It works without mail
+minutes, "N new requests"). Players are never mailed: the sign-up page asks
+for no email address and the game keeps none. It works without mail
 (requests wait in `/admin/`); a webhook (`SIGNUP_WEBHOOK_URL`) can announce
 requests in Slack, Mattermost or Discord instead.
 
-`NOTIFY_EMAIL` is where requests are announced. A player who gave an address
-is mailed on approval, in the language of the page they asked from; yours is
-in `NOTIFY_LANG`. Nothing is sent while `SMTP_HOST` is empty.
+`NOTIFY_EMAIL` is where requests are announced (your own address); the
+language of the mails and the webhook text is `NOTIFY_LANG`. Nothing is sent
+while `SMTP_HOST` is empty. The mails name the account only.
+
+**Older requests.** Versions before the "no email" change kept an email
+address and a free-text message of each pending request in `lib/.requests`.
+The gate removes them when it starts (`conquer-signup scrub`, logged as
+`scrub: removed the email and message of N pending request(s)`), so after an
+update and a restart of the game container (`./update-vps.sh` does both when
+`conquer/` changed) none is left. To do it by hand:
+`docker exec -u conquer conquer-vps conquer-signup scrub`. Backups made
+earlier (`data/backups`, `/root/conquer-backups`, off-site copies) may still
+hold them until they are rotated out.
 
 **Option 1 (recommended): your mailbox provider**, no mail server on the VPS:
 
@@ -447,7 +458,7 @@ only), or:
 
 ```bash
 sudo ./manage-players.sh requests
-sudo ./manage-players.sh approve NAME      # no email from here; /admin/ mails the player
+sudo ./manage-players.sh approve NAME      # players are never mailed
 sudo ./manage-players.sh reject NAME       # deletes the account
 ```
 

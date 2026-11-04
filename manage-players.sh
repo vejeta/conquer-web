@@ -28,7 +28,7 @@
 #   ./manage-players.sh invites             list the unused invite codes
 #   ./manage-players.sh requests            list the requests waiting for approval
 #   ./manage-players.sh approve NAME        approve a request (the player may found
-#                                           a nation; no email is sent from here)
+#                                           a nation; players are never mailed)
 #   ./manage-players.sh reject NAME         reject a request and delete its account
 #
 # Without an assignment an account opens the nation with the same name, if
@@ -386,20 +386,22 @@ is_pending() {
     awk -F: -v user="$1" '$1 == user && $2 == "?" { found = 1 } END { exit !found }' "$PLAYERS_FILE" 2>/dev/null
 }
 
-# Requests for a seat: account, how long ago, language, email and message
+# Requests for a seat: account, how long ago and language (no email or
+# message is kept; conquer-signup scrub removes what older versions stored)
 cmd_requests() {
     if [ ! -s "$REQUESTS_FILE" ]; then
         echo "No requests waiting for approval ($REQUESTS_FILE)"
         return
     fi
     awk -F'\t' -v now="$(date +%s)" '
-        BEGIN { printf "%-32s %-10s %-6s %s\n", "ACCOUNT", "WAITING", "LANG", "EMAIL / MESSAGE" }
+        BEGIN { printf "%-32s %-10s %-6s %s\n", "ACCOUNT", "WAITING", "LANG" }
         {
             age = now - $2
             if (age >= 86400) w = int(age / 86400) " d"
             else if (age >= 3600) w = int(age / 3600) " h"
             else w = int(age / 60) " min"
-            printf "%-32s %-10s %-6s %s%s%s\n", $1, w, ($5 != "" ? $5 : "en"), $3, ($3 != "" && $4 != "" ? " / " : ""), $4
+            lang = (NF >= 5 ? $5 : (NF == 3 ? $3 : ""))
+            printf "%-32s %-10s %s\n", $1, w, (lang != "" ? lang : "en")
         }' "$REQUESTS_FILE"
 }
 

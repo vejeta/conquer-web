@@ -279,21 +279,20 @@ jobs:
           test "$(curl -sk https://localhost/status/status.json | jq .requests_open)" = true
           test "$(curl -sk https://localhost/status/status.json | jq .last_join_turn)" = 5
           # A request without a code creates a pending account
+          # (an email or message sent by an old page is ignored, never stored)
           ask '{"account":"asker","password":"asker-pass","email":"asker@example.org","message":"Hi from CI","lang":"es"}' | jq -e '.ok and .status == "pending"'
           ask '{"account":"asker","password":"asker-pass"}' | jq -e '.error == "account_taken"'
-          # One pending request per e-mail address; the hidden "website" field
-          # is answered like a request but creates nothing
-          ask '{"account":"asker9","password":"asker-pass","email":"ASKER@example.org"}' | jq -e '.error == "email_pending"'
+          # The hidden "website" field is answered like a request but creates nothing
           ask '{"account":"trapped","password":"asker-pass","website":"http://spam.example"}' | jq -e '.ok and .status == "pending"'
           ! sudo grep -q '^trapped' data/lib/.players data/auth/htpasswd
-          ask '{"account":"nomail","password":"asker-pass","email":"not an address"}' | jq -e '.ok == false'
           # Names read as an option or as a directory are refused
           for bad in .. . -v .hidden; do
             ask "{\"account\":\"$bad\",\"password\":\"asker-pass\"}" | jq -e '.error == "bad_account"'
           done
           ! sudo grep -qE '^(\.|-)' data/auth/htpasswd
           sudo grep -qx 'asker:?' data/lib/.players
-          sudo grep -qP '^asker\t[0-9]+\tasker@example.org\tHi from CI\tes$' data/lib/.requests
+          sudo grep -qP '^asker\t[0-9]+\tes$' data/lib/.requests
+          ! sudo grep -rqE 'example\.org|Hi from CI' data/lib/.requests
           # The administrator page and its API need an administrator
           signin /tmp/jar-admin "$TTYD_USERNAME" "$TTYD_PASSWORD"
           signin /tmp/jar-asker asker asker-pass
@@ -309,7 +308,7 @@ jobs:
           admin https://localhost/admin/api/state | jq -e '.requests | map(select(.account == "asker"))[0].lang == "es"'
           admin https://localhost/admin/api/state | jq -e '.players | map(select(.account == "asker" and .state == "?")) | length == 1'
           # Approving makes it a normal new account and empties the list
-          admin -d '{"account":"asker"}' https://localhost/admin/api/approve | jq -e '.ok and .emailed == false'
+          admin -d '{"account":"asker"}' https://localhost/admin/api/approve | jq -e '.ok and (has("emailed") | not)'
           admin -d '{"account":"asker"}' https://localhost/admin/api/approve | jq -e '.error == "not_pending"'
           sudo grep -qx 'asker:+' data/lib/.players
           ! sudo grep -q '^asker' data/lib/.requests

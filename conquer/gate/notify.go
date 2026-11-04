@@ -30,9 +30,9 @@ func validEmail(s string) bool {
 	return len(s) <= 120 && emailRe.MatchString(s)
 }
 
-// notifier tells the administrator about new requests (email and webhook)
-// and the player about an approval (email). Settings come from the
-// environment; nothing is sent for what is left empty.
+// notifier tells the administrator about new requests (email and webhook).
+// Players are never mailed: no address of theirs is kept. Settings come
+// from the environment; nothing is sent for what is left empty.
 type notifier struct {
 	adminEmail string // NOTIFY_EMAIL, else ADMIN_CONTACT when it is an address
 	smtpHost   string // SMTP_HOST, host:port
@@ -55,7 +55,7 @@ type notifier struct {
 	poster      func(text string) error              // post unless a test replaces it
 }
 
-type queuedRequest struct{ account, email, message string }
+type queuedRequest struct{ account string }
 
 const (
 	defaultDigestEvery = 10 * time.Minute
@@ -231,13 +231,13 @@ func (n *notifier) adminURL() string {
 // at once. The first request after a quiet spell is announced right away,
 // the ones that follow within digestEvery are held and announced together
 // in one message ("N new requests"), so a flood of requests is one mail.
-func (n *notifier) newRequest(account, email, message string) {
+func (n *notifier) newRequest(account string) {
 	if n.adminEmail == "" && n.webhook == "" {
 		return
 	}
 	n.digestMu.Lock()
 	defer n.digestMu.Unlock()
-	n.queue = append(n.queue, queuedRequest{account, email, message})
+	n.queue = append(n.queue, queuedRequest{account})
 	if n.timer != nil {
 		return // a digest is already due
 	}
@@ -284,20 +284,12 @@ func (n *notifier) flushDigest() {
 }
 
 // digestMail is the mail for the queued requests: the usual one for a
-// single request, a list (account and email, never the free-text message)
-// for several
+// single request, a list of account names for several
 func (n *notifier) digestMail(batch []queuedRequest) (subject, body string) {
 	if len(batch) == 1 {
 		r := batch[0]
-		details := ""
-		if r.email != "" {
-			details += mailText(n.lang, "line_email", "email", r.email)
-		}
-		if r.message != "" {
-			details += mailText(n.lang, "line_message", "message", r.message)
-		}
 		return mailText(n.lang, "subject_request", "account", r.account),
-			mailText(n.lang, "body_request", "account", r.account, "details", details, "url", n.adminURL())
+			mailText(n.lang, "body_request", "account", r.account, "url", n.adminURL())
 	}
 	var list strings.Builder
 	for i, r := range batch {
@@ -305,33 +297,9 @@ func (n *notifier) digestMail(batch []queuedRequest) (subject, body string) {
 			fmt.Fprintf(&list, "  ... +%d\n", len(batch)-digestListMax)
 			break
 		}
-		line := "  - " + oneLine(r.account)
-		if r.email != "" {
-			line += " <" + oneLine(r.email) + ">"
-		}
-		list.WriteString(line + "\n")
+		list.WriteString("  - " + oneLine(r.account) + "\n")
 	}
 	count := strconv.Itoa(len(batch))
 	return mailText(n.lang, "subject_digest", "count", count),
 		mailText(n.lang, "body_digest", "count", count, "list", list.String(), "url", n.adminURL())
-}
-
-// approved tells the player their seat is approved, in their language;
-// it returns at once
-func (n *notifier) approved(account, email, lang string, turn int) {
-	lang = validLang(lang)
-	go func() {
-		site := n.siteURL
-		if site == "" {
-			site = mailText(lang, "site_fallback")
-		}
-		key := "body_approved_early"
-		if turn > lastJoinTurn {
-			key = "body_approved_late"
-		}
-		body := mailText(lang, key, "account", account, "site", site, "turn", strconv.Itoa(turn))
-		if err := n.sendMail(email, mailText(lang, "subject_approved", "account", account), body); err != nil {
-			log.Printf("notify: approval mail to %s failed: %v", account, err)
-		}
-	}()
 }

@@ -41,9 +41,8 @@ plays each visitor's own (`web/tutorial/<video>.<language>.mp4`, made by
 ## How a player joins
 
 1. **Ask for a seat** on the home page (**I want to play**, `/signup.html`):
-   an account name, a password and, optionally, an email to be told when
-   approved. With an invite code from the administrator the seat is
-   approved at once.
+   an account name and a password (no email is asked, none is kept). With
+   an invite code from the administrator the seat is approved at once.
 2. **Wait for the administrator**, who approves the request at `/admin/`.
 3. **Press Play now** and sign in with that account: the terminal menu has
    the game's nation builder found your nation (at any turn).

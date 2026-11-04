@@ -21,17 +21,14 @@
 # Usage:
 #   sudo -v   # the script uses sudo for the account and world files
 #   tests/e2e/prod-rehearsal.sh --yes-i-have-a-backup \
-#       [--base-url https://your-domain] [--mail-to you@example.com] \
+#       [--base-url https://your-domain] \
 #       [--players 4] [--container conquer-vps]
 #
 #   --base-url   the site the browsers open (default https://localhost; on a
 #                server with a virtual host per domain use your domain)
-#   --mail-to    players give an address of the form you+e2e-NAME@example.com
-#                (a catch-all or plus-addressing mailbox of yours). Without it
-#                the test accounts give no address, so no mail goes to
-#                players. (If NOTIFY_EMAIL is set, you still get the
-#                administrator's notice for each request: the game has no
-#                switch to turn that off.)
+#                (Players are never mailed. If NOTIFY_EMAIL is set, you still
+#                get the administrator's notice for each request: the game has
+#                no switch to turn that off.)
 #   --players    how many test players (default 4)
 
 set -euo pipefail
@@ -40,7 +37,6 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
 BASE_URL="${E2E_BASE_URL:-https://localhost}"
-MAIL_TO=""
 PLAYERS=4
 CONTAINER="conquer-vps"
 SURE=""
@@ -48,7 +44,6 @@ while [ $# -gt 0 ]; do
     case "$1" in
         --yes-i-have-a-backup) SURE=1 ;;
         --base-url) BASE_URL="${2:?--base-url needs a value}"; shift ;;
-        --mail-to) MAIL_TO="${2:?--mail-to needs an address}"; shift ;;
         --players) PLAYERS="${2:?--players needs a number}"; shift ;;
         --container) CONTAINER="${2:?--container needs a name}"; shift ;;
         *) sed -n '/^# Usage:/,/^set -euo/p' "$0" | sed 's/^# \{0,1\}//' | sed '$d'; exit 2 ;;
@@ -153,5 +148,5 @@ printf '%s\n' "$ADMIN_PASSWORD" | mp add "$ADMIN" --admin --password-stdin > /de
 echo "== Journey with $PLAYERS players at $BASE_URL"
 
 E2E_BASE_URL="$BASE_URL" E2E_ADMIN_USER="$ADMIN" E2E_ADMIN_PASSWORD="$ADMIN_PASSWORD" \
-    E2E_CONTAINER="$CONTAINER" E2E_PLAYERS="$PLAYERS" E2E_MAIL_TO="$MAIL_TO" E2E_PREFIX="e2e" E2E_MAILPIT_URL="" \
+    E2E_CONTAINER="$CONTAINER" E2E_PLAYERS="$PLAYERS" E2E_PREFIX="e2e" E2E_MAILPIT_URL="" \
     python3 -m pytest tests/e2e/test_journey.py -p no:cacheprovider -x -q

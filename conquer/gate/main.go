@@ -11,12 +11,12 @@
 // The files are changed by conquer-signup (a shell script next to the
 // other account tools, under the same lock); this service only checks the
 // request, limits how often each address may try, reports the result and
-// tells the administrator (and the player) by email or webhook, see
-// notify.go.
+// tells the administrator by email or webhook, see notify.go. No email
+// address or free text of the player is asked for or kept.
 //
 // Public endpoints:
 //
-//	POST /join/api/request {"account","password","email"?,"message"?,"lang"?,"code"?}
+//	POST /join/api/request {"account","password","lang"?,"code"?}
 //	                       -> {"ok":true,"account":...,"status":"pending"|"approved"}
 //	                          or {"ok":false,"error":...}
 //	POST /join/api/signup  the same (old links)
@@ -143,8 +143,7 @@ type gate struct {
 	failures *limiter // wrong invite codes: guessing is slow
 	daily    *limiter // requests that made a pending account: few per address and day
 	tokens   *formTokens
-	reqMu    sync.Mutex // one request at a time between the e-mail check and the account
-	admin    *limiter   // administrator actions
+	admin    *limiter // administrator actions
 	notify   *notifier
 }
 
@@ -333,8 +332,6 @@ func (g *gate) signup(w http.ResponseWriter, r *http.Request) {
 		Code     string `json:"code"`
 		Account  string `json:"account"`
 		Password string `json:"password"`
-		Email    string `json:"email"`
-		Message  string `json:"message"`
 		Lang     string `json:"lang"`
 		Website  string `json:"website"` // the honeypot: people never see it
 	}
@@ -359,8 +356,6 @@ func (g *gate) signup(w http.ResponseWriter, r *http.Request) {
 	if strings.TrimSpace(in.Code) != "" {
 		code = normalizeCode(in.Code)
 	}
-	email := strings.TrimSpace(in.Email)
-	message := shortText(in.Message, 500)
 	lang := validLang(in.Lang)
 	switch {
 	case code != "" && !codeRe.MatchString(code):
@@ -377,31 +372,21 @@ func (g *gate) signup(w http.ResponseWriter, r *http.Request) {
 	case len(in.Password) > 72 || strings.ContainsAny(in.Password, "\r\n\x00"):
 		fail(w, http.StatusBadRequest, "bad_password")
 		return
-	case email != "" && !validEmail(email):
-		fail(w, http.StatusBadRequest, "bad_email")
-		return
 	}
 
 	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
 	defer cancel()
-	args := []string{"request", account, email, message, lang}
+	args := []string{"request", account, lang}
 	status := "pending"
 	if code != "" {
 		args = []string{"invite", code, account}
 		status = "approved"
 	} else {
-		// Pending accounts per address and day, and one request per
-		// address of e-mail: the queue cannot be filled by one visitor
+		// Pending accounts per address and day: the queue cannot be
+		// filled by one visitor
 		if g.daily.full(ip) {
 			log.Printf("signup refused: daily limit ip=%s", ip)
 			fail(w, http.StatusTooManyRequests, "daily_limit")
-			return
-		}
-		g.reqMu.Lock()
-		defer g.reqMu.Unlock()
-		if g.emailPending(email) {
-			log.Printf("signup refused: e-mail already waiting account=%s ip=%s", account, ip)
-			fail(w, http.StatusConflict, "email_pending")
 			return
 		}
 	}
@@ -422,7 +407,7 @@ func (g *gate) signup(w http.ResponseWriter, r *http.Request) {
 	log.Printf("signup: account %s created (%s) ip=%s", account, status, ip)
 	if status == "pending" {
 		g.daily.allow(ip) // counted only now that the account exists
-		g.notify.newRequest(account, email, message)
+		g.notify.newRequest(account)
 	}
 	reply(w, http.StatusOK, map[string]any{"ok": true, "account": account, "status": status})
 }
@@ -459,29 +444,24 @@ func (g *gate) marks() map[string]string {
 type request struct {
 	Account string `json:"account"`
 	Since   int64  `json:"since"`
-	Email   string `json:"email"`
-	Message string `json:"message"`
 	Lang    string `json:"lang"`
 }
 
-// pending reads lib/.requests, oldest first
+// pending reads lib/.requests (account, time, language; older files with
+// an email and a message are read too, and ignored), oldest first
 func (g *gate) pending() []request {
 	list := []request{}
 	for _, line := range readLines(g.lib + "/.requests") {
-		f := strings.SplitN(line, "\t", 5)
+		f := strings.Split(line, "\t")
 		if len(f) < 2 {
 			continue
 		}
 		since, _ := strconv.ParseInt(f[1], 10, 64)
-		req := request{Account: f[0], Since: since}
-		if len(f) > 2 {
-			req.Email = f[2]
-		}
-		if len(f) > 3 {
-			req.Message = f[3]
-		}
-		req.Lang = "en"
-		if len(f) > 4 {
+		req := request{Account: f[0], Since: since, Lang: "en"}
+		switch {
+		case len(f) == 3:
+			req.Lang = validLang(f[2])
+		case len(f) >= 5:
 			req.Lang = validLang(f[4])
 		}
 		list = append(list, req)
@@ -626,12 +606,6 @@ func (g *gate) accountAction(verb string) http.HandlerFunc {
 			fail(w, http.StatusBadRequest, "bad_request")
 			return
 		}
-		email, lang := "", "en"
-		for _, req := range g.pending() {
-			if req.Account == in.Account {
-				email, lang = req.Email, req.Lang
-			}
-		}
 		ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
 		defer cancel()
 		out, err := g.runHelper(ctx, "", verb, in.Account)
@@ -649,11 +623,7 @@ func (g *gate) accountAction(verb string) http.HandlerFunc {
 			reply(w, http.StatusOK, map[string]any{"ok": true})
 			return
 		}
-		emailed := email != "" && g.notify.mailEnabled()
-		if emailed {
-			g.notify.approved(in.Account, email, lang, g.turn(r.Context()))
-		}
-		reply(w, http.StatusOK, map[string]any{"ok": true, "account": in.Account, "emailed": emailed})
+		reply(w, http.StatusOK, map[string]any{"ok": true, "account": in.Account})
 	}
 }
 
@@ -735,6 +705,12 @@ func main() {
 	}
 	g.tokens = newFormTokens(loadSecret(g.lib+"/"+secretFileName),
 		time.Duration(envInt("SIGNUP_MIN_FILL", int(defaultMinFill/time.Second)))*time.Second)
+	// Requests of older versions kept an email and a message: remove them
+	if n, err := g.scrub(context.Background()); err != nil {
+		log.Printf("scrub: could not remove old personal data from the requests: %v", err)
+	} else if n > 0 {
+		log.Printf("scrub: removed the email and message of %d pending request(s)", n)
+	}
 	if days := envInt("SIGNUP_EXPIRE_DAYS", defaultExpireDays); days > 0 {
 		go g.expireLoop(days, expireFirstRunAfter, expireInterval)
 	}

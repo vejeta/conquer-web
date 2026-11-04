@@ -280,7 +280,7 @@ def test_signup_done_panel(site, browser, status):
     page = browser.new_page()
     page.route("**/join/api/request", api)
     page.goto(site + "signup.html?lang=en")
-    fill_signup(page, email="ana@example.org", message="I found you on Usenet")
+    fill_signup(page)
     if status == "approved":
         page.click("#invite summary")
         page.fill("#code", "k7qm-3xpa")
@@ -289,10 +289,9 @@ def test_signup_done_panel(site, browser, status):
         page.wait_for_selector("#done-pending:not([hidden])")
         assert page.evaluate("document.getElementById('done').hidden")
         assert page.get_attribute("#done-pending a[href='try/']", "href") == "try/"
-        assert "ana@example.org" in page.inner_text("#pending-mail")
         assert "Your seat is pending" in page.inner_text("#done-pending")
-        assert seen == [{"account": "ana", "password": "correct horse", "email": "ana@example.org",
-                         "message": "I found you on Usenet", "lang": "en"}]
+        assert "We keep no email address" in page.inner_text("#done-pending")
+        assert seen == [{"account": "ana", "password": "correct horse", "lang": "en"}]
     else:
         page.wait_for_selector("#done:not([hidden])")
         assert page.evaluate("document.getElementById('done-pending').hidden")
@@ -301,8 +300,9 @@ def test_signup_done_panel(site, browser, status):
     page.close()
 
 
-def test_signup_without_email_or_code(site, browser):
-    """Email and code are optional; a bad email is refused before asking."""
+def test_signup_asks_for_no_email_or_message(site, browser):
+    """The form has no email and no free-text field, and the request holds
+    the account, the password and the language only (the code is optional)."""
     seen = []
 
     def api(route):
@@ -311,14 +311,11 @@ def test_signup_without_email_or_code(site, browser):
     page = browser.new_page()
     page.route("**/join/api/request", api)
     page.goto(site + "signup.html?lang=en")
-    fill_signup(page, email="not-an-address")
-    page.click("#submit")
-    assert "email address" in page.inner_text("#error") and not seen
-    page.fill("#email", "")
+    assert page.locator("#email, #message, input[type=email], textarea").count() == 0
+    fill_signup(page)
     page.click("#submit")
     page.wait_for_selector("#done-pending:not([hidden])")
     assert seen == [{"account": "ana", "password": "correct horse", "lang": "en"}]
-    assert "no email" in page.inner_text("#pending-mail")
     page.close()
 
 
@@ -351,8 +348,7 @@ def test_signup_invite_link_opens_the_code(site, browser):
 
 ADMIN_STATE = {
     "ok": True, "turn": 36, "last_join_turn": 5,
-    "requests": [{"account": "ana", "since": 1, "email": "ana@example.org", "message": "Hello <b>there</b>"},
-                 {"account": "bob", "since": 2, "email": "", "message": ""}],
+    "requests": [{"account": "ana", "since": 1, "lang": "es"}, {"account": "bob", "since": 2, "lang": "en"}],
     "players": [{"account": "ana", "state": "?", "nation": None}, {"account": "root", "state": "*", "nation": None},
                 {"account": "cy", "state": "nation", "nation": "Gondor"}, {"account": "di", "state": "+", "nation": None}],
     "invites": ["K7QM-3XPA", "AAAA-BBBB"],
@@ -375,7 +371,7 @@ def test_admin_page(site, browser):
             posts.append((req.url.split("/admin/api/")[1], json.loads(req.post_data)))
             if req.url.endswith("/approve"):
                 state["requests"] = state["requests"][1:]
-                return route.fulfill(content_type="application/json", body='{"ok": true, "account": "ana", "emailed": true}')
+                return route.fulfill(content_type="application/json", body='{"ok": true, "account": "ana"}')
             if req.url.endswith("/invite"):
                 state["invites"].append("NEW1-CODE")
                 return route.fulfill(content_type="application/json", body='{"ok": true, "codes": ["NEW1-CODE"]}')
@@ -386,9 +382,7 @@ def test_admin_page(site, browser):
     page.wait_for_selector("#app:not([hidden])")
     rows = page.locator("#requests li")
     assert rows.count() == 2
-    assert "ana@example.org" in rows.nth(0).inner_text()
-    assert "Hello <b>there</b>" in rows.nth(0).inner_text()      # shown as text
-    assert "no email" in rows.nth(1).inner_text()
+    assert "ana" in rows.nth(0).inner_text() and "@" not in page.inner_text("#requests")
     page.click("#tab-players")
     text = page.inner_text("#players")
     for want in ("plays: Gondor", "administrator", "approved, not founded yet", "requested"):
@@ -404,7 +398,7 @@ def test_admin_page(site, browser):
     page.on("dialog", lambda d: (asked.append(d.message), d.accept()))
     page.locator("#requests li").nth(0).locator("button.approve").click()
     page.wait_for_function("() => document.querySelectorAll('#requests li').length === 1")
-    assert len(asked) == 1 and "ana@example.org" in asked[0]
+    assert asked == ["Approve ana?"]
     assert ("approve", {"account": "ana"}) in posts
     assert "approved" in page.inner_text("#info")
     body = page.inner_text("body")
@@ -473,7 +467,7 @@ def test_admin_reject_asks_first(site, browser):
     page.close()
 
 
-def test_admin_approve_shows_the_email_and_asks_first(site, browser):
+def test_admin_approve_asks_first(site, browser):
     posts = []
     page = browser.new_page()
 
@@ -485,10 +479,11 @@ def test_admin_approve_shows_the_email_and_asks_first(site, browser):
     page.route("**/admin/api/**", api)
     page.goto(site + "admin.html?lang=es")
     page.wait_for_selector("#app:not([hidden])")
-    # The address is on the card next to the buttons
-    assert "ana@example.org" in page.locator("#requests li").nth(0).inner_text()
+    # No address or message is on the card: only the account and its age
+    card = page.locator("#requests li").nth(0).inner_text()
+    assert "@" not in card and "ana" in card
     asked = []
-    answers = iter([False, True, True])
+    answers = iter([False, True])
     page.on("dialog", lambda d: (asked.append(d.message), d.accept() if next(answers) else d.dismiss()))
     page.locator("#requests li").nth(0).locator("button.approve").click()
     page.wait_for_timeout(300)
@@ -496,10 +491,7 @@ def test_admin_approve_shows_the_email_and_asks_first(site, browser):
     page.locator("#requests li").nth(0).locator("button.approve").click()
     page.wait_for_function("() => document.getElementById('info').textContent.includes('aprobado')")
     assert [json.loads(p) for p in posts] == [{"account": "ana"}]
-    # A request without an address says that nobody will be told
-    page.locator("#requests li").nth(1).locator("button.approve").click()
-    page.wait_for_function("() => document.getElementById('info').textContent.includes('bob')")
-    assert "ana@example.org" in asked[0] and "bob" in asked[2] and "ana@example.org" not in asked[2]
+    assert asked == ["¿Aprobar a ana?", "¿Aprobar a ana?"]
     page.close()
 
 
