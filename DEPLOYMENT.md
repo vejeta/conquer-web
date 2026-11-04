@@ -110,6 +110,24 @@ It never changes web passwords, nation passwords or the world. In order:
 7. Checks that the running container is the current version, warns if the
    god password is not set, and that `https://DOMAIN/` answers 200.
 
+**After the abuse-limits update** (sign-up limits, menu limits, fail2ban),
+run on the VPS, in this order:
+
+```bash
+cd /home/conquer/conquer-web
+sudo nano config/production.env      # MAX_CLIENTS=25 (a file made before keeps 5);
+                                     # ADMIN_IP=your address (never banned by fail2ban)
+sudo ./update-vps.sh --rebuild       # new game image (gate, menu), virtual host lines,
+                                     # fail2ban jail; restarts the service
+sudo fail2ban-client status conquer-login   # the jail is listed
+sudo tail -n 3 /var/log/apache2/conquer_login.log   # after a wrong password at /login.html
+```
+
+`update-vps.sh` prints a warning instead of the green line when Apache or
+fail2ban refused something. The key that signs the sign-up form's timestamps
+is made by the gate on its first start (`data/lib/.gate-secret`, mode 600;
+keep it out of git and backups you share).
+
 A script that ends with a red line (`❌`) needs attention before you tell
 anybody the site is up: see [Troubleshooting](#troubleshooting).
 
@@ -160,6 +178,9 @@ the administrator password and the mail password.
 | Variable | Meaning |
 |----------|---------|
 | `SIGNUP` | `on`: requests and invite codes work at `/signup.html`; `off` closes them |
+| `SIGNUP_DAILY_LIMIT` | Pending accounts one address may create in 24 hours (default 3; counted only when the account was created) |
+| `SIGNUP_MIN_FILL` | Seconds the sign-up form must have been open before a request counts (default 3; `0` turns the check off); a faster request is dropped silently |
+| `SIGNUP_EXPIRE_DAYS` | Requests nobody decides are removed with their account after this many days (default 30, checked daily; `0` never) |
 | `ADMIN_CONTACT` | Shown under "How to join" and in the menu; if it is an address it is also the default `NOTIFY_EMAIL` |
 | `NOTIFY_EMAIL` | Where new requests are announced |
 | `NOTIFY_DIGEST_SECONDS` | Minimum seconds between announcements of new requests (default 600) |
