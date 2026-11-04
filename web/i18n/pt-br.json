@@ -191,6 +191,7 @@
   "l_code": "Código de convite",
   "h_code": "Um código de convite dispensa a espera: você é aprovado na hora. Vale uma única vez.",
   "submit": "Pedir a minha vaga",
+  "privacy_note": "O que guardamos e por quanto tempo:",
   "pending_title": "A sua vaga está pendente",
   "pending_text": "O administrador aprova as vagas manualmente. Depois da aprovação você pode fundar a sua nação em qualquer turno; uma nação tardia começa com pontos extras.",
   "pending_mail": "Você receberá um e-mail em {email} quando for aprovado.",
@@ -462,6 +463,7 @@
   "hall": "Salão",
   "join": "Entrar",
   "design": "Design",
+  "privacy": "Privacidade",
   "main": "Menu principal",
   "logout": "Sair"
  },

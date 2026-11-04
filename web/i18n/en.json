@@ -191,6 +191,7 @@
   "l_code": "Invite code",
   "h_code": "An invite code skips the wait: you are approved at once. It works once.",
   "submit": "Ask for my seat",
+  "privacy_note": "What we keep, and for how long:",
   "pending_title": "Your seat is pending",
   "pending_text": "The administrator approves seats by hand. Once you are approved you can found your nation at any turn; a late nation starts with extra points.",
   "pending_mail": "You will get an email at {email} when you are approved.",
@@ -462,6 +463,7 @@
   "hall": "Hall",
   "join": "Join",
   "design": "Design",
+  "privacy": "Privacy",
   "main": "Main menu",
   "logout": "Sign out"
  },

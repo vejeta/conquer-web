@@ -191,6 +191,7 @@
   "l_code": "Código de invitación",
   "h_code": "Un código de invitación te ahorra la espera: te aprueban al momento. Sirve una sola vez.",
   "submit": "Pedir mi plaza",
+  "privacy_note": "Qué guardamos y durante cuánto tiempo:",
   "pending_title": "Tu plaza está pendiente",
   "pending_text": "El administrador aprueba las plazas a mano. Cuando te aprueben podrás fundar tu nación en cualquier turno; si es tarde, empieza con puntos extra.",
   "pending_mail": "Recibirás un correo en {email} cuando te aprueben.",
@@ -462,6 +463,7 @@
   "hall": "Salón",
   "join": "Unirse",
   "design": "Diseño",
+  "privacy": "Privacidad",
   "main": "Menú principal",
   "logout": "Salir"
  },

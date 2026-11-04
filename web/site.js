@@ -48,8 +48,8 @@
   // as <page>.<code>.html (English: <page>.html). dir: "rtl" for scripts
   // written right to left.
   var LANGUAGES = [
-    { code: 'en', name: 'English', pages: ['guide', 'tutorial'] },
-    { code: 'es', name: 'Español', pages: ['guide', 'tutorial'] },
+    { code: 'en', name: 'English', pages: ['guide', 'tutorial', 'privacy'] },
+    { code: 'es', name: 'Español', pages: ['guide', 'tutorial', 'privacy'] },
     { code: 'de', name: 'Deutsch', pages: ['tutorial'] },
     { code: 'pt-br', name: 'Português (Brasil)', pages: ['tutorial'] },
     { code: 'pl', name: 'Polski', pages: ['tutorial'] },
