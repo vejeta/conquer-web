@@ -246,6 +246,7 @@
   "title": "Administração",
   "lede": "Aprove vagas, veja os jogadores e crie links de convite.",
   "signin": "Entre com uma conta de administrador.",
+  "signin_forbidden": "Esta conta não é de administrador. Uma conta de administrador é definida no servidor com: sudo ./manage-players.sh assign NOME --admin",
   "refresh": "Atualizar",
   "tab_requests": "Pedidos",
   "tab_players": "Jogadores",

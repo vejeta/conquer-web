@@ -246,6 +246,7 @@
   "title": "管理",
   "lede": "批准席位，查看玩家，生成邀请链接。",
   "signin": "请使用管理员账号登录。",
+  "signin_forbidden": "此账号不是管理员。管理员账号需在服务器上设置：sudo ./manage-players.sh assign 名称 --admin",
   "refresh": "刷新",
   "tab_requests": "申请",
   "tab_players": "玩家",

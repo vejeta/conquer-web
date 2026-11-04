@@ -154,13 +154,17 @@ SPDX-License-Identifier: GPL-3.0-or-later
       });
     }
 
+    // "forbidden": signed in, but not an administrator; otherwise ask to sign in
+    var signinKey = 'signin';
+    function showSignin() { signin.textContent = m(signinKey); signin.hidden = false; }
+
     function load() {
       return conquerI18n.ready().then(function () { return call('/admin/api/state'); }).then(function (res) {
         if (!res.ok) {
           $('app').hidden = true;
           if (res.error === 'forbidden' || res.error === 'unauthenticated') {
-            signin.textContent = m('signin');
-            signin.hidden = false;
+            signinKey = res.error === 'forbidden' ? 'signin_forbidden' : 'signin';
+            showSignin();
           } else fail(res.error);
           return;
         }
@@ -326,7 +330,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     // Another language: the rows and messages are drawn again
     document.addEventListener('conquer:lang', function () {
       say(null);
-      if (!signin.hidden) signin.textContent = m('signin');
+      if (!signin.hidden) signin.textContent = m(signinKey);
       render();
     });
 

@@ -332,7 +332,7 @@ blocks go before them).
         Require all granted
         SessionMaxAge 0
         AuthFormLoginRequiredLocation "/login.html?failed=1&%{QUERY_STRING}"
-        AuthFormLoginSuccessLocation "/play/"
+        AuthFormLoginSuccessLocation "/game.html"
     </Location>
     <Location "/login/long">
         SetHandler form-login-handler
@@ -346,7 +346,7 @@ blocks go before them).
         Require all granted
         SessionMaxAge 2592000
         AuthFormLoginRequiredLocation "/login.html?failed=1&%{QUERY_STRING}"
-        AuthFormLoginSuccessLocation "/play/"
+        AuthFormLoginSuccessLocation "/game.html"
     </Location>
     <Location "/logout">
         SetHandler form-logout-handler
@@ -532,8 +532,18 @@ then). `remove` and `rename` keep `.recovery` in step.
 (or at `/admin/`), `invites` lists the unused ones. Send the code, or the link
 `https://DOMAIN/signup.html?code=CODE`. Each code works once.
 
-**Administrators** can use `/admin/`: `sudo ./manage-players.sh add NAME --admin`
-(or `assign NAME --admin`). They may open any nation, god's included. Other
+**Administrators.** An administrator is an account marked `*` in
+`data/lib/.players`, and nothing else makes one: visiting a page never does,
+and opening `/admin/` with an ordinary account only shows "This account is not
+an administrator". Mark one on the server with
+`sudo ./manage-players.sh assign NAME --admin` (or `add NAME --admin` for a new
+account), or at `/admin/` (Players tab) by an administrator that exists
+already. Check with `sudo ./manage-players.sh list`: administrators show `*`.
+An administrator is a player too: every approved account, administrators
+included, gets its own recovery code the first time it opens the game,
+account or admin page, so the code window may appear on `/admin/` and says
+nothing about the account being an administrator. Administrators can use
+`/admin/` and may open any nation, god's included. Other
 commands: `add NAME --nation NATION`, `assign NAME NATION`,
 `assign NAME --found` (found a new nation next time), `rename`, `remove`.
 `sudo ./add-nation.sh` runs the game's nation builder by hand for a player

@@ -246,6 +246,7 @@
   "title": "Administracja",
   "lede": "Zatwierdzaj miejsca, przeglądaj graczy i twórz linki z zaproszeniami.",
   "signin": "Zaloguj się na konto administratora.",
+  "signin_forbidden": "To konto nie jest kontem administratora. Konto administratora ustawia się na serwerze poleceniem: sudo ./manage-players.sh assign NAZWA --admin",
   "refresh": "Odśwież",
   "tab_requests": "Prośby",
   "tab_players": "Gracze",

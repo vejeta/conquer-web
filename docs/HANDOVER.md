@@ -45,6 +45,13 @@ The site keeps no personal data beyond what is technically needed.
   Limits: 5 wrong passwords/codes an hour per address and per account; fail2ban
   jail `conquer-recover` reads `conquer_recover.log`. Admin reset by hand:
   `sudo ./manage-players.sh password NAME`.
+- **Who is an administrator.** Only an account marked `*` in
+  `data/lib/.players`: `sudo ./manage-players.sh assign NAME --admin` (or
+  `add NAME --admin`) on the server, or an existing administrator at
+  `/admin/`. Visiting a page never makes anyone one. Every approved account
+  gets its own recovery code on its first visit to the game, account or admin
+  page (so the code window on `/admin/` proves nothing). Check with
+  `sudo ./manage-players.sh list` (`*` marks them).
 - **Logs 7 days:** `setup-logrotate.sh` (run by `update-vps.sh` and
   `deploy-to-vps.sh`) installs `/etc/logrotate.d/conquer-web`.
 - **Privacy notice** rewritten short (`web/privacy.es.html` is the binding one;

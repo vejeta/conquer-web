@@ -176,7 +176,7 @@
         Require all granted
         SessionMaxAge 0
         AuthFormLoginRequiredLocation "/login.html?failed=1&%{QUERY_STRING}"
-        AuthFormLoginSuccessLocation "/play/"
+        AuthFormLoginSuccessLocation "/game.html"
     </Location>
     <Location "/login/long">
         SetHandler form-login-handler
@@ -190,7 +190,7 @@
         Require all granted
         SessionMaxAge 2592000
         AuthFormLoginRequiredLocation "/login.html?failed=1&%{QUERY_STRING}"
-        AuthFormLoginSuccessLocation "/play/"
+        AuthFormLoginSuccessLocation "/game.html"
     </Location>
     <Location "/logout">
         SetHandler form-logout-handler
