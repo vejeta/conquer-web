@@ -25,6 +25,7 @@ PROJECT=conquer-vps          # docker-compose project of the systemd service
 CONTAINER=conquer-vps
 HTPASSWD=/etc/apache2/conquer-web.htpasswd
 REBUILD="" BRANCH=""
+ARGS=("$@")
 while [ $# -gt 0 ]; do
     case "$1" in
         --rebuild) REBUILD=1 ;;
@@ -43,16 +44,18 @@ OWNER=$(stat -c %U .)
 # git as the owner of the checkout (as root it refuses a directory it does not own)
 g() { sudo -u "$OWNER" git "$@"; }
 
-# 1. A copy of what must never be lost
-BACKUP="/root/conquer-backups/$(date +%Y%m%d-%H%M%S)"
-mkdir -p "$BACKUP"
-chmod 700 /root/conquer-backups
-cp -p config/production.env "$BACKUP/"
-[ -f "$HTPASSWD" ] && cp -p "$HTPASSWD" "$BACKUP/"
-tar czf "$BACKUP/world.tgz" data/lib
-echo "✅ Copy of accounts, settings and world in $BACKUP"
-# Keep the last 10 copies
-find /root/conquer-backups -mindepth 1 -maxdepth 1 -type d | sort | head -n -10 | xargs -r rm -rf
+# 1. A copy of what must never be lost (made once: not again after the restart below)
+if [ -z "${CONQUER_UPDATE_RESTARTED:-}" ]; then
+    BACKUP="/root/conquer-backups/$(date +%Y%m%d-%H%M%S)"
+    mkdir -p "$BACKUP"
+    chmod 700 /root/conquer-backups
+    cp -p config/production.env "$BACKUP/"
+    [ -f "$HTPASSWD" ] && cp -p "$HTPASSWD" "$BACKUP/"
+    tar czf "$BACKUP/world.tgz" data/lib
+    echo "✅ Copy of accounts, settings and world in $BACKUP"
+    # Keep the last 10 copies
+    find /root/conquer-backups -mindepth 1 -maxdepth 1 -type d | sort | head -n -10 | xargs -r rm -rf
+fi
 
 # 2. The code
 before=$(g rev-parse HEAD)
@@ -72,6 +75,12 @@ if [ "$before" = "$after" ]; then
 else
     echo "✅ Code updated: $(g log --oneline "$before..$after" | wc -l) new commits"
     g log --oneline "$before..$after" | sed 's/^/     /'
+fi
+# bash keeps running the copy of this script it opened, so after a pull that
+# changed it, the rest would be the old steps: start the new version instead
+if [ -z "${CONQUER_UPDATE_RESTARTED:-}" ] && ! g diff --quiet "$before" "$after" -- update-vps.sh; then
+    echo "🔁 update-vps.sh changed: running the new version"
+    CONQUER_UPDATE_RESTARTED=1 exec "$SCRIPT_DIR/update-vps.sh" "${ARGS[@]}"
 fi
 
 # 3. The game container, when the game changed since the last build this
