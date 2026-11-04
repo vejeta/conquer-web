@@ -14,7 +14,10 @@ SPDX-License-Identifier: GPL-3.0-or-later
   <script src="/race.js"></script>
   <style>
     /* Layout only: colours and fonts come from theme.css */
-    .gate-stage { min-height: 540px; }
+    /* The form sits between the lintel and the sill of the arch, over the
+       stage: the stage grows with it (--form-h, set by the script) so that a
+       notice or a longer translation never pushes it under the frame */
+    .gate-stage { --form-h: 420px; min-height: max(540px, calc(var(--L) + var(--S) + var(--form-h) + 32px)); }
     .gate .login .remember { display: flex; flex-direction: row; align-items: center; gap: var(--s2); }
     .gate .login .remember label { font-weight: 600; }
     .gate .login .remember input { width: 1.2em; height: 1.2em; accent-color: var(--phos); }
@@ -65,7 +68,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
           <label for="password" data-i18n="login.l_password">Password</label>
           <input class="input" id="password" name="httpd_password" type="password" autocomplete="current-password" required maxlength="72">
         </div>
-        <input type="hidden" name="httpd_location" id="location" value="/play/">
+        <input type="hidden" name="httpd_location" id="location" value="/game.html">
         <div class="field">
           <div class="remember">
             <input type="checkbox" id="remember" name="remember" value="1">
@@ -97,8 +100,15 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
     // Where to go afterwards: a path of this site, never another address
     function local(p) { return typeof p === 'string' && /^\/(?![\/\\])/.test(p) && !/[\u0000-\u001f]/.test(p) ? p : ''; }
+    // (with none, the game page: Apache's own default is the bare terminal)
     var next = local(params.get('next'));
-    if (next) $('location').value = next;
+    $('location').value = next || '/game.html';
+
+    // The stage is as tall as the form needs (see the style above)
+    function fit() { $('stage').style.setProperty('--form-h', form.offsetHeight + 'px'); }
+    fit();
+    if (window.ResizeObserver) new ResizeObserver(fit).observe(form);
+    window.addEventListener('resize', fit);
 
     function say(id, text) { $('failed').hidden = id !== 'failed'; $('info').hidden = id !== 'info'; if (text) $('info').textContent = text; }
     function t(key, fallback) { return (window.conquerI18n && conquerI18n.t('login.' + key)) || fallback; }

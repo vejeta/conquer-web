@@ -246,6 +246,7 @@
   "title": "Verwaltung",
   "lede": "Plätze freigeben, Spieler ansehen und Einladungslinks erzeugen.",
   "signin": "Melde dich mit einem Administratorkonto an.",
+  "signin_forbidden": "Dieses Konto ist kein Administratorkonto. Ein Administratorkonto wird auf dem Server festgelegt mit: sudo ./manage-players.sh assign NAME --admin",
   "refresh": "Aktualisieren",
   "tab_requests": "Anfragen",
   "tab_players": "Spieler",

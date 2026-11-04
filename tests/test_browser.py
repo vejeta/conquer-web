@@ -1573,6 +1573,94 @@ def test_login_page_links_to_the_recovery_and_says_the_password_changed(site, br
     page.close()
 
 
+@pytest.mark.parametrize("lang,word", [("en", "not an administrator"), ("es", "no es de administrador")])
+def test_admin_says_what_to_do_when_the_account_is_not_an_administrator(site, browser, lang, word):
+    page = browser.new_page()
+    page.route("**/admin/api/**", lambda r: r.fulfill(status=403, content_type="application/json", body='{"ok": false, "error": "forbidden"}'))
+    page.goto(site + "admin.html?lang=" + lang)
+    page.wait_for_function("() => !document.getElementById('signin').hidden")
+    text = page.inner_text("#signin")
+    assert word in text and "manage-players.sh assign" in text and "--admin" in text
+    page.close()
+
+
+@pytest.mark.parametrize("query", ["", "?loggedout=1", "?changed=1", "?failed=1"])
+@pytest.mark.parametrize("lang", ["es", "en", "de"])
+@pytest.mark.parametrize("size", [(1366, 768), (360, 640)])
+def test_login_form_fits_inside_the_doors(site, browser, query, lang, size):
+    """After Sign out (?loggedout=1) the notice made the form taller than the
+    space between the lintel and the sill, and the frame hid the first line and
+    the button: the stage grows with the form."""
+    ctx = browser.new_context(viewport={"width": size[0], "height": size[1]})
+    page = ctx.new_page()
+    page.goto(site + "login.html" + (query + "&" if query else "?") + "lang=" + lang)
+    page.wait_for_timeout(500)
+    box = page.evaluate("""() => {
+      const r = (e) => { const b = e.getBoundingClientRect(); return [b.top, b.bottom, b.left, b.right]; };
+      const lintel = document.querySelector('#stage .arch .lintel'), sill = document.querySelector('#stage .arch .sill');
+      const stage = document.getElementById('stage');
+      const inputs = ['account', 'password', 'remember', 'go'].map(id => r(document.getElementById(id)));
+      const msg = [...document.querySelectorAll('#form .msg')].filter(e => !e.hidden).map(r);
+      return { stage: r(stage), form: r(document.getElementById('form')), lintel: r(lintel), sill: r(sill), inputs, msg,
+               scroll: [document.documentElement.scrollWidth, document.documentElement.clientWidth] };
+    }""")
+    inner_top, inner_bottom = box["lintel"][1], box["sill"][0]
+    assert box["form"][0] >= inner_top - 1 and box["form"][1] <= inner_bottom + 1, box
+    for top, bottom, left, right in box["inputs"] + box["msg"]:
+        assert top >= box["form"][0] and bottom <= box["form"][1] + 1, box
+        assert left >= box["form"][2] - 1 and right <= box["form"][3] + 1, box
+    assert box["scroll"][0] <= box["scroll"][1], box
+    ctx.close()
+
+
+@pytest.mark.parametrize("query,expected", [
+    ("", "/game.html"), ("?changed=1", "/game.html"), ("?loggedout=1", "/game.html"),
+    ("?next=%2Faccount.html", "/account.html"), ("?next=%2F%2Fevil.example", "/game.html"),
+    ("?next=https%3A%2F%2Fevil.example", "/game.html"),
+])
+def test_login_sends_the_player_to_the_game_page_unless_told_otherwise(site, browser, query, expected):
+    """After a password recovery "Sign in" has no next: Apache's own default is
+    the bare terminal (/play/), the player belongs on the game page."""
+    page = browser.new_page()
+    page.goto(site + "login.html" + query)
+    assert page.input_value("#location") == expected
+    page.close()
+
+
+@pytest.mark.parametrize("viewport", ["desktop"])
+def test_a_big_window_gets_bigger_letters_and_still_80x24(site, browser, viewport):
+    """The font only shrank from ttyd's base: on a large window the terminal was
+    small with room to spare. It takes the largest size that keeps 80x24."""
+    ctx = browser.new_context(viewport={"width": 1920, "height": 1080})
+    page = ctx.new_page()
+    page.goto(site + "game.html")
+    page.wait_for_function("() => { try { return document.getElementById('game').contentWindow.ready } catch (e) { return false } }")
+    target = next(f for f in page.frames if "/play" in f.url)
+    page.wait_for_timeout(1500)
+    cols, rows, font = target.evaluate("[term.cols, term.rows, term.options.fontSize]")
+    assert font > 15 and font <= 30, font
+    assert cols >= 80 and rows >= 24
+    # a smaller window shrinks it back, never below 80x24
+    page.set_viewport_size({"width": 1100, "height": 640})
+    page.wait_for_timeout(1500)
+    cols2, rows2, font2 = target.evaluate("[term.cols, term.rows, term.options.fontSize]")
+    assert font2 < font and cols2 >= 80 and rows2 >= 24
+    # and the terminal is not resized again while the window stays as it is
+    target.evaluate("window.resized = 0; term.onResize(() => window.resized++)")
+    page.wait_for_timeout(1500)
+    assert target.evaluate("window.resized") == 0
+    ctx.close()
+
+
+@pytest.mark.parametrize("viewport", ["phone", "landscape"])
+def test_a_phone_keeps_shrinking_to_80x24(site, browser, viewport):
+    ctx, page, target = touch_page(site, browser, "game", viewport)
+    page.wait_for_timeout(1500)
+    cols, rows, font = target.evaluate("[term.cols, term.rows, term.options.fontSize]")
+    assert cols >= 80 and rows >= 24 and font <= 15
+    ctx.close()
+
+
 @pytest.mark.parametrize("name", ["account.html", "recover.html"])
 def test_account_pages_load_nothing_from_other_sites(site, browser, name):
     page = browser.new_page()

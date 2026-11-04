@@ -78,6 +78,11 @@ Running a public server (Debian VPS with Apache and Docker):
   requests, seasons, backups, the god password and troubleshooting.
 - **[QUICK-REFERENCE.md](QUICK-REFERENCE.md)** is one screen of the commands
   an administrator types every day.
+- **Who is an administrator**: only an account marked `*` in
+  `data/lib/.players`, set on the server with
+  `sudo ./manage-players.sh assign NAME --admin` (or `add NAME --admin`), or
+  at `/admin/` by an existing administrator. `sudo ./manage-players.sh list`
+  shows them. Visiting a page never makes anyone one.
 - **[SECURITY.md](SECURITY.md)** covers hardening (fail2ban, rate limits,
   headers).
 

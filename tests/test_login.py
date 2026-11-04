@@ -49,7 +49,7 @@ def test_next_cannot_leave_the_site(site, browser):  # noqa: F811
     for bad in ("//evil.example/", "https://evil.example/", "/\\evil.example"):
         page = browser.new_page()
         page.goto(site + "login.html?lang=en&next=" + bad.replace("\\", "%5C"))
-        assert page.input_value("#location") == "/play/", bad
+        assert page.input_value("#location") == "/game.html", bad
         page.close()
 
 

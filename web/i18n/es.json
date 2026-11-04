@@ -246,6 +246,7 @@
   "title": "Administración",
   "lede": "Aprueba plazas, mira a los jugadores y crea enlaces de invitación.",
   "signin": "Entra con una cuenta de administrador.",
+  "signin_forbidden": "Esta cuenta no es de administrador. Una cuenta de administrador se marca en el servidor con: sudo ./manage-players.sh assign NOMBRE --admin",
   "refresh": "Actualizar",
   "tab_requests": "Solicitudes",
   "tab_players": "Jugadores",

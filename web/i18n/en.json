@@ -246,6 +246,7 @@
   "title": "Administration",
   "lede": "Approve seats, see the players and make invitation links.",
   "signin": "Sign in with an administrator account.",
+  "signin_forbidden": "This account is not an administrator. An administrator account is set on the server with: sudo ./manage-players.sh assign NAME --admin",
   "refresh": "Refresh",
   "tab_requests": "Requests",
   "tab_players": "Players",
