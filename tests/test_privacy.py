@@ -88,3 +88,32 @@ def test_every_footer_links_to_privacy():
 def test_language_pages_are_declared():
     site = (WEB / "site.js").read_text(encoding="utf-8")
     assert re.search(r"code: 'en'.*'privacy'", site) and re.search(r"code: 'es'.*'privacy'", site)
+
+
+def sections(html):
+    return re.findall(r'<section id="([^"]+)"', html)
+
+
+def test_both_pages_have_the_same_sections_and_are_short():
+    en, es = text(PAGES["en"]), text(PAGES["es"])
+    assert sections(en) == sections(es) and len(sections(en)) >= 8
+    for html in (en, es):
+        body = re.sub(r"<[^>]+>", " ", re.search(r'<div class="reading".*?</main>', html, re.S).group(0))
+        assert len(body.split()) < 900, "the notice should stay short and plain"
+
+
+@pytest.mark.parametrize("lang", PAGES)
+def test_what_the_notice_must_say(lang):
+    html = text(PAGES[lang])
+    for must in ("conquer@vejeta.com", "OVH", "France" if lang == "en" else "Francia", "PiensaSolutions",
+                 "Liberapay", "fail2ban", "conquer_session", "INTERNET", "VIBRATE", "POST_NOTIFICATIONS",
+                 "GPL-3.0-or-later", "LSSI-CE", "https://github.com/vejeta/conquer-web"):
+        assert must in html, must
+    assert "7 days" in html if lang == "en" else "7 días" in html
+    assert "30 copies" in html if lang == "en" else "30 copias" in html
+    assert "under 14" in html if lang == "en" else "menores de 14" in html
+    # No postal address
+    assert "postal address" not in html.lower() and "dirección postal" not in html.lower()
+    body = re.search(r'<div class="reading".*?</main>', html, re.S).group(0)
+    assert not re.search(r"optional email|correo electr[oó]nico \(opcional\)|14 days|14 días", body, re.I)
+    assert re.search(r"do not ask for(?: or keep)? an email|no pedimos ni guardamos correo|No pedimos tu correo", body)

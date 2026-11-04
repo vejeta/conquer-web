@@ -59,153 +59,84 @@ no placeholder in double curly braces is left.
 <main class="page wide">
 <div class="reading" data-theme="parchment">
 
-  <h1>Privacy notice</h1>
-  <p class="lede">Conquer is a hobby game. We keep as little as we can, we do not track you, and we do not sell anything. This page says what is kept and how to have it removed.</p>
+  <h1>Privacy notice and legal notice</h1>
+  <p class="lede">Conquer is a hobby game, not for profit. We keep the minimum needed for you to play and to keep the server safe. We do not ask for your email address, and there are no ads, no analytics, no trackers and no third-party resources.</p>
   <p class="updated">Last updated: 2026-11-04. The <a href="privacy.es.html" hreflang="es" lang="es">Spanish version</a> (Aviso de privacidad) is the legally binding one.</p>
-
-  <nav class="toc" aria-label="Contents">
-    <ol>
-      <li><a href="#who">Who is responsible</a></li>
-      <li><a href="#scope">What this covers</a></li>
-      <li><a href="#data">What is collected and why</a></li>
-      <li><a href="#basis">Legal bases</a></li>
-      <li><a href="#recipients">Who receives data</a></li>
-      <li><a href="#public">Public game data</a></li>
-      <li><a href="#transfers">International transfers</a></li>
-      <li><a href="#retention">How long data is kept</a></li>
-      <li><a href="#cookies">Cookies and local storage</a></li>
-      <li><a href="#security">Security</a></li>
-      <li><a href="#rights">Your rights</a></li>
-      <li><a href="#app">The Android app</a></li>
-      <li><a href="#children">Children</a></li>
-      <li><a href="#changes">Changes</a></li>
-      <li><a href="#legal">Legal notice (Aviso legal)</a></li>
-    </ol>
-  </nav>
 
   <section id="who">
     <h2>1. Who is responsible</h2>
-    <p>The controller is Juan Manuel Méndez Rey, a private individual in Spain.</p>
-    <ul>
-      <li>Email for anything about your data: <a href="mailto:conquer@vejeta.com">conquer@vejeta.com</a></li>
-    </ul>
-  </section>
-
-  <section id="scope">
-    <h2>2. What this covers</h2>
-    <p>The website conquer.vejeta.com, the game server behind it, and the Android app (package com.vejeta.conquer), which shows the same pages.</p>
-    <p>The practice world at <a href="try/">/try/</a> runs entirely in your browser. Nothing you do there is sent to us.</p>
+    <p>Juan Manuel Méndez Rey, a private individual in Spain. Email for anything about your data: <a href="mailto:conquer@vejeta.com">conquer@vejeta.com</a>.</p>
   </section>
 
   <section id="data">
-    <h2>3. What is collected and why</h2>
+    <h2>2. What is processed, why and for how long</h2>
     <div class="table-wrap">
     <table>
-      <thead><tr><th>Data</th><th>Why</th><th>Where</th></tr></thead>
+      <thead><tr><th>Data</th><th>Why and legal basis</th><th>Kept</th></tr></thead>
       <tbody>
-        <tr><td>Account name</td><td>To sign you in and to play.</td><td>Server (account list, game world). It may be your real name if you choose so: pick a nickname.</td></tr>
-        <tr><td>Password</td><td>To sign you in.</td><td>Server, as a hash (website account), and a second, separate nation password inside the game world. See <a href="#security">Security</a>.</td></tr>
-        <tr><td>Email (optional)</td><td>Only to tell you when your seat is approved.</td><td>Server, in the pending request, and in the administrator's mailbox. Only the administrator sees it.</td></tr>
-        <tr><td>Message (optional, up to 500 characters)</td><td>So the administrator knows who is asking.</td><td>Same as the email.</td></tr>
-        <tr><td>Language of the request</td><td>To write to you in your language.</td><td>Pending request.</td></tr>
-        <tr><td>IP address, time, requested page, browser identification (user agent)</td><td>Security, abuse control, keeping the service running.</td><td>Web server logs and the sign-up service log.</td></tr>
-        <tr><td>Game data: your nation, moves, in-game messages, scores</td><td>It is the game.</td><td>Game world files, and backups.</td></tr>
-        <tr><td>Session cookie and local storage</td><td>To keep you signed in and to remember your settings.</td><td>Your browser. See <a href="#cookies">Cookies</a>.</td></tr>
+        <tr><td>Account name, password hash and recovery-code hash</td><td>So you can sign in and play. Contract (GDPR 6.1.b). Prefer a nickname. The recovery code itself is not kept: only its hash.</td><td>Until you ask for the account to be deleted. An undecided request is deleted after 30 days.</td></tr>
+        <tr><td>Game data: nation, moves, in-game messages, scores</td><td>It is the game. Contract (6.1.b). The public parts (nation names, scores, news) show in the Hall and the status page, never with your account name.</td><td>Until you ask for the account to be deleted, or the season ends.</td></tr>
+        <tr><td>IP address, time, URL and browser (user agent), in the web server logs</td><td>Security and abuse control. Legitimate interest (6.1.f).</td><td>7 days.</td></tr>
+        <tr><td>fail2ban bans (IP address)</td><td>Stopping repeated password guesses. Legitimate interest (6.1.f).</td><td>1 hour.</td></tr>
+        <tr><td>Encrypted backups of the game world</td><td>Being able to restore the game. Legitimate interest (6.1.f).</td><td>The last 30 copies.</td></tr>
       </tbody>
     </table>
     </div>
-    <p>We do not ask for your name, phone, location, date of birth or anything else. We do not use analytics, ads, or third-party trackers, and the site loads no files from other websites.</p>
+    <p>We do not ask for or keep an email address, a phone number, a location or anything else. There are no ads, no analytics and no trackers, and the site loads no files from other websites.</p>
   </section>
 
-  <section id="basis">
-    <h2>4. Legal bases (GDPR, Article 6)</h2>
+  <section id="where">
+    <h2>3. Where, and who is involved</h2>
     <ul>
-      <li><strong>Contract or steps before a contract (6.1.b):</strong> your account and your nation, so that you can play.</li>
-      <li><strong>Legitimate interest (6.1.f):</strong> server logs and abuse control, to keep a small public service safe and running.</li>
-      <li><strong>Consent (6.1.a):</strong> the optional email and message. You can withdraw it at any time by writing to us.</li>
+      <li>Servers: OVH (OVHcloud), in France.</li>
+      <li>PiensaSolutions, in Spain, only for the notification mails to the administrator when someone asks for a seat. Those mails carry no player data beyond the account name.</li>
+      <li>Encrypted backups on the owner's own storage, in Spain.</li>
     </ul>
-  </section>
-
-  <section id="recipients">
-    <h2>5. Who receives data</h2>
-    <ul>
-      <li>Hosting provider (servers): OVH (OVHcloud), in France. It acts on our behalf.</li>
-      <li>Mail provider (notices of new requests and approvals): PiensaSolutions, in Spain. It acts on our behalf.</li>
-      <li>Backups: encrypted copies on the owner's own storage in Spain.</li>
-    </ul>
-    <p>No ads, no analytics, no trackers, no sale of data, no profiling. We give data to authorities only when the law requires it.</p>
-  </section>
-
-  <section id="public">
-    <h2>6. Public game data</h2>
-    <p>The game is public by nature. The Hall and the status page show nation names, race, class, alignment, scores and news. They never show account names, emails or invite codes. Other players can see your nation's public actions and can send you in-game messages.</p>
-  </section>
-
-  <section id="transfers">
-    <h2>7. International transfers</h2>
-    <p>None. The servers are in France, the mail provider and the backups in Spain: all inside the European Union.</p>
-  </section>
-
-  <section id="retention">
-    <h2>8. How long data is kept</h2>
-    <ul>
-      <li>Pending sign-up requests (email, message): up to 30 days; they are removed as soon as the administrator decides.</li>
-      <li>Server logs (IP address, user agent): 14 days.</li>
-      <li>Backups: 30 days. A deletion is therefore complete in our backups within 30 days.</li>
-      <li>Accounts and game data: until you ask us to delete them, or until the end of a season (the world is then reset) and you ask.</li>
-    </ul>
+    <p>Everything is inside the European Union: there are no international transfers. We give data to the authorities only when the law requires it.</p>
   </section>
 
   <section id="cookies">
-    <h2>9. Cookies and local storage</h2>
-    <p>We only use what the service needs. For that reason there is no cookie banner: strictly necessary cookies need no consent (LSSI-CE, article 22.2).</p>
+    <h2>4. Cookies and local storage</h2>
+    <p>Only what is strictly necessary, so there is no banner (LSSI-CE, article 22.2).</p>
     <ul>
-      <li><strong>conquer_session</strong> (cookie, HttpOnly, Secure): keeps you signed in. It lasts until you close the browser, or 30 days if you tick "Remember me". It contains your account and password in encrypted form, readable only by our server. Sign out to remove it.</li>
-      <li><strong>Local storage and session storage</strong> in your browser: your language, sound and display settings, tutorial progress, and the practice world. They are never sent to us. Clear them in your browser settings at any time.</li>
+      <li><strong>conquer_session</strong> (cookie, HttpOnly, Secure): keeps you signed in. It lasts until you close the browser, or 30 days if you tick "Remember me". Sign out to remove it.</li>
+      <li><strong>Local storage</strong> in your browser: language, settings and the practice world (<a href="try/">/try/</a>, which runs in your browser). It is never sent to us.</li>
     </ul>
   </section>
 
-  <section id="security">
-    <h2>10. Security</h2>
-    <p>The site uses HTTPS. Website passwords are hashed with bcrypt. Backups are encrypted. Only the administrator has access to the server.</p>
-    <p class="note"><strong>A caveat about passwords:</strong> the game itself, written in 1987, keeps at most 7 characters of a nation password and hashes it with an old method that can be guessed offline by anyone who gets the game files. Do not reuse a password you use anywhere else.</p>
-  </section>
-
   <section id="rights">
-    <h2>11. Your rights</h2>
-    <p>You can ask for access, rectification, erasure, restriction, objection and portability of your data. Write to the email address in section 1 and tell us your account name. We answer within one month.</p>
-    <p><strong>To delete your account:</strong> email us and say so. We remove the account, any pending request and your nation. Copies in backups disappear within 30 days.</p>
-    <p>If you think we handle your data wrongly, you can complain to the Spanish data protection authority, the <a href="https://www.aepd.es">AEPD</a> (https://www.aepd.es).</p>
+    <h2>5. Your rights and deleting your account</h2>
+    <p>You can ask for access, rectification, erasure, restriction, objection and portability. Write to <a href="mailto:conquer@vejeta.com">conquer@vejeta.com</a> with your account name; we answer within one month. <strong>To delete your account</strong>, write to that address. Backups lose it as they are replaced.</p>
+    <p>If you think we handle your data wrongly you can complain to the Spanish data protection agency: <a href="https://www.aepd.es">https://www.aepd.es</a>.</p>
+    <p class="note"><strong>If you forget your password</strong>, use the recovery code shown to you once. Without the password and the code the account cannot be restored: you can join again next season.</p>
   </section>
 
   <section id="app">
-    <h2>12. The Android app</h2>
+    <h2>6. The Android app</h2>
     <ul>
-      <li>Permissions: INTERNET (to reach the game), VIBRATE, and POST_NOTIFICATIONS (to tell you that a turn has run).</li>
-      <li>The notification is created on your phone. The app checks the public status of the game about once an hour. There is no push service and no Google or Firebase token.</li>
-      <li>When you sign in, the app sends your account name and password to our server over HTTPS. It stores them on your phone, encrypted, only if you choose so. "Forget account" removes them. Uninstalling the app removes everything it stored.</li>
-      <li>No analytics, no ads, no tracking code of our own.</li>
+      <li>Permissions: INTERNET, VIBRATE and POST_NOTIFICATIONS.</li>
+      <li>The turn alert is a local notification created on your phone. There is no push service.</li>
+      <li>Your account and password are stored on the device only if you choose "remember". "Forget account" or uninstalling the app erases them.</li>
     </ul>
   </section>
 
   <section id="children">
-    <h2>13. Children</h2>
-    <p>Conquer is not aimed at children under 14, the age of digital consent in Spain. If you are under 14, do not sign up. If we learn that an account belongs to someone under 14, we delete it.</p>
+    <h2>7. Children</h2>
+    <p>Conquer is not directed at children under 14. If you are under 14, do not sign up; if we learn that an account belongs to someone under 14 we delete it.</p>
   </section>
 
-  <section id="changes">
-    <h2>14. Changes</h2>
-    <p>If this notice changes in a way that matters, we update the date at the top and say so on the sign-up page. Date of this version: 2026-11-04.</p>
+  <section id="donations">
+    <h2>8. Donations</h2>
+    <p>They are voluntary and give nothing in return. They go through Liberapay, which is a separate controller of its own data. We receive no payment data.</p>
   </section>
 
   <section id="legal">
     <h2>Legal notice (Aviso legal)</h2>
-    <p>Information under article 10 of the Spanish Law 34/2002 (LSSI-CE).</p>
+    <p>Information under article 10 of Spanish law 34/2002 (LSSI-CE).</p>
     <ul>
-      <li>Owner of the site: Juan Manuel Méndez Rey. Contact: see section 1.</li>
-      <li>Conquer is a non-commercial hobby site. It has no ads and sells nothing.</li>
-      <li>If donations are offered, they are voluntary, give no reward, and are handled by a third-party platform. That platform is a separate controller of your payment data, under its own privacy policy. We do not receive your card details.</li>
-      <li>The game and this site are free software (GPL-3.0-or-later). Source: <a href="https://github.com/vejeta/conquer">game</a> &middot; <a href="https://github.com/vejeta/conquer-web">web server</a>.</li>
+      <li>Site owner: Juan Manuel Méndez Rey. Contact: <a href="mailto:conquer@vejeta.com">conquer@vejeta.com</a>.</li>
+      <li>A hobby site, not for profit.</li>
+      <li>The game and this site are free software (GPL-3.0-or-later). Code: <a href="https://github.com/vejeta/conquer">game</a> &middot; <a href="https://github.com/vejeta/conquer-web">web server</a>.</li>
     </ul>
   </section>
 
