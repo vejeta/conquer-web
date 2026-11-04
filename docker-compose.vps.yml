@@ -39,6 +39,8 @@ services:
       - SMTP_FROM=${SMTP_FROM:-}
       - SMTP_STARTTLS=${SMTP_STARTTLS:-on}
       - SIGNUP_WEBHOOK_URL=${SIGNUP_WEBHOOK_URL:-}
+      # Seconds between mails about new requests (empty: 600)
+      - NOTIFY_DIGEST_SECONDS=${NOTIFY_DIGEST_SECONDS:-}
       # Abuse limits of the sign-up page; empty keeps the gate's defaults
       # (3 pending requests per address and day, 3 seconds to fill the
       # form, requests expire after 30 days)

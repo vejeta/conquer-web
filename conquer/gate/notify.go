@@ -98,7 +98,7 @@ func loadNotifier() *notifier {
 		siteURL:    strings.TrimRight(envOr("SITE_URL"), "/"),
 		lang:       validLang(envOr("NOTIFY_LANG")),
 
-		digestEvery: defaultDigestEvery,
+		digestEvery: time.Duration(envInt("NOTIFY_DIGEST_SECONDS", int(defaultDigestEvery/time.Second))) * time.Second,
 	}
 	if n.adminEmail == "" {
 		if c := envOr("ADMIN_CONTACT"); validEmail(c) {

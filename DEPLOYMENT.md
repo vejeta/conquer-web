@@ -157,6 +157,7 @@ the administrator password and the mail password.
 | `SIGNUP` | `on`: requests and invite codes work at `/signup.html`; `off` closes them |
 | `ADMIN_CONTACT` | Shown under "How to join" and in the menu; if it is an address it is also the default `NOTIFY_EMAIL` |
 | `NOTIFY_EMAIL` | Where new requests are announced |
+| `NOTIFY_DIGEST_SECONDS` | Minimum seconds between announcements of new requests (default 600) |
 | `NOTIFY_LANG` | Language of your mails and webhook text: `en`, `es`, `de`, `pl`, `pt-br`, `ru`, `zh` |
 | `SMTP_HOST` | Mail server, `host:port`; nothing is sent while empty |
 | `SMTP_USER`, `SMTP_PASSWORD` | Mail account (empty for no login) |
