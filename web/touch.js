@@ -68,7 +68,8 @@
   var PANEL = /\bx is \d+\s+y is \d+|\bx = *\d+, y = *\d+|Sector Information/;
   var MOVESCREEN = /MOVESCREEN|HIT SPACE IF DONE/;
   var ANYKEY = /(?:hit|press) any (?:other )?key|hit return to|hit space|return to continue|press return|space to continue/i;
-  var YESNO = /\(y or n\)|\(y\/n\)|\[ny\]|\[yn\]|\[y\/n\]/i;
+  // the menu asks "[y/N]" in English and with the language's own key elsewhere ("[s/N]" es and pt-br, "[j/N]" de, "[t/N]" pl)
+  var YESNO = /\(y or n\)|\(y\/n\)|\[ny\]|\[yn\]|\[\p{L}\/\p{L}\]/iu;
   var YESNO_LINE = /^\s*(?:do you wish|are you sure|are your orders|disband your|pay him off|give them severance)/i;
   var NUMBER = /how (?:many|much)|[xy] loc|what (?:army|navy|item number|value)|to what (?:army|navy)|set what|which (?:army|navy)/i;
   var TEXTISH = /[:?]\s*[^\s:?]{0,30}$/;
@@ -91,7 +92,13 @@
     var tail = lines.slice(Math.max(0, end - 6), end).join('\n');
     var out = { where: 'unknown', kind: '', items: [], turn: null, prompt: '', combat: COMBAT.test(text) };
 
-    if (BUILDER.test(text)) { out.where = 'builder'; return out; }
+    if (BUILDER.test(text)) {
+      // The builder's status line is always there: the prompt (the nation
+      // password hint reads it) is still the cursor's line, or the last one
+      out.where = 'builder';
+      out.prompt = (cursor && lines[cursor.y]) ? lines[cursor.y] : (end ? lines[end - 1] : '');
+      return out;
+    }
     for (i = 0; i < REPORTS.length; i++) {
       if (REPORTS[i][1].test(text)) { out.where = 'report'; out.kind = REPORTS[i][0]; return out; }
     }
@@ -869,6 +876,17 @@ var ui = el('div', 'touch-ui');
     }
 
     // ---- geometry: the grid exactly over the terminal's text area
+    var sizeSeen = null, redrawTimer = null, lastInput = 0, REDRAW_MS = 400, QUIET_MS = 1200;
+    // ^L is any key on a report ("hit any key") and a typed character in a prompt: it goes only
+    // when the screen is the map and nothing has been typed or tapped for a moment
+    function scheduleRedraw(tries) {
+      clearTimeout(redrawTimer);
+      redrawTimer = setTimeout(function () {
+        if (destroyed) return;
+        if (Date.now() - lastInput < QUIET_MS) { if (tries < 8) scheduleRedraw(tries + 1); return; }
+        if (state.where === 'map') { send('\x0c'); lastInput = 0; }
+      }, tries ? 500 : REDRAW_MS);
+    }
     function measure() {
       var t = tt();
       var s = t && t.element && t.element.querySelector ? t.element.querySelector('.xterm-screen') : null;
@@ -885,6 +903,15 @@ var ui = el('div', 'touch-ui');
       if (!w || !h) return;
       geom = { cw: w / t.cols, ch: h / t.rows, cols: t.cols, rows: t.rows };
       gx = x; gy = y;
+      // The game takes the new size of the terminal (ncurses) but redraws only what it draws next:
+      // on the map the sector panel would show twice, the old one left where it was. ^L redraws it all.
+      var size = t.cols + 'x' + t.rows;
+      if (t.onData && !t._conquerInputSeen) {
+        t._conquerInputSeen = true;
+        t.onData(function () { lastInput = Date.now(); });
+      }
+      if (sizeSeen && size !== sizeSeen) scheduleRedraw(0);
+      sizeSeen = size;
       var st = grid.style;
       st.left = x + 'px'; st.top = y + 'px'; st.width = w + 'px'; st.height = h + 'px';
     }

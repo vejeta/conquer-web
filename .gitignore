@@ -79,3 +79,7 @@ web/story/*.mp4
 !web/story/conquer-story.ru.vertical.mp4
 !web/story/conquer-story.zh.mp4
 !web/story/conquer-story.zh.vertical.mp4
+
+# End-to-end rehearsal: run files and results
+tests/e2e/.run.env
+test-results/

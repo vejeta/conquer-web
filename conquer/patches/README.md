@@ -15,6 +15,7 @@ cloning the sources:
 | 0002 | `conqrun -m` accepting maps larger than 256x256, which corrupts army and capital positions |
 | 0003 | `LOGIN` (the administrator's login) overridable at build time |
 | 0004 | `conqrun -A`: add a player the administrator approved, without the super user password after turn 5 (`-a` still asks); see SECURITY.md |
+| 0005 | The seen-sectors flags were sized for the terminal at the start of the game and indexed with the current size: a terminal that grows later (the web frame changes for a report) read and wrote past the table; found by the end-to-end rehearsal |
 
 Delete a patch once its fix is merged upstream. To refresh one against a
 newer engine, apply it in a clone of the game repository, resolve the

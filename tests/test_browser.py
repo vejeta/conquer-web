@@ -13,6 +13,7 @@ import http.server
 import json
 import os
 import re
+import time
 import threading
 
 import pytest
@@ -582,6 +583,11 @@ def test_classifier_knows_every_recorded_screen(site, browser):
     ("Jump to what X location? ", "prompt_number"),
     ("Is the modification complete? (y or n)", "prompt_yn"),
     ("Disband your Infantry army 3?", "prompt_yn"),
+    ("  Are your orders for this turn done? [y/N] ", "prompt_yn"),
+    ("  ¿Has terminado tus órdenes de este turno? [s/N] ", "prompt_yn"),
+    ("  Suas ordens deste turno estão prontas? [s/N] ", "prompt_yn"),
+    ("  Hast du deine Befehle für diesen Zug fertig? [j/N] ", "prompt_yn"),
+    ("  Czy rozkazy na ten ruch są gotowe? [t/N] ", "prompt_yn"),
     ("Send mail to what nation? ", "prompt_text"),
     ("Pay him off? (y or n)\nHIT ANY KEY", "anykey"),
     ("", "unknown"),
@@ -1026,6 +1032,102 @@ def test_nation_password_prompt_says_how_long_it_may_be(site, browser):
     show(page, target, "< Building Country iberia >\n\nEnter a Name for your Country: ")
     page.wait_for_function("() => document.getElementById('touch-fieldhint').hidden", timeout=5000)
     assert errors == []
+    ctx.close()
+
+
+def test_nation_password_hint_shows_with_the_builders_status_line(site, browser):
+    """In the real builder the bottom line always says "Nation Builder": the hint
+    must still show at the password prompt (found by the end-to-end rehearsal)."""
+    ctx, page, target = touch_page(site, browser, "try", "desktop")
+    screen = "< Building Country iberia >\n\nEnter National Password: " + "\n" * 20 + " Conquer 4.12: Nation Builder       Country #8"
+    show(page, target, screen, (26, 2))
+    wait_where(page, "builder")
+    page.wait_for_function("() => !document.getElementById('touch-fieldhint').hidden", timeout=5000)
+    assert page.inner_text("#touch-fieldhint") == "2–7 characters"
+    ctx.close()
+
+
+def test_nation_password_hint_does_not_resize_the_screen(site, browser):
+    """The hint used to take a row of its own, so the screen was refitted (a resize
+    for the game) while the player typed the password: the second entry then did
+    not match. It floats now: the screen keeps its size (found by the end-to-end
+    rehearsal)."""
+    for viewport in ("desktop", "phone"):
+        ctx, page, target = touch_page(site, browser, "game", viewport)
+        name = "< Building Country iberia >\n\nEnter a Name for your Country: "
+        show(page, target, name)
+        page.wait_for_function("() => document.getElementById('touch-fieldhint').hidden", timeout=5000)
+        page.wait_for_timeout(600)
+        measure = "() => { const r = document.querySelector('.stone').getBoundingClientRect(); return [Math.round(r.height), Math.round(r.width)]; }"
+        rows = lambda: target.evaluate("[term.cols, term.rows]")
+        before, size = page.evaluate(measure), rows()
+        show(page, target, "< Building Country iberia >\n\nEnter National Password: ")
+        page.wait_for_function("() => !document.getElementById('touch-fieldhint').hidden", timeout=5000)
+        page.wait_for_timeout(600)
+        assert page.evaluate(measure) == before, viewport
+        assert rows() == size, viewport
+        ctx.close()
+
+
+@pytest.mark.parametrize("viewport", ["desktop", "phone"])
+def test_parchment_keeps_the_terminal_size(site, browser, viewport):
+    """The parchment had a thinner frame than the stone, so the terminal grew on a
+    report (185x45 to 188x53 on a desktop): the game reads a resize as the "any
+    key" a report waits for, and the report closed as soon as it opened (found by
+    the end-to-end rehearsal). Map and report keep one size."""
+    ctx, page, target = touch_page(site, browser, "game", viewport)
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    page.wait_for_timeout(600)
+    size = lambda: target.evaluate("[term.cols, term.rows]")
+    before = size()
+    show(page, target, FIRST_TURN["budget"])
+    wait_where(page, "report")
+    page.wait_for_function("() => document.getElementById('stone').classList.contains('parchment')")
+    page.wait_for_timeout(600)
+    assert size() == before
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    page.wait_for_function("() => !document.getElementById('stone').classList.contains('parchment')")
+    page.wait_for_timeout(600)
+    assert size() == before
+    ctx.close()
+
+
+def test_map_is_redrawn_when_the_terminal_changes_size(site, browser):
+    """The game takes the new size but redraws only what it draws next, so the
+    sector panel showed twice on a wide screen (the end-to-end rehearsal read
+    the old one): on the map the layer sends ^L after a resize, and only there."""
+    ctx, page, target = touch_page(site, browser, "game", "desktop")
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    page.wait_for_timeout(600)
+    watch_keys(page, target, "game")
+    page.set_viewport_size({"width": 1100, "height": 640})
+    end = time.time() + 10
+    while "\x0c" not in sent_keys(page, target, "game") and time.time() < end:
+        page.wait_for_timeout(200)
+    assert "\x0c" in sent_keys(page, target, "game")
+    # not at a prompt: a ^L there would be typed into the answer
+    show(page, target, "< Building Country iberia >\n\nEnter a Name for your Country: ")
+    page.wait_for_timeout(600)
+    watch_keys(page, target, "game")
+    page.set_viewport_size({"width": 1280, "height": 800})
+    page.wait_for_timeout(1500)
+    assert "\x0c" not in sent_keys(page, target, "game")
+    # on the map again, with the player busy: the ^L waits (on a report it would be "any key")
+    show(page, target, FIRST_TURN["map"], (26, 10))
+    wait_where(page, "map")
+    page.wait_for_timeout(600)
+    watch_keys(page, target, "game")
+    page.set_viewport_size({"width": 1100, "height": 640})
+    for _ in range(6):
+        target.evaluate("term.input('j', true)")
+        page.wait_for_timeout(250)
+        assert "\x0c" not in sent_keys(page, target, "game"), "the redraw came while keys were being sent"
+    end = time.time() + 10
+    while "\x0c" not in sent_keys(page, target, "game") and time.time() < end:
+        page.wait_for_timeout(200)
+    assert "\x0c" in sent_keys(page, target, "game")
     ctx.close()
 
 

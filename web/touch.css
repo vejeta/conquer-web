@@ -181,5 +181,15 @@ body.game-page { display: flex; flex-direction: column; height: 100vh; height: 1
 }
 
 /* the length the game accepts for a nation password, above the chips */
-.touch-fieldhint { padding: var(--s1, 4px) var(--s3, 12px); font-size: .85rem; opacity: .85; text-align: center; }
+/* It floats over the edge of the screen instead of taking a row of its own: a row more or less would
+   refit the terminal and send the game a resize in the middle of what the player is typing (the
+   password then did not match the second time: found by the end-to-end rehearsal) */
+.touch-fieldhint { position: absolute; left: 0; right: 0; bottom: 100%; z-index: 5; padding: var(--s1, 4px) var(--s3, 12px); font-size: .85rem; text-align: center; background: var(--bg-2); border-radius: 4px 4px 0 0; pointer-events: none; }
 .touch-fieldhint[hidden] { display: none; }
+@container gamescreen (min-width: 1100px) {
+  /* the ledge is a column beside the screen there: the hint takes its place in it */
+  .touch-ledge > .touch-fieldhint { position: static; background: none; opacity: .85; }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .touch-ledge > .touch-fieldhint { position: static; background: none; opacity: .85; }
+}

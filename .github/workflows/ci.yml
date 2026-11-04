@@ -7,6 +7,10 @@ on:
   push:
     branches: [master]
   pull_request:
+  workflow_dispatch:
+  # Nightly: the full end-to-end rehearsal (the e2e job: 25 turns, 30 sessions)
+  schedule:
+    - cron: "37 2 * * *"
 
 permissions:
   contents: read
@@ -413,3 +417,51 @@ jobs:
       - name: Container logs
         if: always()
         run: docker compose -f docker-compose.local.yml logs --no-color
+
+  # End-to-end rehearsal (tests/e2e/README.md): the smoke job's stack plus a
+  # mail catcher, several players in parallel in browsers, bots playing turns,
+  # and many sessions at once. Pull requests and manual runs: a short soak
+  # (8 turns) and 10 sessions; nightly: 25 turns and 30 sessions.
+  e2e:
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ github.event_name == 'schedule' && 60 || 30 }}
+    env:
+      E2E_SOAK_TURNS: ${{ github.event_name == 'schedule' && '25' || '8' }}
+      E2E_LOAD_SESSIONS: ${{ github.event_name == 'schedule' && '30' || '10' }}
+      E2E_LOAD_SECONDS: ${{ github.event_name == 'schedule' && '120' || '60' }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Test tools (Playwright, Chromium, pexpect)
+        run: |
+          python3 -m pip install --quiet -r tests/e2e/requirements.txt
+          python3 -m playwright install --with-deps chromium
+
+      - name: Staging up (local stack and mail catcher)
+        run: |
+          tests/e2e/up.sh --wipe-data
+          cat tests/e2e/.run.env >> "$GITHUB_ENV"
+
+      - name: Journey with several players in parallel
+        run: python3 -m pytest tests/e2e/test_journey.py -v -s
+
+      - name: Soak bots, season end, backup and restore
+        run: python3 tests/e2e/soak.py
+
+      - name: Load
+        run: python3 tests/e2e/load.py
+
+      - name: Container logs
+        if: always()
+        run: |
+          mkdir -p test-results/e2e
+          docker compose -f docker-compose.local.yml -f docker-compose.e2e.yml logs --no-color > test-results/e2e/docker.log 2>&1 || true
+
+      - name: Results (traces, videos, screenshots, logs)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: test-results/e2e
+          if-no-files-found: ignore
