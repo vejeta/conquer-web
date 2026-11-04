@@ -188,7 +188,7 @@ class Player:
         """The Doors form: login.html posts to /login/do."""
         page = self.page
         if first:
-            page.wait_for_url(re.compile(r"/login\.html"), timeout=30000)
+            page.wait_for_url(lambda url: urlparse(url).path.endswith("/login.html"), timeout=30000)
         else:
             page.goto("%s/login.html?lang=%s&next=/game.html" % (Env.base, self.lang))
         page.wait_for_selector("#account")
@@ -200,7 +200,8 @@ class Player:
         page.fill("#account", self.account)
         page.fill("#password", self.password)
         page.click("#go")
-        page.wait_for_url(re.compile(r"/game\.html"), timeout=30000)
+        # the path, not the whole URL: the login page itself says next=/game.html
+        page.wait_for_url(lambda url: urlparse(url).path.endswith("/game.html"), timeout=30000)
         cookies = [c for c in self.ctx.cookies() if c["name"] == "conquer_session"]
         assert cookies, "no session cookie after the login"
         assert cookies[0]["httpOnly"] and cookies[0]["secure"], cookies[0]
