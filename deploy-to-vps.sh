@@ -165,6 +165,19 @@ install_landing_page() {
     echo "✅ Landing page installed to /var/www/$DOMAIN_NAME"
 }
 
+# fail2ban with a jail for wrong passwords on the sign-in form (the virtual
+# host writes them to conquer_login.log); ADMIN_IP in production.env is never banned
+setup_fail2ban() {
+    echo "🛡️ Setting up fail2ban for the sign-in form..."
+    "$PROJECT_DIR/setup-fail2ban.sh"
+}
+
+# The site's Apache logs (conquer_*.log) are kept 7 days
+setup_logrotate() {
+    echo "🗂️ Keeping the Apache logs of the site for 7 days..."
+    "$PROJECT_DIR/setup-logrotate.sh"
+}
+
 # Setup Apache virtual host
 setup_virtual_host() {
     echo "🌐 Setting up Apache virtual host for $DOMAIN_NAME..."
@@ -424,6 +437,7 @@ show_summary() {
     echo "   - SSL certificate auto-renewal configured"
     echo "   - Container only accessible via localhost"
     echo "   - Security headers configured in Apache"
+    echo "   - fail2ban bans addresses with 8 wrong passwords in 10 minutes (1 hour)"
     echo ""
     echo "📚 Next Steps:"
     echo "   1. Test the game at https://$DOMAIN_NAME"
@@ -460,6 +474,8 @@ main() {
     setup_player_accounts
     setup_ssl
     setup_virtual_host
+    setup_fail2ban
+    setup_logrotate
     build_container
     setup_systemd_service
     start_services

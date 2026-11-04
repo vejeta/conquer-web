@@ -41,9 +41,8 @@ plays each visitor's own (`web/tutorial/<video>.<language>.mp4`, made by
 ## How a player joins
 
 1. **Ask for a seat** on the home page (**I want to play**, `/signup.html`):
-   an account name, a password and, optionally, an email to be told when
-   approved. With an invite code from the administrator the seat is
-   approved at once.
+   an account name and a password (no email is asked, none is kept). With
+   an invite code from the administrator the seat is approved at once.
 2. **Wait for the administrator**, who approves the request at `/admin/`.
 3. **Press Play now** and sign in with that account: the terminal menu has
    the game's nation builder found your nation (at any turn).
@@ -81,6 +80,17 @@ Running a public server (Debian VPS with Apache and Docker):
   an administrator types every day.
 - **[SECURITY.md](SECURITY.md)** covers hardening (fail2ban, rate limits,
   headers).
+
+## Donations
+
+Conquer is a hobby project and the game is free, with no ads. If you want to
+help pay for the servers you can give through Liberapay:
+[liberapay.com/Conquer](https://liberapay.com/Conquer/donate). The site shows
+a small "Support the servers" link in the footers of the home page and the
+Hall (never inside the Android app). The address lives in one place,
+`DONATE_URL` in `web/site.js`; to change it edit that line (and this section).
+Donations are voluntary and give nothing in return; Liberapay is a separate
+controller for its own data and we receive no payment data.
 
 ## Design system
 

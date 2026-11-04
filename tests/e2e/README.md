@@ -40,6 +40,12 @@ tests/e2e/down.sh --wipe-data
 the administrator's password (from `.run.env`) the tests skip, so a plain
 `pytest` never needs the stack.
 
+The stack relaxes only what six players from one address would trip:
+`SIGNUP_DAILY_LIMIT=1000` and `NOTIFY_DIGEST_SECONDS=0` in
+`docker-compose.e2e.yml`. The sign-up form's minimum fill time (3 s) and the
+honeypot stay on: the journey waits 3.3 s with the form filled before it
+presses the button, as a person would.
+
 ## What the journey checks
 
 Each player runs in its own thread and browser context, with a mix of Pixel 7,
@@ -47,9 +53,9 @@ iPhone 13 and desktop (1280x800) profiles and Spanish, English and German
 pages. Per player:
 
 1. ask for a seat on `signup.html`; the administrator approves through
-   `/admin/api/approve`; the mail catcher holds the administrator's notice and
-   the approval mail (in the player's language, with the turn for late
-   joiners); its link opens the site
+   `/admin/api/approve`; the mail catcher holds the administrator's notice
+   (the player gives no email and is not mailed: after the approval the
+   player opens the site and signs in)
 2. the Doors form (`login.html` to `/login/do`): a wrong password first for one
    player; the cookie is `HttpOnly` and `Secure`
 3. the sound: music and effects on, every sound file loads
@@ -123,7 +129,7 @@ python3 -m venv .e2e-venv && . .e2e-venv/bin/activate
 pip install -r tests/e2e/requirements.txt && playwright install --with-deps chromium
 sudo -v
 tests/e2e/prod-rehearsal.sh --yes-i-have-a-backup --base-url https://your-domain \
-    [--mail-to you@example.com] [--players 4]
+    [--players 4]
 ```
 
 The script refuses to run without `--yes-i-have-a-backup` and while anyone is
@@ -142,11 +148,8 @@ Things to know:
   late joiner needs the world past turn 5); the restore takes the world back,
   and `status.json` is published again. The seasons' hall of fame, news files and
   mail sent by the game are inside the world backup.
-- Mail: the mail catcher does not exist there. Without `--mail-to` the test
-  accounts give no address, so no mail goes to players. With `--mail-to` each
-  gives `you+e2e-NAME@example.com`; use a mailbox that accepts plus-addressing,
-  and read the approval mails there yourself (the journey does not check
-  them). If `NOTIFY_EMAIL` is set you still get the administrator's notice for
+- Mail: the mail catcher does not exist there, and players are never mailed.
+  If `NOTIFY_EMAIL` is set you still get the administrator's notice for
   every request: the game has no switch to turn that off.
 - `E2E_BASE_URL` must be the site the browsers should open. A server with a
   virtual host per domain does not serve the game at `https://localhost`.

@@ -788,6 +788,7 @@ button.plaque:hover, a.plaque:hover { text-decoration: none; filter: brightness(
 .in-app a[href^="http"]:not([data-server-link]), .in-app .join, .in-app .story,
 .in-app .hero-inner > :not(.pitch) { display: none !important; }
 .in-app .hero { padding-bottom: var(--s5); }
+.in-app [data-donate], .in-app [data-donate-wrap] { display: none !important; }
 .in-app .app-bar {
   display: flex; align-items: center; gap: var(--s2); position: relative; z-index: 25;
   flex: none; height: 44px; padding: 0 var(--s2); box-sizing: border-box;

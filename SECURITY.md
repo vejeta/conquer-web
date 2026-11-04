@@ -26,7 +26,7 @@ include a real password or a player's data in a report.
 | The game user inside the container (`conquer`, uid 1000) | the world files, `lib/.players`, the account file, the mail settings in its environment: gate, ttyd, menu, game and cron all run as it | (trusted, and it is the boundary below) |
 | Administrators of the site (accounts marked `*` in `lib/.players`) | approving or rejecting seats, making invite codes, opening any nation at its password prompt | anything on the host |
 | Players (approved accounts) | their own nation, once they give its password; a practice world of their own | other nations, other accounts, the files, a shell |
-| Visitors (nobody, or a pending account) | asking for a seat; the public pages and status; the menu and a practice world | everything else |
+| Visitors (nobody, or a pending account) | asking for a seat; the public pages and status; no terminal (a pending account is turned away by the menu) | everything else |
 
 The main boundary is between a player and the game user. Players get a
 terminal menu, never a shell: if they could break out of it they would be the
@@ -67,10 +67,22 @@ becoming players without the administrator's approval.
 - Cross-site WebSocket hijacking: a browser sends a player's saved password
   with a WebSocket that any web page opens. Apache refuses a WebSocket to
   `/play/` whose `Origin` is not this site (403, before any proxying).
-- Requests: 1 MB body limit, 60 s timeout, sensitive file names and
+- Requests: 1 MB body limit in general and 64 KB (`LimitRequestBody 65536`)
+  for `/join/api/` and `/admin/api/`, 60 s timeout, sensitive file names and
   `.git`/`.env` denied, noisy bots blocked.
+- Failed sign-ins: `mod_auth_form` answers a wrong password with a redirect to
+  `/login.html?failed=1` and no error-log line that the stock filters know, so
+  the virtual host writes every post to `/login/do` and `/login/long` to
+  `conquer_login.log` with the `Location` header (`LogFormat conquer_login`;
+  the account name is not logged). fail2ban's `conquer-login` jail
+  (`vps/fail2ban/`, installed by `setup-fail2ban.sh`) bans an address for 1
+  hour after 8 of them in 10 minutes; `127.0.0.1/8` and `ADMIN_IP` (in
+  `config/production.env`) are never banned. The filter is tested against
+  sample lines and against the log of a running Apache in CI. The jail that
+  banned on every request (`apache-dos-conquer`) is removed: it counted every page and
+  asset and banned players behind a shared address.
 - The pages put server text in the DOM with `textContent` (account names,
-  emails and messages on the administrator page, nation names and news on the
+  account names on the administrator page, nation names and news on the
   landing page); the news pages escape HTML.
 
 ### Sign-up service (`conquer/gate`, Go, standard library only)
@@ -86,25 +98,70 @@ becoming players without the administrator's approval.
   accounts marked `?` (waiting).
 - Passwords: 8 to 72 bytes on one line, passed to `htpasswd -niB -C 10` on
   standard input (never in a command line or a log), stored as bcrypt.
-- Sizes: request body 8 KB, message 500 characters on one line, email 120
-  characters with no whitespace, quotes, commas, angle brackets; language from a
-  fixed list.
+- Sizes: request body 8 KB; language from a fixed list. No email address or
+  free text of the player is asked for, stored, logged or mailed: a request that
+  still carries those fields (an old page) has them ignored.
 - Rate limits per client address (the one Apache adds last to
   `X-Forwarded-For`): 20 requests per 10 minutes, 5 wrong or malformed invite
   codes per hour, 120 administrator actions per 10 minutes. At most 200
   requests wait for approval at once, after which the page says sign-up is
   closed.
+- Against a script filling that queue (`abuse.go`): a second limiter lets one
+  address make **3 pending accounts per 24 hours** (counted only when the
+  account was created, so typos do not use it up; invite codes are not
+  requests); a hidden `website` field that people never fill (a request that
+  fills it is dropped); a minimum fill time (the form fetches
+  `GET /join/api/token`, a timestamp signed with HMAC-SHA-256 together with the
+  client address, and sends it back in `X-Form-Token`; a request that is
+  missing the token, forged, from another address, older than 48 hours or
+  younger than 3 seconds is dropped). A dropped request gets the normal "pending" answer so
+  a script cannot tell, and the gate logs it (`signup dropped: ...`). The
+  signing key is kept in `lib/.gate-secret` (mode 600). Settings:
+  `SIGNUP_DAILY_LIMIT` (3), `SIGNUP_MIN_FILL` in seconds (3; 0 turns the token
+  check off), `SIGNUP_EXPIRE_DAYS` (30).
+- Player endpoints (`account.go`): `POST /account/api/init`, `/password`,
+  `/recovery` take the account from `X-WEBAUTH-USER`, which Apache sets from
+  the session after `RequestHeader unset X-WEBAUTH-USER early` drops what a
+  client sent (the gate is reachable only by Apache, as for the administrator
+  API); without it they answer 401 and the sign-in page redirect protects them.
+  They are POST only, refuse another site's `Origin`, and are limited to 120
+  calls per 10 minutes per address.
+- Recovery codes: 12 characters from a 32-letter alphabet (60 bits) from
+  `crypto/rand`, shown once, stored only as bcrypt (cost 10) in `lib/.recovery`
+  (mode 600, written to a temporary file and renamed, under the account lock;
+  `conquer-signup recovery-init|recovery-renew|reset`). `POST /join/api/recover`
+  (open) verifies the code, sets the new password and answers with a new code;
+  the used code is void. Passwords change the same way (`conquer-signup passwd`
+  checks the current one with `htpasswd -v`, the secrets travel on standard
+  input, never in a command line or a log). The account file is rewritten in
+  place under the lock (it is a mounted single file): Apache could read it
+  half written in that instant, as for every account change.
+- Limits on guessing: 5 wrong current passwords an hour and 5 wrong recovery
+  codes an hour, each per address **and** per account, then 429 until the hour
+  passes; the wrong ones answer 403 and are logged (`conquer_recover.log`) for
+  the fail2ban jail `conquer-recover` (5 in an hour, 1 hour ban). An unknown
+  account, a wrong code and a malformed code give the same answer and take the
+  same time. A change of password ends the session (the cookie holds the old
+  password), and the page signs the player out.
+- Requests nobody decides are removed after 30 days, with their account in the
+  account file and `.players` (`conquer-signup expire`, run by the gate two
+  minutes after it starts and then every 24 hours; logged as `expire: ...`).
 - POSTs are refused when the browser's `Origin` is another site.
 - Invite codes: 8 characters from a 32-letter alphabet read from
   `/dev/urandom` (40 bits), stored in `lib/.invites`, used once (removed under
   the lock together with the account creation), guessable only at five tries an
   hour per address.
-- Mail (`notify.go`): the recipient is the administrator's configured address,
-  or the visitor's address after approval; subject is one encoded line, no
-  header can be injected (addresses and text cannot carry a line break), the
-  body is plain text. SMTP uses STARTTLS or implicit TLS with certificate
-  verification unless `SMTP_STARTTLS=off`. The webhook gets only the account
-  name and the admin URL.
+- Mail (`notify.go`): the only recipient is the administrator's configured
+  address; players are never mailed. Subject is one encoded line, no header can
+  be injected, the body is plain text. SMTP uses STARTTLS or implicit TLS with
+  certificate verification unless `SMTP_STARTTLS=off`. The webhook gets only the
+  account name and the admin URL. The administrator page asks "Approve
+  ACCOUNT?" before Approve is sent. New requests are announced in digests: the
+  first one right away, the ones that follow within 10 minutes in one message
+  ("N new requests", the first 25 account names), so a flood of requests is at
+  most one mail and one webhook message every 10 minutes.
+- Old data: earlier versions kept an email and a message per pending request in
+  `lib/.requests`; the gate removes them at start (`conquer-signup scrub`).
 
 ### Scripts and the terminal menu (`conquer/scripts`)
 
@@ -140,13 +197,20 @@ becoming players without the administrator's approval.
   holds no capability (CI checks it).
 - `cap_drop: ALL` with only what the root part of the entrypoint needs,
   `no-new-privileges`, `pids_limit`, `mem_limit`, log rotation.
-- ttyd: at most `MAX_CLIENTS` terminals at once, pinned release with a checked
-  SHA-256. `SESSION_TIMEOUT` is ttyd's WebSocket ping interval, not an idle
-  timeout.
+- ttyd: at most `MAX_CLIENTS` terminals at once (25 in the production
+  template), pinned release with a checked SHA-256. `SESSION_TIMEOUT` is
+  ttyd's WebSocket ping interval, not an idle timeout.
+- The menu (`menu.sh`) limits what a terminal can hold: an account still
+  waiting for approval (`?` in `lib/.players`) gets a message and the
+  terminal closes at once, so waiting accounts cannot occupy the places; one
+  terminal per account (`flock` on `/run/conquer/session-ACCOUNT.lock`: a
+  second tab is told the account is open elsewhere and closes); a menu with
+  no key for 15 minutes (`MENU_IDLE_TIMEOUT`, seconds) closes itself. The game
+  itself, once started, is not timed.
 - The gate is a static Go binary built in a separate stage; the image has no
   compiler.
 - Backups made before each turn are mode 600 in a 700 directory (they hold the
-  nations' password hashes, emails and unused invite codes).
+  nations' password hashes and unused invite codes).
 
 ### Host
 
@@ -156,15 +220,20 @@ becoming players without the administrator's approval.
   user owns refuse symbolic links in the world directory.
 - `update-vps.sh` runs git as the owner of the checkout, and its backups are in
   a 700 directory under `/root`; `offsite-backup.sh` encrypts what it sends.
-- `check-security.sh`, `setup-security-basic.sh` and `setup-security.sh` install
-  and report fail2ban.
+- Logs with client addresses: the site's Apache logs (`conquer_*.log`) are kept
+  7 days by `/etc/logrotate.d/conquer-web` (`setup-logrotate.sh`, run by
+  `deploy-to-vps.sh` and `update-vps.sh`); fail2ban bans last 1 hour; the
+  container log is rotated by Docker.
+- `deploy-to-vps.sh` and `update-vps.sh` run `setup-fail2ban.sh` (the sign-in
+  jail above; safe to repeat). `check-security.sh`, `setup-security-basic.sh`
+  and `setup-security.sh` install and report more fail2ban jails.
 
 ### Data published on purpose
 
 `status/status.json`, `history.json` and the news pages hold the turn, the
 schedule, nation names, race, class, alignment, scores, and the news with the
-captured-sector list left out. They never hold account names, emails, requests
-or the invite codes. `ADMIN_CONTACT`, if you set it, is public.
+captured-sector list left out. They never hold account names, requests or the
+invite codes. `ADMIN_CONTACT`, if you set it, is public.
 
 ### CI
 
@@ -184,8 +253,13 @@ approval flows. A step fails if the password shows up in a container log.
   no second factor and no lockout inside the application; a logout link
   can be followed from another site (samesite=lax allows top-level GET) and
   only signs the visitor out.
-  Brute force is limited only by fail2ban if you install it (below). Use long
+  Brute force is limited by the fail2ban sign-in jail (8 misses in 10 minutes,
+  1 hour ban, per address: a botnet with many addresses is not stopped). Use long
   passwords; the sign-up page asks for 8 or more, bcrypt uses the first 72 bytes.
+- **Recovery without email.** The recovery code is a bearer secret: whoever has
+  it can take the account, and a player who loses it and the password loses the
+  account (the owner can reset by hand). A stranger can use up the 5 hourly
+  tries of an account to block its recovery for an hour.
 - **Everything in the container is one user.** The gate, ttyd, the menu, the game,
   cron and the mail password (`SMTP_PASSWORD` is in the container environment)
   share uid 1000. A way out of the menu would give the world, the account file
@@ -195,17 +269,19 @@ approval flows. A step fails if the password shows up in a container log.
   That is Apache only, on the local Docker network or on the VPS loopback. Other
   local users of the VPS, or another container on the same Docker network, could
   send `X-WEBAUTH-USER` themselves.
-- **No idle timeout for terminals.** An open session keeps its slot until the
-  browser closes it; `SESSION_TIMEOUT` is only a ping interval.
+- **No idle timeout inside the game.** The menu closes after 15 minutes
+  without a key, but a game that was started keeps its place until the browser
+  closes it; `SESSION_TIMEOUT` is only a ping interval.
 - **No shared-secret header between Apache and the gate/ttyd.** The network
   position above is the only check on `X-WEBAUTH-USER`.
 - **The container's root filesystem is writable** (it is not `read_only`),
   though the game user can write only to its own directories.
 - **The lock files live in `/run/conquer`,** a directory the game user owns, so
   a process of that user can hold the join and account locks.
-- **Waiting accounts can open a terminal.** A visitor's account exists (waiting,
-  `?`) as soon as the request is made, so the menu and the practice world are
-  open to it. Each uses one of the `MAX_CLIENTS` slots while connected.
+- **Waiting accounts still sign in to Apache.** A visitor's account exists
+  (`?`) as soon as the request is made and passes the Apache login; the menu
+  turns it away, but each connection takes a `MAX_CLIENTS` place for a moment.
+  Approved players can still hold `MAX_CLIENTS` places with one account each.
 - **Accounts can be guessed from the sign-up page** ("name taken"), as on any
   site that lets you choose a name.
 - **Passwords in the game.** Conquer keeps at most 7 characters of a nation's
@@ -216,9 +292,10 @@ approval flows. A step fails if the password shows up in a container log.
   god and every sample nation locked (`conqpasswd -l`), so no password opens
   them; CI checks this. The one exception is `trainee` in the practice world,
   which is public on purpose (`train1`).
-- **Personal data.** Emails and messages are kept in `lib/.requests` until the
-  request is decided, and in backups. The gate logs the account name and the
-  client address of sign-ups and refusals.
+- **Personal data.** No email address and no free text of players is kept.
+  `lib/.requests` holds the account name, the time and the language of waiting
+  requests. The gate logs the account name and the client address of sign-ups
+  and refusals (the container log is rotated by Docker).
 - **Git history.** The first commits held a self-signed certificate key for
   `conquer.local` and, in the first world files, a god password hash. Neither is
   in use; do not reuse that password anywhere.
@@ -230,12 +307,15 @@ approval flows. A step fails if the password shows up in a container log.
 - Keep the game user's uid equal to the owner of `data/` so backup scripts need
   no root, and keep `data/` and `/etc/apache2/conquer-web.htpasswd` unreadable
   to other users (`chmod 700 data`).
-- Install fail2ban: `sudo ./setup-security-basic.sh` (standard Apache filters:
-  failed logins, bad bots) or `sudo ./setup-security.sh`, then
-  `./check-security.sh` to see the bans. The authentication jail should watch
-  `conquer_*_error.log` for `AH01617`/`AH01618` and ban after about five misses.
-  Do not ban on every `200` or `206` of the access log: the tutorial videos are
-  served in ranges.
+- fail2ban for the sign-in form is installed by `deploy-to-vps.sh` and
+  `update-vps.sh` (`sudo ./setup-fail2ban.sh`; set `ADMIN_IP` in
+  `config/production.env` so that you are never banned). See the bans with
+  `sudo fail2ban-client status conquer-login` and lift one with
+  `sudo fail2ban-client set conquer-login unbanip ADDRESS`. More jails:
+  `sudo ./setup-security-basic.sh` (standard Apache filters: failed logins, bad
+  bots) or `sudo ./setup-security.sh`, then `./check-security.sh`. Do not ban
+  on every `200` or `206` of the access log: the tutorial videos are served in
+  ranges and many players share an address.
 - Set `SMTP_STARTTLS` on (the default), and give the mail account only the right
   to send.
 - Put a limit on connections per account or per address in front of `/play/` if

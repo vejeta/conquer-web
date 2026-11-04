@@ -78,6 +78,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     </div>
   </div>
   <p class="below"><span data-i18n="login.no_account">No account yet?</span> <a href="/signup.html" data-i18n="login.ask_seat">Ask for your seat</a></p>
+  <p class="below"><a href="/recover.html" id="forgot" data-i18n="login.forgot">Forgot your password?</a></p>
 </main>
 <script src="/server.js"></script>
 <script src="/site.js"></script>
@@ -117,8 +118,10 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
     // Redirected back by Apache after a wrong password (?failed=1), or after Sign out
     if (params.get('failed')) { say('failed'); flicker(); }
-    else if (params.get('loggedout')) {
-      var show = function () { say('info', t('loggedout', 'You are signed out. The doors are closed again.')); };
+    else if (params.get('loggedout') || params.get('changed')) {
+      // Signed out, or the password was changed (the old session no longer works)
+      var key = params.get('changed') ? 'changed' : 'loggedout';
+      var show = function () { say('info', t(key, key === 'changed' ? 'Password changed. Sign in again with the new password.' : 'You are signed out. The doors are closed again.')); };
       show();
       if (window.conquerI18n) { conquerI18n.ready().then(show); document.addEventListener('conquer:lang', show); }
     }

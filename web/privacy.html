@@ -1,0 +1,154 @@
+<!doctype html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+
+Not legal advice. The Spanish text (privacy.es.html) is the legally
+relevant one. Keep both pages in step; tests/test_privacy.py checks that
+no placeholder in double curly braces is left.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy notice and legal notice - Conquer</title>
+  <meta name="description" content="What Conquer stores about you, why, for how long, and how to ask for access or deletion. Includes the legal notice of the site.">
+  <link rel="stylesheet" href="theme.css">
+  <script src="race.js"></script>
+  <style>
+    /* Layout only: colours and fonts come from theme.css */
+    h1, h2, h3 { text-wrap: balance; line-height: 1.25; }
+    h1 { font-size: 2rem; margin: 24px 0 8px; }
+    h2 { font-size: 1.4rem; margin: 40px 0 12px; scroll-margin-top: 16px; }
+    p { margin: 0 0 14px; max-width: 68ch; }
+    ul { padding-left: 1.3em; margin: 0 0 14px; }
+    li { max-width: 66ch; }
+    li + li { margin-top: 6px; }
+    .lede { font-size: 1.15rem; max-width: 52ch; }
+    .updated { color: var(--ink-dim); font-size: .9rem; }
+    nav.toc { margin: 24px 0 0; }
+    nav.toc ol { columns: 2 16rem; column-gap: 32px; padding-left: 1.3em; margin: 0; }
+    nav.toc li { break-inside: avoid; }
+    .note { border-left: 3px solid var(--gold); padding: 2px 0 2px 12px; color: var(--ink-dim); }
+    .note strong { color: var(--ink); }
+    .table-wrap { overflow-x: auto; margin-bottom: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
+    th, td { text-align: left; vertical-align: top; padding: 8px; border-bottom: 1px solid var(--line); }
+    th { color: var(--ink-dim); font-weight: 500; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    td:first-child { font-weight: 600; }
+    @media (max-width: 560px) {
+      thead { display: none; }
+      table, tbody, tr, td { display: block; }
+      tr { padding: 8px 0; border-bottom: 1px solid var(--line); }
+      td { border: 0; padding: 2px 0; }
+    }
+    .fine { color: var(--ink-dim); font-size: .85rem; margin-top: 40px; }
+  </style>
+</head>
+<body>
+<header class="site-header mountains">
+  <a class="site-name" href="index.html">Conquer</a>
+  <span class="spacer"></span>
+  <nav class="nav" aria-label="Main menu">
+    <a class="key key-small" href="game.html" data-server-link="game.html"><span>Play</span></a>
+    <a class="key key-small" href="hall.html"><span>Hall</span></a>
+    <a class="key key-small" href="signup.html" data-server-link="signup.html"><span>Join</span></a>
+  </nav>
+  <select class="select" data-page-menu="privacy" aria-label="Language"></select>
+</header>
+<main class="page wide">
+<div class="reading" data-theme="parchment">
+
+  <h1>Privacy notice and legal notice</h1>
+  <p class="lede">Conquer is a hobby game, not for profit. We keep the minimum needed for you to play and to keep the server safe. We do not ask for your email address, and there are no ads, no analytics, no trackers and no third-party resources.</p>
+  <p class="updated">Last updated: 2026-11-04. The <a href="privacy.es.html" hreflang="es" lang="es">Spanish version</a> (Aviso de privacidad) is the legally binding one.</p>
+
+  <section id="who">
+    <h2>1. Who is responsible</h2>
+    <p>Juan Manuel Méndez Rey, a private individual in Spain. Email for anything about your data: <a href="mailto:conquer@vejeta.com">conquer@vejeta.com</a>.</p>
+  </section>
+
+  <section id="data">
+    <h2>2. What is processed, why and for how long</h2>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>Data</th><th>Why and legal basis</th><th>Kept</th></tr></thead>
+      <tbody>
+        <tr><td>Account name, password hash and recovery-code hash</td><td>So you can sign in and play. Contract (GDPR 6.1.b). Prefer a nickname. The recovery code itself is not kept: only its hash.</td><td>Until you ask for the account to be deleted. An undecided request is deleted after 30 days.</td></tr>
+        <tr><td>Game data: nation, moves, in-game messages, scores</td><td>It is the game. Contract (6.1.b). The public parts (nation names, scores, news) show in the Hall and the status page, never with your account name.</td><td>Until you ask for the account to be deleted, or the season ends.</td></tr>
+        <tr><td>IP address, time, URL and browser (user agent), in the web server logs</td><td>Security and abuse control. Legitimate interest (6.1.f).</td><td>7 days.</td></tr>
+        <tr><td>fail2ban bans (IP address)</td><td>Stopping repeated password guesses. Legitimate interest (6.1.f).</td><td>1 hour.</td></tr>
+        <tr><td>Encrypted backups of the game world</td><td>Being able to restore the game. Legitimate interest (6.1.f).</td><td>The last 30 copies.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>We do not ask for or keep an email address, a phone number, a location or anything else. There are no ads, no analytics and no trackers, and the site loads no files from other websites.</p>
+  </section>
+
+  <section id="where">
+    <h2>3. Where, and who is involved</h2>
+    <ul>
+      <li>Servers: OVH (OVHcloud), in France.</li>
+      <li>PiensaSolutions, in Spain, only for the notification mails to the administrator when someone asks for a seat. Those mails carry no player data beyond the account name.</li>
+      <li>Encrypted backups on the owner's own storage, in Spain.</li>
+    </ul>
+    <p>Everything is inside the European Union: there are no international transfers. We give data to the authorities only when the law requires it.</p>
+  </section>
+
+  <section id="cookies">
+    <h2>4. Cookies and local storage</h2>
+    <p>Only what is strictly necessary, so there is no banner (LSSI-CE, article 22.2).</p>
+    <ul>
+      <li><strong>conquer_session</strong> (cookie, HttpOnly, Secure): keeps you signed in. It lasts until you close the browser, or 30 days if you tick "Remember me". Sign out to remove it.</li>
+      <li><strong>Local storage</strong> in your browser: language, settings and the practice world (<a href="try/">/try/</a>, which runs in your browser). It is never sent to us.</li>
+    </ul>
+  </section>
+
+  <section id="rights">
+    <h2>5. Your rights and deleting your account</h2>
+    <p>You can ask for access, rectification, erasure, restriction, objection and portability. Write to <a href="mailto:conquer@vejeta.com">conquer@vejeta.com</a> with your account name; we answer within one month. <strong>To delete your account</strong>, write to that address. Backups lose it as they are replaced.</p>
+    <p>If you think we handle your data wrongly you can complain to the Spanish data protection agency: <a href="https://www.aepd.es">https://www.aepd.es</a>.</p>
+    <p class="note"><strong>If you forget your password</strong>, use the recovery code shown to you once. Without the password and the code the account cannot be restored: you can join again next season.</p>
+  </section>
+
+  <section id="app">
+    <h2>6. The Android app</h2>
+    <ul>
+      <li>Permissions: INTERNET, VIBRATE and POST_NOTIFICATIONS.</li>
+      <li>The turn alert is a local notification created on your phone. There is no push service.</li>
+      <li>Your account and password are stored on the device only if you choose "remember". "Forget account" or uninstalling the app erases them.</li>
+    </ul>
+  </section>
+
+  <section id="children">
+    <h2>7. Children</h2>
+    <p>Conquer is not directed at children under 14. If you are under 14, do not sign up; if we learn that an account belongs to someone under 14 we delete it.</p>
+  </section>
+
+  <section id="donations">
+    <h2>8. Donations</h2>
+    <p>They are voluntary and give nothing in return. They go through Liberapay, which is a separate controller of its own data. We receive no payment data.</p>
+  </section>
+
+  <section id="legal">
+    <h2>Legal notice (Aviso legal)</h2>
+    <p>Information under article 10 of Spanish law 34/2002 (LSSI-CE).</p>
+    <ul>
+      <li>Site owner: Juan Manuel Méndez Rey. Contact: <a href="mailto:conquer@vejeta.com">conquer@vejeta.com</a>.</li>
+      <li>A hobby site, not for profit.</li>
+      <li>The game and this site are free software (GPL-3.0-or-later). Code: <a href="https://github.com/vejeta/conquer">game</a> &middot; <a href="https://github.com/vejeta/conquer-web">web server</a>.</li>
+    </ul>
+  </section>
+
+  <p class="fine"><a href="index.html">Back to Conquer</a></p>
+</div>
+</main>
+<footer class="site-footer mountains">
+  <p>Conquer is free software (GPL-3.0-or-later).</p>
+  <div class="foot-links"><a href="design.html">Design</a> <a href="privacy.html">Privacy</a></div>
+</footer>
+
+<script src="server.js"></script>
+<script src="site.js"></script>
+</body>
+</html>

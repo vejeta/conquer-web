@@ -94,6 +94,9 @@
     # "*" in the players file, see <Location "/admin/"> below
     ProxyPass /admin/api/ http://127.0.0.1:7682/admin/api/
     ProxyPassReverse /admin/api/ http://127.0.0.1:7682/admin/api/
+    # Player account API: see <Location "/account/api/"> below
+    ProxyPass /account/api/ http://127.0.0.1:7682/account/api/
+    ProxyPassReverse /account/api/ http://127.0.0.1:7682/account/api/
     ProxyPass /play/ http://127.0.0.1:7681/play/
     ProxyPassReverse /play/ http://127.0.0.1:7681/play/
 
@@ -134,6 +137,18 @@
     # Logging
     ErrorLog ${APACHE_LOG_DIR}/conquer_ssl_error.log
     CustomLog ${APACHE_LOG_DIR}/conquer_ssl_access.log combined
+    # Failed sign-ins, for fail2ban (vps/fail2ban/): mod_auth_form answers a
+    # wrong password with a redirect to /login.html?failed=1 and writes
+    # nothing to the error log, so the access log line with the Location
+    # header is the only trace. Only the sign-in posts are written here.
+    LogFormat "%h %l - %t \"%r\" %>s \"%{Location}o\"" conquer_login
+    SetEnvIf Request_URI "^/login/(do|long)$" conquer_login_post
+    CustomLog ${APACHE_LOG_DIR}/conquer_login.log conquer_login env=conquer_login_post
+    # Wrong current passwords and wrong recovery codes (the gate answers 403),
+    # for fail2ban (vps/fail2ban/conquer-recover.conf). Logs are kept 7 days
+    # (update-vps.sh installs /etc/logrotate.d/conquer-web).
+    SetEnvIf Request_URI "^/(join/api/recover|account/api/(password|recovery))$" conquer_recover_post
+    CustomLog ${APACHE_LOG_DIR}/conquer_recover.log conquer_login env=conquer_recover_post
 
     # Log format for monitoring
     LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" combined
@@ -211,6 +226,40 @@
         RequestHeader set X-WEBAUTH-USER "%{REMOTE_USER}s"
         # Keep search engines out of the administration
         Header always set X-Robots-Tag "noindex, nofollow"
+    </Location>
+
+    # Player account (web/account.html, web/recover.html): the gate changes the
+    # password and keeps the hash of the recovery code. /account/api/ is for the
+    # signed-in player only (the gate takes the account from X-WEBAUTH-USER,
+    # which Apache sets from the session after dropping any value a client
+    # sent); /join/api/recover is open, like the sign-up page, and limited by
+    # the gate (5 wrong codes an hour per address and per account)
+    <Location "/account/api/">
+        AuthType form
+        AuthName "Conquer"
+        AuthFormProvider file
+        AuthUserFile "/etc/apache2/conquer-web.htpasswd"
+        Session On
+        SessionCookieName conquer_session path=/;httponly;secure;samesite=lax
+        SessionCryptoPassphraseFile "/etc/apache2/conquer-web.session"
+        # The lifetime is the one the login gave; the cookie is not passed on
+        SessionCookieRemove On
+        AuthFormLoginRequiredLocation "/login.html?next=/account.html"
+        Require valid-user
+        RequestHeader set X-WEBAUTH-USER "%{REMOTE_USER}s"
+        Header always set X-Robots-Tag "noindex, nofollow"
+    </Location>
+
+    # Request bodies: the sign-up, account and administrator APIs take small
+    # JSON (the gate allows 8 KB, 2 KB and 1 KB); Apache refuses more before it proxies
+    <Location "/join/api/">
+        LimitRequestBody 65536
+    </Location>
+    <Location "/admin/api/">
+        LimitRequestBody 65536
+    </Location>
+    <Location "/account/api/">
+        LimitRequestBody 65536
     </Location>
 
     # Player accounts: Apache authenticates every request to the terminal

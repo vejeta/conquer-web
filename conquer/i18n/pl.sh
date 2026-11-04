@@ -123,6 +123,9 @@ MSG[menu_done]="Moje rozkazy na tę turę są gotowe"
 MSG[menu_practice]="Świat treningowy (tylko ty, nic się nie liczy)"
 MSG[menu_log_out]="Wyloguj"
 MSG[menu_goodbye]="Do zobaczenia, dowódco."
+MSG[menu_idle]="Zamknięto po %s minutach bez naciśnięcia klawisza. Zaloguj się ponownie, aby wrócić."
+MSG[menu_already_open]="  ${yellow}To konto jest już otwarte w innym oknie.${reset}
+  Użyj tamtego albo zamknij je i otwórz tę stronę ponownie."
 
 # Kreator dołączania (join.sh)
 MSG[join_questions]="Pytania: ${bold}%s${reset}"
@@ -165,6 +168,6 @@ MSG[join_finish]="  Naciśnij dowolny klawisz, aby kontynuować..."
 # Account waiting for approval ("?" in the assignments)
 MSG[menu_requested]="miejsce zgłoszone, czeka na zatwierdzenie"
 MSG[menu_pending]="  ${yellow}Twoje miejsce czeka na zatwierdzenie.${reset}
-  Administrator zatwierdza nowych graczy ręcznie. Gdy to zrobi, Graj
-  otworzy tutaj kreator państwa. Do tego czasu możesz wypróbować świat
-  treningowy (opcja 7) i przeczytać pełną pomoc (opcja 5)."
+  Administrator zatwierdza nowych graczy ręcznie. Gdy to zrobi, zaloguj
+  się ponownie i otworzy się kreator państwa. Do tego czasu terminal
+  pozostaje zamknięty.."

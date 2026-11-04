@@ -45,6 +45,7 @@
   "nav_hall": "Ruhmeshalle",
   "nav_join": "Beitreten",
   "nav_design": "Design",
+  "nav_privacy": "Datenschutz",
   "nav_main": "Hauptmenü",
   "foot": "Conquer ist freie Software (GPL-3.0-or-later). Quellcode: <a href=\"https://github.com/vejeta/conquer\">Spiel</a> &middot; <a href=\"https://github.com/vejeta/conquer-web\">Webserver</a>"
  },

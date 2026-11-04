@@ -1,0 +1,139 @@
+<!doctype html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="recover.page_title">Forgot your password?</title>
+  <meta name="description" content="Get your Conquer account back with your recovery code.">
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="/theme.css">
+  <script src="/race.js"></script>
+  <style>
+    /* Layout only: colours and fonts come from theme.css */
+    .panel h2 { margin: 0 0 var(--s3); }
+    .panel p { margin: 0 0 var(--s3); }
+    .below { margin: var(--s4) 0 0; }
+  </style>
+</head>
+<body>
+<header class="site-header mountains">
+  <a class="site-name" href="/index.html">Conquer</a>
+  <span class="spacer"></span>
+  <nav class="nav" aria-label="Main">
+    <a class="key key-small" href="/game.html" data-server-link="game.html"><span data-i18n="nav.play">Play</span></a>
+    <a class="key key-small" href="/hall.html"><span data-i18n="nav.hall">Hall</span></a>
+    <a class="key key-small" href="/signup.html" data-server-link="signup.html"><span data-i18n="nav.join">Join</span></a>
+  </nav>
+  <select class="select" data-lang-menu aria-label="Language" data-i18n-title="index.language"></select>
+</header>
+<main class="page narrow">
+  <h1 data-i18n="recover.title">Forgot your password?</h1>
+  <p class="lede" data-i18n="recover.lede">Enter your account name, the recovery code you saved and a new password.</p>
+
+  <section class="panel" id="form-panel">
+    <form class="form" id="form" novalidate>
+      <div class="field">
+        <label for="account" data-i18n="recover.l_account">Account name</label>
+        <input class="input" id="account" name="username" autocomplete="username" autocapitalize="off" spellcheck="false" required maxlength="32" pattern="[A-Za-z0-9_.\-]{1,32}">
+      </div>
+      <div class="field">
+        <label for="code" data-i18n="recover.l_code">Recovery code</label>
+        <input class="input code" id="code" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="K7QM-3XPA-9RTD" required maxlength="20">
+        <span class="help" data-i18n="recover.h_code">Twelve letters and digits, like K7QM-3XPA-9RTD.</span>
+      </div>
+      <div class="field">
+        <label for="password" data-i18n="recover.l_password">New password</label>
+        <input class="input" id="password" name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="72">
+        <span class="help" data-i18n="account.h_new">At least 8 characters, 72 at most.</span>
+      </div>
+      <div class="field">
+        <label for="password2" data-i18n="recover.l_password2">Repeat the new password</label>
+        <input class="input" id="password2" name="password2" type="password" autocomplete="new-password" required minlength="8" maxlength="72">
+      </div>
+      <p class="error-text" id="error" role="alert" hidden></p>
+      <button class="key key-primary" type="submit" id="submit" data-i18n="recover.submit">Set the new password</button>
+    </form>
+    <p class="help" style="margin-top: var(--s4)" data-i18n="account.lost">If you lose both your password and your recovery code, write to conquer@vejeta.com: accounts cannot be restored without the code. You can join again next season.</p>
+  </section>
+
+  <section class="panel" id="done" hidden aria-live="polite">
+    <h2 data-i18n="recover.done_title">Password changed</h2>
+    <p data-i18n="recover.done_text">Your password is changed. The recovery code you used no longer works: save the new one. Then sign in with your new password.</p>
+    <a class="key key-primary" href="/login.html?changed=1" id="signin" data-i18n="recover.done_signin">Sign in</a>
+  </section>
+  <p class="below"><a href="/login.html" data-i18n="recover.back">Back to sign in</a></p>
+</main>
+<footer class="site-footer mountains">
+  <p data-i18n="index.footer">Conquer is free software (GPL-3.0-or-later). Source: <a href="https://github.com/vejeta/conquer">game</a> &middot; <a href="https://github.com/vejeta/conquer-web">web server</a></p>
+  <div class="foot-links"><a href="/design.html" data-i18n="nav.design">Design</a> <a href="/privacy.html" data-i18n-page="privacy" data-i18n="nav.privacy">Privacy</a></div>
+</footer>
+
+<script src="/server.js"></script>
+<script src="/site.js"></script>
+<script src="/recovery.js"></script>
+<script>
+  (function () {
+    'use strict';
+    function m(key, params) { return conquerI18n.t('recover.' + key, params) || conquerI18n.t('account.' + key, params); }
+    var $ = function (id) { return document.getElementById(id); };
+    conquerI18n.ready();
+
+    // The account service lives on the game server
+    if (window.conquerRemote) {
+      location.replace(conquerServerUrl('recover.html'));
+      return;
+    }
+
+    var error = $('error'), shownKey = null;
+    function show(key, focus) {
+      shownKey = key;
+      var name = 'e_' + key, fallback = 'e_server';
+      error.textContent = key ? (m(name) || m(fallback)) : '';
+      error.hidden = !key;
+      if (focus) focus.focus();
+    }
+    document.addEventListener('conquer:lang', function () { if (shownKey) show(shownKey); });
+
+    // After the new code is saved the sign-in page says the password changed
+    function signinUrl() {
+      var lang = conquerI18n.lang();
+      return '/login.html?changed=1' + (lang !== 'en' ? '&lang=' + lang : '');
+    }
+    document.addEventListener('conquer:lang', function () { $('signin').href = signinUrl(); });
+
+    $('form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      show(null);
+      var account = $('account').value.trim(), code = $('code').value.trim();
+      var a = $('password').value, b = $('password2').value;
+      if (!/^[A-Za-z0-9_.-]{1,32}$/.test(account)) return show('bad_account', $('account'));
+      if (!code) return show('bad_recovery', $('code'));
+      if (a.length < 8) return show('short_password', $('password'));
+      if (a !== b) return show('mismatch', $('password2'));
+      $('submit').disabled = true;
+      fetch('/join/api/recover', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ account: account, code: code, password: a }), cache: 'no-store'
+      }).then(function (r) {
+        return r.json().catch(function () { return { ok: false, error: 'server' }; });
+      }).then(function (res) {
+        $('submit').disabled = false;
+        if (!res.ok) return show(res.error || 'server', res.error === 'bad_recovery' ? $('code') : null);
+        $('password').value = $('password2').value = $('code').value = '';
+        $('form-panel').hidden = true;
+        document.querySelector('.lede').hidden = true;
+        $('done').hidden = false;
+        $('signin').href = signinUrl();
+        window.scrollTo(0, 0);
+        // The new code, once
+        conquerRecovery.show(account, res.recovery_code, function () { location.href = signinUrl(); });
+      }).catch(function () { $('submit').disabled = false; show('network'); });
+    });
+  })();
+</script>
+</body>
+</html>

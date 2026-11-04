@@ -33,6 +33,20 @@
     }
   };
 
+  // The one place of the donation link (a Liberapay page; see README
+  // "Donations" and docs/HANDOVER.md). Elements with data-donate get it as a
+  // plain link (new tab, no widget, nothing loaded from Liberapay); they and
+  // the sentences around them (data-donate-wrap) show only outside the
+  // Android app, which must not carry donation links (Google Play policy).
+  var DONATE_URL = 'https://liberapay.com/Conquer/donate';
+  window.conquerDonateUrl = DONATE_URL;
+  function donateLinks() {
+    document.querySelectorAll('[data-donate]').forEach(function (a) {
+      a.href = DONATE_URL; a.target = '_blank'; a.rel = 'noopener';
+    });
+    document.querySelectorAll('[data-donate], [data-donate-wrap]').forEach(function (el) { el.hidden = inApp; });
+  }
+
   var cfg = window.CONQUER_CONFIG || {};
   var server = (cfg.server || '').replace(/\/+$/, '');
 
@@ -48,8 +62,8 @@
   // as <page>.<code>.html (English: <page>.html). dir: "rtl" for scripts
   // written right to left.
   var LANGUAGES = [
-    { code: 'en', name: 'English', pages: ['guide', 'tutorial'] },
-    { code: 'es', name: 'Español', pages: ['guide', 'tutorial'] },
+    { code: 'en', name: 'English', pages: ['guide', 'tutorial', 'privacy'] },
+    { code: 'es', name: 'Español', pages: ['guide', 'tutorial', 'privacy'] },
     { code: 'de', name: 'Deutsch', pages: ['tutorial'] },
     { code: 'pt-br', name: 'Português (Brasil)', pages: ['tutorial'] },
     { code: 'pl', name: 'Polski', pages: ['tutorial'] },
@@ -253,6 +267,7 @@
 
   function start() {
     fixLinks();
+    donateLinks();
     langLinks();
     langMenus();
     pageMenus();

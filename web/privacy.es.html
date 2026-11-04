@@ -1,0 +1,154 @@
+<!doctype html>
+<!--
+SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+SPDX-License-Identifier: GPL-3.0-or-later
+
+No es asesoramiento jurídico. Este texto en español es el jurídicamente
+relevante. Mantén las dos páginas iguales; tests/test_privacy.py comprueba
+que no queda ningún marcador entre llaves dobles.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aviso de privacidad y aviso legal - Conquer</title>
+  <meta name="description" content="Qué guarda Conquer sobre ti, para qué, durante cuánto tiempo y cómo pedir acceso o supresión. Incluye el aviso legal del sitio.">
+  <link rel="stylesheet" href="theme.css">
+  <script src="race.js"></script>
+  <style>
+    /* Layout only: colours and fonts come from theme.css */
+    h1, h2, h3 { text-wrap: balance; line-height: 1.25; }
+    h1 { font-size: 2rem; margin: 24px 0 8px; }
+    h2 { font-size: 1.4rem; margin: 40px 0 12px; scroll-margin-top: 16px; }
+    p { margin: 0 0 14px; max-width: 68ch; }
+    ul { padding-left: 1.3em; margin: 0 0 14px; }
+    li { max-width: 66ch; }
+    li + li { margin-top: 6px; }
+    .lede { font-size: 1.15rem; max-width: 52ch; }
+    .updated { color: var(--ink-dim); font-size: .9rem; }
+    nav.toc { margin: 24px 0 0; }
+    nav.toc ol { columns: 2 16rem; column-gap: 32px; padding-left: 1.3em; margin: 0; }
+    nav.toc li { break-inside: avoid; }
+    .note { border-left: 3px solid var(--gold); padding: 2px 0 2px 12px; color: var(--ink-dim); }
+    .note strong { color: var(--ink); }
+    .table-wrap { overflow-x: auto; margin-bottom: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
+    th, td { text-align: left; vertical-align: top; padding: 8px; border-bottom: 1px solid var(--line); }
+    th { color: var(--ink-dim); font-weight: 500; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    td:first-child { font-weight: 600; }
+    @media (max-width: 560px) {
+      thead { display: none; }
+      table, tbody, tr, td { display: block; }
+      tr { padding: 8px 0; border-bottom: 1px solid var(--line); }
+      td { border: 0; padding: 2px 0; }
+    }
+    .fine { color: var(--ink-dim); font-size: .85rem; margin-top: 40px; }
+  </style>
+</head>
+<body>
+<header class="site-header mountains">
+  <a class="site-name" href="index.html">Conquer</a>
+  <span class="spacer"></span>
+  <nav class="nav" aria-label="Menú principal">
+    <a class="key key-small" href="game.html" data-server-link="game.html"><span>Jugar</span></a>
+    <a class="key key-small" href="hall.html"><span>Salón</span></a>
+    <a class="key key-small" href="signup.html" data-server-link="signup.html"><span>Unirse</span></a>
+  </nav>
+  <select class="select" data-page-menu="privacy" aria-label="Idioma"></select>
+</header>
+<main class="page wide">
+<div class="reading" data-theme="parchment">
+
+  <h1>Aviso de privacidad y aviso legal</h1>
+  <p class="lede">Conquer es un juego de afición, sin ánimo de lucro. Guardamos lo mínimo para que puedas jugar y para mantener el servidor seguro. No pedimos tu correo electrónico, no hay publicidad, ni analítica, ni rastreadores, ni recursos de terceros.</p>
+  <p class="updated">Última actualización: 2026-11-04. Esta versión en español es la jurídicamente vinculante. <a href="privacy.html" hreflang="en" lang="en">English version</a>.</p>
+
+  <section id="who">
+    <h2>1. Responsable</h2>
+    <p>Juan Manuel Méndez Rey, persona física en España. Correo para cualquier asunto sobre tus datos: <a href="mailto:conquer@vejeta.com">conquer@vejeta.com</a>.</p>
+  </section>
+
+  <section id="data">
+    <h2>2. Qué se trata, para qué y durante cuánto tiempo</h2>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>Dato</th><th>Para qué y base jurídica</th><th>Plazo</th></tr></thead>
+      <tbody>
+        <tr><td>Nombre de cuenta, huella (hash) de la contraseña y huella del código de recuperación</td><td>Para que puedas entrar y jugar. Ejecución de un contrato (RGPD 6.1.b). Mejor usa un apodo. El código de recuperación no se guarda: solo su huella.</td><td>Hasta que pidas borrar la cuenta. Una solicitud sin decidir se borra a los 30 días.</td></tr>
+        <tr><td>Datos de juego: nación, movimientos, mensajes dentro del juego, puntuaciones</td><td>Es el juego. Ejecución de un contrato (6.1.b). Las partes públicas (nombres de nación, puntuaciones, noticias) se ven en el Salón y en la página de estado, nunca con tu nombre de cuenta.</td><td>Hasta que pidas borrar la cuenta o termine la temporada.</td></tr>
+        <tr><td>Dirección IP, hora, página solicitada y navegador (user agent), en los registros del servidor web</td><td>Seguridad y control de abusos. Interés legítimo (6.1.f).</td><td>7 días.</td></tr>
+        <tr><td>Bloqueos de fail2ban (dirección IP)</td><td>Frenar intentos repetidos de contraseña. Interés legítimo (6.1.f).</td><td>1 hora.</td></tr>
+        <tr><td>Copias de seguridad cifradas del mundo del juego</td><td>Poder restaurar el juego. Interés legítimo (6.1.f).</td><td>Las últimas 30 copias.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>No pedimos ni guardamos correo electrónico, teléfono, ubicación ni nada más. No hay publicidad, analítica ni rastreadores, y el sitio no carga archivos de otras webs.</p>
+  </section>
+
+  <section id="where">
+    <h2>3. Dónde y quién interviene</h2>
+    <ul>
+      <li>Servidores: OVH (OVHcloud), en Francia.</li>
+      <li>PiensaSolutions, en España, solo para los correos de aviso al propio administrador cuando alguien pide plaza. Esos correos no llevan datos de jugadores salvo el nombre de cuenta.</li>
+      <li>Copias de seguridad cifradas en almacenamiento del titular, en España.</li>
+    </ul>
+    <p>Todo está dentro de la Unión Europea: no hay transferencias internacionales. Solo cedemos datos a las autoridades cuando la ley lo exige.</p>
+  </section>
+
+  <section id="cookies">
+    <h2>4. Cookies y almacenamiento local</h2>
+    <p>Solo lo estrictamente necesario, por eso no hay banner (LSSI-CE, artículo 22.2).</p>
+    <ul>
+      <li><strong>conquer_session</strong> (cookie, HttpOnly, Secure): mantiene tu sesión. Dura hasta que cierras el navegador, o 30 días si marcas "Recordarme". Cierra la sesión para eliminarla.</li>
+      <li><strong>Almacenamiento local</strong> de tu navegador: idioma, ajustes y el mundo de práctica (<a href="try/">/try/</a>, que se ejecuta en tu navegador). Nunca se nos envía.</li>
+    </ul>
+  </section>
+
+  <section id="rights">
+    <h2>5. Tus derechos y cómo borrar tu cuenta</h2>
+    <p>Puedes pedir acceso, rectificación, supresión, limitación, oposición y portabilidad. Escribe a <a href="mailto:conquer@vejeta.com">conquer@vejeta.com</a> indicando tu nombre de cuenta; respondemos en un mes. <strong>Para borrar tu cuenta</strong>, escribe a esa dirección. Las copias de seguridad la pierden al renovarse.</p>
+    <p>Si crees que tratamos mal tus datos, puedes reclamar ante la Agencia Española de Protección de Datos: <a href="https://www.aepd.es">https://www.aepd.es</a>.</p>
+    <p class="note"><strong>Si olvidas la contraseña</strong>, usa el código de recuperación que se muestra una sola vez. Sin contraseña ni código, la cuenta no se puede restaurar: puedes apuntarte de nuevo la temporada siguiente.</p>
+  </section>
+
+  <section id="app">
+    <h2>6. La app de Android</h2>
+    <ul>
+      <li>Permisos: INTERNET, VIBRATE y POST_NOTIFICATIONS.</li>
+      <li>El aviso de turno es una notificación local creada en tu teléfono. No hay servicio push.</li>
+      <li>Tu cuenta y tu contraseña se guardan en el dispositivo, y solo si eliges "recordar". "Olvidar cuenta" o desinstalar la app los borra.</li>
+    </ul>
+  </section>
+
+  <section id="children">
+    <h2>7. Menores</h2>
+    <p>Conquer no está dirigido a menores de 14 años. Si lo eres, no te registres; si sabemos que una cuenta es de un menor de 14 años, la borramos.</p>
+  </section>
+
+  <section id="donations">
+    <h2>8. Donaciones</h2>
+    <p>Son voluntarias y no dan ninguna contraprestación. Se hacen a través de Liberapay, que es responsable independiente de sus propios datos. Nosotros no recibimos datos de pago.</p>
+  </section>
+
+  <section id="legal">
+    <h2>Aviso legal</h2>
+    <p>Información conforme al artículo 10 de la Ley 34/2002 (LSSI-CE).</p>
+    <ul>
+      <li>Titular del sitio: Juan Manuel Méndez Rey. Contacto: <a href="mailto:conquer@vejeta.com">conquer@vejeta.com</a>.</li>
+      <li>Sitio de afición sin ánimo de lucro.</li>
+      <li>El juego y este sitio son software libre (GPL-3.0-or-later). Código: <a href="https://github.com/vejeta/conquer">juego</a> &middot; <a href="https://github.com/vejeta/conquer-web">servidor web</a>.</li>
+    </ul>
+  </section>
+
+  <p class="fine"><a href="index.html">Volver a Conquer</a></p>
+</div>
+</main>
+<footer class="site-footer mountains">
+  <p>Conquer es software libre (GPL-3.0-or-later).</p>
+  <div class="foot-links"><a href="design.html">Diseño</a> <a href="privacy.es.html">Privacidad</a></div>
+</footer>
+
+<script src="server.js"></script>
+<script src="site.js"></script>
+</body>
+</html>

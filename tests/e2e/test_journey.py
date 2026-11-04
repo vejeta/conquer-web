@@ -6,8 +6,9 @@
 N players (E2E_PLAYERS, default 6) each run in their own thread and browser
 context, with phone and desktop profiles and es/en/de pages:
 
-  a. ask for a seat on the join page; the administrator approves through the
-     admin API; the player reads the approval mail in the mail catcher
+  a. ask for a seat on the join page (no email: none is asked); the
+     administrator approves through the admin API and its notice is read in
+     the mail catcher; the player is not mailed and simply signs in
   b. log in through the Doors form
   c. found a nation in the game's builder (distinct races and classes; the
      2-7 characters hint of the nation password), by the touch layer's chips
@@ -18,6 +19,13 @@ context, with phone and desktop profiles and es/en/de pages:
      turn, the message arrived, the nation's numbers changed
   f. late join after turn 5 (the builder's -A) for one more player
   g. logout; the session cookie is gone
+
+The account pages are part of the journey: the first visit of an approved
+player shows the recovery code once (only its hash is kept); on the second
+day one third of the players change the password on account.html (the old
+session stops working), one third get the account back with the recovery
+code on recover.html (and the used code is void), and one third make a new
+recovery code on account.html.
 
 Every step asserts. On failure a trace, a video and a screenshot are kept under
 test-results/e2e/."""
@@ -31,6 +39,7 @@ import traceback
 from urllib.parse import urlparse
 
 import pytest
+import requests
 
 playwright_api = pytest.importorskip("playwright.sync_api")
 pytest.importorskip("requests")
@@ -53,7 +62,6 @@ SPECS = [
     dict(race="O", race_name="Orc", klass=["warlord"], align=None, lang="de", profile="pixel7"),
 ]
 LOCALES = {"es": "es-ES", "en": "en-US", "de": "de-DE"}
-APPROVED_WORD = {"es": "aprobada", "en": "approved", "de": "freigegeben"}
 DEVICES = {"pixel7": "Pixel 7", "iphone13": "iPhone 13"}
 # Console messages that are not the page's fault
 # ttyd 1.7.7 (and its main branch) may close the socket with 1006, a code that must never be
@@ -94,18 +102,12 @@ class Player:
         self.nation = self.nation_of(idx)
         self.password = secrets.token_hex(6)
         self.nation_pw = ["ab", "tide", "x7k9q", "rune123", "dwarf", "gold42"][idx % 6]
-        if Env.mailpit:
-            self.email = "%s@e2e.test" % self.account
-        elif Env.mail_to:
-            user, _, domain = Env.mail_to.partition("@")
-            self.email = "%s+%s@%s" % (user, self.account, domain)
-        else:
-            self.email = ""
         self.dir = RESULTS / self.account
         self.soft = []                  # failures that do not stop the journey
         self.console, self.bad = [], []
         self.saw_late = False
         self.treasury = None
+        self.recovery = None
         self.turn = None
         self.sector = None
         self.page = self.term = self.ctx = None
@@ -158,38 +160,35 @@ class Player:
         page.fill("#account", self.account)
         page.fill("#password", self.password)
         page.fill("#password2", self.password)
-        if self.email:
-            page.fill("#email", self.email)
-        page.fill("#message", "rehearsal %s" % self.name())
+        assert page.locator("#email, #message, input[type=email]").count() == 0, "the sign-up form still asks for an email or a message"
+        # The gate drops a form sent less than 3 s after it opened (a robot);
+        # a person takes longer to type a name and a password twice
+        page.wait_for_timeout(3300)
         page.click("#submit")
         page.wait_for_selector("#done-pending:not([hidden])", timeout=30000)
         marks = dexec("cat", "/opt/conquer/lib/.players")
         assert re.search(r"^%s:\?$" % re.escape(self.account), marks, re.M), "no pending mark for %s:\n%s" % (self.account, marks)
+        # What is kept about the request: the account, the time and the language, no address
+        queue = dexec("cat", "/opt/conquer/lib/.requests")
+        mine = [l for l in queue.splitlines() if l.split("\t")[0] == self.account]
+        assert len(mine) == 1 and len(mine[0].split("\t")) == 3 and "@" not in mine[0], "the request line: %r" % mine
 
-    def approve_and_read_the_mail(self):
+    def approve(self):
         admin = Admin()
         state = admin.state()
         assert any(r["account"] == self.account for r in state["requests"]), "request not listed in the admin state"
         out = admin.api("approve", account=self.account)
         assert out.get("ok"), out
         assert re.search(r"^%s:\+$" % re.escape(self.account), dexec("cat", "/opt/conquer/lib/.players"), re.M)
-        link = Env.base + "/"
-        if not self.email:
-            return link
+        assert "emailed" not in out, "the approval still talks about mailing the player: %s" % out
         if Env.mailpit:
-            assert out.get("emailed") is True, "approval was not mailed: %s" % out
-            mail = Mailpit()
-            note = mail.wait_for("admin@e2e.test", subject_has=self.account)
+            # The administrator's own notice about the request (the owner's address)
+            note = Mailpit().wait_for("admin@e2e.test", subject_has=self.account)
             assert self.account in note["Text"] and "/admin/" in note["Text"], "mail to the administrator: %s" % note["Text"][:200]
-            msg = mail.wait_for(self.email, subject_has=APPROVED_WORD[self.lang])
-            body = msg["Text"]
-            assert self.account in body, "the approval mail does not name the account:\n%s" % body
-            urls = re.findall(r"https?://[^\s<>\"]+", body)
-            assert urls, "no link in the approval mail:\n%s" % body
-            if self.late:
-                assert str(self.turn_at_join) in body, "late approval mail does not say the turn:\n%s" % body
-            link = Env.base + (urlparse(urls[0]).path or "/")
-        return link
+            assert "@e2e.test" not in note["Text"].replace("admin@e2e.test", ""), "the notice holds an address: %s" % note["Text"][:300]
+            # Nobody else is mailed: every message so far is to the administrator
+            others = [m for m in Mailpit().messages() if any(a["Address"].lower() != "admin@e2e.test" for a in m["To"])]
+            assert not others, "a mail went to someone else than the administrator: %s" % [m["To"] for m in others][:3]
 
     def sign_in(self, first):
         """The Doors form: login.html posts to /login/do."""
@@ -212,8 +211,34 @@ class Player:
         cookies = [c for c in self.ctx.cookies() if c["name"] == "conquer_session"]
         assert cookies, "no session cookie after the login"
         assert cookies[0]["httpOnly"] and cookies[0]["secure"], cookies[0]
+        self.recovery_modal(expect=first)
         self.term = Term(page)
         self.term.attach()
+
+    CODE_RE = re.compile(r"[A-HJ-NP-Z2-9]{4}(?:-[A-HJ-NP-Z2-9]{4}){2}")
+
+    def recovery_modal(self, expect):
+        """The first visit shows the recovery code once; later visits show none."""
+        page = self.page
+        if not expect:
+            page.wait_for_timeout(1500)       # the page asks the gate when it opens
+            assert page.locator("#recovery-modal").count() == 0, "the recovery code was shown again"
+            return
+        page.wait_for_selector("#recovery-modal[open]", timeout=30000)
+        code = page.inner_text("#recovery-code").strip()
+        assert self.CODE_RE.fullmatch(code), "recovery code %r" % code
+        assert page.locator("#rc-copy").count() == 1 and page.locator("#rc-saved").count() == 1
+        if self.spec["profile"] == "desktop":
+            assert page.locator("#rc-download").count() == 1
+        # The server keeps only the bcrypt hash, in a file of mode 600
+        stored = dexec("cat", "/opt/conquer/lib/.recovery")
+        assert re.search(r"^%s:\$2[aby]\$" % re.escape(self.account), stored, re.M), "no recovery hash for %s" % self.account
+        assert code not in stored and code.replace("-", "") not in stored, "the recovery code is stored in clear"
+        assert dexec("stat", "-c", "%a", "/opt/conquer/lib/.recovery").strip() == "600"
+        page.click("#rc-copy")
+        page.click("#rc-saved")
+        page.wait_for_selector("#recovery-modal", state="detached", timeout=10000)
+        self.recovery = code
 
     def sound_check(self):
         page = self.page
@@ -528,6 +553,11 @@ class Player:
         t.chip("quit")
         t.wait(r"\[[a-z]/N\]", timeout=30)                    # "Are your orders done? [y/N]" in the page's language
         text = t.text()
+        # the chips are drawn a moment after the prompt is on the screen
+        try:
+            self.page.wait_for_selector('[data-chip="yes"]', state="visible", timeout=5000)
+        except Exception:
+            pass
         # a touch player must be able to answer: the Yes chip, in every language
         self.check(t.where() == "prompt_yn" and t.has_chip("yes"), "no Yes/No chips at the orders question in %s: where=%s\n%s" % (self.lang, t.where(), text))
         if t.has_chip("yes"):
@@ -558,8 +588,8 @@ class Player:
     # ---------------------------------------------------------------- journeys
     def first_day(self):
         self.ask_for_a_seat()
-        link = self.approve_and_read_the_mail()
-        self.page.goto(link)
+        self.approve()
+        self.page.goto(Env.base + "/")
         self.page.locator('a.key-primary[href*="game.html"]').first.click()      # Play now: the Doors open
         self.sign_in(first=True)
         self.sound_check()
@@ -639,7 +669,93 @@ class Player:
         self.finish_checks()
 
     def sign_in_again(self):
+        self.account_day()
         self.sign_in(first=False)
+
+    # the account pages ------------------------------------------------------
+    def new_password(self):
+        return secrets.token_hex(6) + "-new"
+
+    def login_form(self, next_path):
+        """The Doors form, with the page to open afterwards."""
+        page = self.page
+        page.goto("%s/login.html?lang=%s&next=%s" % (Env.base, self.lang, next_path))
+        page.wait_for_selector("#account")
+        page.fill("#account", self.account)
+        page.fill("#password", self.password)
+        page.click("#go")
+        page.wait_for_url(lambda url: urlparse(url).path.endswith(next_path), timeout=30000)
+
+    def account_page(self):
+        self.login_form("/account.html")
+        self.page.wait_for_function("() => document.getElementById('who').textContent.includes(%r)" % self.account, timeout=30000)
+        assert self.page.locator("#recovery-modal").count() == 0, "a recovery code was made twice"
+
+    def code_is_dead(self, code):
+        """A recovery code that was used or replaced opens nothing (the gate allows
+        five wrong tries an hour per address: only two players check it)."""
+        r = self.ctx.request.post(Env.base + "/join/api/recover", data={"account": self.account, "code": code,
+                                                                        "password": self.new_password()})
+        assert r.status == 403 and r.json().get("error") == "bad_recovery", "the old recovery code still works: %s %s" % (r.status, r.text()[:200])
+
+    def account_day(self):
+        [self.forgot_password, self.change_password, self.new_recovery_code][self.idx % 3]()
+
+    def change_password(self):
+        page = self.page
+        self.account_page()
+        before = [c for c in self.ctx.cookies() if c["name"] == "conquer_session"][0]["value"]
+        stale = lambda: requests.get(Env.base + "/play/", cookies={"conquer_session": before}, allow_redirects=False, verify=False, timeout=30).status_code
+        assert stale() == 200, "the session did not work before the change"
+        new = self.new_password()
+        page.fill("#current", self.password)
+        page.fill("#new1", new)
+        page.fill("#new2", new)
+        page.click("#password-submit")
+        page.wait_for_url(re.compile(r"/login\.html\?changed=1"), timeout=30000)
+        page.wait_for_selector("#info:not([hidden])", timeout=10000)
+        assert i18n_text(self.lang, "changed") in page.inner_text("#info")
+        # The old session (it holds the old password) and the old password are dead
+        assert stale() == 302, "the old session still works after the password change"
+        old = requests.post(Env.base + "/login/do", data={"httpd_username": self.account, "httpd_password": self.password, "httpd_location": "/play/"},
+                            allow_redirects=False, verify=False, timeout=30)
+        assert old.status_code == 302 and "failed=1" in old.headers.get("location", ""), "the old password still signs in"
+        self.password = new
+
+    def forgot_password(self):
+        page = self.page
+        page.goto("%s/login.html?lang=%s" % (Env.base, self.lang))
+        page.click("#forgot")
+        page.wait_for_url(re.compile(r"/recover\.html"), timeout=15000)
+        new, used = self.new_password(), self.recovery
+        page.fill("#account", self.account)
+        page.fill("#code", used.lower().replace("-", " "))       # typed in lower case, with spaces
+        page.fill("#password", new)
+        page.fill("#password2", new)
+        page.click("#submit")
+        page.wait_for_selector("#recovery-modal[open]", timeout=30000)
+        fresh = page.inner_text("#recovery-code").strip()
+        assert self.CODE_RE.fullmatch(fresh) and fresh != used, "the new recovery code %r (used %r)" % (fresh, used)
+        stored = dexec("cat", "/opt/conquer/lib/.recovery")
+        assert fresh not in stored and used not in stored
+        page.click("#rc-saved")
+        page.wait_for_url(re.compile(r"/login\.html\?changed=1"), timeout=15000)
+        if self.idx == 0:
+            self.code_is_dead(used)
+        self.recovery, self.password = fresh, new
+
+    def new_recovery_code(self):
+        page = self.page
+        self.account_page()
+        page.fill("#rc-current", self.password)
+        page.click("#recovery-submit")
+        page.wait_for_selector("#recovery-modal[open]", timeout=30000)
+        fresh = page.inner_text("#recovery-code").strip()
+        assert self.CODE_RE.fullmatch(fresh) and fresh != self.recovery, "the new recovery code %r (old %r)" % (fresh, self.recovery)
+        page.click("#rc-saved")
+        if self.idx == 2:
+            self.code_is_dead(self.recovery)
+        self.recovery = fresh
 
     def read_news(self, old_turn):
         t = self.term

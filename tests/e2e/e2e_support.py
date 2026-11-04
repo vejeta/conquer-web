@@ -29,8 +29,6 @@ class Env:
     mailpit = os.environ.get("E2E_MAILPIT_URL", "").rstrip("/")
     container = os.environ.get("E2E_CONTAINER", "conquer-local")
     players = int(os.environ.get("E2E_PLAYERS", "6"))
-    # production rehearsal: where the players' mail goes (one address, "+tag" added)
-    mail_to = os.environ.get("E2E_MAIL_TO", "")
     prefix = os.environ.get("E2E_PREFIX", "e2e")
 
 

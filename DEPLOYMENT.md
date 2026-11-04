@@ -102,8 +102,60 @@ It never changes web passwords, nation passwords or the world. In order:
    a rollback if Apache refuses it), `/join/api/` and `/admin/`
    ([virtual host](#apache-virtual-host)). Missing proxy and admin blocks are
    only reported: copy them from the template yourself.
-6. Checks that the running container is the current version, warns if the
+6. Adds to this site's virtual host files, when they lack them (with
+   `apache2ctl configtest` and a rollback if Apache refuses): the
+   `conquer_login.log` log of sign-in posts, the `conquer_recover.log` log of
+   wrong recovery codes and passwords, the account API (`ProxyPass
+   /account/api/` and its `<Location>` with the form login) and the
+   `LimitRequestBody 65536` blocks of `/join/api/`, `/admin/api/` and
+   `/account/api/`; then runs `setup-fail2ban.sh` ([fail2ban](#fail2ban)).
+7. Runs `setup-logrotate.sh`: `/etc/logrotate.d/conquer-web` keeps the site's
+   Apache logs (`/var/log/apache2/conquer_*.log`: access, error, sign-in and
+   recovery logs, which hold client addresses) 7 days, rotated daily and
+   compressed, Apache reloaded as Debian's own rule does. Debian's
+   `/etc/logrotate.d/apache2` is changed to leave those files out (logrotate
+   refuses two rules for one file; it still rotates every other Apache log
+   for 14 days). Docker's log rotation of the game container is unchanged.
+   Check with `sudo logrotate -d /etc/logrotate.conf 2>&1 | grep -i duplicate`
+   (no output) and `ls /var/log/apache2/conquer_*`.
+8. Checks that the running container is the current version, warns if the
    god password is not set, and that `https://DOMAIN/` answers 200.
+
+**After the "no email" update** (account pages, recovery codes, 7-day logs),
+run on the VPS:
+
+```bash
+cd /home/conquer/conquer-web
+sudo ./update-vps.sh --rebuild   # new game image (the gate strips old emails and
+                                 # messages from pending requests when it starts),
+                                 # virtual host (account API, recover log), fail2ban jail
+                                 # conquer-recover, /etc/logrotate.d/conquer-web
+sudo fail2ban-client status conquer-recover
+sudo logrotate -d /etc/logrotate.conf 2>&1 | grep -i duplicate   # no output
+docker logs conquer-vps 2>&1 | grep scrub                        # what the gate removed
+```
+
+Each approved player gets a recovery code the first time they open the game
+page. Old backups may still hold emails until they are rotated out. Set the
+Liberapay link, if it changes, in `web/site.js` (`DONATE_URL`).
+
+**After the abuse-limits update** (sign-up limits, menu limits, fail2ban),
+run on the VPS, in this order:
+
+```bash
+cd /home/conquer/conquer-web
+sudo nano config/production.env      # MAX_CLIENTS=25 (a file made before keeps 5);
+                                     # ADMIN_IP=your address (never banned by fail2ban)
+sudo ./update-vps.sh --rebuild       # new game image (gate, menu), virtual host lines,
+                                     # fail2ban jail; restarts the service
+sudo fail2ban-client status conquer-login   # the jail is listed
+sudo tail -n 3 /var/log/apache2/conquer_login.log   # after a wrong password at /login.html
+```
+
+`update-vps.sh` prints a warning instead of the green line when Apache or
+fail2ban refused something. The key that signs the sign-up form's timestamps
+is made by the gate on its first start (`data/lib/.gate-secret`, mode 600;
+keep it out of git and backups you share).
 
 A script that ends with a red line (`❌`) needs attention before you tell
 anybody the site is up: see [Troubleshooting](#troubleshooting).
@@ -131,8 +183,9 @@ the administrator password and the mail password.
 | Variable | Meaning |
 |----------|---------|
 | `TTYD_USERNAME`, `TTYD_PASSWORD` | The first administrator account; read once by `deploy-to-vps.sh` to create it. Change a password later with `manage-players.sh add NAME` |
-| `MAX_CLIENTS` | Players allowed in the terminal at once (ttyd `-m`) |
+| `MAX_CLIENTS` | Players allowed in the terminal at once (ttyd `-m`); 25 in the production template, one terminal per account |
 | `SESSION_TIMEOUT` | Seconds between ttyd's keep-alive pings (ttyd `-P`) |
+| `MENU_IDLE_TIMEOUT` | Seconds without a key at the menu before the terminal closes (default 900) |
 | `TTYD_FONT_SIZE` | Terminal font size in the browser |
 | `CONQUER_UID` | uid of the game user inside the container; set it to the owner of `data/` on the host (`id -u conquer`) so scripts can read `data/` |
 
@@ -154,14 +207,18 @@ the administrator password and the mail password.
 | Variable | Meaning |
 |----------|---------|
 | `SIGNUP` | `on`: requests and invite codes work at `/signup.html`; `off` closes them |
+| `SIGNUP_DAILY_LIMIT` | Pending accounts one address may create in 24 hours (default 3; counted only when the account was created) |
+| `SIGNUP_MIN_FILL` | Seconds the sign-up form must have been open before a request counts (default 3; `0` turns the check off); a faster request is dropped silently |
+| `SIGNUP_EXPIRE_DAYS` | Requests nobody decides are removed with their account after this many days (default 30, checked daily; `0` never) |
 | `ADMIN_CONTACT` | Shown under "How to join" and in the menu; if it is an address it is also the default `NOTIFY_EMAIL` |
 | `NOTIFY_EMAIL` | Where new requests are announced |
+| `NOTIFY_DIGEST_SECONDS` | Minimum seconds between announcements of new requests (default 600) |
 | `NOTIFY_LANG` | Language of your mails and webhook text: `en`, `es`, `de`, `pl`, `pt-br`, `ru`, `zh` |
 | `SMTP_HOST` | Mail server, `host:port`; nothing is sent while empty |
 | `SMTP_USER`, `SMTP_PASSWORD` | Mail account (empty for no login) |
 | `SMTP_FROM` | Sender address of the mails |
 | `SMTP_STARTTLS` | `on` or `off` |
-| `SIGNUP_WEBHOOK_URL` | Webhook announcing each new request (default `TURN_WEBHOOK_URL`) |
+| `SIGNUP_WEBHOOK_URL` | Webhook announcing new requests, at most one message per 10 minutes (default `TURN_WEBHOOK_URL`) |
 | `SITE_URL` | Address of the site in mails (default `https://DOMAIN`) |
 
 ## Apache virtual host
@@ -185,6 +242,8 @@ Blocks that must exist in the HTTPS host (`update-vps.sh` checks the marked ones
 - `Cache-Control: no-cache` for `html|js|css|json` files. *checked*
 - `Content-Security-Policy` whose `script-src` has `'wasm-unsafe-eval'` (the practice game at `/try/` is WebAssembly). *checked*
 - `/status` with `Access-Control-Allow-Origin: *`.
+- The `conquer_login` `LogFormat`, `SetEnvIf` and `CustomLog ... conquer_login.log` lines after the access log, the same for `conquer_recover.log` (posts to `/join/api/recover` and `/account/api/password|recovery`), and `<Location "/join/api/">`, `<Location "/admin/api/">` and `<Location "/account/api/">` with `LimitRequestBody 65536` before `<Location "/play/">`. *added by `update-vps.sh`*
+- `ProxyPass /account/api/` to `127.0.0.1:7682/account/api/` and a `<Location "/account/api/">` with the form login and `RequestHeader set X-WEBAUTH-USER`: the account API for signed-in players (change password, recovery code). *added by `update-vps.sh`*
 - `/login/do`, `/login/long`, `/logout` and the session settings: see [Login](#login). *checked*
 - `<Location "/play/">` with the same form login, **as the last `<Location>`** of the host: sections merge in order and a later one granting access would remove the password (CI checks this in the template).
 - `admin` must not appear in the `<LocationMatch ...phpmyadmin>` list that denies access.
@@ -192,6 +251,29 @@ Blocks that must exist in the HTTPS host (`update-vps.sh` checks the marked ones
 If you also use `certbot --apache` to edit hosts, it copies the host into a
 `-le-ssl.conf` file: make changes in every file that has the domain
 (`grep -rl DOMAIN /etc/apache2/sites-available`).
+
+## fail2ban
+
+`deploy-to-vps.sh` and `update-vps.sh` run `sudo ./setup-fail2ban.sh`, which
+installs fail2ban if needed and two jails (filters and jails in
+`vps/fail2ban/`): `conquer-login`, 8 wrong passwords at the sign-in form in 10
+minutes ban the address for 1 hour; and `conquer-recover`, 5 wrong recovery
+codes or wrong current passwords (HTTP 403 from the gate at `/join/api/recover`
+and `/account/api/password|recovery`) in 1 hour ban it for 1 hour. They read
+`/var/log/apache2/conquer_login.log` and `conquer_recover.log`, which the
+virtual host fills (see [Apache virtual host](#apache-virtual-host)). Set
+`ADMIN_IP=203.0.113.7` (an address or network) in `config/production.env` and
+run the script again so that your own address is never banned; `127.0.0.1/8`
+never is. Running it again changes nothing when the files are right, and it
+removes the `apache-dos-conquer` jail that older `setup-security.sh` runs
+installed.
+
+```bash
+sudo fail2ban-client status conquer-login                  # who is banned
+sudo fail2ban-client status conquer-recover                # the same for wrong recovery codes
+sudo fail2ban-client set conquer-login unbanip ADDRESS     # lift a ban
+sudo fail2ban-regex /var/log/apache2/conquer_login.log conquer-login   # does the filter see the failures?
+```
 
 ## Login
 
@@ -339,13 +421,25 @@ Then `sudo apache2ctl configtest && sudo systemctl reload apache2`. Check:
 ## Email notifications
 
 Players ask for a seat and you approve at `/admin/`. The game can mail you
-each new request and mail the player when approved. It works without mail
+new requests (the first at once, then at most one digest mail every 10
+minutes, "N new requests"). Players are never mailed: the sign-up page asks
+for no email address and the game keeps none. It works without mail
 (requests wait in `/admin/`); a webhook (`SIGNUP_WEBHOOK_URL`) can announce
 requests in Slack, Mattermost or Discord instead.
 
-`NOTIFY_EMAIL` is where requests are announced. A player who gave an address
-is mailed on approval, in the language of the page they asked from; yours is
-in `NOTIFY_LANG`. Nothing is sent while `SMTP_HOST` is empty.
+`NOTIFY_EMAIL` is where requests are announced (your own address); the
+language of the mails and the webhook text is `NOTIFY_LANG`. Nothing is sent
+while `SMTP_HOST` is empty. The mails name the account only.
+
+**Older requests.** Versions before the "no email" change kept an email
+address and a free-text message of each pending request in `lib/.requests`.
+The gate removes them when it starts (`conquer-signup scrub`, logged as
+`scrub: removed the email and message of N pending request(s)`), so after an
+update and a restart of the game container (`./update-vps.sh` does both when
+`conquer/` changed) none is left. To do it by hand:
+`docker exec -u conquer conquer-vps conquer-signup scrub`. Backups made
+earlier (`data/backups`, `/root/conquer-backups`, off-site copies) may still
+hold them until they are rotated out.
 
 **Option 1 (recommended): your mailbox provider**, no mail server on the VPS:
 
@@ -398,7 +492,7 @@ only), or:
 
 ```bash
 sudo ./manage-players.sh requests
-sudo ./manage-players.sh approve NAME      # no email from here; /admin/ mails the player
+sudo ./manage-players.sh approve NAME      # players are never mailed
 sudo ./manage-players.sh reject NAME       # deletes the account
 ```
 
@@ -407,6 +501,24 @@ nation with the game's builder, at any turn (after turn 5 the builder is
 `conqrun -A`, which needs no super user password because you approved the
 account, and the game gives a late nation extra points). `SIGNUP=off` closes
 requests.
+
+**Passwords and recovery codes.** The site keeps no email address, so a
+player who forgets the password needs the **recovery code**. The first time an
+approved player opens the game page (or `/admin/`, `/account.html`) the gate
+makes a code (`XXXX-XXXX-XXXX`) and the page shows it once; only its bcrypt
+hash is kept, in `data/lib/.recovery` (mode 600, one `account:hash` line per
+player, in the world backup). Players change the password and make a new code
+on `/account.html` (both need the current password) and use
+`/recover.html` ("Forgot your password?" on the sign-in page) with the code to
+set a new password and get a new code. The gate allows 5 wrong tries an hour
+per address and per account (a stranger can therefore block someone's recovery
+for an hour, not open it), and fail2ban bans an address after 5 in an hour.
+A player who lost both password and code writes to the contact address of the
+privacy notice; accounts cannot be restored without the code and the player
+can join again next season. **You can still reset by hand**, at your
+discretion: `sudo ./manage-players.sh password NAME` sets a new password (the
+player then makes a new code on the account page; the old hash stays until
+then). `remove` and `rename` keep `.recovery` in step.
 
 **Invite codes** approve at once: `sudo ./manage-players.sh invite [COUNT]`
 (or at `/admin/`), `invites` lists the unused ones. Send the code, or the link

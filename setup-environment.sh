@@ -201,8 +201,8 @@ setup_vps_production() {
     fi
 
     # Get max clients
-    read -p "Maximum concurrent users for production [5]: " PROD_MAX_CLIENTS
-    PROD_MAX_CLIENTS=${PROD_MAX_CLIENTS:-5}
+    read -p "Maximum concurrent users for production [25]: " PROD_MAX_CLIENTS
+    PROD_MAX_CLIENTS=${PROD_MAX_CLIENTS:-25}
 
     # Get session timeout
     read -p "Session timeout in seconds [1800]: " PROD_TIMEOUT
@@ -233,6 +233,8 @@ TTYD_USERNAME=$PROD_USER
 TTYD_PASSWORD=$PROD_PASS
 MAX_CLIENTS=$PROD_MAX_CLIENTS
 SESSION_TIMEOUT=$PROD_TIMEOUT
+# An address that fail2ban never bans (yours); empty for none
+ADMIN_IP=
 
 # Shown to players in the menu under "How to join"
 ADMIN_CONTACT="$PROD_CONTACT"

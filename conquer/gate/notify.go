@@ -18,6 +18,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -29,9 +30,9 @@ func validEmail(s string) bool {
 	return len(s) <= 120 && emailRe.MatchString(s)
 }
 
-// notifier tells the administrator about new requests (email and webhook)
-// and the player about an approval (email). Settings come from the
-// environment; nothing is sent for what is left empty.
+// notifier tells the administrator about new requests (email and webhook).
+// Players are never mailed: no address of theirs is kept. Settings come
+// from the environment; nothing is sent for what is left empty.
 type notifier struct {
 	adminEmail string // NOTIFY_EMAIL, else ADMIN_CONTACT when it is an address
 	smtpHost   string // SMTP_HOST, host:port
@@ -42,7 +43,24 @@ type notifier struct {
 	webhook    string // SIGNUP_WEBHOOK_URL, else TURN_WEBHOOK_URL
 	siteURL    string
 	lang       string // NOTIFY_LANG: the administrator's language
+
+	// Requests are announced in digests: at most one mail (and one webhook
+	// message) per digestEvery, however many requests came in
+	digestEvery time.Duration
+	digestMu    sync.Mutex
+	queue       []queuedRequest
+	timer       *time.Timer
+	lastDigest  time.Time
+	mailer      func(to, subject, body string) error // sendMail unless a test replaces it
+	poster      func(text string) error              // post unless a test replaces it
 }
+
+type queuedRequest struct{ account string }
+
+const (
+	defaultDigestEvery = 10 * time.Minute
+	digestListMax      = 25 // accounts named in a digest; the rest are counted
+)
 
 func envOr(names ...string) string {
 	for _, n := range names {
@@ -79,6 +97,8 @@ func loadNotifier() *notifier {
 		webhook:    envOr("SIGNUP_WEBHOOK_URL", "TURN_WEBHOOK_URL"),
 		siteURL:    strings.TrimRight(envOr("SITE_URL"), "/"),
 		lang:       validLang(envOr("NOTIFY_LANG")),
+
+		digestEvery: time.Duration(envInt("NOTIFY_DIGEST_SECONDS", int(defaultDigestEvery/time.Second))) * time.Second,
 	}
 	if n.adminEmail == "" {
 		if c := envOr("ADMIN_CONTACT"); validEmail(c) {
@@ -207,50 +227,79 @@ func (n *notifier) adminURL() string {
 	return n.siteURL + "/admin/"
 }
 
-// newRequest announces a pending request, in the administrator's
-// language; it returns at once
-func (n *notifier) newRequest(account, email, message string) {
+// newRequest queues a pending request for the administrator; it returns
+// at once. The first request after a quiet spell is announced right away,
+// the ones that follow within digestEvery are held and announced together
+// in one message ("N new requests"), so a flood of requests is one mail.
+func (n *notifier) newRequest(account string) {
 	if n.adminEmail == "" && n.webhook == "" {
 		return
 	}
-	go func() {
-		if n.adminEmail != "" && n.mailEnabled() {
-			details := ""
-			if email != "" {
-				details += mailText(n.lang, "line_email", "email", email)
-			}
-			if message != "" {
-				details += mailText(n.lang, "line_message", "message", message)
-			}
-			body := mailText(n.lang, "body_request", "account", account, "details", details, "url", n.adminURL())
-			if err := n.sendMail(n.adminEmail, mailText(n.lang, "subject_request", "account", account), body); err != nil {
-				log.Printf("notify: mail to the administrator failed: %v", err)
-			}
-		}
-		if n.webhook != "" {
-			if err := n.post(mailText(n.lang, "webhook_request", "account", account, "url", n.adminURL())); err != nil {
-				log.Printf("notify: webhook failed: %v", err)
-			}
-		}
-	}()
+	n.digestMu.Lock()
+	defer n.digestMu.Unlock()
+	n.queue = append(n.queue, queuedRequest{account})
+	if n.timer != nil {
+		return // a digest is already due
+	}
+	wait := time.Until(n.lastDigest.Add(n.digestEvery))
+	if wait < 0 {
+		wait = 0
+	}
+	n.timer = time.AfterFunc(wait, n.flushDigest)
 }
 
-// approved tells the player their seat is approved, in their language;
-// it returns at once
-func (n *notifier) approved(account, email, lang string, turn int) {
-	lang = validLang(lang)
-	go func() {
-		site := n.siteURL
-		if site == "" {
-			site = mailText(lang, "site_fallback")
+// flushDigest announces what is queued, in the administrator's language
+func (n *notifier) flushDigest() {
+	n.digestMu.Lock()
+	batch := n.queue
+	n.queue = nil
+	n.timer = nil
+	n.lastDigest = time.Now()
+	n.digestMu.Unlock()
+	if len(batch) == 0 {
+		return
+	}
+	send, post := n.mailer, n.poster
+	if send == nil {
+		send = n.sendMail
+	}
+	if post == nil {
+		post = n.post
+	}
+	if n.adminEmail != "" && (n.mailEnabled() || n.mailer != nil) {
+		subject, body := n.digestMail(batch)
+		if err := send(n.adminEmail, subject, body); err != nil {
+			log.Printf("notify: mail to the administrator failed: %v", err)
 		}
-		key := "body_approved_early"
-		if turn > lastJoinTurn {
-			key = "body_approved_late"
+	}
+	if n.webhook != "" {
+		text := mailText(n.lang, "webhook_request", "account", batch[0].account, "url", n.adminURL())
+		if len(batch) > 1 {
+			text = mailText(n.lang, "webhook_digest", "count", strconv.Itoa(len(batch)), "url", n.adminURL())
 		}
-		body := mailText(lang, key, "account", account, "site", site, "turn", strconv.Itoa(turn))
-		if err := n.sendMail(email, mailText(lang, "subject_approved", "account", account), body); err != nil {
-			log.Printf("notify: approval mail to %s failed: %v", account, err)
+		if err := post(text); err != nil {
+			log.Printf("notify: webhook failed: %v", err)
 		}
-	}()
+	}
+}
+
+// digestMail is the mail for the queued requests: the usual one for a
+// single request, a list of account names for several
+func (n *notifier) digestMail(batch []queuedRequest) (subject, body string) {
+	if len(batch) == 1 {
+		r := batch[0]
+		return mailText(n.lang, "subject_request", "account", r.account),
+			mailText(n.lang, "body_request", "account", r.account, "url", n.adminURL())
+	}
+	var list strings.Builder
+	for i, r := range batch {
+		if i == digestListMax {
+			fmt.Fprintf(&list, "  ... +%d\n", len(batch)-digestListMax)
+			break
+		}
+		list.WriteString("  - " + oneLine(r.account) + "\n")
+	}
+	count := strconv.Itoa(len(batch))
+	return mailText(n.lang, "subject_digest", "count", count),
+		mailText(n.lang, "body_digest", "count", count, "list", list.String(), "url", n.adminURL())
 }

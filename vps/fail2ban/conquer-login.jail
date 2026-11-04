@@ -1,0 +1,16 @@
+# SPDX-FileCopyrightText: 2025 Juan Manuel Méndez Rey
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Jail for wrong passwords on the sign-in form (written to
+# /etc/fail2ban/jail.d/conquer-login.local by setup-fail2ban.sh; IGNORE_IPS
+# is replaced there): 8 failures in 10 minutes ban the address for 1 hour.
+
+[conquer-login]
+enabled  = true
+port     = http,https
+filter   = conquer-login
+logpath  = /var/log/apache2/conquer_login.log
+maxretry = 8
+findtime = 10m
+bantime  = 1h
+ignoreip = IGNORE_IPS
