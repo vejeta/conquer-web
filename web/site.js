@@ -47,6 +47,24 @@
     document.querySelectorAll('[data-donate], [data-donate-wrap]').forEach(function (el) { el.hidden = inApp; });
   }
 
+  // The one place of the Android app's addresses: the APK is a GitHub
+  // release asset of vejeta/conquer-web with stable names, so "latest" always
+  // points to the newest. Elements with data-apk (the file), data-apk-sha
+  // (its SHA-256) and data-apk-release (version, notes, certificate
+  // fingerprint) get them as plain links; nothing is fetched until the
+  // visitor clicks. They and the section around them (data-apk-wrap) show
+  // only outside the app, which has nothing to install.
+  var APK_RELEASE_URL = 'https://github.com/vejeta/conquer-web/releases/latest';
+  var APK_URL = APK_RELEASE_URL + '/download/conquer.apk';
+  var APK_SHA_URL = APK_RELEASE_URL + '/download/conquer.apk.sha256';
+  window.conquerApkUrl = APK_URL;
+  function apkLinks() {
+    [['data-apk', APK_URL], ['data-apk-sha', APK_SHA_URL], ['data-apk-release', APK_RELEASE_URL]].forEach(function (p) {
+      document.querySelectorAll('[' + p[0] + ']').forEach(function (a) { a.href = p[1]; });
+    });
+    document.querySelectorAll('[data-apk], [data-apk-sha], [data-apk-release], [data-apk-wrap]').forEach(function (el) { el.hidden = inApp; });
+  }
+
   var cfg = window.CONQUER_CONFIG || {};
   var server = (cfg.server || '').replace(/\/+$/, '');
 
@@ -168,7 +186,7 @@
       if (v) el.title = v;
     });
     root.querySelectorAll('[data-i18n-page]').forEach(function (el) {
-      el.setAttribute('href', pageUrl(el.getAttribute('data-i18n-page')));
+      el.setAttribute('href', pageUrl(el.getAttribute('data-i18n-page')) + (el.getAttribute('data-i18n-hash') || ''));
     });
     fixLinks();
   }
@@ -268,6 +286,7 @@
   function start() {
     fixLinks();
     donateLinks();
+    apkLinks();
     langLinks();
     langMenus();
     pageMenus();
