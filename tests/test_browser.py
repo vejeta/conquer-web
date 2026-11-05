@@ -1736,17 +1736,33 @@ def test_the_donation_url_lives_in_one_place():
 
 
 # ---------------------------------------------------------------------------
-# Android app: the APK is a GitHub release asset; the addresses live in site.js
-# only, the page contacts nobody until the visitor clicks, and the section is
-# hidden inside the app
+# Android app: the download is specific to a deployment. The committed
+# web/site-config.js sets nothing, so the generic site shows no Android
+# section; update-vps.sh writes the address from APK_URL. The tests stand in
+# for it by answering site-config.js.
 
-APK_RELEASE = "https://github.com/vejeta/conquer-web/releases/latest"
-APK = APK_RELEASE + "/download/conquer.apk"
-APK_SHA = APK_RELEASE + "/download/conquer.apk.sha256"
+APK = "/downloads/conquer.apk"
+APK_SHA = APK + ".sha256"
 
 
-def test_the_android_section_links_to_the_release(site, browser):
+def configured(page, apk=APK):
+    page.route("**/site-config.js", lambda route: route.fulfill(
+        content_type="application/javascript",
+        body="window.CONQUER_SITE = { apk: '%s' };" % apk))
+
+
+def test_the_android_section_is_hidden_without_a_configured_apk(site, browser):
     page = browser.new_page()
+    page.goto(site + "index.html?lang=en")
+    page.wait_for_timeout(300)
+    assert page.evaluate("document.querySelector('#android').hidden")
+    assert page.locator("#android:visible, footer a[data-apk-nav]:visible").count() == 0
+    page.close()
+
+
+def test_the_android_section_links_to_the_configured_apk(site, browser):
+    page = browser.new_page()
+    configured(page)
     outside, downloads = [], []
     page.on("request", lambda r: outside.append(r.url) if not r.url.startswith(site) and not r.url.startswith("data:") else None)
     page.on("download", lambda d: downloads.append(d))
@@ -1757,13 +1773,14 @@ def test_the_android_section_links_to_the_release(site, browser):
     assert "Android 10 or newer" in sec.inner_text() and "SHA-256" in sec.inner_text()
     assert sec.locator("a[data-apk]").get_attribute("href") == APK
     assert sec.locator("a[data-apk]").inner_text() == "Download the APK"
-    assert sec.locator("a[data-apk-release]").get_attribute("href") == APK_RELEASE
     assert sec.locator("a[data-apk-sha]").get_attribute("href") == APK_SHA
+    assert sec.locator("a[data-apk-release]").count() == 0
     assert sec.locator("a[data-i18n-page=privacy]").get_attribute("href") == "privacy.html#app"
-    assert page.locator("footer a[data-apk-release]").get_attribute("href") == APK_RELEASE
+    assert page.locator("footer a[data-apk-nav]").get_attribute("href") == "#android"
+    assert page.locator("footer a[data-apk-nav]").is_visible()
     assert page.locator("#android iframe, #android script, #android img").count() == 0
     page.wait_for_timeout(300)
-    assert not any("github.com" in u and "vejeta/conquer-web/releases" in u for u in outside), outside
+    assert not outside, outside
     assert not downloads
     page.close()
 
@@ -1772,6 +1789,7 @@ def test_the_android_section_links_to_the_release(site, browser):
                                          ("pl", "Aplikacja na Androida"), ("ru", "Приложение для Android"), ("zh", "Android 应用")])
 def test_the_android_section_is_localized(site, browser, lang, title):
     page = browser.new_page()
+    configured(page)
     page.goto(site + "index.html?lang=" + lang)
     page.wait_for_function("t => document.querySelector('#android h2').textContent === t", arg=title)
     href = page.locator("#android a[data-i18n-page=privacy]").get_attribute("href")
@@ -1782,6 +1800,7 @@ def test_the_android_section_is_localized(site, browser, lang, title):
 def test_the_android_section_fits_a_phone(site, browser):
     ctx = browser.new_context(viewport={"width": 390, "height": 844})
     page = ctx.new_page()
+    configured(page)
     page.goto(site + "index.html?lang=ru")
     page.locator("#android").wait_for(state="visible")
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
@@ -1795,21 +1814,17 @@ def test_the_android_section_is_hidden_in_the_app(site, browser, how):
     if how == "bridge":
         ctx.add_init_script("window.cefriumQuery = function () {};")
     page = ctx.new_page()
+    configured(page)
     page.goto(site + "index.html" + ("?app=1&lang=en" if how == "query" else "?lang=en"))
     page.wait_for_timeout(400)
     assert page.evaluate("document.documentElement.classList.contains('in-app')")
-    assert page.locator("#android:visible, a[data-apk]:visible, a[data-apk-release]:visible, a[data-apk-sha]:visible").count() == 0
+    assert page.locator("#android:visible, a[data-apk]:visible, a[data-apk-nav]:visible, a[data-apk-sha]:visible").count() == 0
     assert page.evaluate("document.querySelector('#android').hidden")
     ctx.close()
 
 
-def test_the_apk_urls_live_in_one_place():
-    """Only site.js holds the addresses; pages carry data-apk* and get them from there."""
-    holders = []
-    for path in list(WEB.glob("*.html")) + list(WEB.glob("*.js")) + list((WEB / "i18n").glob("*.json")):
-        if "vejeta/conquer-web/releases" in path.read_text(encoding="utf-8"):
-            holders.append(path.name)
-    assert holders == ["site.js"]
+def test_the_generic_site_holds_no_deployment_addresses():
+    """The committed config sets nothing; site.js names no GitHub address."""
+    assert (WEB / "site-config.js").read_text(encoding="utf-8").count("window.CONQUER_SITE = {};") == 1
     js = (WEB / "site.js").read_text(encoding="utf-8")
-    assert "var APK_RELEASE_URL = '%s';" % APK_RELEASE in js
-    assert "APK_RELEASE_URL + '/download/conquer.apk'" in js and "APK_RELEASE_URL + '/download/conquer.apk.sha256'" in js
+    assert "github.com" not in js and "vejeta" not in js.lower().replace("liberapay", "")

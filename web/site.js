@@ -47,22 +47,25 @@
     document.querySelectorAll('[data-donate], [data-donate-wrap]').forEach(function (el) { el.hidden = inApp; });
   }
 
-  // The one place of the Android app's addresses: the APK is a GitHub
-  // release asset of vejeta/conquer-web with stable names, so "latest" always
-  // points to the newest. Elements with data-apk (the file), data-apk-sha
-  // (its SHA-256) and data-apk-release (version, notes, certificate
-  // fingerprint) get them as plain links; nothing is fetched until the
-  // visitor clicks. They and the section around them (data-apk-wrap) show
-  // only outside the app, which has nothing to install.
-  var APK_RELEASE_URL = 'https://github.com/vejeta/conquer-web/releases/latest';
-  var APK_URL = APK_RELEASE_URL + '/download/conquer.apk';
-  var APK_SHA_URL = APK_RELEASE_URL + '/download/conquer.apk.sha256';
+  // The Android app's download is specific to one deployment: the generic
+  // software has no APK. web/site-config.js sets window.CONQUER_SITE.apk to
+  // the address of the APK on this server (the committed file sets nothing;
+  // update-vps.sh writes it from APK_URL in config/production.env). Without
+  // it the section (data-apk-wrap) and the footer link (data-apk-nav) stay
+  // hidden; with it, data-apk and data-apk-sha get plain same-origin links
+  // (the checksum file is the APK address + ".sha256"). Nothing is fetched
+  // until the visitor clicks. Inside the app, which has nothing to install,
+  // everything stays hidden.
+  var APK_URL = ((window.CONQUER_SITE || {}).apk || '').trim();
   window.conquerApkUrl = APK_URL;
   function apkLinks() {
-    [['data-apk', APK_URL], ['data-apk-sha', APK_SHA_URL], ['data-apk-release', APK_RELEASE_URL]].forEach(function (p) {
-      document.querySelectorAll('[' + p[0] + ']').forEach(function (a) { a.href = p[1]; });
-    });
-    document.querySelectorAll('[data-apk], [data-apk-sha], [data-apk-release], [data-apk-wrap]').forEach(function (el) { el.hidden = inApp; });
+    var on = !!APK_URL && !inApp;
+    if (APK_URL) {
+      [['data-apk', APK_URL], ['data-apk-sha', APK_URL + '.sha256']].forEach(function (p) {
+        document.querySelectorAll('[' + p[0] + ']').forEach(function (a) { a.href = p[1]; });
+      });
+    }
+    document.querySelectorAll('[data-apk-wrap], [data-apk-nav]').forEach(function (el) { el.hidden = !on; });
   }
 
   var cfg = window.CONQUER_CONFIG || {};

@@ -220,6 +220,61 @@ the administrator password and the mail password.
 | `SMTP_STARTTLS` | `on` or `off` |
 | `SIGNUP_WEBHOOK_URL` | Webhook announcing new requests, at most one message per 10 minutes (default `TURN_WEBHOOK_URL`) |
 | `SITE_URL` | Address of the site in mails (default `https://DOMAIN`) |
+| `APK_REPO`, `APK_URL` | Optional Android app download, see "Android app downloads" below |
+
+## Android app downloads (optional)
+
+This software is generic: it carries no Android app. A server that wants to
+offer one sets two lines in `config/production.env`:
+
+```
+APK_REPO=OWNER/REPO
+APK_URL=/downloads/conquer.apk
+```
+
+- `APK_REPO` is the GitHub repository (`OWNER/REPO`) whose latest release has
+  the assets `conquer.apk` and `conquer.apk.sha256`. `update-vps.sh` reads
+  that release through the GitHub API, skips it when
+  `/var/www/<domain>/downloads/version.txt` already names the same tag,
+  downloads both files, checks `sha256sum -c`, and only then installs
+  `conquer.apk`, `conquer.apk.sha256` and `version.txt` in
+  `/var/www/<domain>/downloads/`. If anything fails it prints a warning,
+  keeps the previous files and goes on with the update.
+- `APK_URL` is where the server publishes the APK. When it is set (and the
+  file exists), `update-vps.sh` writes `/var/www/<domain>/site-config.js` and
+  the home page shows the "Android app" section and the footer link, with the
+  checksum file at `APK_URL` + `.sha256`. Left empty, the pages show nothing
+  about Android. Inside the app the section is always hidden.
+
+If the repository is private, the server needs a read-only token:
+
+1. Open <https://github.com/settings/personal-access-tokens/new> (a
+   fine-grained token). Resource owner: the owner of that repository;
+   Repository access: "Only select repositories", only that repository;
+   Repository permissions: Contents, Read-only. Set an expiry and renew it before it runs
+   out. If the repository is public, no token is needed.
+2. Store it on the server, readable by root only (paste the token, then Ctrl-D):
+
+   ```sh
+   sudo install -d -m 700 /root/.config/conquer-web
+   sudo install -m 600 /dev/stdin /root/.config/conquer-web/github-token
+   ```
+
+   `update-vps.sh` refuses a token file whose mode is not 600 (or 400). The
+   token is passed to curl in a header file, never on the command line, and
+   never printed.
+3. Run `sudo ./update-vps.sh`. Later runs install each new release as soon as
+   it is published; a release is made by pushing a `v*` tag in the app's
+   repository (see the app repository's release notes).
+
+Apache serves `/downloads/*.apk` as `application/vnd.android.package-archive`
+(the `downloads` Directory block of `vps/virtualhost.conf.template`; an older
+virtual host works too, since Apache knows the type, and `update-vps.sh` warns
+if the type is not named). `update-vps.sh` leaves `downloads/` alone when it
+syncs the pages.
+
+The APK was once published as a release of this repository. To remove it
+(the owner does this): `gh release delete v0.1.0 -R vejeta/conquer-web --cleanup-tag`.
 
 ## Apache virtual host
 
