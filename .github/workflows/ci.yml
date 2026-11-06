@@ -8,9 +8,9 @@ on:
     branches: [master]
   pull_request:
   workflow_dispatch:
-  # Nightly: the full end-to-end rehearsal (the e2e job: 25 turns, 30 sessions)
+  # Weekly: the full end-to-end rehearsal (the e2e job: 25 turns, 30 sessions)
   schedule:
-    - cron: "37 2 * * *"
+    - cron: "37 2 * * 0"   # Sundays: the longer soak and load run
 
 permissions:
   contents: read
