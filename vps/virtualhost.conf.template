@@ -115,6 +115,13 @@
         </FilesMatch>
     </Directory>
 
+    # Android app (optional, see DEPLOYMENT.md): update-vps.sh installs the
+    # APK of the latest release here when APK_REPO is set
+    <Directory "/var/www/DOMAIN_NAME/downloads">
+        AddType application/vnd.android.package-archive .apk
+        Header set Cache-Control "no-cache"
+    </Directory>
+
     # Public game status, written by the game container
     <Directory "/var/www/DOMAIN_NAME/status">
         # The website may also be published elsewhere (GitHub Pages) and

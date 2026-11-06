@@ -238,6 +238,12 @@ ADMIN_IP=
 
 # Shown to players in the menu under "How to join"
 ADMIN_CONTACT="$PROD_CONTACT"
+
+# Android app downloads (optional, see DEPLOYMENT.md): the GitHub repository
+# (owner/name) whose latest release holds conquer.apk, and the address of the
+# APK on this server (for example /downloads/conquer.apk)
+APK_REPO=
+APK_URL=
 $(turn_settings)
 
 # uid the game runs as inside the container (owner of data/ on this host)

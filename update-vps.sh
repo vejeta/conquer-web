@@ -99,17 +99,132 @@ else
     echo "✅ Game unchanged since the last build ($(g log -1 --format=%h "$built")): container not rebuilt"
 fi
 
-# 4. The web pages (the game status in status/ is written by the container)
-rsync -a --delete --exclude /status/ web/ "$WEB_ROOT/"
+# 4. The web pages (the game status in status/ is written by the container;
+# downloads/ holds the Android app, see step 4b)
+rsync -a --delete --exclude /status/ --exclude /downloads/ web/ "$WEB_ROOT/"
 sed -i "s|https://conquer.vejeta.com/|https://$DOMAIN/|g" "$WEB_ROOT/index.html"
 chmod -R a+rX "$WEB_ROOT"
 echo "✅ Web pages installed in $WEB_ROOT"
+
+# 4b. The Android app (optional): APK_REPO in config/production.env names the
+# GitHub repository whose latest release holds conquer.apk and
+# conquer.apk.sha256; APK_URL is where this server publishes it (for example
+# /downloads/conquer.apk). A problem here only warns: it never stops the update.
+# APK-STEP-BEGIN
+APK_REPO=$(sed -n 's/^APK_REPO=//p' config/production.env | tail -1 | tr -d '"'"'"'')
+APK_URL=$(sed -n 's/^APK_URL=//p' config/production.env | tail -1 | tr -d '"'"'"'')
+APK_TOKEN_FILE="${CONQUER_GITHUB_TOKEN_FILE:-/root/.config/conquer-web/github-token}"
+APK_API="${GITHUB_API:-https://api.github.com}"   # GITHUB_API: for the tests only
+
+# Download the latest release into $1 and install it in $WEB_ROOT/downloads.
+# Returns 0 when it installed or nothing was to do, 1 after printing a warning.
+apk_fetch() {
+    local work="$1" token="" mode hdr hdr_dl tag installed names id
+    hdr="$work/headers" hdr_dl="$work/headers-download"
+    { : > "$hdr" && : > "$hdr_dl" && chmod 600 "$hdr" "$hdr_dl"; } || return 1
+    if [ -f "$APK_TOKEN_FILE" ]; then
+        mode=$(stat -c %a "$APK_TOKEN_FILE")
+        if [ "$mode" != 600 ] && [ "$mode" != 400 ]; then
+            echo "⚠️  $APK_TOKEN_FILE has mode $mode: run chmod 600 on it. The Android app was not updated."
+            return 1
+        fi
+        token=$(tr -d ' \r\n\t' < "$APK_TOKEN_FILE")
+    fi
+    # The token goes to curl in a file (-H @file), never on its command line
+    {
+        echo "Accept: application/vnd.github+json"
+        echo "X-GitHub-Api-Version: 2022-11-28"
+        [ -z "$token" ] || echo "Authorization: Bearer $token"
+    } > "$hdr"
+    # the same, but asking for the file itself instead of its description
+    sed 's|^Accept: .*|Accept: application/octet-stream|' "$hdr" > "$hdr_dl"
+    if ! curl -fsSL --max-time 60 -H "@$hdr" "$APK_API/repos/$APK_REPO/releases/latest" -o "$work/release.json" 2> "$work/curl.err"; then
+        echo "⚠️  Could not read the latest release of $APK_REPO ($(head -c 200 "$work/curl.err" | tr '\n' ' ')). The Android app was not updated."
+        [ -n "$token" ] || echo "   (no token in $APK_TOKEN_FILE: only a public repository can be read)"
+        return 1
+    fi
+    # tag, then the API address of each wanted asset
+    if ! python3 -I - "$work/release.json" > "$work/release.txt" 2>/dev/null <<'PY'
+import json, sys
+r = json.load(open(sys.argv[1]))
+a = {x["name"]: x["url"] for x in r.get("assets", [])}
+print(r["tag_name"])
+print(a["conquer.apk"])
+print(a["conquer.apk.sha256"])
+PY
+    then
+        echo "⚠️  The latest release of $APK_REPO has no conquer.apk and conquer.apk.sha256. The Android app was not updated."
+        return 1
+    fi
+    tag=$(sed -n 1p "$work/release.txt")
+    if ! [[ "$tag" =~ ^v[0-9A-Za-z._-]+$ ]]; then
+        echo "⚠️  Unexpected release tag. The Android app was not updated."
+        return 1
+    fi
+    installed=$(cat "$WEB_ROOT/downloads/version.txt" 2>/dev/null || true)
+    if [ "$installed" = "$tag" ] && [ -f "$WEB_ROOT/downloads/conquer.apk" ]; then
+        echo "✅ Android app $tag already installed"
+        return 0
+    fi
+    names=(conquer.apk conquer.apk.sha256)
+    for id in 0 1; do
+        if ! curl -fsSL --max-time 600 -H "@$hdr_dl" \
+                "$(sed -n "$((id + 2))p" "$work/release.txt")" -o "$work/${names[$id]}" 2> "$work/curl.err"; then
+            echo "⚠️  Could not download ${names[$id]} of $tag. The Android app was not updated."
+            return 1
+        fi
+    done
+    if ! (cd "$work" && sha256sum -c conquer.apk.sha256 > /dev/null 2>&1); then
+        echo "⚠️  The checksum of conquer.apk $tag does not match: the previous Android app was kept."
+        return 1
+    fi
+    mkdir -p "$WEB_ROOT/downloads" || return 1
+    echo "$tag" > "$work/version.txt"
+    for id in conquer.apk conquer.apk.sha256 version.txt; do
+        # a copy next to the target, then a rename: a visitor never gets half a file
+        if ! { cp "$work/$id" "$WEB_ROOT/downloads/.$id.new" && chmod 644 "$WEB_ROOT/downloads/.$id.new" \
+                && mv -f "$WEB_ROOT/downloads/.$id.new" "$WEB_ROOT/downloads/$id"; }; then
+            rm -f "$WEB_ROOT/downloads/.$id.new"
+            echo "⚠️  Could not install $id in $WEB_ROOT/downloads. The Android app may be incomplete."
+            return 1
+        fi
+    done
+    echo "✅ Android app $tag installed in $WEB_ROOT/downloads (checksum verified)"
+}
+
+if [ -n "$APK_REPO" ]; then
+    if ! [[ "$APK_REPO" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
+        echo "⚠️  APK_REPO must look like owner/repository. The Android app was not updated."
+    elif ! command -v python3 > /dev/null; then
+        echo "⚠️  python3 is missing (apt install python3): the Android app was not updated."
+    else
+        apk_work=$(mktemp -d)
+        apk_fetch "$apk_work" || true
+        rm -rf "$apk_work"
+    fi
+fi
+# The page offers the app only when APK_URL is set and the file is there
+if [ -n "$APK_URL" ]; then
+    if ! [[ "$APK_URL" =~ ^[A-Za-z0-9/._~:%-]+$ ]]; then
+        echo "⚠️  APK_URL has characters that are not allowed: the Android section stays hidden."
+    elif [[ "$APK_URL" == /* ]] && [ ! -f "$WEB_ROOT$APK_URL" ]; then
+        echo "⚠️  $WEB_ROOT$APK_URL does not exist yet: the Android section stays hidden (set APK_REPO, see DEPLOYMENT.md)."
+    else
+        printf "window.CONQUER_SITE = { apk: '%s' };\n" "$APK_URL" > "$WEB_ROOT/site-config.js"
+        chmod a+r "$WEB_ROOT/site-config.js"
+        echo "✅ Android download offered at $APK_URL"
+    fi
+fi
+# APK-STEP-END
 
 # 5. Checks
 vhost="/etc/apache2/sites-available/$DOMAIN.conf"
 if [ -f "$vhost" ] && ! grep -q 'FilesMatch "\\.(html|js|css|json)' "$vhost"; then
     echo "⚠️  $vhost does not ask browsers to check for new pages (Cache-Control)."
     echo "   Visitors may see old texts after updates: see vps/virtualhost.conf.template"
+fi
+if [ -f "$vhost" ] && [ -n "$APK_URL" ] && ! grep -q 'application/vnd.android.package-archive' "$vhost"; then
+    echo "⚠️  $vhost does not name the type of .apk files: add the AddType line of the downloads directory from vps/virtualhost.conf.template"
 fi
 # The practice game of /try/ runs in WebAssembly, which the site's Content
 # Security Policy must allow ('wasm-unsafe-eval'): add it to the policy that

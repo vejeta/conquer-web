@@ -9,11 +9,12 @@ Read this first when picking the project up in a new session.
   the 8-scene story with narration and videos in 7 languages, Open Graph
   tags, nation password hints). The VPS follows `master`
   (`./update-vps.sh --branch master` once, then `./update-vps.sh`).
-- The Android app moved to its own private repository,
-  `vejeta/conquer-cefrium`, with this repository as a submodule pinned to
+- The Android app moved to its own private repository, with this repository as a submodule pinned to
   a commit of `master`. Its CI builds the APK as the `app-debug.apk`
   artifact; signed with the committed debug keystore, so installs update in
   place. The old `android` branch here (PR #9, closed) is no longer used.
+  The APK is not part of this repository: a server that offers it sets
+  `APK_REPO`/`APK_URL` (DEPLOYMENT.md, "Android app downloads").
 
 ## Conventions
 
@@ -70,7 +71,7 @@ The site keeps no personal data beyond what is technically needed.
 - Owner to listen to the non-Spanish narrations (previews were sent) and
   to the beds; retouch on request.
 - Bridge between the pages and the app (conquerAudio, conquerRace,
-  cefriumQuery messages): keep it stable or update conquer-cefrium with it.
+  cefriumQuery messages): keep it stable or update the app repository with it.
 - Delete the `android` branch here when nothing else needs it.
 - Clean up local worktrees (`git worktree prune` after removing the
   `.claude/worktrees/*` directories that are no longer needed).
